@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "0.1.0",
+  "generatedFrom": "policy+registries",
+  "commands": [
+    {
+      "id": "inspect",
+      "category": "read-only"
+    },
+    {
+      "id": "interview",
+      "category": "read-only"
+    },
+    {
+      "id": "check",
+      "category": "read-only"
+    },
+    {
+      "id": "plan",
+      "category": "planning"
+    },
+    {
+      "id": "apply",
+      "category": "write"
+    },
+    {
+      "id": "update",
+      "category": "write"
+    },
+    {
+      "id": "repair",
+      "category": "write"
+    },
+    {
+      "id": "factory-restore",
+      "category": "write"
+    }
+  ],
+  "ownershipModes": [
+    "local",
+    "plugin-backed-copilot-format"
+  ],
+  "compatibilityTargets": [
+    "copilot-format",
+    "local-package-root",
+    "json-lines-protocol"
+  ],
+  "surfaceLayers": {
+    "core-instructions": "core",
+    "prompts": "core",
+    "agents": "pack",
+    "skills": "pack",
+    "hook-scripts": "core",
+    "mcp-config": "core"
+  },
+  "packs": [
+    "memory",
+    "lean",
+    "review",
+    "research",
+    "workspace-ops"
+  ],
+  "profiles": [
+    "balanced",
+    "lean",
+    "ultra-lean"
+  ]
+}

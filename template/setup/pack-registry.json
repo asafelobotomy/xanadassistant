@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "0.1.0",
+  "representation": {
+    "packageMetadataField": "packs",
+    "lockfileField": "selectedPacks",
+    "answerField": "packs.selected"
+  },
+  "starterKitTreatment": "separate-catalog-entry",
+  "coreSurfaces": [
+    "core-instructions",
+    "prompts"
+  ],
+  "packs": [
+    {
+      "id": "memory",
+      "name": "Memory",
+      "summary": "Optional durable memory and recall features.",
+      "status": "planned",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "memory",
+        "local-first"
+      ],
+      "surfaces": []
+    },
+    {
+      "id": "lean",
+      "name": "Lean",
+      "summary": "Optional terse workflow helpers and brevity-oriented defaults.",
+      "status": "planned",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "brevity",
+        "output"
+      ],
+      "surfaces": []
+    },
+    {
+      "id": "review",
+      "name": "Review",
+      "summary": "Optional code review and audit workflows.",
+      "status": "planned",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "review",
+        "quality"
+      ],
+      "surfaces": []
+    },
+    {
+      "id": "research",
+      "name": "Research",
+      "summary": "Optional research and synthesis workflows.",
+      "status": "planned",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "research",
+        "synthesis"
+      ],
+      "surfaces": []
+    },
+    {
+      "id": "workspace-ops",
+      "name": "Workspace Operations",
+      "summary": "Optional workspace automation and maintenance helpers.",
+      "status": "planned",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "workspace",
+        "automation"
+      ],
+      "surfaces": []
+    }
+  ]
+}

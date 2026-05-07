@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xanad Assistant Install Manifest",
+  "description": "Generated package truth for xanad-assistant managed surfaces.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "managedFiles",
+    "retiredFiles"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "packageVersion": {
+      "type": "string"
+    },
+    "policySchemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceRoots": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "generationSettings": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "managedFiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/managedFile"
+      }
+    },
+    "retiredFiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/retiredFile"
+      }
+    }
+  },
+  "$defs": {
+    "ownershipMode": {
+      "type": "string",
+      "enum": [
+        "local",
+        "plugin-backed-copilot-format"
+      ]
+    },
+    "writeStrategy": {
+      "type": "string",
+      "enum": [
+        "replace-verbatim",
+        "copy-if-missing",
+        "merge-json-object",
+        "preserve-marked-markdown-blocks",
+        "token-replace",
+        "archive-retired",
+        "report-retired"
+      ]
+    },
+    "managedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "surface",
+        "source",
+        "target",
+        "ownership",
+        "strategy",
+        "hash"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "surface": {
+          "type": "string",
+          "minLength": 1
+        },
+        "layer": {
+          "type": "string",
+          "enum": [
+            "core",
+            "pack",
+            "profile",
+            "catalog"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ownership": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ownershipMode"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "strategy": {
+          "$ref": "#/$defs/writeStrategy"
+        },
+        "requiredWhen": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "chmod": {
+          "type": "string",
+          "enum": [
+            "none",
+            "inherit",
+            "executable",
+            "executable-if-shell"
+          ]
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:.+"
+        },
+        "introducedIn": {
+          "type": "string"
+        }
+      }
+    },
+    "retiredFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "target",
+        "defaultAction"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "defaultAction": {
+          "type": "string",
+          "enum": [
+            "report-retired",
+            "archive-retired",
+            "remove-with-approval"
+          ]
+        },
+        "retiredIn": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

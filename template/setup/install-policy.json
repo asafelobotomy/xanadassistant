@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "0.1.0",
+  "packageName": "xanad-assistant",
+  "canonicalSurfaces": [
+    "core-instructions",
+    "prompts",
+    "agents",
+    "skills",
+    "hook-scripts",
+    "mcp-config"
+  ],
+  "sourceRoots": {
+    "template": "template",
+    "agents": "agents",
+    "skills": "skills",
+    "hooks": "hooks"
+  },
+  "surfaceSources": {
+    "core-instructions": {
+      "sourceRoot": "template",
+      "path": "copilot-instructions.md",
+      "kind": "file",
+      "layer": "core"
+    },
+    "prompts": {
+      "sourceRoot": "template",
+      "path": "prompts",
+      "kind": "directory",
+      "layer": "core"
+    },
+    "agents": {
+      "sourceRoot": "agents",
+      "path": ".",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "skills": {
+      "sourceRoot": "skills",
+      "path": ".",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "hook-scripts": {
+      "sourceRoot": "hooks",
+      "path": "scripts",
+      "kind": "directory",
+      "layer": "core"
+    },
+    "mcp-config": {
+      "sourceRoot": "template",
+      "path": "vscode/mcp.json",
+      "kind": "file",
+      "layer": "core"
+    }
+  },
+  "targetPathRules": {
+    "core-instructions": {
+      "targetRoot": ".github",
+      "pathPattern": "copilot-instructions.md",
+      "surface": "instructions"
+    },
+    "prompts": {
+      "targetRoot": ".github/prompts",
+      "surface": "prompts"
+    },
+    "agents": {
+      "targetRoot": ".github/agents",
+      "surface": "agents"
+    },
+    "skills": {
+      "targetRoot": ".github/skills",
+      "surface": "skills"
+    },
+    "hook-scripts": {
+      "targetRoot": ".github/hooks/scripts",
+      "surface": "hooks"
+    },
+    "mcp-config": {
+      "targetRoot": ".vscode",
+      "pathPattern": "mcp.json",
+      "surface": "mcp"
+    }
+  },
+  "ownershipDefaults": {
+    "core-instructions": "local",
+    "prompts": "local",
+    "agents": "plugin-backed-copilot-format",
+    "skills": "plugin-backed-copilot-format",
+    "hook-scripts": "local",
+    "mcp-config": "local"
+  },
+  "strategyDefaults": {
+    "core-instructions": "preserve-marked-markdown-blocks",
+    "prompts": "token-replace",
+    "agents": "replace-verbatim",
+    "skills": "replace-verbatim",
+    "hook-scripts": "replace-verbatim",
+    "mcp-config": "merge-json-object"
+  },
+  "requiredConditions": {
+    "hook-scripts": [
+      "hooks.enabled"
+    ],
+    "mcp-config": [
+      "mcp.enabled"
+    ]
+  },
+  "tokenRules": [
+    {
+      "token": "{{WORKSPACE_NAME}}",
+      "description": "Consumer workspace display name.",
+      "required": false
+    },
+    {
+      "token": "{{XANAD_PROFILE}}",
+      "description": "Selected behavior profile.",
+      "required": false
+    }
+  ],
+  "chmodRules": {
+    "hook-scripts": "executable"
+  },
+  "retiredFilePolicy": {
+    "defaultAction": "report-retired",
+    "archiveRoot": ".xanad-assistant/archive",
+    "entries": []
+  },
+  "packageFormatDeliveryRules": {
+    "agents": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "Agents stay plugin-backed by default but can be localized for offline or workspace-specific installs."
+    },
+    "skills": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "Skills stay plugin-backed by default but can be localized when the workspace needs package-owned copies."
+    }
+  },
+  "generationSettings": {
+    "manifestSchemaVersion": "0.1.0",
+    "manifestOutput": "template/setup/install-manifest.json",
+    "includeRetiredFiles": true,
+    "derivedArtifactStrategy": {
+      "catalog": "generated-from-policy-and-registries",
+      "mirrors": [],
+      "indexes": []
+    },
+    "unmanagedSourceExcludes": [
+      "template/setup/**"
+    ]
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xanad Assistant Profile Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "representation",
+    "profiles"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "representation": {
+      "$ref": "#/$defs/representation"
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/profile"
+      },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "representation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalogField",
+        "lockfileField",
+        "answerField"
+      ],
+      "properties": {
+        "catalogField": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lockfileField": {
+          "type": "string",
+          "minLength": 1
+        },
+        "answerField": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "summary",
+        "status",
+        "responseDensity",
+        "defaultPacks"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "active"
+          ]
+        },
+        "responseDensity": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "concise",
+            "terse"
+          ]
+        },
+        "defaultPacks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "setupAnswerDefaults": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

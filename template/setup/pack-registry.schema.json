@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xanad Assistant Pack Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "representation",
+    "starterKitTreatment",
+    "coreSurfaces",
+    "packs"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "representation": {
+      "$ref": "#/$defs/representation"
+    },
+    "starterKitTreatment": {
+      "type": "string",
+      "enum": [
+        "separate-catalog-entry",
+        "pack-subtype"
+      ]
+    },
+    "coreSurfaces": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "packs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pack"
+      },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "representation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "packageMetadataField",
+        "lockfileField",
+        "answerField"
+      ],
+      "properties": {
+        "packageMetadataField": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lockfileField": {
+          "type": "string",
+          "minLength": 1
+        },
+        "answerField": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "summary",
+        "status",
+        "optional",
+        "dependencies",
+        "discoveryTags",
+        "surfaces"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "active"
+          ]
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "discoveryTags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "surfaces": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": "0.1.0",
+  "packageVersion": "0.1.0",
+  "policySchemaVersion": "0.1.0",
+  "sourceRoots": {
+    "template": "template",
+    "agents": "agents",
+    "skills": "skills",
+    "hooks": "hooks"
+  },
+  "generationSettings": {
+    "manifestSchemaVersion": "0.1.0",
+    "manifestOutput": "template/setup/install-manifest.json",
+    "includeRetiredFiles": true,
+    "derivedArtifactStrategy": {
+      "catalog": "generated-from-policy-and-registries",
+      "mirrors": [],
+      "indexes": []
+    },
+    "unmanagedSourceExcludes": [
+      "template/setup/**"
+    ]
+  },
+  "managedFiles": [
+    {
+      "id": "agents.lifecycle-planning.agent.md",
+      "surface": "agents",
+      "layer": "pack",
+      "source": "agents/lifecycle-planning.agent.md",
+      "target": ".github/agents/lifecycle-planning.agent.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:738b1d4cee329f4aa13924173782d3ae4d5d655f866f0d20d4a162dae39a8cfd"
+    },
+    {
+      "id": "core-instructions.copilot-instructions.md",
+      "surface": "instructions",
+      "layer": "core",
+      "source": "template/copilot-instructions.md",
+      "target": ".github/copilot-instructions.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "preserve-marked-markdown-blocks",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:9727c9383724106f8c6c084adb44508835113440877275648273a42bf51adb3a"
+    },
+    {
+      "id": "hook-scripts.xanad-workspace-mcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "hooks/scripts/xanad-workspace-mcp.py",
+      "target": ".github/hooks/scripts/xanad-workspace-mcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:fc96c0462d9870925cee24b152619ebc3d592d8cf8d67c0c9bf36ec24db03fc3"
+    },
+    {
+      "id": "prompts.setup.md",
+      "surface": "prompts",
+      "layer": "core",
+      "source": "template/prompts/setup.md",
+      "target": ".github/prompts/setup.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [],
+      "tokens": [
+        "{{WORKSPACE_NAME}}",
+        "{{XANAD_PROFILE}}"
+      ],
+      "chmod": "none",
+      "hash": "sha256:6a63a0231fe94d334c3919e7f6b2b758ff99c4f21dc6255db870ce0d6c3b2345"
+    },
+    {
+      "id": "skills.lifecycle-audit.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "skills/lifecycle-audit/SKILL.md",
+      "target": ".github/skills/lifecycle-audit/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:752817b7fcefe0a81d2b7a4edc014703425f16976eda0e9804b1551bd6b05856"
+    },
+    {
+      "id": "mcp-config.mcp.json",
+      "surface": "mcp",
+      "layer": "core",
+      "source": "template/vscode/mcp.json",
+      "target": ".vscode/mcp.json",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "merge-json-object",
+      "requiredWhen": [
+        "mcp.enabled"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:e886574dc21f6c91643d5edd55fcf497707fbd5542b99a34b436fce05770fdad"
+    }
+  ],
+  "retiredFiles": []
+}

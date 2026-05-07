@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xanad Assistant Install Policy",
+  "description": "Human-authored lifecycle policy for xanad-assistant package generation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sourceRoots",
+    "surfaceSources",
+    "targetPathRules",
+    "ownershipDefaults",
+    "strategyDefaults",
+    "retiredFilePolicy"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "packageName": {
+      "type": "string",
+      "const": "xanad-assistant"
+    },
+    "canonicalSurfaces": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "sourceRoots": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "targetPathRules": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/targetPathRule"
+      }
+    },
+    "surfaceSources": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/surfaceSource"
+      }
+    },
+    "ownershipDefaults": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/ownershipMode"
+      }
+    },
+    "strategyDefaults": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/writeStrategy"
+      }
+    },
+    "requiredConditions": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/conditionExpression"
+      }
+    },
+    "tokenRules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tokenRule"
+      }
+    },
+    "chmodRules": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/chmodRule"
+      }
+    },
+    "retiredFilePolicy": {
+      "$ref": "#/$defs/retiredFilePolicy"
+    },
+    "packageFormatDeliveryRules": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/deliveryRule"
+      }
+    },
+    "generationSettings": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "ownershipMode": {
+      "type": "string",
+      "enum": [
+        "local",
+        "plugin-backed-copilot-format"
+      ]
+    },
+    "writeStrategy": {
+      "type": "string",
+      "enum": [
+        "replace-verbatim",
+        "copy-if-missing",
+        "merge-json-object",
+        "preserve-marked-markdown-blocks",
+        "token-replace",
+        "archive-retired",
+        "report-retired"
+      ]
+    },
+    "chmodRule": {
+      "type": "string",
+      "enum": [
+        "none",
+        "inherit",
+        "executable",
+        "executable-if-shell"
+      ]
+    },
+    "conditionExpression": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      ]
+    },
+    "targetPathRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetRoot"
+      ],
+      "properties": {
+        "targetRoot": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pathPattern": {
+          "type": "string",
+          "minLength": 1
+        },
+        "surface": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "surfaceSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRoot",
+        "path",
+        "kind",
+        "layer"
+      ],
+      "properties": {
+        "sourceRoot": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "file",
+            "directory"
+          ]
+        },
+        "layer": {
+          "type": "string",
+          "enum": [
+            "core",
+            "pack",
+            "profile",
+            "catalog"
+          ]
+        }
+      }
+    },
+    "tokenRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "token"
+      ],
+      "properties": {
+        "token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "retiredFilePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "defaultAction"
+      ],
+      "properties": {
+        "defaultAction": {
+          "type": "string",
+          "enum": [
+            "report-retired",
+            "archive-retired",
+            "remove-with-approval"
+          ]
+        },
+        "archiveRoot": {
+          "type": "string"
+        }
+      }
+    },
+    "deliveryRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaultOwnership": {
+          "$ref": "#/$defs/ownershipMode"
+        },
+        "supportedOwnership": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ownershipMode"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

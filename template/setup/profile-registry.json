@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "0.1.0",
+  "representation": {
+    "catalogField": "profiles",
+    "lockfileField": "profile",
+    "answerField": "profile.selected"
+  },
+  "profiles": [
+    {
+      "id": "balanced",
+      "name": "Balanced",
+      "summary": "Balanced detail and guidance for normal interactive work.",
+      "status": "active",
+      "responseDensity": "standard",
+      "defaultPacks": [],
+      "setupAnswerDefaults": {
+        "reportDensity": "balanced"
+      }
+    },
+    {
+      "id": "lean",
+      "name": "Lean",
+      "summary": "Concise output with lighter receipts and summaries.",
+      "status": "planned",
+      "responseDensity": "concise",
+      "defaultPacks": [
+        "lean"
+      ],
+      "setupAnswerDefaults": {
+        "reportDensity": "lean"
+      }
+    },
+    {
+      "id": "ultra-lean",
+      "name": "Ultra Lean",
+      "summary": "Minimum viable output density for highly structured workflows.",
+      "status": "planned",
+      "responseDensity": "terse",
+      "defaultPacks": [
+        "lean"
+      ],
+      "setupAnswerDefaults": {
+        "reportDensity": "ultra-lean"
+      }
+    }
+  ]
+}

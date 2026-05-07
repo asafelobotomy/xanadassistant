@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xanad Assistant Lockfile",
+  "description": "Installed-state lockfile for consumer repositories using xanad-assistant.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "package",
+    "manifest",
+    "timestamps",
+    "selectedPacks",
+    "files"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "package": {
+      "$ref": "#/$defs/packageRef"
+    },
+    "manifest": {
+      "$ref": "#/$defs/manifestRef"
+    },
+    "timestamps": {
+      "$ref": "#/$defs/timestamps"
+    },
+    "selectedPacks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ownershipBySurface": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/ownershipMode"
+      }
+    },
+    "setupAnswers": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "installMetadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "mcpAvailable": {
+          "type": "boolean"
+        },
+        "mcpEnabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/fileRecord"
+      }
+    },
+    "skippedManagedFiles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "retiredManagedFiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/retiredRecord"
+      }
+    },
+    "unknownValues": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "lastBackup": {
+      "$ref": "#/$defs/backupRef"
+    }
+  },
+  "$defs": {
+    "ownershipMode": {
+      "type": "string",
+      "enum": [
+        "local",
+        "plugin-backed-copilot-format"
+      ]
+    },
+    "packageRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "const": "xanad-assistant"
+        },
+        "version": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "release": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        }
+      }
+    },
+    "manifestRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "hash"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:.+"
+        }
+      }
+    },
+    "timestamps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "appliedAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "appliedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "fileRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "target",
+        "sourceHash",
+        "installedHash"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceHash": {
+          "type": "string",
+          "pattern": "^sha256:.+"
+        },
+        "installedHash": {
+          "type": "string",
+          "pattern": "^(sha256:.+|unknown)$"
+        },
+        "ownershipMode": {
+          "$ref": "#/$defs/ownershipMode"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "applied",
+            "skipped",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "retiredRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "action"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "archived",
+            "removed",
+            "left-in-place",
+            "reported"
+          ]
+        },
+        "target": {
+          "type": "string"
+        },
+        "archivePath": {
+          "type": "string"
+        }
+      }
+    },
+    "backupRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

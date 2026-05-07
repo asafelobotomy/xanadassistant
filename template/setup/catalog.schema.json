@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xanad Assistant Discovery Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "generatedFrom",
+    "commands",
+    "ownershipModes",
+    "compatibilityTargets",
+    "surfaceLayers",
+    "packs",
+    "profiles"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generatedFrom": {
+      "type": "string",
+      "enum": [
+        "policy+registries"
+      ]
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/command"
+      },
+      "uniqueItems": true
+    },
+    "ownershipModes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "compatibilityTargets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "surfaceLayers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "enum": [
+          "core",
+          "pack",
+          "profile",
+          "catalog"
+        ]
+      }
+    },
+    "packs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "category"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "read-only",
+            "planning",
+            "write"
+          ]
+        }
+      }
+    }
+  }
+}
