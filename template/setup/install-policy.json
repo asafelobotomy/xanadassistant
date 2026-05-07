@@ -3,6 +3,7 @@
   "packageName": "xanad-assistant",
   "canonicalSurfaces": [
     "core-instructions",
+    "instructions",
     "prompts",
     "agents",
     "skills",
@@ -22,6 +23,12 @@
       "sourceRoot": "template",
       "path": "copilot-instructions.md",
       "kind": "file",
+      "layer": "core"
+    },
+    "instructions": {
+      "sourceRoot": "template",
+      "path": "instructions",
+      "kind": "directory",
       "layer": "core"
     },
     "prompts": {
@@ -67,6 +74,10 @@
       "pathPattern": "copilot-instructions.md",
       "surface": "instructions"
     },
+    "instructions": {
+      "targetRoot": ".github/instructions",
+      "surface": "instructions"
+    },
     "prompts": {
       "targetRoot": ".github/prompts",
       "surface": "prompts"
@@ -95,6 +106,7 @@
   },
   "ownershipDefaults": {
     "core-instructions": "local",
+    "instructions": "local",
     "prompts": "local",
     "agents": "plugin-backed-copilot-format",
     "skills": "plugin-backed-copilot-format",
@@ -104,6 +116,7 @@
   },
   "strategyDefaults": {
     "core-instructions": "preserve-marked-markdown-blocks",
+    "instructions": "replace-verbatim",
     "prompts": "token-replace",
     "agents": "replace-verbatim",
     "skills": "replace-verbatim",

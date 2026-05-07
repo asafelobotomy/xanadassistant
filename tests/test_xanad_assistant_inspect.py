@@ -82,7 +82,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
         self.assertEqual("check", payload["command"])
         self.assertEqual("drift", payload["status"])
         self.assertGreater(payload["result"]["summary"]["missing"], 0)
-        self.assertEqual(5, payload["result"]["summary"]["skipped"])
+        self.assertEqual(8, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["unmanaged"])
 
     def test_check_detects_clean_and_unmanaged_targets(self) -> None:
@@ -116,14 +116,25 @@ class XanadAssistantInspectTests(unittest.TestCase):
             target_two.parent.mkdir(parents=True, exist_ok=True)
             target_two.write_text(self.render_setup_prompt(repo_root, workspace), encoding="utf-8")
 
+            instructions_dir = workspace / ".github" / "instructions"
+            instructions_dir.mkdir(parents=True, exist_ok=True)
+            (instructions_dir / "tests.instructions.md").write_text(
+                (repo_root / "template" / "instructions" / "tests.instructions.md").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (instructions_dir / "scripts.instructions.md").write_text(
+                (repo_root / "template" / "instructions" / "scripts.instructions.md").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+
         result = self.run_command("check", "--json", workspace_setup=workspace_setup)
 
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("clean", payload["status"])
-        self.assertEqual(2, payload["result"]["summary"]["clean"])
+        self.assertEqual(4, payload["result"]["summary"]["clean"])
         self.assertEqual(0, payload["result"]["summary"]["missing"])
-        self.assertEqual(5, payload["result"]["summary"]["skipped"])
+        self.assertEqual(8, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["stale"])
 
     def test_check_reports_stale_when_target_content_differs(self) -> None:
@@ -269,7 +280,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
         self.assertEqual("approval-required", payload["status"])
         self.assertTrue(payload["result"]["approvalRequired"])
         self.assertTrue(payload["result"]["backupRequired"])
-        self.assertEqual(2, payload["result"]["writes"]["add"])
+        self.assertEqual(4, payload["result"]["writes"]["add"])
         self.assertEqual(0, payload["result"]["writes"]["replace"])
         self.assertEqual(0, payload["result"]["writes"]["merge"])
         self.assertEqual("balanced", payload["result"]["profile"])
@@ -285,7 +296,10 @@ class XanadAssistantInspectTests(unittest.TestCase):
         )
         self.assertEqual(
             [
+                ".github/agents/commit.agent.md",
+                ".github/agents/explore.agent.md",
                 ".github/agents/lifecycle-planning.agent.md",
+                ".github/agents/review.agent.md",
                 ".github/hooks/scripts/xanad-workspace-mcp.py",
                 ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
@@ -331,7 +345,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
             },
             payload["result"]["ownershipBySurface"],
         )
-        self.assertEqual(5, len(payload["result"]["skippedActions"]))
+        self.assertEqual(8, len(payload["result"]["skippedActions"]))
         self.assertEqual({}, payload["result"]["conflictSummary"])
 
         prompt_action = next(action for action in payload["result"]["actions"] if action["target"] == ".github/prompts/setup.md")
@@ -370,7 +384,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("approval-required", payload["status"])
-        self.assertEqual(0, payload["result"]["writes"]["add"])
+        self.assertEqual(2, payload["result"]["writes"]["add"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
         actions_by_target = {action["target"]: action["action"] for action in payload["result"]["actions"]}
@@ -432,7 +446,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
 
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
-        self.assertEqual(4, payload["result"]["writes"]["add"])
+        self.assertEqual(6, payload["result"]["writes"]["add"])
         self.assertEqual(True, payload["result"]["resolvedAnswers"]["mcp.enabled"])
         self.assertEqual(True, payload["result"]["resolvedAnswers"]["hooks.enabled"])
 
@@ -488,10 +502,13 @@ class XanadAssistantInspectTests(unittest.TestCase):
         self.assertEqual(["review"], payload["result"]["packs"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
-        self.assertEqual(2, len(payload["result"]["plannedLockfile"]["contents"]["files"]))
+        self.assertEqual(4, len(payload["result"]["plannedLockfile"]["contents"]["files"]))
         self.assertEqual(
             [
+                ".github/agents/commit.agent.md",
+                ".github/agents/explore.agent.md",
                 ".github/agents/lifecycle-planning.agent.md",
+                ".github/agents/review.agent.md",
                 ".github/hooks/scripts/xanad-workspace-mcp.py",
                 ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
@@ -619,6 +636,17 @@ class XanadAssistantInspectTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
+            instructions_dir = github_dir / "instructions"
+            instructions_dir.mkdir(parents=True, exist_ok=True)
+            (instructions_dir / "tests.instructions.md").write_text(
+                (repo_root / "template" / "instructions" / "tests.instructions.md").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (instructions_dir / "scripts.instructions.md").write_text(
+                (repo_root / "template" / "instructions" / "scripts.instructions.md").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+
             (github_dir / "xanad-assistant-lock.json").write_text(
                 json.dumps(
                     {
@@ -692,7 +720,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
         self.assertEqual("plan", payload["command"])
         self.assertEqual("factory-restore", payload["mode"])
         self.assertTrue(payload["result"]["factoryRestore"])
-        self.assertEqual(0, payload["result"]["writes"]["add"])
+        self.assertEqual(2, payload["result"]["writes"]["add"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
         self.assertEqual(1, payload["result"]["conflictSummary"]["managed-drift"])
@@ -796,7 +824,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
             self.assertEqual("setup", payload["mode"])
             self.assertEqual("ok", payload["status"])
             self.assertTrue(payload["result"]["backup"]["created"])
-            self.assertEqual(2, payload["result"]["writes"]["added"])
+            self.assertEqual(4, payload["result"]["writes"]["added"])
             self.assertEqual(0, payload["result"]["writes"]["replaced"])
             self.assertTrue(payload["result"]["summary"]["written"])
             self.assertEqual(".github/copilot-version.md", payload["result"]["summary"]["path"])
@@ -868,7 +896,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
 
             self.assertEqual(0, result.returncode)
             payload = json.loads(result.stdout)
-            self.assertEqual(3, payload["result"]["writes"]["added"])
+            self.assertEqual(5, payload["result"]["writes"]["added"])
             self.assertEqual(1, payload["result"]["writes"]["merged"])
 
             merged_mcp = json.loads(existing_mcp_path.read_text(encoding="utf-8"))
@@ -904,7 +932,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
             self.assertGreaterEqual(payload["result"]["writes"]["merged"], 1)
 
             installed_instructions = instructions_path.read_text(encoding="utf-8")
-            self.assertIn("Use `xanad-assistant.py` as the lifecycle authority", installed_instructions)
+            self.assertIn("Lifecycle authority", installed_instructions)
             self.assertIn("<!-- user-added -->", installed_instructions)
             self.assertIn("Keep this user note.", installed_instructions)
             self.assertIn("## §10 - Project-Specific Overrides", installed_instructions)

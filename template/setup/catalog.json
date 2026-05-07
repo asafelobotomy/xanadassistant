@@ -46,6 +46,7 @@
   ],
   "surfaceLayers": {
     "core-instructions": "core",
+    "instructions": "core",
     "prompts": "core",
     "agents": "pack",
     "skills": "pack",

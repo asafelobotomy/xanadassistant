@@ -24,6 +24,38 @@
   },
   "managedFiles": [
     {
+      "id": "agents.commit.agent.md",
+      "surface": "agents",
+      "layer": "pack",
+      "source": "agents/commit.agent.md",
+      "target": ".github/agents/commit.agent.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:09cf7774823887f5f1f3ab24b771927c242f7894fd65d13fc16e595d5e844718"
+    },
+    {
+      "id": "agents.explore.agent.md",
+      "surface": "agents",
+      "layer": "pack",
+      "source": "agents/explore.agent.md",
+      "target": ".github/agents/explore.agent.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:10bfee2171e5f2b054984ca61304c4c768ef32426bdd52ee39e383d12f061450"
+    },
+    {
       "id": "agents.lifecycle-planning.agent.md",
       "surface": "agents",
       "layer": "pack",
@@ -40,6 +72,22 @@
       "hash": "sha256:db95bacd2f6d42a00a12de5e7ed3a47fefcfa2477495832b9662d415412a22b9"
     },
     {
+      "id": "agents.review.agent.md",
+      "surface": "agents",
+      "layer": "pack",
+      "source": "agents/review.agent.md",
+      "target": ".github/agents/review.agent.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:ccef3f1eeb9216f491347743099e8171057c600a89c80d316fcc23effa9be09d"
+    },
+    {
       "id": "core-instructions.copilot-instructions.md",
       "surface": "instructions",
       "layer": "core",
@@ -52,7 +100,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:9727c9383724106f8c6c084adb44508835113440877275648273a42bf51adb3a"
+      "hash": "sha256:986abbdd7c894ddf351cd3f0512466b137b815b8cbc3557e8025f39df7d8c8eb"
     },
     {
       "id": "hook-scripts.xanad-workspace-mcp.py",
@@ -70,6 +118,36 @@
       "tokens": [],
       "chmod": "executable",
       "hash": "sha256:fc96c0462d9870925cee24b152619ebc3d592d8cf8d67c0c9bf36ec24db03fc3"
+    },
+    {
+      "id": "instructions.scripts.instructions.md",
+      "surface": "instructions",
+      "layer": "core",
+      "source": "template/instructions/scripts.instructions.md",
+      "target": ".github/instructions/scripts.instructions.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:18ca7a0d868d23bcbe87481803d44f9854169deb568edddd8bf2d35bcef7d78c"
+    },
+    {
+      "id": "instructions.tests.instructions.md",
+      "surface": "instructions",
+      "layer": "core",
+      "source": "template/instructions/tests.instructions.md",
+      "target": ".github/instructions/tests.instructions.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:460ff6c87d9e957f1291f6dc060a8c9e75a6c5ab062626af35012721b09430d0"
     },
     {
       "id": "prompts.setup.md",
@@ -121,7 +199,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:752817b7fcefe0a81d2b7a4edc014703425f16976eda0e9804b1551bd6b05856"
+      "hash": "sha256:348ab68b7fa6621d224fb0fbc69d2180c3c8a5c6e6a6cd863a8813357ba32f2d"
     },
     {
       "id": "mcp-config.mcp.json",

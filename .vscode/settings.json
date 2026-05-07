@@ -1,0 +1,22 @@
+{
+  "chat.agentFilesLocations": {
+    "agents": true
+  },
+  "chat.skillsLocations": {
+    "skills": true
+  },
+  "chat.agentSkillsLocations": {
+    "skills": true
+  },
+  "chat.useAgentsMdFile": true,
+  "chat.useCustomAgentHooks": true,
+  "chat.promptFilesRecommendations": true,
+  "chat.plugins.enabled": true,
+  "chat.subagents.allowInvocationsFromSubagents": true,
+  "chat.autopilot.enabled": true,
+  "chat.agent.maxRequests": 50,
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "python.testing.unittestEnabled": true,
+  "python.testing.unittestArgs": ["-v", "--start-dir", "tests"],
+  "python.testing.pytestEnabled": false
+}
