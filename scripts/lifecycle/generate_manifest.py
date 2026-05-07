@@ -1,27 +1,24 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
-from fnmatch import fnmatch
 from pathlib import Path
-from typing import Iterable
 
-
-OWNERSHIP_MODES = {
-    "local",
-    "plugin-backed-copilot-format",
-}
-
-WRITE_STRATEGIES = {
-    "replace-verbatim",
-    "copy-if-missing",
-    "merge-json-object",
-    "preserve-marked-markdown-blocks",
-    "token-replace",
-    "archive-retired",
-    "report-retired",
-}
+from scripts.lifecycle._manifest_utils import (
+    OWNERSHIP_MODES,
+    WRITE_STRATEGIES,
+    build_file_id,
+    detect_tokens_in_source,
+    is_excluded_path,
+    iter_all_files,
+    iter_source_files,
+    load_json,
+    load_optional_registry,
+    normalize_condition_expression,
+    normalize_relpath,
+    sha256_file,
+    target_for_entry,
+    write_manifest,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -40,57 +37,6 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def load_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def normalize_relpath(path: Path) -> str:
-    return path.as_posix()
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return f"sha256:{digest.hexdigest()}"
-
-
-def detect_tokens_in_source(path: Path, token_rules: list[dict]) -> list[str]:
-    if not token_rules:
-        return []
-
-    text = path.read_text(encoding="utf-8")
-    matched_tokens = [rule["token"] for rule in token_rules if rule["token"] in text]
-    return sorted(set(matched_tokens))
-
-
-def build_file_id(surface_name: str, relative_path: Path) -> str:
-    raw = normalize_relpath(relative_path)
-    if raw == ".":
-        return surface_name
-    return f"{surface_name}.{raw.replace('/', '.')}"
-
-
-def iter_source_files(base_path: Path, source_kind: str) -> Iterable[tuple[Path, Path]]:
-    if source_kind == "file":
-        if base_path.is_file():
-            yield base_path, Path(base_path.name)
-        return
-
-    if not base_path.is_dir():
-        return
-
-    for file_path in sorted(path for path in base_path.rglob("*") if path.is_file()):
-        yield file_path, file_path.relative_to(base_path)
-
-
-def target_for_entry(target_root: str, path_pattern: str | None, relative_path: Path, source_kind: str) -> str:
-    if source_kind == "file" and path_pattern:
-        return normalize_relpath(Path(target_root) / path_pattern)
-    return normalize_relpath(Path(target_root) / relative_path)
-
-
 def validate_policy(policy: dict) -> None:
     missing = []
     for surface_name in policy.get("canonicalSurfaces", []):
@@ -102,7 +48,6 @@ def validate_policy(policy: dict) -> None:
             missing.append(f"ownershipDefaults.{surface_name}")
         if surface_name not in policy.get("strategyDefaults", {}):
             missing.append(f"strategyDefaults.{surface_name}")
-
     if missing:
         joined = ", ".join(sorted(missing))
         raise ValueError(f"Policy is missing required surface mappings: {joined}")
@@ -112,23 +57,6 @@ def resolve_surface_base_path(package_root: Path, source_roots: dict, source_spe
     if source_spec["sourceRoot"] not in source_roots:
         raise ValueError(f"Unknown source root for surface: {source_spec['sourceRoot']}")
     return package_root / source_roots[source_spec["sourceRoot"]] / source_spec["path"]
-
-
-def iter_all_files(base_path: Path) -> Iterable[Path]:
-    for file_path in sorted(path for path in base_path.rglob("*") if path.is_file()):
-        yield file_path
-
-
-def is_excluded_path(relative_path: str, patterns: list[str]) -> bool:
-    return any(fnmatch(relative_path, pattern) for pattern in patterns)
-
-
-def normalize_condition_expression(expression: str | list[str] | None) -> list[str]:
-    if expression is None:
-        return []
-    if isinstance(expression, str):
-        return [expression]
-    return list(expression)
 
 
 def resolve_supported_ownership(surface_name: str, default_ownership: str, delivery_rules: dict) -> list[str]:
@@ -147,7 +75,6 @@ def resolve_supported_ownership(surface_name: str, default_ownership: str, deliv
 def validate_surface_sources(package_root: Path, policy: dict) -> None:
     source_roots = policy["sourceRoots"]
     surface_sources = policy["surfaceSources"]
-
     for surface_name in policy.get("canonicalSurfaces", []):
         source_spec = surface_sources[surface_name]
         base_path = resolve_surface_base_path(package_root, source_roots, source_spec)
@@ -171,11 +98,9 @@ def validate_unmanaged_sources(package_root: Path, policy: dict) -> None:
     for root_name, root_relative in source_roots.items():
         if root_name not in root_to_surfaces:
             continue
-
         root_path = package_root / root_relative
         if not root_path.exists() or not root_path.is_dir():
             continue
-
         covered_files: set[str] = set()
         for source_spec in root_to_surfaces[root_name]:
             base_path = resolve_surface_base_path(package_root, source_roots, source_spec)
@@ -184,7 +109,6 @@ def validate_unmanaged_sources(package_root: Path, policy: dict) -> None:
                 continue
             for file_path in iter_all_files(base_path):
                 covered_files.add(normalize_relpath(file_path.relative_to(package_root)))
-
         for file_path in iter_all_files(root_path):
             relative = normalize_relpath(file_path.relative_to(package_root))
             if relative in covered_files:
@@ -266,11 +190,6 @@ def generate_manifest(package_root: Path, policy: dict) -> dict:
     }
 
 
-def write_manifest(path: Path, manifest: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-
-
 def generate_catalog(policy: dict, pack_registry: dict, profile_registry: dict) -> dict:
     """Generate catalog.json from policy, pack registry, and profile registry."""
     command_categories = {
@@ -285,7 +204,6 @@ def generate_catalog(policy: dict, pack_registry: dict, profile_registry: dict) 
     }
     surface_sources = policy.get("surfaceSources", {})
     surface_layers = {name: spec.get("layer", "core") for name, spec in surface_sources.items()}
-
     packs = [pack["id"] for pack in pack_registry.get("packs", [])]
     profiles = [profile["id"] for profile in profile_registry.get("profiles", [])]
 
@@ -303,13 +221,6 @@ def generate_catalog(policy: dict, pack_registry: dict, profile_registry: dict) 
         "packs": packs,
         "profiles": profiles,
     }
-
-
-def load_optional_registry(path: Path) -> dict:
-    if not path.exists():
-        return {}
-    with path.open(encoding="utf-8") as file_handle:
-        return json.load(file_handle)
 
 
 def main() -> int:

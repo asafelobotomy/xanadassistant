@@ -13,7 +13,8 @@ I work **on** xanadassistant — building and maintaining the lifecycle engine, 
 | Path | Role |
 |------|------|
 | `xanad-assistant.py` | Root entry point (thin wrapper) |
-| `scripts/lifecycle/xanad_assistant.py` | Single-file lifecycle engine (~2800 lines) |
+| `scripts/lifecycle/xanad_assistant.py` | Thin dispatcher; re-exports all public symbols |
+| `scripts/lifecycle/_xanad/` | Lifecycle engine package (~15 submodules, each ≤250 lines) |
 | `template/setup/install-policy.json` | Source of truth for what gets installed |
 | `template/setup/install-manifest.json` | **Generated** — never edit by hand; run `python3 scripts/generate.py` |
 | `template/setup/catalog.json` | **Generated** — never edit by hand |
@@ -30,6 +31,7 @@ I work **on** xanadassistant — building and maintaining the lifecycle engine, 
 | Task | Command |
 |------|---------|
 | Run tests | `python3 -m unittest discover -s tests -p 'test_*.py'` |
+| LOC gate | `python3 scripts/check_loc.py` |
 | Regenerate manifest + catalog | `python3 scripts/generate.py` |
 | Freshness check | `python3 -m scripts.lifecycle.check_manifest_freshness --package-root . --policy template/setup/install-policy.json --manifest template/setup/install-manifest.json --catalog template/setup/catalog.json` |
 | Inspect (this workspace) | `python3 xanad-assistant.py inspect --workspace . --package-root . --json` |
