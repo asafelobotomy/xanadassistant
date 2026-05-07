@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -26,6 +27,11 @@ DEFAULT_LOCK_SCHEMA_PATH = Path("template/setup/xanad-assistant-lock.schema.json
 DEFAULT_PACK_REGISTRY_PATH = Path("template/setup/pack-registry.json")
 DEFAULT_PROFILE_REGISTRY_PATH = Path("template/setup/profile-registry.json")
 DEFAULT_CATALOG_PATH = Path("template/setup/catalog.json")
+DEFAULT_CACHE_ROOT = Path.home() / ".xanad-assistant" / "pkg-cache"
+
+# Module-level state set by main() after source resolution.
+_session_source_info: dict | None = None
+_log_file = None  # Opened file handle when --log-file is provided.
 
 
 class LifecycleCommandError(Exception):
@@ -39,7 +45,7 @@ class LifecycleCommandError(Exception):
 
 def add_common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--workspace", required=True, help="Consumer repository to inspect or modify.")
-    parser.add_argument("--package-root", required=True, help="Local xanad-assistant package checkout.")
+    parser.add_argument("--package-root", default=None, help="Local xanad-assistant package checkout.")
     parser.add_argument("--source", help="Package source identifier.")
     parser.add_argument("--version", help="Requested release version.")
     parser.add_argument("--ref", help="Requested source ref.")
@@ -99,7 +105,172 @@ def resolve_package_root(path_value: str) -> Path:
     return package_root
 
 
+def get_cache_root() -> Path:
+    """Return the package cache root, honouring the XANAD_PKG_CACHE env override."""
+    env_cache = os.environ.get("XANAD_PKG_CACHE")
+    if env_cache:
+        return Path(env_cache).resolve()
+    return DEFAULT_CACHE_ROOT
+
+
+def parse_github_source(source: str) -> tuple[str, str]:
+    """Parse 'github:owner/repo' into (owner, repo), raising on malformed input."""
+    if not source.startswith("github:"):
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"Unsupported source scheme: {source!r}. Expected format: 'github:owner/repo'.",
+            5,
+        )
+    repo_part = source[len("github:"):]
+    owner, sep, repo = repo_part.partition("/")
+    if not sep or not owner or not repo or "/" in repo:
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"Invalid GitHub source: {source!r}. Expected exactly 'github:owner/repo'.",
+            5,
+        )
+    safe_pattern = re.compile(r"^[A-Za-z0-9._-]+$")
+    if not safe_pattern.match(owner) or not safe_pattern.match(repo):
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"GitHub owner or repo contains invalid characters in: {source!r}.",
+            5,
+        )
+    return owner, repo
+
+
+def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:
+    """Download a GitHub release tarball to the cache and return the extracted path."""
+    import tarfile as _tarfile
+    import tempfile as _tempfile
+    import urllib.request as _urllib_request
+
+    safe_version = re.sub(r"[^A-Za-z0-9._-]", "-", version)
+    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"release-{safe_version}"
+    sentinel = cache_dir / ".complete"
+    if sentinel.exists():
+        return cache_dir
+
+    url = f"https://github.com/{owner}/{repo}/archive/refs/tags/{version}.tar.gz"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    tmp_path: Path | None = None
+    try:
+        with _tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+        req = _urllib_request.Request(url, headers={"User-Agent": "xanad-assistant/0.1"})
+        with _urllib_request.urlopen(req, timeout=60) as response:
+            tmp_path.write_bytes(response.read())
+        with _tarfile.open(tmp_path, "r:gz") as tar:
+            for member in tar.getmembers():
+                parts = Path(member.name).parts
+                if len(parts) < 2:
+                    continue
+                rel_path = Path(*parts[1:])
+                # Prevent path-traversal attacks in tarballs.
+                if ".." in rel_path.parts or rel_path.is_absolute():
+                    continue
+                dest = cache_dir / rel_path
+                if member.isdir():
+                    dest.mkdir(parents=True, exist_ok=True)
+                elif member.isfile():
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    file_obj = tar.extractfile(member)
+                    if file_obj is not None:
+                        dest.write_bytes(file_obj.read())
+        sentinel.write_text("ok\n", encoding="utf-8")
+    except LifecycleCommandError:
+        raise
+    except Exception as exc:
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"Failed to download GitHub release {owner}/{repo}@{version}: {exc}",
+            5,
+            {"url": url, "version": version, "error": str(exc)},
+        ) from exc
+    finally:
+        if tmp_path is not None and tmp_path.exists():
+            tmp_path.unlink(missing_ok=True)
+    return cache_dir
+
+
+def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:
+    """Clone or update a GitHub repo at a specific ref to the cache and return the path."""
+    safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)
+    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{safe_ref}"
+    clone_url = f"https://github.com/{owner}/{repo}.git"
+    try:
+        if (cache_dir / ".git").exists():
+            subprocess.run(
+                ["git", "-C", str(cache_dir), "fetch", "--depth", "1", "origin", ref],
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(cache_dir), "checkout", "FETCH_HEAD"],
+                check=True,
+                capture_output=True,
+            )
+        else:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            subprocess.run(
+                ["git", "clone", "--depth", "1", "--branch", ref, clone_url, str(cache_dir)],
+                check=True,
+                capture_output=True,
+            )
+    except subprocess.CalledProcessError as exc:
+        stderr_text = exc.stderr.decode(errors="replace").strip() if exc.stderr else ""
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"Failed to resolve GitHub ref {owner}/{repo}@{ref}: {stderr_text}",
+            5,
+            {"url": clone_url, "ref": ref},
+        ) from exc
+    return cache_dir
+
+
+def resolve_effective_package_root(
+    package_root_arg: str | None,
+    source_arg: str | None,
+    version_arg: str | None,
+    ref_arg: str | None,
+) -> tuple[Path, dict]:
+    """Resolve the effective package root from CLI args, returning (path, source_info)."""
+    if package_root_arg is not None:
+        pkg_root = resolve_package_root(package_root_arg)
+        return pkg_root, {"kind": "package-root", "packageRoot": str(pkg_root)}
+
+    if source_arg is None:
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            "Either --package-root or --source must be provided.",
+            8,
+        )
+
+    owner, repo = parse_github_source(source_arg)
+    cache_root = get_cache_root()
+
+    if version_arg is not None:
+        pkg_root = resolve_github_release(owner, repo, version_arg, cache_root)
+        return pkg_root, {
+            "kind": "github-release",
+            "source": source_arg,
+            "version": version_arg,
+            "packageRoot": str(pkg_root),
+        }
+
+    resolved_ref = ref_arg if ref_arg is not None else "main"
+    pkg_root = resolve_github_ref(owner, repo, resolved_ref, cache_root)
+    return pkg_root, {
+        "kind": "github-ref",
+        "source": source_arg,
+        "ref": resolved_ref,
+        "packageRoot": str(pkg_root),
+    }
+
+
 def build_source_summary(package_root: Path) -> dict:
+    if _session_source_info is not None:
+        return dict(_session_source_info)
     return {
         "kind": "package-root",
         "packageRoot": str(package_root),
@@ -269,12 +440,69 @@ def parse_legacy_version_file(workspace: Path) -> dict:
     }
 
 
+_LOCKFILE_REQUIRED_FIELDS = frozenset({"schemaVersion", "package", "manifest", "timestamps", "selectedPacks", "files"})
+
+
+def _lockfile_needs_migration(data: dict) -> bool:
+    """Return True when a valid-JSON lockfile is missing required 0.1.0 schema fields."""
+    if not isinstance(data, dict):
+        return False
+    missing = _LOCKFILE_REQUIRED_FIELDS - data.keys()
+    if missing:
+        return True
+    # manifest block must have schemaVersion and hash
+    manifest_block = data.get("manifest")
+    if not isinstance(manifest_block, dict):
+        return True
+    if "schemaVersion" not in manifest_block or "hash" not in manifest_block:
+        return True
+    # package block must have name
+    package_block = data.get("package")
+    if not isinstance(package_block, dict) or "name" not in package_block:
+        return True
+    return False
+
+
+def migrate_lockfile_shape(data: dict) -> dict:
+    """Return a copy of *data* with missing required fields filled with safe defaults.
+
+    This is a best-effort structural repair.  The resulting lockfile passes schema
+    validation for required fields, but the caller is expected to run a full repair
+    to replace it with a freshly-generated lockfile.
+    """
+    migrated = dict(data)
+    migrated.setdefault("schemaVersion", "0.1.0")
+    if not isinstance(migrated.get("package"), dict) or "name" not in migrated.get("package", {}):
+        migrated["package"] = {"name": "xanad-assistant"}
+    manifest_block = migrated.get("manifest")
+    if not isinstance(manifest_block, dict):
+        migrated["manifest"] = {"schemaVersion": "0.1.0", "hash": "sha256:unknown"}
+    else:
+        manifest_block = dict(manifest_block)
+        manifest_block.setdefault("schemaVersion", "0.1.0")
+        manifest_block.setdefault("hash", "sha256:unknown")
+        migrated["manifest"] = manifest_block
+    if not isinstance(migrated.get("timestamps"), dict):
+        migrated["timestamps"] = {
+            "appliedAt": "1970-01-01T00:00:00Z",
+            "updatedAt": "1970-01-01T00:00:00Z",
+        }
+    if not isinstance(migrated.get("selectedPacks"), list):
+        migrated["selectedPacks"] = []
+    if not isinstance(migrated.get("files"), list):
+        migrated["files"] = []
+    migrated.setdefault("unknownValues", {})
+    migrated.setdefault("skippedManagedFiles", [])
+    return migrated
+
+
 def parse_lockfile_state(workspace: Path) -> dict:
     lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
     if not lockfile_path.exists():
         return {
             "present": False,
             "malformed": False,
+            "needsMigration": False,
             "path": str(lockfile_path),
             "data": None,
             "selectedPacks": [],
@@ -291,6 +519,7 @@ def parse_lockfile_state(workspace: Path) -> dict:
         return {
             "present": True,
             "malformed": True,
+            "needsMigration": False,
             "path": str(lockfile_path),
             "data": None,
             "selectedPacks": [],
@@ -301,9 +530,14 @@ def parse_lockfile_state(workspace: Path) -> dict:
             "files": [],
         }
 
+    needs_migration = _lockfile_needs_migration(data)
+    if needs_migration:
+        data = migrate_lockfile_shape(data)
+
     return {
         "present": True,
         "malformed": False,
+        "needsMigration": needs_migration,
         "path": str(lockfile_path),
         "data": data,
         "selectedPacks": data.get("selectedPacks", []),
@@ -320,6 +554,7 @@ def read_lockfile_status(workspace: Path) -> dict:
     return {
         "present": lockfile_state["present"],
         "malformed": lockfile_state["malformed"],
+        "needsMigration": lockfile_state.get("needsMigration", False),
     }
 
 
@@ -400,7 +635,11 @@ def parse_condition_literal(value: str) -> object:
 def condition_matches(condition: str, resolved_answers: dict) -> bool:
     if "=" in condition:
         condition_id, expected_value = condition.split("=", 1)
-        return resolved_answers.get(condition_id) == parse_condition_literal(expected_value)
+        actual = resolved_answers.get(condition_id)
+        parsed = parse_condition_literal(expected_value)
+        if isinstance(actual, list):
+            return parsed in actual
+        return actual == parsed
     return bool(resolved_answers.get(condition))
 
 
@@ -598,7 +837,11 @@ def build_backup_plan(policy: dict, actions: list[dict], backup_required: bool) 
                     "backupPath": f"{backup_root}/{action['target']}",
                 }
             )
-        elif action["action"] == "archive-retired" and archive_root is not None:
+        elif (
+            action["action"] == "archive-retired"
+            and action.get("strategy", "archive-retired") != "report-retired"
+            and archive_root is not None
+        ):
             archive_targets.append(
                 {
                     "target": action["target"],
@@ -617,7 +860,9 @@ def build_backup_plan(policy: dict, actions: list[dict], backup_required: bool) 
 
 def derive_effective_plan_defaults(policy: dict, metadata: dict, manifest: dict | None, lockfile_state: dict) -> tuple[dict, dict]:
     questions = build_interview_questions(policy, metadata, "setup")
+    question_ids = {q["id"] for q in questions}
     seeded_answers = seed_answers_from_install_state("update", questions, lockfile_state, {})
+    seeded_answers = seed_answers_from_profile(metadata.get("profileRegistry") or {}, seeded_answers, question_ids)
     resolved_answers, _ = resolve_question_answers(questions, seeded_answers)
     resolved_answers = normalize_plan_answers(policy, resolved_answers)
     ownership_by_surface = resolve_ownership_by_surface(policy, manifest, lockfile_state, resolved_answers)
@@ -652,6 +897,31 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
                 "details": {"path": artifacts["manifest"]["path"]},
             }
         )
+
+    # Stale-version detection: warn when the installed lockfile's manifest hash
+    # differs from the currently resolved package's manifest hash.
+    if (
+        install_state == "installed"
+        and not lockfile_state.get("malformed")
+        and manifest is not None
+    ):
+        installed_manifest_hash = lockfile_state.get("data", {}).get("manifest", {}).get("hash")
+        if installed_manifest_hash:
+            current_manifest_hash = sha256_json(manifest)
+            if current_manifest_hash != installed_manifest_hash:
+                warnings.append(
+                    {
+                        "code": "package_version_changed",
+                        "message": (
+                            "The resolved package manifest differs from the installed lockfile. "
+                            "Run 'update' to apply the latest package version."
+                        ),
+                        "details": {
+                            "installedHash": installed_manifest_hash,
+                            "currentHash": current_manifest_hash,
+                        },
+                    }
+                )
 
     return {
         "policy": policy,
@@ -776,7 +1046,8 @@ def classify_manifest_entries(workspace: Path, manifest: dict | None) -> tuple[d
 
     for retired in manifest.get("retiredFiles", []):
         retired_target = retired.get("target")
-        if retired_target and (workspace / retired_target).exists():
+        retired_action = retired.get("action", "archive-retired")
+        if retired_target and (workspace / retired_target).exists() and retired_action != "report-retired":
             counts["retired"] += 1
             entries.append(
                 {
@@ -1221,6 +1492,17 @@ def build_setup_plan_actions(
         target_path = workspace / target
         if not target_path.exists():
             action = "add"
+        elif entry["strategy"] == "copy-if-missing":
+            skipped_actions.append(
+                {
+                    "id": entry["id"],
+                    "surface": entry["surface"],
+                    "target": entry["target"],
+                    "reason": "copy-if-missing-present",
+                    "ownershipMode": ownership_mode,
+                }
+            )
+            continue
         else:
             if force_reinstall:
                 action = "merge" if entry["strategy"] in merge_strategies else "replace"
@@ -1361,6 +1643,28 @@ def sha256_json(data: object) -> str:
     return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
 
 
+def verify_manifest_integrity(package_root: Path, lockfile_state: dict) -> tuple[bool, str | None]:
+    """Return (ok, reason) comparing the current package manifest hash with the lockfile."""
+    if not lockfile_state.get("present") or lockfile_state.get("malformed"):
+        return True, None
+    lockfile_data = lockfile_state.get("data")
+    if not isinstance(lockfile_data, dict):
+        return True, None
+    recorded_hash = lockfile_data.get("manifest", {}).get("hash")
+    if not recorded_hash:
+        return True, None
+    policy = load_optional_json(package_root / DEFAULT_POLICY_PATH)
+    if policy is None:
+        return True, None
+    manifest = load_manifest(package_root, policy)
+    if manifest is None:
+        return False, "Manifest not found at resolved package root."
+    current_hash = sha256_json(manifest)
+    if current_hash != recorded_hash:
+        return False, f"Manifest hash mismatch: installed={recorded_hash!r}, current={current_hash!r}"
+    return True, None
+
+
 def seed_answers_from_install_state(mode: str, questions: list[dict], lockfile_state: dict, answers: dict) -> dict:
     if mode not in {"update", "repair", "factory-restore"}:
         return dict(answers)
@@ -1382,6 +1686,37 @@ def seed_answers_from_install_state(mode: str, questions: list[dict], lockfile_s
     return seeded_answers
 
 
+def seed_answers_from_profile(profile_registry: dict, answers: dict, question_ids: set[str] | None = None) -> dict:
+    """Apply a selected profile's defaultPacks and setupAnswerDefaults into answers for any key not already set.
+
+    When question_ids is provided only keys that are valid question IDs are injected;
+    non-question keys (e.g. reportDensity) are silently skipped so they cannot
+    trigger the unknown-id check inside resolve_question_answers.
+    """
+    selected_profile = answers.get("profile.selected")
+    if not selected_profile:
+        return answers
+
+    profiles = {profile["id"]: profile for profile in profile_registry.get("profiles", [])}
+    profile = profiles.get(selected_profile)
+    if profile is None:
+        return answers
+
+    seeded = dict(answers)
+
+    for key, value in profile.get("setupAnswerDefaults", {}).items():
+        if question_ids is not None and key not in question_ids:
+            continue
+        if key not in seeded:
+            seeded[key] = value
+
+    default_packs = profile.get("defaultPacks", [])
+    if default_packs and "packs.selected" not in seeded:
+        seeded["packs.selected"] = list(default_packs)
+
+    return seeded
+
+
 def determine_repair_reasons(context: dict) -> list[str]:
     reasons: list[str] = []
     if context["installState"] == "legacy-version-only":
@@ -1390,7 +1725,30 @@ def determine_repair_reasons(context: dict) -> list[str]:
         reasons.append("malformed-legacy-version")
     if context["lockfileState"]["malformed"]:
         reasons.append("malformed-lockfile")
+    if context["lockfileState"].get("needsMigration"):
+        reasons.append("schema-migration-required")
+    # Incomplete install: lockfile present but managed files are missing.
+    if context["installState"] == "installed" and not context["lockfileState"].get("malformed"):
+        manifest_with_status = context.get("manifestWithStatus")
+        if manifest_with_status is not None:
+            for entry in manifest_with_status.get("managedFiles", []):
+                if entry.get("status") == "missing" and "skipReason" not in entry:
+                    reasons.append("incomplete-install")
+                    break
     return reasons
+
+
+def _build_lockfile_package_info() -> dict:
+    """Return the lockfile package dict, populated from session source info when available."""
+    info: dict = {"name": "xanad-assistant"}
+    if _session_source_info is not None:
+        if "version" in _session_source_info:
+            info["version"] = _session_source_info["version"]
+        if "source" in _session_source_info:
+            info["source"] = _session_source_info["source"]
+        if "ref" in _session_source_info:
+            info["ref"] = _session_source_info["ref"]
+    return info
 
 
 def build_planned_lockfile(
@@ -1449,9 +1807,7 @@ def build_planned_lockfile(
 
     lockfile_contents = {
         "schemaVersion": "0.1.0",
-        "package": {
-            "name": "xanad-assistant",
-        },
+        "package": _build_lockfile_package_info(),
         "manifest": {
             "schemaVersion": manifest.get("schemaVersion", "0.1.0"),
             "hash": sha256_json(manifest),
@@ -1506,7 +1862,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
         if not repair_reasons:
             raise LifecycleCommandError(
                 "inspection_failure",
-                "Repair planning requires legacy or malformed managed state.",
+                "Repair planning requires legacy, malformed, or incomplete managed state.",
                 5,
                 {"installState": context["installState"]},
             )
@@ -1521,7 +1877,9 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
         )
 
     questions = build_interview_questions(context["policy"], context["metadata"], mode)
+    question_ids = {q["id"] for q in questions}
     answers = seed_answers_from_install_state(mode, questions, context["lockfileState"], load_answers(answers_path))
+    answers = seed_answers_from_profile(context["metadata"].get("profileRegistry") or {}, answers, question_ids)
     resolved_answers, unresolved = resolve_question_answers(questions, answers)
     resolved_answers = normalize_plan_answers(context["policy"], resolved_answers)
     if non_interactive and unresolved:
@@ -1709,7 +2067,7 @@ def apply_chmod_rule(target_path: Path, chmod_rule: str) -> None:
     target_path.chmod(current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
-def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict) -> dict:
+def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, dry_run: bool = False) -> dict:
     manifest = load_manifest(package_root, load_json(package_root / DEFAULT_POLICY_PATH)) or {"managedFiles": []}
     manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
     actions = plan_payload["result"].get("actions", [])
@@ -1717,6 +2075,26 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict) 
     planned_lockfile = json.loads(json.dumps(plan_payload["result"]["plannedLockfile"]))
     factory_restore = bool(plan_payload["result"].get("factoryRestore", False))
     apply_timestamp, path_timestamp = generate_apply_timestamps()
+
+    if dry_run:
+        plan_writes = plan_payload["result"].get("writes", {})
+        skipped_count = len(plan_payload["result"].get("skippedActions", []))
+        return {
+            "backup": {"created": False, "path": None},
+            "writes": {
+                "added": plan_writes.get("add", 0),
+                "replaced": plan_writes.get("replace", 0),
+                "merged": plan_writes.get("merge", 0),
+                "retiredArchived": plan_writes.get("archiveRetired", 0),
+                "retiredReported": 0,
+                "skipped": skipped_count,
+            },
+            "retired": [],
+            "lockfile": {"written": False, "path": planned_lockfile["path"]},
+            "summary": {"written": False, "path": ".github/copilot-version.md"},
+            "validation": {"status": "skipped"},
+            "dryRun": True,
+        }
 
     backup_root = materialize_apply_timestamp(backup_plan.get("root"), path_timestamp)
     if backup_root is not None:
@@ -1745,21 +2123,44 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict) 
             if source_path.exists():
                 source_path.unlink()
 
+    archive_targets_map = {
+        entry["target"]: entry["archivePath"]
+        for entry in backup_plan.get("archiveTargets", [])
+    }
+    retired_records: list[dict] = []
+
     writes = {
         "added": 0,
         "replaced": 0,
         "merged": 0,
+        "retiredArchived": 0,
+        "retiredReported": 0,
         "skipped": len(plan_payload["result"].get("skippedActions", [])),
     }
 
     for action in actions:
         if action["action"] == "archive-retired":
-            raise LifecycleCommandError(
-                "apply_failure",
-                "Retired file handling is not implemented in the current apply slice.",
-                9,
-                {"target": action["target"], "action": action["action"]},
-            )
+            target_path = workspace / action["target"]
+            if action.get("strategy", "archive-retired") == "report-retired":
+                retired_records.append({"target": action["target"], "action": "reported"})
+                writes["retiredReported"] += 1
+            else:
+                archive_path_str = archive_targets_map.get(action["target"])
+                if archive_path_str is not None:
+                    archive_dest = workspace / archive_path_str
+                    archive_dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(target_path), archive_dest)
+                elif target_path.exists():
+                    target_path.unlink()
+                retired_records.append(
+                    {
+                        "target": action["target"],
+                        "action": "archived",
+                        "archivePath": archive_path_str,
+                    }
+                )
+                writes["retiredArchived"] += 1
+            continue
         if action["action"] == "merge" and action["strategy"] not in {"merge-json-object", "preserve-marked-markdown-blocks"}:
             raise LifecycleCommandError(
                 "apply_failure",
@@ -1807,6 +2208,10 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict) 
         )
 
     lockfile_path = workspace / planned_lockfile["path"]
+    if backup_root is not None and lockfile_path.exists():
+        lockfile_backup = workspace / backup_root / planned_lockfile["path"]
+        lockfile_backup.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(lockfile_path, lockfile_backup)
     lockfile_path.parent.mkdir(parents=True, exist_ok=True)
     lockfile_path.write_text(json.dumps(planned_lockfile["contents"], indent=2) + "\n", encoding="utf-8")
 
@@ -1835,7 +2240,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict) 
             "path": backup_root,
         },
         "writes": writes,
-        "retired": [],
+        "retired": retired_records,
         "lockfile": {
             "written": True,
             "path": planned_lockfile["path"],
@@ -1857,9 +2262,10 @@ def build_execution_result(
     package_root: Path,
     answers_path: str | None,
     non_interactive: bool,
+    dry_run: bool = False,
 ) -> dict:
     plan_payload = build_plan_result(workspace, package_root, mode, answers_path, non_interactive)
-    apply_result = execute_apply_plan(workspace, package_root, plan_payload)
+    apply_result = execute_apply_plan(workspace, package_root, plan_payload, dry_run=dry_run)
 
     return {
         "command": command,
@@ -1873,8 +2279,8 @@ def build_execution_result(
     }
 
 
-def build_apply_result(workspace: Path, package_root: Path, answers_path: str | None, non_interactive: bool) -> dict:
-    return build_execution_result("apply", "setup", workspace, package_root, answers_path, non_interactive)
+def build_apply_result(workspace: Path, package_root: Path, answers_path: str | None, non_interactive: bool, dry_run: bool = False) -> dict:
+    return build_execution_result("apply", "setup", workspace, package_root, answers_path, non_interactive, dry_run=dry_run)
 
 
 def emit_json(payload: dict) -> None:
@@ -2055,7 +2461,6 @@ def emit_json_lines(payload: dict) -> None:
                 "code": warning["code"],
                 "message": warning["message"],
                 "details": warning.get("details", {}),
-                "backupPlan": payload["result"]["backupPlan"],
             },
         )
 
@@ -2064,56 +2469,103 @@ def emit_json_lines(payload: dict) -> None:
         sys.stdout.write(json.dumps(event) + "\n")
 
 
+# ---------------------------------------------------------------------------
+# Agent-visible progress helpers
+# ---------------------------------------------------------------------------
+
+
+def _color_enabled() -> bool:
+    """Return True when ANSI color output is appropriate."""
+    if os.environ.get("NO_COLOR"):
+        return False
+    if os.environ.get("FORCE_COLOR"):
+        return True
+    return sys.stderr.isatty()
+
+
+def _ansi(code: str, text: str) -> str:
+    """Wrap text in an ANSI escape sequence when color is enabled."""
+    if not _color_enabled():
+        return text
+    return f"\033[{code}m{text}\033[0m"
+
+
+def _phase(label: str) -> str:
+    return _ansi("36", label)  # cyan
+
+
+def _ok(text: str) -> str:
+    return _ansi("32", text)  # green
+
+
+def _warn(text: str) -> str:
+    return _ansi("33", text)  # yellow
+
+
+def _log_progress(message: str) -> None:
+    """Write a line to the optional log file when --log-file is active."""
+    if _log_file is not None:
+        _log_file.write(message + "\n")
+        _log_file.flush()
+
+
 def emit_agent_progress(payload: dict) -> None:
-    print("xanad-assistant", file=sys.stderr)
+    def out(msg: str) -> None:
+        print(msg, file=sys.stderr)
+        _log_progress(msg)
+
+    out("xanad-assistant")
     if payload["command"] == "inspect":
-        print("Preflight", file=sys.stderr)
-        print("  Package contracts loaded", file=sys.stderr)
-        print(f"  Install state: {payload['result']['installState']}", file=sys.stderr)
-        print(
-            f"  Manifest entries: {payload['result']['manifestSummary']['declared']}",
-            file=sys.stderr,
-        )
+        out(_phase("Preflight"))
+        out("  Package contracts loaded")
+        out(f"  Install state: {payload['result']['installState']}")
+        out(f"  Manifest entries: {payload['result']['manifestSummary']['declared']}")
+        if payload.get("warnings"):
+            out(_warn(f"  Warnings: {len(payload['warnings'])}"))
         return
 
     if payload["command"] == "check":
-        print("Preflight", file=sys.stderr)
-        print(f"  Check status: {payload['status']}", file=sys.stderr)
-        print(f"  Missing targets: {payload['result']['summary']['missing']}", file=sys.stderr)
+        out(_phase("Preflight"))
+        check_status = payload["status"]
+        out(f"  Check status: {_ok(check_status) if check_status == 'clean' else _warn(check_status)}")
+        out(f"  Missing targets: {payload['result']['summary']['missing']}")
         return
 
     if payload["command"] == "interview":
-        print("Interview", file=sys.stderr)
-        print(f"  Questions emitted: {payload['result']['questionCount']}", file=sys.stderr)
+        out(_phase("Interview"))
+        out(f"  Questions emitted: {payload['result']['questionCount']}")
         return
 
     if payload["command"] == "plan":
-        print("Preflight", file=sys.stderr)
-        print(f"  Install state: {payload['result']['installState']}", file=sys.stderr)
-        print("Plan", file=sys.stderr)
-        print(
-            f"  Planned writes: {sum(payload['result']['writes'].values())}",
-            file=sys.stderr,
-        )
+        out(_phase("Preflight"))
+        out(f"  Install state: {payload['result']['installState']}")
+        out(_phase("Plan"))
+        out(f"  Planned writes: {sum(payload['result']['writes'].values())}")
         if payload["result"]["conflicts"]:
-            print(
-                f"  Conflict classes: {len(payload['result']['conflicts'])}",
-                file=sys.stderr,
-            )
+            out(_warn(f"  Conflict classes: {len(payload['result']['conflicts'])}"))
         if payload["result"]["approvalRequired"]:
-            print("  Waiting on Copilot", file=sys.stderr)
+            out(_warn("  Waiting on Copilot"))
+        out(_phase("Receipt"))
+        out(f"  Status: {payload['status']}")
         return
 
     if payload["command"] in {"apply", "update", "repair", "factory-restore"}:
-        print("Apply", file=sys.stderr)
-        print(f"  Files added: {payload['result']['writes']['added']}", file=sys.stderr)
-        print(f"  Files replaced: {payload['result']['writes']['replaced']}", file=sys.stderr)
-        print(f"  Summary written: {payload['result']['summary']['path']}", file=sys.stderr)
-        print("Validate", file=sys.stderr)
-        print(f"  Validation: {payload['result']['validation']['status']}", file=sys.stderr)
+        out(_phase("Apply"))
+        out(f"  Files added: {payload['result']['writes']['added']}")
+        out(f"  Files replaced: {payload['result']['writes']['replaced']}")
+        out(f"  Summary written: {payload['result']['summary']['path']}")
+        if payload["result"].get("dryRun"):
+            out(_warn("  Dry run: no files were written."))
+        out(_phase("Validate"))
+        validation_status = payload["result"]["validation"]["status"]
+        out(
+            f"  Validation: {_ok(validation_status) if validation_status == 'passed' else _warn(validation_status)}"
+        )
+        out(_phase("Receipt"))
+        out(f"  Status: {_ok(payload['status']) if payload['status'] == 'ok' else _warn(payload['status'])}")
         return
 
-    print("Preflight", file=sys.stderr)
+    out(_phase("Preflight"))
 
 
 def emit_payload(payload: dict, ui_mode: str, use_json_lines: bool) -> None:
@@ -2146,12 +2598,49 @@ def build_not_implemented_payload(command: str, workspace: Path, package_root: P
 
 
 def main(argv: list[str] | None = None) -> int:
+    global _session_source_info, _log_file
+
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    log_file_path = getattr(args, "log_file", None)
+    if log_file_path:
+        _log_file = Path(log_file_path).open("w", encoding="utf-8")
+
+    try:
+        return _run_lifecycle(args)
+    finally:
+        if _log_file is not None:
+            _log_file.close()
+            _log_file = None
+
+
+def _run_lifecycle(args: argparse.Namespace) -> int:
+    """Inner lifecycle dispatch — separated so main() can close _log_file on exit."""
+    global _session_source_info
+
     workspace = resolve_workspace(args.workspace)
-    package_root = resolve_package_root(args.package_root)
     use_json_lines = args.json_lines
+
+    try:
+        package_root, _session_source_info = resolve_effective_package_root(
+            getattr(args, "package_root", None),
+            getattr(args, "source", None),
+            getattr(args, "version", None),
+            getattr(args, "ref", None),
+        )
+    except LifecycleCommandError as error:
+        payload, exit_code = build_error_payload(
+            getattr(args, "command", "unknown"),
+            workspace,
+            Path("."),
+            error.code,
+            error.message,
+            error.exit_code,
+            details=error.details,
+        )
+        emit_payload(payload, args.ui, use_json_lines)
+        return exit_code
 
     if args.command == "inspect":
         payload = build_inspect_result(workspace, package_root)
@@ -2192,7 +2681,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "apply":
         try:
-            payload = build_apply_result(workspace, package_root, args.answers, args.non_interactive)
+            payload = build_apply_result(workspace, package_root, args.answers, args.non_interactive, dry_run=args.dry_run)
         except LifecycleCommandError as error:
             payload, exit_code = build_error_payload(
                 "apply",
@@ -2218,7 +2707,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "update":
         try:
-            payload = build_execution_result("update", "update", workspace, package_root, args.answers, args.non_interactive)
+            payload = build_execution_result("update", "update", workspace, package_root, args.answers, args.non_interactive, dry_run=args.dry_run)
         except LifecycleCommandError as error:
             payload, exit_code = build_error_payload(
                 "update",
@@ -2244,7 +2733,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "repair":
         try:
-            payload = build_execution_result("repair", "repair", workspace, package_root, args.answers, args.non_interactive)
+            payload = build_execution_result("repair", "repair", workspace, package_root, args.answers, args.non_interactive, dry_run=args.dry_run)
         except LifecycleCommandError as error:
             payload, exit_code = build_error_payload(
                 "repair",
@@ -2277,6 +2766,7 @@ def main(argv: list[str] | None = None) -> int:
                 package_root,
                 args.answers,
                 args.non_interactive,
+                dry_run=args.dry_run,
             )
         except LifecycleCommandError as error:
             payload, exit_code = build_error_payload(

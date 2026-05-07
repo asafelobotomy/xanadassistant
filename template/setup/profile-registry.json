@@ -21,7 +21,7 @@
       "id": "lean",
       "name": "Lean",
       "summary": "Concise output with lighter receipts and summaries.",
-      "status": "planned",
+      "status": "active",
       "responseDensity": "concise",
       "defaultPacks": [
         "lean"

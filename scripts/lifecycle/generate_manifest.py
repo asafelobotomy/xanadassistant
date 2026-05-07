@@ -271,6 +271,47 @@ def write_manifest(path: Path, manifest: dict) -> None:
     path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
+def generate_catalog(policy: dict, pack_registry: dict, profile_registry: dict) -> dict:
+    """Generate catalog.json from policy, pack registry, and profile registry."""
+    command_categories = {
+        "inspect": "read-only",
+        "interview": "read-only",
+        "check": "read-only",
+        "plan": "planning",
+        "apply": "write",
+        "update": "write",
+        "repair": "write",
+        "factory-restore": "write",
+    }
+    surface_sources = policy.get("surfaceSources", {})
+    surface_layers = {name: spec.get("layer", "core") for name, spec in surface_sources.items()}
+
+    packs = [pack["id"] for pack in pack_registry.get("packs", [])]
+    profiles = [profile["id"] for profile in profile_registry.get("profiles", [])]
+
+    return {
+        "schemaVersion": "0.1.0",
+        "generatedFrom": "policy+registries",
+        "commands": [{"id": cmd_id, "category": category} for cmd_id, category in command_categories.items()],
+        "ownershipModes": sorted(OWNERSHIP_MODES),
+        "compatibilityTargets": [
+            "copilot-format",
+            "local-package-root",
+            "json-lines-protocol",
+        ],
+        "surfaceLayers": surface_layers,
+        "packs": packs,
+        "profiles": profiles,
+    }
+
+
+def load_optional_registry(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    with path.open(encoding="utf-8") as file_handle:
+        return json.load(file_handle)
+
+
 def main() -> int:
     args = parse_args()
     package_root = Path(args.package_root).resolve()
@@ -281,6 +322,15 @@ def main() -> int:
     manifest = generate_manifest(package_root, policy)
     output_path = package_root / (manifest_out or policy.get("generationSettings", {}).get("manifestOutput", "template/setup/install-manifest.json"))
     write_manifest(output_path, manifest)
+
+    catalog_strategy = policy.get("generationSettings", {}).get("derivedArtifactStrategy", {}).get("catalog")
+    if catalog_strategy == "generated-from-policy-and-registries":
+        pack_registry = load_optional_registry(package_root / "template/setup/pack-registry.json")
+        profile_registry = load_optional_registry(package_root / "template/setup/profile-registry.json")
+        catalog = generate_catalog(policy, pack_registry, profile_registry)
+        catalog_path = package_root / "template/setup/catalog.json"
+        write_manifest(catalog_path, catalog)
+
     return 0
 
 

@@ -6,6 +6,7 @@
     "prompts",
     "agents",
     "skills",
+    "lean-skills",
     "hook-scripts",
     "mcp-config"
   ],
@@ -13,6 +14,7 @@
     "template": "template",
     "agents": "agents",
     "skills": "skills",
+    "lean-pack": "packs/lean",
     "hooks": "hooks"
   },
   "surfaceSources": {
@@ -46,6 +48,12 @@
       "kind": "directory",
       "layer": "core"
     },
+    "lean-skills": {
+      "sourceRoot": "lean-pack",
+      "path": "skills",
+      "kind": "directory",
+      "layer": "pack"
+    },
     "mcp-config": {
       "sourceRoot": "template",
       "path": "vscode/mcp.json",
@@ -71,6 +79,10 @@
       "targetRoot": ".github/skills",
       "surface": "skills"
     },
+    "lean-skills": {
+      "targetRoot": ".github/skills",
+      "surface": "skills"
+    },
     "hook-scripts": {
       "targetRoot": ".github/hooks/scripts",
       "surface": "hooks"
@@ -86,6 +98,7 @@
     "prompts": "local",
     "agents": "plugin-backed-copilot-format",
     "skills": "plugin-backed-copilot-format",
+    "lean-skills": "plugin-backed-copilot-format",
     "hook-scripts": "local",
     "mcp-config": "local"
   },
@@ -94,10 +107,14 @@
     "prompts": "token-replace",
     "agents": "replace-verbatim",
     "skills": "replace-verbatim",
+    "lean-skills": "replace-verbatim",
     "hook-scripts": "replace-verbatim",
     "mcp-config": "merge-json-object"
   },
   "requiredConditions": {
+    "lean-skills": [
+      "packs.selected=lean"
+    ],
     "hook-scripts": [
       "hooks.enabled"
     ],
@@ -141,6 +158,14 @@
         "plugin-backed-copilot-format"
       ],
       "notes": "Skills stay plugin-backed by default but can be localized when the workspace needs package-owned copies."
+    },
+    "lean-skills": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "Lean pack skills follow the same ownership model as core skills."
     }
   },
   "generationSettings": {

@@ -50,6 +50,7 @@
     "agents": "pack",
     "skills": "pack",
     "hook-scripts": "core",
+    "lean-skills": "pack",
     "mcp-config": "core"
   },
   "packs": [

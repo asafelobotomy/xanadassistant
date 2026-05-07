@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "0.1.0",
+  "package": {
+    "name": "xanad-assistant",
+    "version": "v0.0.1"
+  },
+  "manifest": {
+    "schemaVersion": "0.1.0",
+    "hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "timestamps": {
+    "appliedAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z"
+  },
+  "selectedPacks": [],
+  "profile": "balanced",
+  "ownershipBySurface": {
+    "instructions": "local",
+    "prompts": "local",
+    "agents": "plugin-backed-copilot-format",
+    "skills": "plugin-backed-copilot-format",
+    "hooks": "local",
+    "mcp": "local"
+  },
+  "setupAnswers": {
+    "profile.selected": "balanced"
+  },
+  "installMetadata": {
+    "mcpAvailable": false,
+    "mcpEnabled": false
+  },
+  "files": [
+    {
+      "target": ".github/copilot-instructions.md",
+      "strategy": "preserve-marked-markdown-blocks",
+      "ownership": "local",
+      "hash": "sha256:stale-hash-instructions"
+    },
+    {
+      "target": ".github/prompts/setup.md",
+      "strategy": "token-replace",
+      "ownership": "local",
+      "hash": "sha256:stale-hash-setup"
+    }
+  ],
+  "skippedManagedFiles": [
+    ".github/agents/lifecycle-planning.agent.md",
+    ".github/hooks/scripts/xanad-workspace-mcp.py",
+    ".github/skills/lean-output/SKILL.md",
+    ".github/skills/lifecycle-audit/SKILL.md",
+    ".vscode/mcp.json"
+  ],
+  "retiredManagedFiles": [],
+  "unknownValues": {}
+}

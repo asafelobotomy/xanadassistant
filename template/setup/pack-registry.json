@@ -28,14 +28,14 @@
       "id": "lean",
       "name": "Lean",
       "summary": "Optional terse workflow helpers and brevity-oriented defaults.",
-      "status": "planned",
+      "status": "active",
       "optional": true,
       "dependencies": [],
       "discoveryTags": [
         "brevity",
         "output"
       ],
-      "surfaces": []
+      "surfaces": ["lean-skills"]
     },
     {
       "id": "review",

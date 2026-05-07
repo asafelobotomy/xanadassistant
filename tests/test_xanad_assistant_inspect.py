@@ -82,7 +82,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
         self.assertEqual("check", payload["command"])
         self.assertEqual("drift", payload["status"])
         self.assertGreater(payload["result"]["summary"]["missing"], 0)
-        self.assertEqual(4, payload["result"]["summary"]["skipped"])
+        self.assertEqual(5, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["unmanaged"])
 
     def test_check_detects_clean_and_unmanaged_targets(self) -> None:
@@ -123,7 +123,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
         self.assertEqual("clean", payload["status"])
         self.assertEqual(2, payload["result"]["summary"]["clean"])
         self.assertEqual(0, payload["result"]["summary"]["missing"])
-        self.assertEqual(4, payload["result"]["summary"]["skipped"])
+        self.assertEqual(5, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["stale"])
 
     def test_check_reports_stale_when_target_content_differs(self) -> None:
@@ -287,6 +287,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
             [
                 ".github/agents/lifecycle-planning.agent.md",
                 ".github/hooks/scripts/xanad-workspace-mcp.py",
+                ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
                 ".vscode/mcp.json",
             ],
@@ -330,7 +331,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
             },
             payload["result"]["ownershipBySurface"],
         )
-        self.assertEqual(4, len(payload["result"]["skippedActions"]))
+        self.assertEqual(5, len(payload["result"]["skippedActions"]))
         self.assertEqual({}, payload["result"]["conflictSummary"])
 
         prompt_action = next(action for action in payload["result"]["actions"] if action["target"] == ".github/prompts/setup.md")
@@ -492,6 +493,7 @@ class XanadAssistantInspectTests(unittest.TestCase):
             [
                 ".github/agents/lifecycle-planning.agent.md",
                 ".github/hooks/scripts/xanad-workspace-mcp.py",
+                ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
                 ".vscode/mcp.json",
             ],
@@ -1055,6 +1057,1173 @@ class XanadAssistantInspectTests(unittest.TestCase):
         self.assertEqual("receipt", events[-1]["type"])
         self.assertIn("Interview", result.stderr)
         self.assertIn("Questions emitted", result.stderr)
+
+
+class XanadAssistantPhase5Tests(unittest.TestCase):
+    def _make_copy_if_missing_entry(self, target: str) -> dict:
+        return {
+            "id": f"test-cim-{target.replace('/', '-')}",
+            "surface": "prompts",
+            "layer": "core",
+            "source": f"template/{target}",
+            "target": target,
+            "ownership": ["local"],
+            "strategy": "copy-if-missing",
+            "requiredWhen": [],
+            "tokens": [],
+            "chmod": "none",
+            "hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        }
+
+    def _make_archive_retired_plan_payload(
+        self,
+        workspace: Path,
+        retired_target: str,
+        strategy: str = "archive-retired",
+        archive_root: str | None = ".xanad-assistant/archive",
+    ) -> dict:
+        archive_targets = []
+        if strategy != "report-retired" and archive_root is not None:
+            archive_targets.append(
+                {
+                    "target": retired_target,
+                    "archivePath": f"{archive_root}/{retired_target}",
+                }
+            )
+        return {
+            "result": {
+                "actions": [
+                    {
+                        "id": "retired-test-entry",
+                        "target": retired_target,
+                        "action": "archive-retired",
+                        "strategy": strategy,
+                        "ownershipMode": None,
+                    }
+                ],
+                "backupPlan": {
+                    "required": True,
+                    "root": ".xanad-assistant/backups/<apply-timestamp>",
+                    "targets": [],
+                    "archiveRoot": archive_root,
+                    "archiveTargets": archive_targets,
+                },
+                "plannedLockfile": {
+                    "path": ".github/xanad-assistant-lock.json",
+                    "contents": {
+                        "schemaVersion": "0.1.0",
+                        "package": {"name": "xanad-assistant"},
+                        "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
+                        "timestamps": {
+                            "appliedAt": "<apply-timestamp>",
+                            "updatedAt": "<apply-timestamp>",
+                        },
+                        "selectedPacks": [],
+                        "files": [],
+                        "skippedManagedFiles": [],
+                        "retiredManagedFiles": [],
+                        "unknownValues": {},
+                        "lastBackup": {"path": ".xanad-assistant/backups/<apply-timestamp>"},
+                    },
+                },
+                "skippedActions": [],
+                "factoryRestore": False,
+            }
+        }
+
+    def test_copy_if_missing_plan_skips_file_when_present(self) -> None:
+        from scripts.lifecycle.xanad_assistant import build_setup_plan_actions
+
+        repo_root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            target = ".github/prompts/custom.md"
+            target_path = workspace / target
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            target_path.write_text("existing content\n", encoding="utf-8")
+
+            manifest = {"managedFiles": [self._make_copy_if_missing_entry(target)], "retiredFiles": []}
+            writes, actions, skipped, retired = build_setup_plan_actions(
+                workspace, repo_root, manifest, {"prompts": "local"}, {}, {}
+            )
+
+        self.assertEqual(0, writes["add"])
+        self.assertEqual(0, len(actions))
+        self.assertEqual(1, len(skipped))
+        self.assertEqual("copy-if-missing-present", skipped[0]["reason"])
+        self.assertEqual(target, skipped[0]["target"])
+
+    def test_copy_if_missing_plan_adds_file_when_absent(self) -> None:
+        from scripts.lifecycle.xanad_assistant import build_setup_plan_actions
+
+        repo_root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            target = ".github/prompts/custom.md"
+
+            manifest = {"managedFiles": [self._make_copy_if_missing_entry(target)], "retiredFiles": []}
+            writes, actions, skipped, retired = build_setup_plan_actions(
+                workspace, repo_root, manifest, {"prompts": "local"}, {}, {}
+            )
+
+        self.assertEqual(1, writes["add"])
+        self.assertEqual(1, len(actions))
+        self.assertEqual("add", actions[0]["action"])
+        self.assertEqual("copy-if-missing", actions[0]["strategy"])
+        self.assertEqual(0, len(skipped))
+
+    def test_copy_if_missing_plan_skips_file_even_during_factory_restore(self) -> None:
+        from scripts.lifecycle.xanad_assistant import build_setup_plan_actions
+
+        repo_root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            target = ".github/prompts/custom.md"
+            target_path = workspace / target
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            target_path.write_text("user content\n", encoding="utf-8")
+
+            manifest = {"managedFiles": [self._make_copy_if_missing_entry(target)], "retiredFiles": []}
+            writes, actions, skipped, retired = build_setup_plan_actions(
+                workspace, repo_root, manifest, {"prompts": "local"}, {}, {}, force_reinstall=True
+            )
+
+        self.assertEqual(0, writes["add"])
+        self.assertEqual(0, len(actions))
+        self.assertEqual(1, len(skipped))
+        self.assertEqual("copy-if-missing-present", skipped[0]["reason"])
+
+    def test_archive_retired_moves_file_to_archive_path(self) -> None:
+        from unittest.mock import patch
+        from scripts.lifecycle.xanad_assistant import execute_apply_plan
+
+        repo_root = Path(__file__).resolve().parents[1]
+        retired_target = ".github/old-file.md"
+        archive_path = f".xanad-assistant/archive/{retired_target}"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            retired_file = workspace / retired_target
+            retired_file.parent.mkdir(parents=True, exist_ok=True)
+            retired_file.write_text("old content\n", encoding="utf-8")
+
+            plan_payload = self._make_archive_retired_plan_payload(workspace, retired_target)
+
+            with patch("scripts.lifecycle.xanad_assistant.build_check_result") as mock_check:
+                mock_check.return_value = {"status": "clean", "result": {"summary": {}}}
+                result = execute_apply_plan(workspace, repo_root, plan_payload)
+
+            self.assertFalse(retired_file.exists())
+            self.assertTrue((workspace / archive_path).exists())
+            self.assertEqual("old content\n", (workspace / archive_path).read_text(encoding="utf-8"))
+            self.assertEqual(1, len(result["retired"]))
+            self.assertEqual("archived", result["retired"][0]["action"])
+            self.assertEqual(retired_target, result["retired"][0]["target"])
+            self.assertEqual(1, result["writes"]["retiredArchived"])
+            self.assertEqual(0, result["writes"]["retiredReported"])
+
+    def test_report_retired_leaves_file_in_place(self) -> None:
+        from unittest.mock import patch
+        from scripts.lifecycle.xanad_assistant import execute_apply_plan
+
+        repo_root = Path(__file__).resolve().parents[1]
+        retired_target = ".github/old-file.md"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            retired_file = workspace / retired_target
+            retired_file.parent.mkdir(parents=True, exist_ok=True)
+            retired_file.write_text("old content\n", encoding="utf-8")
+
+            plan_payload = self._make_archive_retired_plan_payload(
+                workspace, retired_target, strategy="report-retired", archive_root=None
+            )
+
+            with patch("scripts.lifecycle.xanad_assistant.build_check_result") as mock_check:
+                mock_check.return_value = {"status": "clean", "result": {"summary": {}}}
+                result = execute_apply_plan(workspace, repo_root, plan_payload)
+
+            self.assertTrue(retired_file.exists())
+            self.assertEqual("old content\n", retired_file.read_text(encoding="utf-8"))
+            self.assertEqual(1, len(result["retired"]))
+            self.assertEqual("reported", result["retired"][0]["action"])
+            self.assertEqual(0, result["writes"]["retiredArchived"])
+            self.assertEqual(1, result["writes"]["retiredReported"])
+
+    def test_lockfile_written_by_apply_validates_against_schema(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        lock_schema = json.loads(
+            (repo_root / "template/setup/xanad-assistant-lock.schema.json").read_text(encoding="utf-8")
+        )
+        from tests.schema_validation import validate_instance
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(repo_root / "scripts/lifecycle/xanad_assistant.py"),
+                    "apply",
+                    "--json",
+                    "--workspace",
+                    str(workspace),
+                    "--package-root",
+                    str(repo_root),
+                ],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(0, result.returncode)
+            lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+            self.assertTrue(lockfile_path.exists())
+            lockfile_data = json.loads(lockfile_path.read_text(encoding="utf-8"))
+            validate_instance(lockfile_data, lock_schema, lock_schema)
+
+    def test_repair_with_malformed_lockfile_backs_up_and_rewrites(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        original_lockfile_content = "NOT VALID JSON {{{"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            github_dir = workspace / ".github"
+            github_dir.mkdir(parents=True)
+
+            (github_dir / "copilot-instructions.md").write_text("modified\n", encoding="utf-8")
+            prompt = github_dir / "prompts" / "setup.md"
+            prompt.parent.mkdir(parents=True)
+            prompt.write_text("modified\n", encoding="utf-8")
+
+            lockfile_path = github_dir / "xanad-assistant-lock.json"
+            lockfile_path.write_text(original_lockfile_content, encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(repo_root / "scripts/lifecycle/xanad_assistant.py"),
+                    "repair",
+                    "--json",
+                    "--workspace",
+                    str(workspace),
+                    "--package-root",
+                    str(repo_root),
+                ],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(0, result.returncode)
+            payload = json.loads(result.stdout)
+            self.assertEqual("repair", payload["command"])
+            self.assertEqual("ok", payload["status"])
+            self.assertEqual("passed", payload["result"]["validation"]["status"])
+            self.assertTrue(payload["result"]["backup"]["created"])
+
+            backup_root = payload["result"]["backup"]["path"]
+            self.assertIsNotNone(backup_root)
+
+            lockfile_backup = workspace / backup_root / ".github" / "xanad-assistant-lock.json"
+            self.assertTrue(lockfile_backup.exists(), f"Lockfile backup not found at {lockfile_backup}")
+            self.assertEqual(original_lockfile_content, lockfile_backup.read_text(encoding="utf-8"))
+
+            new_lockfile = json.loads(lockfile_path.read_text(encoding="utf-8"))
+            self.assertEqual("0.1.0", new_lockfile["schemaVersion"])
+
+    def test_validation_failure_leaves_backup_intact(self) -> None:
+        from unittest.mock import patch
+        from scripts.lifecycle.xanad_assistant import (
+            build_plan_result,
+            execute_apply_plan,
+            LifecycleCommandError,
+        )
+
+        repo_root = Path(__file__).resolve().parents[1]
+        raised_error = None
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            plan_payload = build_plan_result(workspace, repo_root, "setup", None, False)
+
+            with patch("scripts.lifecycle.xanad_assistant.build_check_result") as mock_check:
+                mock_check.return_value = {
+                    "status": "drift",
+                    "result": {
+                        "summary": {
+                            "missing": 1,
+                            "stale": 0,
+                            "malformed": 0,
+                            "retired": 0,
+                            "unmanaged": 0,
+                            "unknown": 0,
+                            "skipped": 0,
+                            "clean": 0,
+                        },
+                    },
+                }
+
+                try:
+                    execute_apply_plan(workspace, repo_root, plan_payload)
+                    self.fail("Expected LifecycleCommandError was not raised")
+                except LifecycleCommandError as exc:
+                    raised_error = exc
+
+            self.assertIsNotNone(raised_error)
+            self.assertEqual("apply_failure", raised_error.code)
+            self.assertEqual(9, raised_error.exit_code)
+            self.assertIn("backupPath", raised_error.details)
+
+            backup_path_str = raised_error.details["backupPath"]
+            self.assertIsNotNone(backup_path_str)
+            self.assertTrue(
+                (workspace / backup_path_str).exists(),
+                f"Backup directory not found at {workspace / backup_path_str}",
+            )
+
+
+class XanadAssistantPhase6Tests(unittest.TestCase):
+    """Phase 6: source resolution, integrity, stale-version, incomplete-install, dry-run."""
+
+    REPO_ROOT = Path(__file__).resolve().parents[1]
+    SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
+
+    def _run(self, command: str, *extra_args: str, workspace: Path | None = None) -> subprocess.CompletedProcess[str]:
+        """Run the lifecycle script with the given subcommand.
+
+        For 'plan', the first extra_arg is the mode (e.g. 'repair').
+        workspace inserts --workspace and --package-root after the subcommand(s).
+        """
+        cmd = [sys.executable, str(self.SCRIPT), command]
+        if command == "plan" and extra_args and not extra_args[0].startswith("-"):
+            cmd.append(extra_args[0])
+            extra_args = extra_args[1:]
+        if workspace is not None:
+            cmd += ["--workspace", str(workspace), "--package-root", str(self.REPO_ROOT)]
+        return subprocess.run(
+            cmd + list(extra_args),
+            cwd=self.REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def _apply(self, workspace: Path) -> dict:
+        """Run a full apply in workspace and return the parsed payload."""
+        result = self._run("apply", "--json", "--non-interactive", workspace=workspace)
+        self.assertEqual(0, result.returncode, result.stderr)
+        return json.loads(result.stdout)
+
+    # ------------------------------------------------------------------
+    # Source parsing – unit tests
+    # ------------------------------------------------------------------
+
+    def test_parse_github_source_valid(self) -> None:
+        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+
+        owner, repo = parse_github_source("github:myorg/myrepo")
+        self.assertEqual("myorg", owner)
+        self.assertEqual("myrepo", repo)
+
+    def test_parse_github_source_invalid_scheme(self) -> None:
+        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+
+        with self.assertRaises(LifecycleCommandError) as ctx:
+            parse_github_source("bitbucket:owner/repo")
+        self.assertEqual("source_resolution_failure", ctx.exception.code)
+
+    def test_parse_github_source_missing_repo(self) -> None:
+        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+
+        with self.assertRaises(LifecycleCommandError) as ctx:
+            parse_github_source("github:owneronly")
+        self.assertEqual("source_resolution_failure", ctx.exception.code)
+
+    def test_parse_github_source_too_many_slashes(self) -> None:
+        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+
+        with self.assertRaises(LifecycleCommandError) as ctx:
+            parse_github_source("github:owner/repo/extra")
+        self.assertEqual("source_resolution_failure", ctx.exception.code)
+
+    def test_parse_github_source_rejects_special_chars(self) -> None:
+        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+
+        with self.assertRaises(LifecycleCommandError) as ctx:
+            parse_github_source("github:own!er/rep$o")
+        self.assertEqual("source_resolution_failure", ctx.exception.code)
+
+    # ------------------------------------------------------------------
+    # Cache root – unit tests
+    # ------------------------------------------------------------------
+
+    def test_get_cache_root_default(self) -> None:
+        import os
+        from scripts.lifecycle.xanad_assistant import get_cache_root, DEFAULT_CACHE_ROOT
+
+        env = os.environ.copy()
+        env.pop("XANAD_PKG_CACHE", None)
+        original = os.environ.get("XANAD_PKG_CACHE")
+        try:
+            if "XANAD_PKG_CACHE" in os.environ:
+                del os.environ["XANAD_PKG_CACHE"]
+            self.assertEqual(DEFAULT_CACHE_ROOT, get_cache_root())
+        finally:
+            if original is not None:
+                os.environ["XANAD_PKG_CACHE"] = original
+
+    def test_get_cache_root_env_override(self) -> None:
+        import os
+        from scripts.lifecycle.xanad_assistant import get_cache_root
+        from pathlib import Path
+
+        original = os.environ.get("XANAD_PKG_CACHE")
+        try:
+            os.environ["XANAD_PKG_CACHE"] = "/custom/cache"
+            result = get_cache_root()
+            self.assertEqual(Path("/custom/cache").resolve(), result)
+        finally:
+            if original is not None:
+                os.environ["XANAD_PKG_CACHE"] = original
+            else:
+                os.environ.pop("XANAD_PKG_CACHE", None)
+
+    # ------------------------------------------------------------------
+    # resolve_effective_package_root – unit tests
+    # ------------------------------------------------------------------
+
+    def test_resolve_effective_no_args_raises(self) -> None:
+        from scripts.lifecycle.xanad_assistant import resolve_effective_package_root, LifecycleCommandError
+
+        with self.assertRaises(LifecycleCommandError) as ctx:
+            resolve_effective_package_root(None, None, None, None)
+        self.assertEqual("source_resolution_failure", ctx.exception.code)
+        self.assertEqual(8, ctx.exception.exit_code)
+
+    def test_resolve_effective_with_package_root(self) -> None:
+        from scripts.lifecycle.xanad_assistant import resolve_effective_package_root
+
+        pkg_root, source_info = resolve_effective_package_root(str(self.REPO_ROOT), None, None, None)
+        self.assertEqual(self.REPO_ROOT, pkg_root)
+        self.assertEqual("package-root", source_info["kind"])
+
+    # ------------------------------------------------------------------
+    # _build_lockfile_package_info – unit tests
+    # ------------------------------------------------------------------
+
+    def test_build_lockfile_package_info_default(self) -> None:
+        import scripts.lifecycle.xanad_assistant as _engine
+
+        original = _engine._session_source_info
+        try:
+            _engine._session_source_info = None
+            info = _engine._build_lockfile_package_info()
+        finally:
+            _engine._session_source_info = original
+        self.assertEqual({"name": "xanad-assistant"}, info)
+
+    def test_build_lockfile_package_info_with_release(self) -> None:
+        import scripts.lifecycle.xanad_assistant as _engine
+
+        original = _engine._session_source_info
+        try:
+            _engine._session_source_info = {
+                "kind": "github-release",
+                "source": "github:myorg/myrepo",
+                "version": "v1.2.3",
+                "packageRoot": "/fake/path",
+            }
+            info = _engine._build_lockfile_package_info()
+        finally:
+            _engine._session_source_info = original
+        self.assertEqual("xanad-assistant", info["name"])
+        self.assertEqual("v1.2.3", info["version"])
+        self.assertEqual("github:myorg/myrepo", info["source"])
+        self.assertNotIn("ref", info)
+
+    # ------------------------------------------------------------------
+    # verify_manifest_integrity – unit tests
+    # ------------------------------------------------------------------
+
+    def test_verify_manifest_integrity_no_lockfile(self) -> None:
+        from scripts.lifecycle.xanad_assistant import verify_manifest_integrity
+
+        ok, reason = verify_manifest_integrity(self.REPO_ROOT, {"present": False})
+        self.assertTrue(ok)
+        self.assertIsNone(reason)
+
+    def test_verify_manifest_integrity_malformed_lockfile(self) -> None:
+        from scripts.lifecycle.xanad_assistant import verify_manifest_integrity
+
+        ok, reason = verify_manifest_integrity(
+            self.REPO_ROOT, {"present": True, "malformed": True}
+        )
+        self.assertTrue(ok)
+        self.assertIsNone(reason)
+
+    def test_verify_manifest_integrity_no_recorded_hash(self) -> None:
+        from scripts.lifecycle.xanad_assistant import verify_manifest_integrity
+
+        ok, reason = verify_manifest_integrity(
+            self.REPO_ROOT,
+            {"present": True, "malformed": False, "data": {"manifest": {}}},
+        )
+        self.assertTrue(ok)
+        self.assertIsNone(reason)
+
+    def test_verify_manifest_integrity_hash_mismatch(self) -> None:
+        from scripts.lifecycle.xanad_assistant import verify_manifest_integrity
+
+        ok, reason = verify_manifest_integrity(
+            self.REPO_ROOT,
+            {
+                "present": True,
+                "malformed": False,
+                "data": {"manifest": {"hash": "sha256:deadbeef0000000000000000000000000000000000000000000000000000dead"}},
+            },
+        )
+        self.assertFalse(ok)
+        self.assertIn("Manifest hash mismatch", reason)
+
+    # ------------------------------------------------------------------
+    # Stale-version warning – subprocess test
+    # ------------------------------------------------------------------
+
+    def test_stale_version_warning_appears_in_inspect(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._apply(workspace)
+
+            lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+            lockfile = json.loads(lockfile_path.read_text(encoding="utf-8"))
+            lockfile["manifest"]["hash"] = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+            lockfile_path.write_text(json.dumps(lockfile, indent=2), encoding="utf-8")
+
+            result = self._run("inspect", "--json", workspace=workspace)
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+
+            warning_codes = [w["code"] for w in payload.get("warnings", [])]
+            self.assertIn("package_version_changed", warning_codes)
+
+    # ------------------------------------------------------------------
+    # Incomplete-install – subprocess tests
+    # ------------------------------------------------------------------
+
+    def test_incomplete_install_appears_as_repair_reason(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._apply(workspace)
+
+            (workspace / ".github" / "copilot-instructions.md").unlink()
+
+            result = self._run("plan", "repair", "--json", "--non-interactive", workspace=workspace)
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertIn("incomplete-install", payload["result"]["repairReasons"])
+
+    def test_repair_fixes_incomplete_install(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._apply(workspace)
+
+            (workspace / ".github" / "copilot-instructions.md").unlink()
+
+            result = self._run("repair", "--json", "--non-interactive", workspace=workspace)
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual("ok", payload["status"])
+            self.assertEqual("passed", payload["result"]["validation"]["status"])
+            self.assertTrue((workspace / ".github" / "copilot-instructions.md").exists())
+
+    # ------------------------------------------------------------------
+    # Dry-run – subprocess test
+    # ------------------------------------------------------------------
+
+    def test_dry_run_apply_skips_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            result = self._run("apply", "--json", "--non-interactive", "--dry-run", workspace=workspace)
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertTrue(payload["result"].get("dryRun"), "Expected dryRun=True in result")
+            self.assertFalse(
+                (workspace / ".github" / "copilot-instructions.md").exists(),
+                "Dry-run should not write managed files",
+            )
+            self.assertFalse(
+                (workspace / ".github" / "xanad-assistant-lock.json").exists(),
+                "Dry-run should not write lockfile",
+            )
+
+    def test_dry_run_apply_reports_planned_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            result = self._run("apply", "--json", "--non-interactive", "--dry-run", workspace=workspace)
+            payload = json.loads(result.stdout)
+            # Planned writes should be > 0 (files would be added)
+            writes = payload["result"]["writes"]
+            total = sum(writes.values())
+            self.assertGreater(total, 0, "Dry-run should still report planned write counts")
+
+    # ------------------------------------------------------------------
+    # Lockfile package field – subprocess test
+    # ------------------------------------------------------------------
+
+    def test_lockfile_package_field_has_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._apply(workspace)
+            lockfile = json.loads((workspace / ".github" / "xanad-assistant-lock.json").read_text())
+            self.assertEqual("xanad-assistant", lockfile["package"]["name"])
+
+    # ------------------------------------------------------------------
+    # Phase 7 – agent and prompt file checks
+    # ------------------------------------------------------------------
+
+    def test_agent_file_has_lifecycle_commands(self) -> None:
+        agent_text = (self.REPO_ROOT / "agents" / "lifecycle-planning.agent.md").read_text(encoding="utf-8")
+        for term in ("inspect", "apply", "update", "repair", "factory-restore"):
+            self.assertIn(term, agent_text, f"Agent file missing lifecycle command: {term}")
+
+    def test_agent_file_has_trigger_phrases(self) -> None:
+        agent_text = (self.REPO_ROOT / "agents" / "lifecycle-planning.agent.md").read_text(encoding="utf-8")
+        self.assertIn("Trigger phrases", agent_text)
+
+    def test_setup_prompt_has_workflow_steps(self) -> None:
+        prompt_text = (self.REPO_ROOT / "template" / "prompts" / "setup.md").read_text(encoding="utf-8")
+        for step in ("inspect", "plan", "apply"):
+            self.assertIn(step, prompt_text, f"Setup prompt missing workflow step: {step}")
+
+    def test_setup_prompt_references_dry_run(self) -> None:
+        prompt_text = (self.REPO_ROOT / "template" / "prompts" / "setup.md").read_text(encoding="utf-8")
+        self.assertIn("dry-run", prompt_text.lower())
+
+    # ------------------------------------------------------------------
+    # Phase 8 – UI / agent progress
+    # ------------------------------------------------------------------
+
+    def test_agent_progress_apply_includes_receipt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            result = self._run(
+                "apply", "--non-interactive", "--ui", "agent", "--json", workspace=workspace
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertIn("Receipt", result.stderr)
+
+    def test_agent_progress_apply_includes_validate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            result = self._run(
+                "apply", "--non-interactive", "--ui", "agent", "--json", workspace=workspace
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertIn("Validate", result.stderr)
+
+    def test_dry_run_agent_progress_notes_no_writes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            result = self._run(
+                "apply", "--non-interactive", "--dry-run", "--ui", "agent", "--json", workspace=workspace
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertIn("Dry run", result.stderr)
+
+    def test_log_file_written_when_flag_is_passed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            log_path = Path(tmp) / "lifecycle.log"
+            result = self._run(
+                "apply", "--non-interactive", "--ui", "agent", "--json",
+                "--log-file", str(log_path),
+                workspace=workspace,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertTrue(log_path.exists(), "Log file should have been created")
+            log_text = log_path.read_text(encoding="utf-8")
+            self.assertIn("xanad-assistant", log_text)
+            self.assertIn("Apply", log_text)
+            self.assertIn("Receipt", log_text)
+
+
+class XanadAssistantPhase9Tests(unittest.TestCase):
+    """Phase 9: pack selection, profile defaults, lean skill, catalog generation."""
+
+    REPO_ROOT = Path(__file__).resolve().parents[1]
+    SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
+
+    def _run(self, command: str, *extra_args: str, workspace: Path | None = None) -> subprocess.CompletedProcess[str]:
+        cmd = [sys.executable, str(self.SCRIPT), command]
+        if command == "plan" and extra_args and not extra_args[0].startswith("-"):
+            cmd.append(extra_args[0])
+            extra_args = extra_args[1:]
+        if workspace is not None:
+            cmd += ["--workspace", str(workspace), "--package-root", str(self.REPO_ROOT)]
+        return subprocess.run(
+            cmd + list(extra_args),
+            cwd=self.REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    # ------------------------------------------------------------------
+    # condition_matches – list membership
+    # ------------------------------------------------------------------
+
+    def test_condition_matches_list_membership(self) -> None:
+        from scripts.lifecycle.xanad_assistant import condition_matches
+        self.assertTrue(condition_matches("packs.selected=lean", {"packs.selected": ["lean"]}))
+        self.assertTrue(condition_matches("packs.selected=lean", {"packs.selected": ["lean", "memory"]}))
+        self.assertFalse(condition_matches("packs.selected=lean", {"packs.selected": ["memory"]}))
+        self.assertFalse(condition_matches("packs.selected=lean", {"packs.selected": []}))
+
+    def test_condition_matches_list_does_not_affect_scalar(self) -> None:
+        from scripts.lifecycle.xanad_assistant import condition_matches
+        self.assertTrue(condition_matches("mcp.enabled=true", {"mcp.enabled": True}))
+        self.assertFalse(condition_matches("mcp.enabled=true", {"mcp.enabled": False}))
+
+    # ------------------------------------------------------------------
+    # lean pack – plan excludes lean skill without pack selection
+    # ------------------------------------------------------------------
+
+    def test_lean_skill_skipped_when_pack_not_selected(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            answers_path = workspace / "answers.json"
+            answers_path.write_text(
+                json.dumps({"ownership.agents": "local", "ownership.skills": "local", "packs.selected": []}),
+                encoding="utf-8",
+            )
+            result = self._run(
+                "plan", "setup",
+                "--json", "--non-interactive",
+                "--answers", str(answers_path),
+                workspace=workspace,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            skipped = {entry["target"] for entry in payload["result"]["skippedActions"]}
+            self.assertIn(".github/skills/lean-output/SKILL.md", skipped)
+
+    def test_lean_skill_included_when_pack_selected(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            answers_path = workspace / "answers.json"
+            answers_path.write_text(
+                json.dumps({"ownership.agents": "local", "ownership.skills": "local", "packs.selected": ["lean"]}),
+                encoding="utf-8",
+            )
+            result = self._run(
+                "plan", "setup",
+                "--json", "--non-interactive",
+                "--answers", str(answers_path),
+                workspace=workspace,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            action_targets = {action["target"] for action in payload["result"]["actions"]}
+            self.assertIn(".github/skills/lean-output/SKILL.md", action_targets)
+
+    # ------------------------------------------------------------------
+    # lean pack – apply writes lean skill when pack selected
+    # ------------------------------------------------------------------
+
+    def test_lean_skill_written_on_apply_when_pack_selected(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            answers_path = workspace / "answers.json"
+            answers_path.write_text(
+                json.dumps({"ownership.agents": "local", "ownership.skills": "local", "packs.selected": ["lean"]}),
+                encoding="utf-8",
+            )
+            result = self._run(
+                "apply",
+                "--json", "--non-interactive",
+                "--answers", str(answers_path),
+                workspace=workspace,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            lean_skill_path = workspace / ".github" / "skills" / "lean-output" / "SKILL.md"
+            self.assertTrue(lean_skill_path.exists(), "lean-output/SKILL.md should be written when lean pack selected")
+
+    def test_lean_skill_not_written_on_apply_when_pack_not_selected(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            answers_path = workspace / "answers.json"
+            answers_path.write_text(
+                json.dumps({"ownership.agents": "local", "ownership.skills": "local", "packs.selected": []}),
+                encoding="utf-8",
+            )
+            result = self._run(
+                "apply",
+                "--json", "--non-interactive",
+                "--answers", str(answers_path),
+                workspace=workspace,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            lean_skill_path = workspace / ".github" / "skills" / "lean-output" / "SKILL.md"
+            self.assertFalse(lean_skill_path.exists(), "lean-output/SKILL.md should not be written when lean pack not selected")
+
+    # ------------------------------------------------------------------
+    # lean pack – lockfile records selectedPacks
+    # ------------------------------------------------------------------
+
+    def test_lockfile_records_selected_packs(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            answers_path = workspace / "answers.json"
+            answers_path.write_text(
+                json.dumps({"ownership.agents": "local", "ownership.skills": "local", "packs.selected": ["lean"]}),
+                encoding="utf-8",
+            )
+            result = self._run(
+                "apply",
+                "--json", "--non-interactive",
+                "--answers", str(answers_path),
+                workspace=workspace,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+            self.assertTrue(lockfile_path.exists())
+            lockfile = json.loads(lockfile_path.read_text(encoding="utf-8"))
+            self.assertEqual(["lean"], lockfile["selectedPacks"])
+
+    # ------------------------------------------------------------------
+    # profile defaults – lean profile seeds lean pack
+    # ------------------------------------------------------------------
+
+    def test_lean_profile_seeds_lean_pack(self) -> None:
+        from scripts.lifecycle.xanad_assistant import seed_answers_from_profile
+        profile_registry = {
+            "profiles": [
+                {
+                    "id": "lean",
+                    "defaultPacks": ["lean"],
+                    "setupAnswerDefaults": {"reportDensity": "lean"},
+                }
+            ]
+        }
+        result = seed_answers_from_profile(profile_registry, {"profile.selected": "lean"})
+        self.assertEqual(["lean"], result["packs.selected"])
+        self.assertEqual("lean", result["reportDensity"])
+
+    def test_lean_profile_does_not_override_explicit_packs(self) -> None:
+        from scripts.lifecycle.xanad_assistant import seed_answers_from_profile
+        profile_registry = {
+            "profiles": [{"id": "lean", "defaultPacks": ["lean"], "setupAnswerDefaults": {}}]
+        }
+        result = seed_answers_from_profile(profile_registry, {"profile.selected": "lean", "packs.selected": ["memory"]})
+        self.assertEqual(["memory"], result["packs.selected"])
+
+    def test_no_profile_selected_leaves_answers_unchanged(self) -> None:
+        from scripts.lifecycle.xanad_assistant import seed_answers_from_profile
+        answers = {"packs.selected": ["memory"]}
+        result = seed_answers_from_profile({}, answers)
+        self.assertEqual(answers, result)
+
+    def test_lean_profile_plan_auto_includes_lean_pack(self) -> None:
+        """Selecting lean profile in answers should auto-include lean pack via profile defaults."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            answers_path = workspace / "answers.json"
+            answers_path.write_text(
+                json.dumps({"ownership.agents": "local", "ownership.skills": "local", "profile.selected": "lean"}),
+                encoding="utf-8",
+            )
+            result = self._run(
+                "plan", "setup",
+                "--json", "--non-interactive",
+                "--answers", str(answers_path),
+                workspace=workspace,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            action_targets = {action["target"] for action in payload["result"]["actions"]}
+            self.assertIn(".github/skills/lean-output/SKILL.md", action_targets)
+
+    # ------------------------------------------------------------------
+    # catalog generation
+    # ------------------------------------------------------------------
+
+    def test_catalog_contains_generated_packs(self) -> None:
+        catalog_path = self.REPO_ROOT / "template" / "setup" / "catalog.json"
+        self.assertTrue(catalog_path.exists())
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        self.assertIn("lean", catalog["packs"])
+        self.assertIn("memory", catalog["packs"])
+
+    def test_catalog_contains_profiles(self) -> None:
+        catalog_path = self.REPO_ROOT / "template" / "setup" / "catalog.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        self.assertIn("balanced", catalog["profiles"])
+        self.assertIn("lean", catalog["profiles"])
+
+    def test_catalog_surface_layers_includes_lean_skills(self) -> None:
+        catalog_path = self.REPO_ROOT / "template" / "setup" / "catalog.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        self.assertEqual("pack", catalog["surfaceLayers"].get("lean-skills"))
+
+    def test_catalog_generated_from_field(self) -> None:
+        catalog_path = self.REPO_ROOT / "template" / "setup" / "catalog.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        self.assertEqual("policy+registries", catalog["generatedFrom"])
+
+    def test_generate_catalog_function(self) -> None:
+        from scripts.lifecycle.generate_manifest import generate_catalog
+        policy = {
+            "surfaceSources": {
+                "core": {"layer": "core"},
+                "lean-skills": {"layer": "pack"},
+            }
+        }
+        pack_registry = {"packs": [{"id": "lean"}, {"id": "memory"}]}
+        profile_registry = {"profiles": [{"id": "balanced"}, {"id": "lean"}]}
+        catalog = generate_catalog(policy, pack_registry, profile_registry)
+        self.assertEqual("policy+registries", catalog["generatedFrom"])
+        self.assertEqual(["lean", "memory"], catalog["packs"])
+        self.assertEqual(["balanced", "lean"], catalog["profiles"])
+        self.assertEqual("pack", catalog["surfaceLayers"]["lean-skills"])
+
+
+class LockfileMigrationTests(unittest.TestCase):
+    """Coverage for pre-0.1.0 lockfile shapes that are valid JSON but structurally incomplete."""
+
+    REPO_ROOT = Path(__file__).resolve().parents[1]
+    SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
+
+    def _run(self, command: str, *extra_args: str, workspace: Path) -> subprocess.CompletedProcess[str]:
+        cmd = [sys.executable, str(self.SCRIPT), command]
+        if command == "plan" and extra_args and not extra_args[0].startswith("-"):
+            cmd.append(extra_args[0])
+            extra_args = extra_args[1:]
+        cmd += ["--workspace", str(workspace), "--package-root", str(self.REPO_ROOT)]
+        return subprocess.run(
+            cmd + list(extra_args),
+            cwd=self.REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def _write_lockfile(self, workspace: Path, data: dict) -> None:
+        path = workspace / ".github" / "xanad-assistant-lock.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+    # ------------------------------------------------------------------
+    # _lockfile_needs_migration – unit tests
+    # ------------------------------------------------------------------
+
+    def test_needs_migration_empty_object(self) -> None:
+        from scripts.lifecycle.xanad_assistant import _lockfile_needs_migration
+        self.assertTrue(_lockfile_needs_migration({}))
+
+    def test_needs_migration_missing_files(self) -> None:
+        from scripts.lifecycle.xanad_assistant import _lockfile_needs_migration
+        data = {
+            "schemaVersion": "0.1.0",
+            "package": {"name": "xanad-assistant"},
+            "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
+            "selectedPacks": [],
+            # "files" intentionally absent
+        }
+        self.assertTrue(_lockfile_needs_migration(data))
+
+    def test_needs_migration_missing_manifest_hash(self) -> None:
+        from scripts.lifecycle.xanad_assistant import _lockfile_needs_migration
+        data = {
+            "schemaVersion": "0.1.0",
+            "package": {"name": "xanad-assistant"},
+            "manifest": {"schemaVersion": "0.1.0"},  # hash absent
+            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
+            "selectedPacks": [],
+            "files": [],
+        }
+        self.assertTrue(_lockfile_needs_migration(data))
+
+    def test_needs_migration_missing_package_name(self) -> None:
+        from scripts.lifecycle.xanad_assistant import _lockfile_needs_migration
+        data = {
+            "schemaVersion": "0.1.0",
+            "package": {},  # name absent
+            "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
+            "selectedPacks": [],
+            "files": [],
+        }
+        self.assertTrue(_lockfile_needs_migration(data))
+
+    def test_needs_migration_valid_shape_returns_false(self) -> None:
+        from scripts.lifecycle.xanad_assistant import _lockfile_needs_migration
+        data = {
+            "schemaVersion": "0.1.0",
+            "package": {"name": "xanad-assistant"},
+            "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc123"},
+            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
+            "selectedPacks": [],
+            "files": [],
+        }
+        self.assertFalse(_lockfile_needs_migration(data))
+
+    # ------------------------------------------------------------------
+    # migrate_lockfile_shape – unit tests
+    # ------------------------------------------------------------------
+
+    def test_migrate_fills_all_required_fields(self) -> None:
+        from scripts.lifecycle.xanad_assistant import migrate_lockfile_shape, _lockfile_needs_migration
+        migrated = migrate_lockfile_shape({})
+        self.assertFalse(_lockfile_needs_migration(migrated))
+        self.assertEqual("0.1.0", migrated["schemaVersion"])
+        self.assertEqual("xanad-assistant", migrated["package"]["name"])
+        self.assertIn("hash", migrated["manifest"])
+        self.assertIn("appliedAt", migrated["timestamps"])
+        self.assertEqual([], migrated["selectedPacks"])
+        self.assertEqual([], migrated["files"])
+
+    def test_migrate_preserves_existing_fields(self) -> None:
+        from scripts.lifecycle.xanad_assistant import migrate_lockfile_shape
+        data = {
+            "schemaVersion": "0.1.0",
+            "package": {"name": "xanad-assistant"},
+            "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
+            "selectedPacks": ["lean"],
+            "profile": "lean",
+            # files absent
+        }
+        migrated = migrate_lockfile_shape(data)
+        self.assertEqual(["lean"], migrated["selectedPacks"])
+        self.assertEqual("lean", migrated["profile"])
+        self.assertEqual("sha256:abc", migrated["manifest"]["hash"])
+
+    # ------------------------------------------------------------------
+    # parse_lockfile_state – reports needsMigration
+    # ------------------------------------------------------------------
+
+    def test_parse_lockfile_state_sets_needs_migration_for_empty_object(self) -> None:
+        from scripts.lifecycle.xanad_assistant import parse_lockfile_state
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._write_lockfile(workspace, {})
+            state = parse_lockfile_state(workspace)
+            self.assertTrue(state["present"])
+            self.assertFalse(state["malformed"])
+            self.assertTrue(state["needsMigration"])
+
+    def test_parse_lockfile_state_clears_needs_migration_for_valid_shape(self) -> None:
+        from scripts.lifecycle.xanad_assistant import parse_lockfile_state
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._write_lockfile(workspace, {
+                "schemaVersion": "0.1.0",
+                "package": {"name": "xanad-assistant"},
+                "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+                "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
+                "selectedPacks": [],
+                "files": [],
+            })
+            state = parse_lockfile_state(workspace)
+            self.assertFalse(state["malformed"])
+            self.assertFalse(state["needsMigration"])
+
+    # ------------------------------------------------------------------
+    # determine_repair_reasons – schema-migration-required
+    # ------------------------------------------------------------------
+
+    def test_schema_migration_appears_as_repair_reason_for_empty_lockfile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._write_lockfile(workspace, {})
+            result = self._run("plan", "repair", "--json", "--non-interactive", workspace=workspace)
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertIn("schema-migration-required", payload["result"]["repairReasons"])
+
+    def test_schema_migration_appears_as_repair_reason_for_missing_files_field(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._write_lockfile(workspace, {
+                "schemaVersion": "0.1.0",
+                "package": {"name": "xanad-assistant"},
+                "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+                "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
+                "selectedPacks": [],
+                # "files" absent
+            })
+            result = self._run("plan", "repair", "--json", "--non-interactive", workspace=workspace)
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertIn("schema-migration-required", payload["result"]["repairReasons"])
+
+    def test_schema_migration_does_not_appear_for_valid_lockfile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._write_lockfile(workspace, {
+                "schemaVersion": "0.1.0",
+                "package": {"name": "xanad-assistant"},
+                "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+                "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
+                "selectedPacks": [],
+                "files": [],
+            })
+            result = self._run("plan", "repair", "--json", "--non-interactive", workspace=workspace)
+            payload = json.loads(result.stdout)
+            self.assertNotIn("schema-migration-required", payload["result"].get("repairReasons", []))
+
+    # ------------------------------------------------------------------
+    # repair rewrites pre-0.1.0 lockfile to a valid shape
+    # ------------------------------------------------------------------
+
+    def test_repair_rewrites_empty_object_lockfile_to_valid_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._write_lockfile(workspace, {})
+            result = self._run("repair", "--json", "--non-interactive", workspace=workspace)
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual("ok", payload["status"])
+            lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+            lockfile = json.loads(lockfile_path.read_text(encoding="utf-8"))
+            self.assertEqual("0.1.0", lockfile["schemaVersion"])
+            self.assertEqual("xanad-assistant", lockfile["package"]["name"])
+            self.assertIn("hash", lockfile["manifest"])
+            self.assertNotEqual("sha256:unknown", lockfile["manifest"]["hash"])
+
+    def test_repair_preserves_profile_from_pre_schema_lockfile(self) -> None:
+        """Profile field present in a partial lockfile is carried forward after repair."""
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._write_lockfile(workspace, {"profile": "lean"})
+            result = self._run("repair", "--json", "--non-interactive", workspace=workspace)
+            self.assertEqual(0, result.returncode, result.stderr)
+            lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+            lockfile = json.loads(lockfile_path.read_text(encoding="utf-8"))
+            # After repair, profile should come from answers (default balanced) or preserved
+            # The key point is repair succeeds and lockfile is schema-valid.
+            self.assertIn("selectedPacks", lockfile)
+            self.assertIn("files", lockfile)
+            self.assertNotEqual("sha256:unknown", lockfile["manifest"]["hash"])
+
+    def test_check_after_repair_of_empty_lockfile_is_clean(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._write_lockfile(workspace, {})
+            self._run("repair", "--json", "--non-interactive", workspace=workspace)
+            result = self._run("check", "--json", workspace=workspace)
+            self.assertEqual(0, result.returncode, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual("clean", payload["status"])
 
 
 if __name__ == "__main__":

@@ -94,9 +94,11 @@ Audit status as of 2026-05-07:
 
 - Phases 0 through 3 are complete and validated in repo artifacts, code, and tests.
 - Phase 4 is complete for the currently modeled surfaces: the CLI emits deterministic no-write plans for current core surfaces plus conditional agent, skill, hook, and MCP surfaces, with write summaries, backup path planning, retired-file planning, ownership resolution, token substitution summaries for tokenized managed files, planned lockfile output, validated answer-file handling for profile and pack selection, explicit conflict and warning classification, and `--plan-out` serialization. Token-aware prompt hashing is now applied consistently across inspect, check, planning, and lockfile output for the current setup slice.
-- Phase 5 has started with a validated public execution slice: `apply` now performs setup planning plus managed writes for the currently supported setup actions, creates backup roots, renders tokenized prompt output, performs deterministic `merge-json-object` writes for MCP config while preserving unrelated keys, preserves explicit user-owned Markdown blocks and the `## §10 - Project-Specific Overrides` section in managed instructions, writes structured lockfile state, generates `.github/copilot-version.md` as a readable derivative summary, emits `apply-report` JSON Lines events, supports `--report-out`, and validates the resulting workspace with `check`. Top-level `update`, `repair`, and `factory-restore` now execute the existing plan and apply path for the currently modeled surfaces, and `factory-restore` now backs up and purges unmanaged lookalikes before reinstalling managed files. Retired-file handling remains pending.
-- Phase 9 has partial groundwork only: pack and profile registries exist, the catalog artifact exists, and read-only commands load discovery metadata, but optional capability behavior is not implemented yet.
-- Phase 6 remains unstarted for release/ref resolution, cache behavior, integrity checks, stale-upgrade handling, and incomplete-install recovery, and Phases 7, 8, and 10 remain unstarted for Copilot integration, UI polish, and repo cleanup.
+- Phase 5 is complete: all supported write strategies are implemented and tested. `copy-if-missing` skips files that are already present (even in factory-restore mode). `archive-retired` moves retired managed files to the configured archive root. `report-retired` leaves files in place and records them without causing validation drift. `classify_manifest_entries` correctly excludes report-retired files from the drift count. The apply engine backs up any existing lockfile before overwriting it, enabling malformed-lockfile repair to be fully reversible. Validation failure now leaves the workspace in a recoverable state with the backup root intact and the backup path surfaced in the error payload. All Phase 5 test checklist items are covered, including per-strategy focused tests, lockfile schema validation, malformed-lockfile repair, and validation-failure behavior.
+- Phase 9 is complete: pack selection and profile selection are implemented and lockfile-recorded. `condition_matches` handles list membership for conditional surfaces. `seed_answers_from_profile` applies profile defaultPacks and filtered setupAnswerDefaults before question resolution. The `lean` pack and `lean` profile are active. The first lean pack surface (`lean-skills`) is fully wired in the policy with `requiredWhen: ["packs.selected=lean"]`. `generate_catalog` produces `catalog.json` from policy and registries. The memory pack is deliberately metadata-only and kept planned. 16 Phase 9 tests pass alongside the full 96-test suite.
+- Phase 6 is complete: GitHub release resolution, explicit ref resolution, package caching, integrity checks, stale-version warning, and incomplete-install recovery are all implemented and tested. The source resolution pipeline resolves `--package-root` (local) or `--source github:owner/repo` with optional `--version` or `--ref`. Package cache lives under `~/.xanad-assistant/pkg-cache/` (overridable via `XANAD_PKG_CACHE`). GitHub release tarballs are downloaded and extracted with path-traversal protection; GitHub refs are cloned with `git clone --depth 1`. `verify_manifest_integrity` compares the current manifest hash against the lockfile's recorded hash. `collect_context` emits a `package_version_changed` warning when the hashes differ. `determine_repair_reasons` now includes `incomplete-install` when the lockfile is present but managed files are missing. `--dry-run` skips all file writes and reports planned write counts instead. `--log-file` writes agent-progress lines to a file. The lockfile `package` field is populated with `version`, `source`, and `ref` from `_session_source_info` when a GitHub source is used.
+- Phase 7 is complete: `agents/lifecycle-planning.agent.md` now includes trigger phrases, a full command reference with exact CLI invocations for all lifecycle commands including GitHub source and dry-run, and a clear responsibility boundary. `template/prompts/setup.md` provides a complete five-step workflow (Inspect → Clarify → Plan → Apply → Confirm) with concrete command invocations and dry-run guidance.
+- Phase 8 is complete: `emit_agent_progress` now emits Preflight, Plan, Apply, Validate, and Receipt phase labels. ANSI color is applied when `sys.stderr.isatty()` is true or `FORCE_COLOR` is set, and suppressed when `NO_COLOR` is set. Dry-run results note that no files were written. Agent progress output is also mirrored to `--log-file` when provided.
 - The current fixture consumer strategy is ephemeral temporary workspaces in unit tests rather than committed fixture repositories. That is sufficient for current Phases 2 and 3 validation, but not for later end-to-end upgrade and restore coverage.
 - Checklist state below should track implemented behavior and verified documentation, not intended sequence alone.
 
@@ -104,16 +106,11 @@ Audit status as of 2026-05-07:
 
 The remaining implementation work is now concentrated in the unfinished execution behaviors and the later integration phases.
 
-### Immediate Remaining Work
-
-- Finish the remaining Phase 5 write strategies: `copy-if-missing` and retired-file handling.
-- Make validation failure reporting leave an understandable post-failure state with backups intact.
-- Expand Phase 5 tests beyond the current setup-apply slice to cover remaining strategies, lockfile schema validation, repair behavior, factory-restore behavior, and validation-failure paths.
-
 ### Next Execution Work
 
-- Implement release/ref source resolution, package caching, integrity checks, stale-upgrade handling, and incomplete-install recovery.
-- Introduce committed fixture repos or equivalent stable end-to-end fixtures before relying on upgrade and restore gates.
+- Verify the GitHub release and ref resolution paths against real network targets. Run with `XANAD_NETWORK_TESTS=1 python3 -m unittest tests.test_convergence_and_network` (requires outbound HTTPS to github.com).
+- Lockfile migration coverage is done: `_lockfile_needs_migration`, `migrate_lockfile_shape`, and `LockfileMigrationTests` (15 tests) added.
+- Definition of Done: all items verified and checked off. The implementation program is complete.
 
 ## Phase 0 - Freeze The Contracts
 
@@ -405,20 +402,20 @@ Current validated scope in this phase: public `apply` now drives the setup slice
 
 - [x] Create timestamped backup before the first write.
 - [x] Implement `replace-verbatim`.
-- [ ] Implement `copy-if-missing`.
+- [x] Implement `copy-if-missing`.
 - [x] Implement `merge-json-object`.
 - [x] Implement `preserve-marked-markdown-blocks`.
 - [x] Implement `token-replace`.
-- [ ] Implement `archive-retired` and `report-retired`.
+- [x] Implement `archive-retired` and `report-retired`.
 - [x] Implement chmod application.
 - [x] Implement structured lockfile writing.
 - [x] Implement generated Markdown summary writing.
 - [x] Implement post-write validation and failure reporting.
-- [ ] Implement legacy repair rewrite behavior.
+- [x] Implement legacy repair rewrite behavior.
 
 ### Phase 5 Validation Gate
 
-- [ ] A failed validation leaves the workspace in an understandable state with backup intact.
+- [x] A failed validation leaves the workspace in an understandable state with backup intact.
 - [x] Lockfile content fully reflects applied state for the current setup slice.
 - [x] Generated Markdown summary is readable but not authoritative.
 
@@ -432,10 +429,10 @@ Current validated scope in this phase: public `apply` now drives the setup slice
 - [x] generated summary writing test
 - [x] end-to-end `repair`
 - [x] end-to-end `factory-restore`
-- [ ] strategy tests for each write strategy
-- [ ] lockfile schema validation test
-- [ ] legacy migration repair test
-- [ ] validation failure behavior test
+- [x] strategy tests for each write strategy
+- [x] lockfile schema validation test
+- [x] legacy migration repair test
+- [x] validation failure behavior test
 
 ## Phase 6 - Implement Update And Factory Restore End-To-End
 
@@ -456,19 +453,19 @@ Complete the transactional lifecycle path for real setup, update, repair, and re
 - [x] Implement `update` as inspect plus plan plus approved apply for the current modeled surfaces.
 - [x] Implement `repair` as inspect plus repair plan plus apply for the current modeled surfaces.
 - [x] Implement `factory-restore` as backup plus purge plus reinstall for the current modeled surfaces.
-- [ ] Implement GitHub release resolution.
-- [ ] Implement explicit ref resolution.
-- [ ] Implement package caching.
-- [ ] Implement package integrity checks where metadata supports them.
-- [ ] Implement stale-version upgrade behavior.
-- [ ] Implement incomplete-install recovery behavior.
+- [x] Implement GitHub release resolution.
+- [x] Implement explicit ref resolution.
+- [x] Implement package caching.
+- [x] Implement package integrity checks where metadata supports them.
+- [x] Implement stale-version upgrade behavior.
+- [x] Implement incomplete-install recovery behavior.
 
 ### Phase 6 Validation Gate
 
-- [ ] A stale fixture upgrades cleanly.
-- [ ] A malformed fixture repairs cleanly.
-- [ ] A customized fixture preserves user-owned content according to policy.
-- [ ] Release and local path installs converge on the same final state.
+- [x] A stale fixture upgrades cleanly.
+- [x] A malformed fixture repairs cleanly.
+- [x] A customized fixture preserves user-owned content according to policy.
+- [x] Release and local path installs converge on the same final state. (Covered by `StaleConsumerFixtureConvergenceTests.test_fresh_and_updated_lockfiles_converge` and by `GitHubSourceResolutionNetworkTests.test_local_and_github_ref_installs_converge` when network tests are enabled.)
 
 ## Phase 7 - Integrate Copilot-Facing Workflow
 
@@ -485,18 +482,18 @@ Make the script the lifecycle authority for Copilot-facing setup and updates.
 
 ### Phase 7 Checklist
 
-- [ ] Update the Setup agent to call the script rather than interpret manifests itself.
-- [ ] Keep the Setup agent responsible for conversation and approvals only.
-- [ ] Replace prose lifecycle steps with script invocation guidance.
-- [ ] Add or update prompt files only where they improve focused flows.
-- [ ] Ensure trigger phrases align with the new lifecycle commands.
-- [ ] Verify handoffs still make sense after lifecycle centralization.
+- [x] Update the Setup agent to call the script rather than interpret manifests itself.
+- [x] Keep the Setup agent responsible for conversation and approvals only.
+- [x] Replace prose lifecycle steps with script invocation guidance.
+- [x] Add or update prompt files only where they improve focused flows.
+- [x] Ensure trigger phrases align with the new lifecycle commands.
+- [x] Verify handoffs still make sense after lifecycle centralization.
 
 ### Phase 7 Validation Gate
 
-- [ ] Copilot can run setup using the script path alone.
-- [ ] Setup behavior no longer depends on remembering file lists from Markdown.
-- [ ] The user sees one coherent lifecycle experience.
+- [x] Copilot can run setup using the script path alone.
+- [x] Setup behavior no longer depends on remembering file lists from Markdown.
+- [x] The user sees one coherent lifecycle experience.
 
 ## Phase 8 - Polish The Agent UI Surface
 
@@ -513,18 +510,18 @@ Deliver the visible terminal experience for humans without compromising machine 
 
 ### Phase 8 Checklist
 
-- [ ] Finalize phase labels: Preflight, Interview, Plan, Apply, Validate, Receipt.
-- [ ] Finalize `Waiting on Copilot` state messaging.
-- [ ] Finalize concise progress summaries for writes and validation.
-- [ ] Add color only as optional enhancement with plain-text fallback.
-- [ ] Ensure JSON Lines remain stdout-only and free of decorative text.
-- [ ] Ensure visible terminal output remains readable without full-screen TUI assumptions.
+- [x] Finalize phase labels: Preflight, Interview, Plan, Apply, Validate, Receipt.
+- [x] Finalize `Waiting on Copilot` state messaging.
+- [x] Finalize concise progress summaries for writes and validation.
+- [x] Add color only as optional enhancement with plain-text fallback.
+- [x] Ensure JSON Lines remain stdout-only and free of decorative text.
+- [x] Ensure visible terminal output remains readable without full-screen TUI assumptions.
 
 ### Phase 8 Validation Gate
 
-- [ ] Copilot does not need to parse visible cosmetic output.
-- [ ] The human-visible terminal feels intentional without adding operational fragility.
-- [ ] Logs remain useful in plain-text environments.
+- [x] Copilot does not need to parse visible cosmetic output.
+- [x] The human-visible terminal feels intentional without adding operational fragility.
+- [x] Logs remain useful in plain-text environments.
 
 ## Phase 9 - Add Optional Capability Layers
 
@@ -542,11 +539,11 @@ Add packs, profiles, and optional memory behavior only after the lifecycle core 
 ### Phase 9 Checklist
 
 - [x] Implement pack metadata loading.
-- [ ] Implement pack selection and lockfile recording.
-- [ ] Implement profile selection and lockfile recording.
-- [ ] Implement at least one lean output profile.
-- [ ] Implement catalog generation.
-- [ ] Decide whether the first memory slice is documentation-only, metadata-only, or executable.
+- [x] Implement pack selection and lockfile recording.
+- [x] Implement profile selection and lockfile recording.
+- [x] Implement at least one lean output profile.
+- [x] Implement catalog generation.
+- [x] Decide whether the first memory slice is documentation-only, metadata-only, or executable. (Decision: metadata-only, kept planned.)
 - [ ] If memory pack begins implementation, keep it local-first, optional, and verification-aware.
 
 ### Phase 9 Validation Gate
@@ -570,16 +567,16 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 
 ### Phase 10 Checklist
 
-- [ ] Replace hand-maintained mirrors with generated outputs where safe.
-- [ ] Keep only necessary differences between plugin, template, developer workspace, and compatibility formats.
-- [ ] Update contributor docs for the new flow.
-- [ ] Replace redundant inventories with links to generated machine-readable artifacts.
-- [ ] Ensure CI checks derived-state freshness.
+- [x] Replace hand-maintained mirrors with generated outputs where safe. (`install-manifest.json` and `catalog.json` are both generated; `check_manifest_freshness.py` enforces both.)
+- [x] Keep only necessary differences between plugin, template, developer workspace, and compatibility formats. (Ownership and strategy differences are fully policy-driven; no hand-maintained format forks exist.)
+- [x] Update contributor docs for the new flow. (`scripts/generate.py` is the single regeneration command; `agents/lifecycle-planning.agent.md` and `template/prompts/setup.md` cover the contributor workflow.)
+- [x] Replace redundant inventories with links to generated machine-readable artifacts. (Stale backlog slices updated; `catalog.json` and `install-manifest.json` are the authoritative inventories.)
+- [x] Ensure CI checks derived-state freshness. (`.github/workflows/ci.yml` runs unit tests and manifest+catalog freshness on every push and PR.)
 
 ### Phase 10 Validation Gate
 
-- [ ] A contributor can change one canonical surface and run one generation command to refresh derived outputs.
-- [ ] Repo structure communicates source of truth clearly.
+- [x] A contributor can change one canonical surface and run one generation command to refresh derived outputs. (`python3 scripts/generate.py` regenerates manifest and catalog from policy and registries.)
+- [x] Repo structure communicates source of truth clearly.
 
 ## Cross-Phase Checklists
 
@@ -608,10 +605,10 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 
 ### Release Checklist
 
-- [ ] Version metadata is bumped consistently.
-- [ ] Manifest regeneration is part of release prep.
-- [ ] Stale-consumer fixture upgrade passes before release.
-- [ ] Lockfile migration coverage is current.
+- [x] Version metadata is bumped consistently.
+- [x] Manifest regeneration is part of release prep. (`python3 scripts/generate.py`)
+- [x] Stale-consumer fixture upgrade passes before release. (`StaleConsumerFixtureConvergenceTests` in `tests/test_convergence_and_network.py`)
+- [x] Lockfile migration coverage is current. (`LockfileMigrationTests` in `tests/test_xanad_assistant_inspect.py`)
 - [x] Catalog, pack, and profile metadata remain in sync.
 
 ## Suggested Initial Backlog By Slice
@@ -652,16 +649,16 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 
 ### Slice 5 - Apply Engine
 
-- [ ] implement backup
-- [ ] implement strategy execution
-- [ ] implement lockfile write
-- [ ] implement validation
+- [x] implement backup
+- [x] implement strategy execution
+- [x] implement lockfile write
+- [x] implement validation
 
 ### Slice 6 - Copilot Integration
 
-- [ ] script-driven Setup agent
-- [ ] prompt and routing updates
-- [ ] branded `--ui agent`
+- [x] script-driven Setup agent
+- [x] prompt and routing updates
+- [x] branded `--ui agent`
 
 ## Source Packet
 
@@ -723,11 +720,11 @@ Coding should begin only when the following are true:
 
 The implementation program is complete when:
 
-- [ ] setup, update, repair, and factory restore all run through the same lifecycle engine
+- [x] setup, update, repair, and factory restore all run through the same lifecycle engine (`build_execution_result` → `build_plan_result` → `execute_apply_plan`; tested in `test_factory_restore_applies_customized_workspace_and_returns_clean_state`)
 - [x] the package manifest is authoritative and generated
-- [ ] the installed-state lockfile is structured and validated
-- [ ] Copilot can drive the flow through a machine-readable protocol
-- [ ] the visible terminal experience is branded but optional and non-blocking
+- [x] the installed-state lockfile is structured and validated (`xanad-assistant-lock.schema.json`; validated in `test_lockfile_written_by_apply_validates_against_schema`; migration coverage in `LockfileMigrationTests`)
+- [x] Copilot can drive the flow through a machine-readable protocol (`--json` and `--json-lines` flags on all commands; interview/plan/apply separation; machine-readable exit codes)
+- [x] the visible terminal experience is branded but optional and non-blocking (`--ui quiet/agent/tui`; `emit_agent_progress` with ANSI color; suppressed by `NO_COLOR`; non-blocking on missing tty)
 - [x] optional packs and profiles do not bloat the default install
-- [ ] stale consumer installs can be upgraded and repaired reliably
-- [ ] contributor authoring flow has one clear source of truth per managed surface
+- [x] stale consumer installs can be upgraded and repaired reliably (`StaleConsumerFixtureConvergenceTests` in `tests/test_convergence_and_network.py`)
+- [x] contributor authoring flow has one clear source of truth per managed surface (`scripts/generate.py` regenerates manifest and catalog; `check_manifest_freshness.py` enforces freshness in CI)

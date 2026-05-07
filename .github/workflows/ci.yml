@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+
+  freshness:
+    name: Derived Artifact Freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check manifest and catalog freshness
+        run: |
+          python3 -m scripts.lifecycle.check_manifest_freshness \
+            --package-root . \
+            --policy template/setup/install-policy.json \
+            --manifest template/setup/install-manifest.json \
+            --catalog template/setup/catalog.json

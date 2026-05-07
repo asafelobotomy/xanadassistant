@@ -6,6 +6,7 @@
     "template": "template",
     "agents": "agents",
     "skills": "skills",
+    "lean-pack": "packs/lean",
     "hooks": "hooks"
   },
   "generationSettings": {
@@ -36,7 +37,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:738b1d4cee329f4aa13924173782d3ae4d5d655f866f0d20d4a162dae39a8cfd"
+      "hash": "sha256:db95bacd2f6d42a00a12de5e7ed3a47fefcfa2477495832b9662d415412a22b9"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -86,7 +87,25 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:6a63a0231fe94d334c3919e7f6b2b758ff99c4f21dc6255db870ce0d6c3b2345"
+      "hash": "sha256:22dce383a294ba928469f22bbe0abc1c8d47f48cb956f14d85427db9beba3e9f"
+    },
+    {
+      "id": "lean-skills.lean-output.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/lean/skills/lean-output/SKILL.md",
+      "target": ".github/skills/lean-output/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=lean"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:6189ba81cb8cffa1b36f49968c907448ab48ca0d999a25c422401a42c9e43843"
     },
     {
       "id": "skills.lifecycle-audit.SKILL.md",
