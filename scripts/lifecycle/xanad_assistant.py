@@ -1,0 +1,1729 @@
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.lifecycle.generate_manifest import load_json, sha256_file
+
+
+DEFAULT_POLICY_PATH = Path("template/setup/install-policy.json")
+DEFAULT_POLICY_SCHEMA_PATH = Path("template/setup/install-policy.schema.json")
+DEFAULT_MANIFEST_SCHEMA_PATH = Path("template/setup/install-manifest.schema.json")
+DEFAULT_LOCK_SCHEMA_PATH = Path("template/setup/xanad-assistant-lock.schema.json")
+DEFAULT_PACK_REGISTRY_PATH = Path("template/setup/pack-registry.json")
+DEFAULT_PROFILE_REGISTRY_PATH = Path("template/setup/profile-registry.json")
+DEFAULT_CATALOG_PATH = Path("template/setup/catalog.json")
+
+
+class LifecycleCommandError(Exception):
+    def __init__(self, code: str, message: str, exit_code: int, details: dict | None = None) -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.exit_code = exit_code
+        self.details = details or {}
+
+
+def add_common_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--workspace", required=True, help="Consumer repository to inspect or modify.")
+    parser.add_argument("--package-root", required=True, help="Local xanad-assistant package checkout.")
+    parser.add_argument("--source", help="Package source identifier.")
+    parser.add_argument("--version", help="Requested release version.")
+    parser.add_argument("--ref", help="Requested source ref.")
+    parser.add_argument("--json", action="store_true", help="Emit a single JSON result.")
+    parser.add_argument("--json-lines", action="store_true", help="Emit JSON Lines protocol events.")
+    parser.add_argument("--non-interactive", action="store_true", help="Disable interactive prompting.")
+    parser.add_argument("--dry-run", action="store_true", help="Avoid managed writes.")
+    parser.add_argument("--answers", help="Path to answer file.")
+    parser.add_argument("--plan-out", help="Path to write a serialized plan.")
+    parser.add_argument("--report-out", help="Path to write a structured report.")
+    parser.add_argument("--log-file", help="Path to write a plain-text operational log.")
+    parser.add_argument("--ui", choices=["quiet", "agent", "tui"], default="quiet", help="Presentation mode.")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Xanad Assistant lifecycle tool.")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    inspect_parser = subparsers.add_parser("inspect", help="Inspect workspace state.")
+    add_common_arguments(inspect_parser)
+
+    check_parser = subparsers.add_parser("check", help="Check managed workspace state.")
+    add_common_arguments(check_parser)
+
+    interview_parser = subparsers.add_parser("interview", help="Emit structured lifecycle questions.")
+    add_common_arguments(interview_parser)
+    interview_parser.add_argument(
+        "--mode",
+        choices=["setup", "update", "repair", "factory-restore"],
+        default="setup",
+        help="Lifecycle mode requiring questions.",
+    )
+
+    plan_parser = subparsers.add_parser("plan", help="Generate a lifecycle plan.")
+    plan_subparsers = plan_parser.add_subparsers(dest="mode", required=True)
+    for mode in ("setup", "update", "repair", "factory-restore"):
+        mode_parser = plan_subparsers.add_parser(mode, help=f"Generate a {mode} plan.")
+        add_common_arguments(mode_parser)
+
+    for command in ("apply", "update", "repair", "factory-restore"):
+        command_parser = subparsers.add_parser(command, help=f"{command} workspace state.")
+        add_common_arguments(command_parser)
+
+    return parser
+
+
+def resolve_workspace(path_value: str) -> Path:
+    workspace = Path(path_value).resolve()
+    workspace.mkdir(parents=True, exist_ok=True)
+    return workspace
+
+
+def resolve_package_root(path_value: str) -> Path:
+    package_root = Path(path_value).resolve()
+    if not package_root.exists():
+        raise FileNotFoundError(f"Package root does not exist: {package_root}")
+    return package_root
+
+
+def build_source_summary(package_root: Path) -> dict:
+    return {
+        "kind": "package-root",
+        "packageRoot": str(package_root),
+    }
+
+
+def load_optional_json(path: Path) -> dict | None:
+    if not path.exists():
+        return None
+    return load_json(path)
+
+
+def load_contract_artifacts(package_root: Path) -> tuple[dict, dict]:
+    policy_path = package_root / DEFAULT_POLICY_PATH
+    policy_schema_path = package_root / DEFAULT_POLICY_SCHEMA_PATH
+    manifest_schema_path = package_root / DEFAULT_MANIFEST_SCHEMA_PATH
+    lock_schema_path = package_root / DEFAULT_LOCK_SCHEMA_PATH
+
+    policy = load_json(policy_path)
+    manifest_path = package_root / policy.get("generationSettings", {}).get("manifestOutput", "template/setup/install-manifest.json")
+
+    artifacts = {
+        "policy": {
+            "path": str(policy_path),
+            "loaded": policy_path.exists(),
+        },
+        "policySchema": {
+            "path": str(policy_schema_path),
+            "loaded": policy_schema_path.exists(),
+        },
+        "manifestSchema": {
+            "path": str(manifest_schema_path),
+            "loaded": manifest_schema_path.exists(),
+        },
+        "lockSchema": {
+            "path": str(lock_schema_path),
+            "loaded": lock_schema_path.exists(),
+        },
+        "manifest": {
+            "path": str(manifest_path),
+            "loaded": manifest_path.exists(),
+        },
+    }
+    return policy, artifacts
+
+
+def load_discovery_metadata(package_root: Path) -> tuple[dict, dict]:
+    pack_registry_path = package_root / DEFAULT_PACK_REGISTRY_PATH
+    profile_registry_path = package_root / DEFAULT_PROFILE_REGISTRY_PATH
+    catalog_path = package_root / DEFAULT_CATALOG_PATH
+
+    metadata = {
+        "packRegistry": load_optional_json(pack_registry_path),
+        "profileRegistry": load_optional_json(profile_registry_path),
+        "catalog": load_optional_json(catalog_path),
+    }
+    artifacts = {
+        "packRegistry": {
+            "path": str(pack_registry_path),
+            "loaded": pack_registry_path.exists(),
+        },
+        "profileRegistry": {
+            "path": str(profile_registry_path),
+            "loaded": profile_registry_path.exists(),
+        },
+        "catalog": {
+            "path": str(catalog_path),
+            "loaded": catalog_path.exists(),
+        },
+    }
+    return metadata, artifacts
+
+
+def load_manifest(package_root: Path, policy: dict) -> dict | None:
+    manifest_path = package_root / policy.get("generationSettings", {}).get("manifestOutput", "template/setup/install-manifest.json")
+    if not manifest_path.exists():
+        return None
+    return load_json(manifest_path)
+
+
+def detect_git_state(workspace: Path) -> dict:
+    git_dir = workspace / ".git"
+    if not git_dir.exists():
+        return {
+            "present": False,
+            "dirty": None,
+        }
+
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(workspace), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return {
+            "present": True,
+            "dirty": None,
+        }
+
+    if result.returncode != 0:
+        return {
+            "present": True,
+            "dirty": None,
+        }
+
+    return {
+        "present": True,
+        "dirty": bool(result.stdout.strip()),
+    }
+
+
+def determine_install_state(workspace: Path) -> tuple[str, dict]:
+    lockfile = workspace / ".github" / "xanad-assistant-lock.json"
+    legacy_version = workspace / ".github" / "copilot-version.md"
+
+    if lockfile.exists():
+        return "installed", {"lockfile": str(lockfile), "legacyVersionFile": legacy_version.exists()}
+    if legacy_version.exists():
+        return "legacy-version-only", {"lockfile": None, "legacyVersionFile": True}
+    return "not-installed", {"lockfile": None, "legacyVersionFile": False}
+
+
+def parse_legacy_version_file(workspace: Path) -> dict:
+    legacy_path = workspace / ".github" / "copilot-version.md"
+    if not legacy_path.exists():
+        return {
+            "present": False,
+            "malformed": False,
+            "path": str(legacy_path),
+            "data": None,
+        }
+
+    text = legacy_path.read_text(encoding="utf-8")
+    json_match = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
+    if json_match:
+        try:
+            return {
+                "present": True,
+                "malformed": False,
+                "path": str(legacy_path),
+                "data": json.loads(json_match.group(1)),
+            }
+        except json.JSONDecodeError:
+            return {
+                "present": True,
+                "malformed": True,
+                "path": str(legacy_path),
+                "data": None,
+            }
+
+    version_match = re.search(r"(?im)^version\s*:\s*(?P<version>.+?)\s*$", text)
+    if version_match:
+        return {
+            "present": True,
+            "malformed": False,
+            "path": str(legacy_path),
+            "data": {"version": version_match.group("version")},
+        }
+
+    return {
+        "present": True,
+        "malformed": True,
+        "path": str(legacy_path),
+        "data": None,
+    }
+
+
+def parse_lockfile_state(workspace: Path) -> dict:
+    lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+    if not lockfile_path.exists():
+        return {
+            "present": False,
+            "malformed": False,
+            "path": str(lockfile_path),
+            "data": None,
+            "selectedPacks": [],
+            "profile": None,
+            "ownershipBySurface": {},
+            "skippedManagedFiles": [],
+            "unknownValues": {},
+            "files": [],
+        }
+
+    try:
+        data = load_json(lockfile_path)
+    except json.JSONDecodeError:
+        return {
+            "present": True,
+            "malformed": True,
+            "path": str(lockfile_path),
+            "data": None,
+            "selectedPacks": [],
+            "profile": None,
+            "ownershipBySurface": {},
+            "skippedManagedFiles": [],
+            "unknownValues": {},
+            "files": [],
+        }
+
+    return {
+        "present": True,
+        "malformed": False,
+        "path": str(lockfile_path),
+        "data": data,
+        "selectedPacks": data.get("selectedPacks", []),
+        "profile": data.get("profile"),
+        "ownershipBySurface": data.get("ownershipBySurface", {}),
+        "skippedManagedFiles": data.get("skippedManagedFiles", []),
+        "unknownValues": data.get("unknownValues", {}),
+        "files": data.get("files", []),
+    }
+
+
+def read_lockfile_status(workspace: Path) -> dict:
+    lockfile_state = parse_lockfile_state(workspace)
+    return {
+        "present": lockfile_state["present"],
+        "malformed": lockfile_state["malformed"],
+    }
+
+
+def count_files(path: Path) -> int:
+    if not path.exists() or not path.is_dir():
+        return 0
+    return sum(1 for file_path in path.rglob("*") if file_path.is_file())
+
+
+def detect_existing_surfaces(workspace: Path) -> dict:
+    return {
+        "instructions": {
+            "present": (workspace / ".github" / "copilot-instructions.md").exists(),
+        },
+        "prompts": {
+            "count": count_files(workspace / ".github" / "prompts"),
+        },
+        "agents": {
+            "count": count_files(workspace / ".github" / "agents"),
+        },
+        "skills": {
+            "count": count_files(workspace / ".github" / "skills"),
+        },
+        "hooks": {
+            "count": count_files(workspace / ".github" / "hooks"),
+        },
+        "mcp": {
+            "present": (workspace / ".vscode" / "mcp.json").exists(),
+        },
+        "workspace": {
+            "count": count_files(workspace / ".copilot" / "workspace"),
+        },
+    }
+
+
+def summarize_manifest_targets(workspace: Path, manifest: dict | None) -> dict:
+    if manifest is None:
+        return {
+            "declared": 0,
+            "present": 0,
+            "missing": 0,
+            "skipped": 0,
+            "retired": 0,
+        }
+
+    declared = len(manifest.get("managedFiles", []))
+    present = 0
+    missing = 0
+    skipped = 0
+    for entry in manifest.get("managedFiles", []):
+        if entry.get("status") == "skipped":
+            skipped += 1
+            continue
+        if (workspace / entry["target"]).exists():
+            present += 1
+        else:
+            missing += 1
+
+    return {
+        "declared": declared,
+        "present": present,
+        "missing": missing,
+        "skipped": skipped,
+        "retired": len(manifest.get("retiredFiles", [])),
+    }
+
+
+def parse_condition_literal(value: str) -> object:
+    normalized = value.strip()
+    lower = normalized.lower()
+    if lower == "true":
+        return True
+    if lower == "false":
+        return False
+    return normalized
+
+
+def condition_matches(condition: str, resolved_answers: dict) -> bool:
+    if "=" in condition:
+        condition_id, expected_value = condition.split("=", 1)
+        return resolved_answers.get(condition_id) == parse_condition_literal(expected_value)
+    return bool(resolved_answers.get(condition))
+
+
+def entry_required_for_plan(entry: dict, resolved_answers: dict) -> bool:
+    required_when = entry.get("requiredWhen", [])
+    if isinstance(required_when, str):
+        required_when = [required_when]
+    return all(condition_matches(condition, resolved_answers) for condition in required_when)
+
+
+def normalize_plan_answers(policy: dict, resolved_answers: dict) -> dict:
+    normalized_answers = dict(resolved_answers)
+    if "hook-scripts" in policy.get("canonicalSurfaces", []) and normalized_answers.get("mcp.enabled"):
+        normalized_answers["hooks.enabled"] = True
+    return normalized_answers
+
+
+def resolve_token_values(policy: dict, workspace: Path, resolved_answers: dict) -> dict[str, str]:
+    token_values: dict[str, str] = {}
+
+    for token_rule in policy.get("tokenRules", []):
+        token = token_rule["token"]
+        if token == "{{WORKSPACE_NAME}}":
+            token_values[token] = workspace.name
+        elif token == "{{XANAD_PROFILE}}":
+            profile = resolved_answers.get("profile.selected")
+            if isinstance(profile, str) and profile:
+                token_values[token] = profile
+
+    return token_values
+
+
+def build_token_plan_summary(policy: dict, actions: list[dict], token_values: dict[str, str]) -> list[dict]:
+    active_targets_by_token: dict[str, list[str]] = {}
+    token_requirements = {rule["token"]: rule for rule in policy.get("tokenRules", [])}
+
+    for action in actions:
+        for token in action.get("tokens", []):
+            active_targets_by_token.setdefault(token, []).append(action["target"])
+
+    summary = []
+    for token in sorted(active_targets_by_token):
+        summary.append(
+            {
+                "token": token,
+                "value": token_values.get(token),
+                "required": bool(token_requirements.get(token, {}).get("required", False)),
+                "targets": sorted(active_targets_by_token[token]),
+            }
+        )
+
+    return summary
+
+
+def build_backup_plan(policy: dict, actions: list[dict], backup_required: bool) -> dict:
+    archive_root = policy.get("retiredFilePolicy", {}).get("archiveRoot")
+    if not backup_required:
+        return {
+            "required": False,
+            "root": None,
+            "targets": [],
+            "archiveRoot": archive_root,
+            "archiveTargets": [],
+        }
+
+    backup_root = ".xanad-assistant/backups/<apply-timestamp>"
+    backup_targets = []
+    archive_targets = []
+
+    for action in actions:
+        if action["action"] in {"replace", "merge"}:
+            backup_targets.append(
+                {
+                    "target": action["target"],
+                    "action": action["action"],
+                    "backupPath": f"{backup_root}/{action['target']}",
+                }
+            )
+        elif action["action"] == "archive-retired" and archive_root is not None:
+            archive_targets.append(
+                {
+                    "target": action["target"],
+                    "archivePath": f"{archive_root}/{action['target']}",
+                }
+            )
+
+    return {
+        "required": True,
+        "root": backup_root,
+        "targets": backup_targets,
+        "archiveRoot": archive_root,
+        "archiveTargets": archive_targets,
+    }
+
+
+def derive_effective_plan_defaults(policy: dict, metadata: dict, manifest: dict | None, lockfile_state: dict) -> tuple[dict, dict]:
+    questions = build_interview_questions(policy, metadata, "setup")
+    seeded_answers = seed_answers_from_install_state("update", questions, lockfile_state, {})
+    resolved_answers, _ = resolve_question_answers(questions, seeded_answers)
+    resolved_answers = normalize_plan_answers(policy, resolved_answers)
+    ownership_by_surface = resolve_ownership_by_surface(policy, manifest, lockfile_state, resolved_answers)
+    return resolved_answers, ownership_by_surface
+
+
+def collect_context(workspace: Path, package_root: Path) -> dict:
+    warnings: list[dict] = []
+    policy, artifacts = load_contract_artifacts(package_root)
+    metadata, metadata_artifacts = load_discovery_metadata(package_root)
+    manifest = load_manifest(package_root, policy)
+    install_state, install_paths = determine_install_state(workspace)
+    legacy_version_state = parse_legacy_version_file(workspace)
+    lockfile_state = parse_lockfile_state(workspace)
+    default_answers, ownership_by_surface = derive_effective_plan_defaults(policy, metadata, manifest, lockfile_state)
+    manifest_with_status = annotate_manifest_entries(workspace, manifest, ownership_by_surface, default_answers)
+    manifest_summary = summarize_manifest_targets(workspace, manifest_with_status)
+
+    if not artifacts["manifest"]["loaded"]:
+        warnings.append(
+            {
+                "code": "manifest_missing",
+                "message": "Generated manifest not found at package root.",
+                "details": {"path": artifacts["manifest"]["path"]},
+            }
+        )
+
+    return {
+        "policy": policy,
+        "artifacts": artifacts,
+        "metadata": metadata,
+        "metadataArtifacts": metadata_artifacts,
+        "manifest": manifest,
+        "manifestWithStatus": manifest_with_status,
+        "installState": install_state,
+        "installPaths": install_paths,
+        "git": detect_git_state(workspace),
+        "existingSurfaces": detect_existing_surfaces(workspace),
+        "legacyVersionState": legacy_version_state,
+        "lockfileState": lockfile_state,
+        "manifestSummary": manifest_summary,
+        "defaultPlanAnswers": default_answers,
+        "defaultOwnershipBySurface": ownership_by_surface,
+        "warnings": warnings,
+    }
+
+
+def build_inspect_result(workspace: Path, package_root: Path) -> dict:
+    context = collect_context(workspace, package_root)
+
+    return {
+        "command": "inspect",
+        "workspace": str(workspace),
+        "source": build_source_summary(package_root),
+        "status": "ok",
+        "warnings": context["warnings"],
+        "errors": [],
+        "result": {
+            "installState": context["installState"],
+            "installPaths": context["installPaths"],
+            "git": context["git"],
+            "contracts": context["artifacts"],
+            "discoveryMetadata": context["metadataArtifacts"],
+            "existingSurfaces": context["existingSurfaces"],
+            "legacyVersionState": context["legacyVersionState"],
+            "lockfileState": context["lockfileState"],
+            "manifestSummary": context["manifestSummary"],
+        },
+    }
+
+
+def annotate_manifest_entries(workspace: Path, manifest: dict | None, ownership_by_surface: dict, resolved_answers: dict) -> dict | None:
+    if manifest is None:
+        return None
+
+    annotated_manifest = dict(manifest)
+    annotated_entries = []
+    for entry in manifest.get("managedFiles", []):
+        annotated_entry = dict(entry)
+        ownership_mode = ownership_by_surface.get(entry["surface"], entry["ownership"][0])
+        if ownership_mode != "local":
+            annotated_entry["status"] = "skipped"
+            annotated_entry["skipReason"] = "plugin-backed-ownership"
+        elif not entry_required_for_plan(entry, resolved_answers):
+            annotated_entry["status"] = "skipped"
+            annotated_entry["skipReason"] = "condition-not-selected"
+        else:
+            target_path = workspace / entry["target"]
+            if not target_path.exists():
+                annotated_entry["status"] = "missing"
+            else:
+                installed_hash = sha256_file(target_path)
+                annotated_entry["status"] = "clean" if installed_hash == entry["hash"] else "stale"
+        annotated_entries.append(annotated_entry)
+
+    annotated_manifest["managedFiles"] = annotated_entries
+    return annotated_manifest
+
+
+def classify_manifest_entries(workspace: Path, manifest: dict | None) -> tuple[dict, list[dict], set[str]]:
+    counts = {
+        "clean": 0,
+        "missing": 0,
+        "stale": 0,
+        "malformed": 0,
+        "skipped": 0,
+        "retired": 0,
+        "unmanaged": 0,
+        "unknown": 0,
+    }
+    entries = []
+    managed_targets: set[str] = set()
+
+    if manifest is None:
+        return counts, entries, managed_targets
+
+    for entry in manifest.get("managedFiles", []):
+        target = entry["target"]
+        managed_targets.add(target)
+        status = entry.get("status")
+        if status is None:
+            target_path = workspace / target
+            if not target_path.exists():
+                status = "missing"
+            else:
+                installed_hash = sha256_file(target_path)
+                status = "clean" if installed_hash == entry["hash"] else "stale"
+
+        counts[status] += 1
+        entries.append(
+            {
+                "id": entry["id"],
+                "target": target,
+                "status": status,
+            }
+        )
+
+    for retired in manifest.get("retiredFiles", []):
+        retired_target = retired.get("target")
+        if retired_target and (workspace / retired_target).exists():
+            counts["retired"] += 1
+            entries.append(
+                {
+                    "id": retired["id"],
+                    "target": retired_target,
+                    "status": "retired",
+                }
+            )
+
+    return counts, entries, managed_targets
+
+
+def collect_unmanaged_files(workspace: Path, manifest: dict | None, managed_targets: set[str]) -> list[str]:
+    if manifest is None:
+        return []
+
+    retired_targets = {entry.get("target") for entry in manifest.get("retiredFiles", [])}
+    candidate_dirs = {str(Path(target).parent) for target in managed_targets}
+    unmanaged: set[str] = set()
+
+    for candidate in sorted(candidate_dirs):
+        if candidate in {"", "."}:
+            continue
+        base_dir = workspace / candidate
+        if not base_dir.exists() or not base_dir.is_dir():
+            continue
+        for file_path in sorted(path for path in base_dir.rglob("*") if path.is_file()):
+            relative = file_path.relative_to(workspace).as_posix()
+            if relative in managed_targets or relative in retired_targets:
+                continue
+            if relative in {".github/xanad-assistant-lock.json", ".github/copilot-version.md"}:
+                continue
+            unmanaged.add(relative)
+
+    return sorted(unmanaged)
+
+
+def build_check_result(workspace: Path, package_root: Path) -> dict:
+    context = collect_context(workspace, package_root)
+    counts, entries, managed_targets = classify_manifest_entries(workspace, context["manifestWithStatus"])
+    unmanaged_files = collect_unmanaged_files(workspace, context["manifestWithStatus"], managed_targets)
+    counts["unmanaged"] = len(unmanaged_files)
+
+    lockfile_status = read_lockfile_status(workspace)
+    if lockfile_status["malformed"]:
+        counts["malformed"] += 1
+    if context["legacyVersionState"]["malformed"]:
+        counts["malformed"] += 1
+
+    skipped_files = context["lockfileState"].get("skippedManagedFiles", [])
+    counts["skipped"] += len(skipped_files)
+    recorded_targets = {entry["target"] for entry in entries}
+    for skipped_target in skipped_files:
+        if skipped_target in recorded_targets:
+            continue
+        entries.append(
+            {
+                "id": skipped_target,
+                "target": skipped_target,
+                "status": "skipped",
+            }
+        )
+
+    unknown_values = context["lockfileState"].get("unknownValues", {})
+    unknown_count = len(unknown_values)
+    for file_record in context["lockfileState"].get("files", []):
+        if file_record.get("status") == "unknown" or file_record.get("installedHash") == "unknown":
+            unknown_count += 1
+            entries.append(
+                {
+                    "id": file_record.get("id", file_record.get("target", "unknown")),
+                    "target": file_record.get("target", "unknown"),
+                    "status": "unknown",
+                }
+            )
+    counts["unknown"] = unknown_count
+
+    status = "clean"
+    if any(counts[key] > 0 for key in ("missing", "stale", "malformed", "retired", "unmanaged", "unknown")):
+        status = "drift"
+
+    return {
+        "command": "check",
+        "workspace": str(workspace),
+        "source": build_source_summary(package_root),
+        "status": status,
+        "warnings": context["warnings"],
+        "errors": [],
+        "result": {
+            "installState": context["installState"],
+            "installPaths": context["installPaths"],
+            "contracts": context["artifacts"],
+            "existingSurfaces": context["existingSurfaces"],
+            "legacyVersionState": context["legacyVersionState"],
+            "lockfileState": context["lockfileState"],
+            "summary": counts,
+            "entries": entries,
+            "unmanagedFiles": unmanaged_files,
+        },
+    }
+
+
+def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[dict]:
+    questions = []
+    ownership_defaults = policy.get("ownershipDefaults", {})
+
+    profile_registry = metadata.get("profileRegistry") or {}
+    pack_registry = metadata.get("packRegistry") or {}
+
+    profile_options = [profile["id"] for profile in profile_registry.get("profiles", [])]
+    if profile_options:
+        questions.append(
+            {
+                "id": "profile.selected",
+                "kind": "choice",
+                "prompt": f"Which behavior profile should {mode} use?",
+                "required": True,
+                "options": profile_options,
+                "recommended": "balanced" if "balanced" in profile_options else profile_options[0],
+                "default": "balanced" if "balanced" in profile_options else profile_options[0],
+                "requiredFor": ["profile"],
+            }
+        )
+
+    optional_packs = [pack["id"] for pack in pack_registry.get("packs", []) if pack.get("optional", False)]
+    if optional_packs:
+        questions.append(
+            {
+                "id": "packs.selected",
+                "kind": "multi-choice",
+                "prompt": f"Which optional packs should {mode} consider?",
+                "required": False,
+                "options": optional_packs,
+                "recommended": [],
+                "default": [],
+                "requiredFor": ["packs"],
+            }
+        )
+
+    for surface in ("agents", "skills"):
+        if surface not in ownership_defaults:
+            continue
+        questions.append(
+            {
+                "id": f"ownership.{surface}",
+                "kind": "choice",
+                "prompt": f"How should {surface} be owned for this workspace?",
+                "required": True,
+                "options": ["local", "plugin-backed-copilot-format"],
+                "recommended": ownership_defaults[surface],
+                "default": ownership_defaults[surface],
+                "requiredFor": [surface],
+            }
+        )
+
+    if "hook-scripts" in policy.get("canonicalSurfaces", []):
+        questions.append(
+            {
+                "id": "hooks.enabled",
+                "kind": "confirm",
+                "prompt": "Enable workspace-local hook scripts for this workspace?",
+                "required": True,
+                "default": False,
+                "recommended": False,
+                "reason": "Hooks stay opt-in so the default install stays lean until a workspace needs local executable paths.",
+                "requiredFor": ["hook-scripts"],
+            }
+        )
+
+    if "mcp-config" in policy.get("canonicalSurfaces", []):
+        questions.append(
+            {
+                "id": "mcp.enabled",
+                "kind": "confirm",
+                "prompt": "Enable MCP configuration for this workspace?",
+                "required": True,
+                "default": False,
+                "recommended": False,
+                "reason": "MCP stays opt-in until the workspace chooses a local server configuration.",
+                "requiredFor": ["mcp-config"],
+            }
+        )
+
+    return questions
+
+
+def build_interview_result(workspace: Path, package_root: Path, mode: str) -> dict:
+    context = collect_context(workspace, package_root)
+    questions = build_interview_questions(context["policy"], context["metadata"], mode)
+
+    return {
+        "command": "interview",
+        "mode": mode,
+        "workspace": str(workspace),
+        "source": build_source_summary(package_root),
+        "status": "ok",
+        "warnings": context["warnings"],
+        "errors": [],
+        "result": {
+            "installState": context["installState"],
+            "discoveryMetadata": context["metadataArtifacts"],
+            "questionCount": len(questions),
+            "questions": questions,
+        },
+    }
+
+
+def build_error_payload(
+    command: str,
+    workspace: Path,
+    package_root: Path,
+    code: str,
+    message: str,
+    exit_code: int,
+    mode: str | None = None,
+    details: dict | None = None,
+) -> tuple[dict, int]:
+    return (
+        {
+            "command": command,
+            "mode": mode,
+            "workspace": str(workspace),
+            "source": build_source_summary(package_root),
+            "status": "error",
+            "warnings": [],
+            "errors": [
+                {
+                    "code": code,
+                    "message": message,
+                    "details": details or {},
+                }
+            ],
+            "result": {},
+        },
+        exit_code,
+    )
+
+
+def load_answers(path_value: str | None) -> dict:
+    if path_value is None:
+        return {}
+
+    answers_path = Path(path_value).resolve()
+    if not answers_path.exists():
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Answer file was not found.",
+            4,
+            {"path": str(answers_path)},
+        )
+
+    try:
+        data = load_json(answers_path)
+    except json.JSONDecodeError as error:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Answer file is not valid JSON.",
+            4,
+            {"path": str(answers_path), "line": error.lineno, "column": error.colno},
+        ) from error
+
+    if not isinstance(data, dict):
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Answer file must contain a JSON object.",
+            4,
+            {"path": str(answers_path)},
+        )
+    return data
+
+
+def validate_answer_value(question: dict, value: object) -> None:
+    kind = question.get("kind")
+    options = question.get("options", [])
+
+    if kind == "choice":
+        if not isinstance(value, str) or value not in options:
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                f"Invalid answer for {question['id']}.",
+                4,
+                {"questionId": question["id"], "expected": options, "received": value},
+            )
+        return
+
+    if kind == "multi-choice":
+        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                f"Invalid answer for {question['id']}.",
+                4,
+                {"questionId": question["id"], "expected": options, "received": value},
+            )
+        if any(item not in options for item in value):
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                f"Invalid answer for {question['id']}.",
+                4,
+                {"questionId": question["id"], "expected": options, "received": value},
+            )
+        return
+
+    if kind == "confirm" and not isinstance(value, bool):
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            f"Invalid answer for {question['id']}.",
+            4,
+            {"questionId": question["id"], "expected": "boolean", "received": value},
+        )
+
+
+def resolve_question_answers(questions: list[dict], answers: dict) -> tuple[dict, list[str]]:
+    resolved_answers: dict = {}
+    unresolved: list[str] = []
+    question_map = {question["id"]: question for question in questions}
+
+    unknown_ids = sorted(answer_id for answer_id in answers if answer_id not in question_map)
+    if unknown_ids:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Answer file contains unknown question ids.",
+            4,
+            {"questionIds": unknown_ids},
+        )
+
+    for question in questions:
+        question_id = question["id"]
+        if question_id in answers:
+            validate_answer_value(question, answers[question_id])
+            resolved_answers[question_id] = answers[question_id]
+            continue
+        if "default" in question:
+            resolved_answers[question_id] = question["default"]
+            continue
+        if question.get("recommended") is not None:
+            resolved_answers[question_id] = question["recommended"]
+            continue
+        if question.get("required"):
+            unresolved.append(question_id)
+
+    return resolved_answers, unresolved
+
+
+def resolve_ownership_by_surface(policy: dict, manifest: dict | None, lockfile_state: dict, resolved_answers: dict) -> dict:
+    canonical_surfaces = policy.get("canonicalSurfaces", [])
+    target_path_rules = policy.get("targetPathRules", {})
+    ownership_defaults = policy.get("ownershipDefaults", {})
+    existing_ownership = lockfile_state.get("ownershipBySurface", {})
+
+    ownership_by_surface: dict[str, str] = {}
+    if manifest is None:
+        return ownership_by_surface
+
+    for entry in manifest.get("managedFiles", []):
+        canonical_surface = entry["id"].split(".", 1)[0]
+        target_surface = entry["surface"]
+        default_ownership = ownership_defaults.get(canonical_surface)
+        if canonical_surface in canonical_surfaces:
+            default_ownership = ownership_defaults.get(canonical_surface)
+        if default_ownership is None:
+            default_ownership = entry["ownership"][0]
+
+        resolved_ownership = existing_ownership.get(target_surface)
+        if resolved_ownership is None:
+            resolved_ownership = existing_ownership.get(canonical_surface)
+        if resolved_ownership is None:
+            resolved_ownership = resolved_answers.get(f"ownership.{target_surface}")
+        if resolved_ownership is None:
+            resolved_ownership = resolved_answers.get(f"ownership.{canonical_surface}")
+        if resolved_ownership is None:
+            resolved_ownership = default_ownership
+
+        if resolved_ownership not in entry["ownership"]:
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                f"Resolved ownership is not supported for {target_surface}.",
+                4,
+                {
+                    "surface": target_surface,
+                    "resolvedOwnership": resolved_ownership,
+                    "supportedOwnership": entry["ownership"],
+                },
+            )
+
+        ownership_by_surface[target_surface] = resolved_ownership
+
+    return ownership_by_surface
+
+
+def build_setup_plan_actions(
+    workspace: Path,
+    manifest: dict | None,
+    ownership_by_surface: dict,
+    resolved_answers: dict,
+    token_values: dict[str, str],
+    force_reinstall: bool = False,
+) -> tuple[dict, list[dict], list[dict], list[str]]:
+    writes = {
+        "add": 0,
+        "replace": 0,
+        "merge": 0,
+        "archiveRetired": 0,
+    }
+    actions: list[dict] = []
+    skipped_actions: list[dict] = []
+    retired_targets: list[str] = []
+
+    if manifest is None:
+        return writes, actions, skipped_actions, retired_targets
+
+    merge_strategies = {"merge-json-object", "preserve-marked-markdown-blocks"}
+
+    for entry in manifest.get("managedFiles", []):
+        ownership_mode = ownership_by_surface.get(entry["surface"], entry["ownership"][0])
+        if ownership_mode != "local":
+            skipped_actions.append(
+                {
+                    "id": entry["id"],
+                    "surface": entry["surface"],
+                    "target": entry["target"],
+                    "reason": "plugin-backed-ownership",
+                    "ownershipMode": ownership_mode,
+                }
+            )
+            continue
+
+        if not entry_required_for_plan(entry, resolved_answers):
+            skipped_actions.append(
+                {
+                    "id": entry["id"],
+                    "surface": entry["surface"],
+                    "target": entry["target"],
+                    "reason": "condition-not-selected",
+                    "requiredWhen": entry.get("requiredWhen", []),
+                    "ownershipMode": ownership_mode,
+                }
+            )
+            continue
+
+        target = entry["target"]
+        target_path = workspace / target
+        if not target_path.exists():
+            action = "add"
+        else:
+            if force_reinstall:
+                action = "merge" if entry["strategy"] in merge_strategies else "replace"
+            else:
+                installed_hash = sha256_file(target_path)
+                if installed_hash == entry["hash"]:
+                    continue
+                action = "merge" if entry["strategy"] in merge_strategies else "replace"
+
+        writes[action] += 1
+        actions.append(
+            {
+                "id": entry["id"],
+                "surface": entry["surface"],
+                "target": target,
+                "action": action,
+                "ownershipMode": ownership_mode,
+                "strategy": entry["strategy"],
+                "tokens": entry.get("tokens", []),
+                "tokenValues": {token: token_values[token] for token in entry.get("tokens", []) if token in token_values},
+            }
+        )
+
+    for retired_entry in manifest.get("retiredFiles", []):
+        retired_target = retired_entry.get("target")
+        if retired_target and (workspace / retired_target).exists():
+            writes["archiveRetired"] += 1
+            retired_targets.append(retired_target)
+            actions.append(
+                {
+                    "id": retired_entry["id"],
+                    "target": retired_target,
+                    "action": "archive-retired",
+                    "ownershipMode": None,
+                    "strategy": retired_entry.get("action", "archive-retired"),
+                }
+            )
+
+    return writes, actions, skipped_actions, retired_targets
+
+
+def classify_plan_conflicts(context: dict, actions: list[dict], retired_targets: list[str]) -> tuple[list[dict], list[dict]]:
+    conflicts: list[dict] = []
+    warnings: list[dict] = list(context["warnings"])
+
+    stale_actions = [action for action in actions if action["action"] in {"replace", "merge"}]
+    if stale_actions:
+        conflict = {
+            "class": "managed-drift",
+            "targets": [action["target"] for action in stale_actions],
+        }
+        conflicts.append(conflict)
+        warnings.append(
+            {
+                "code": "managed_drift",
+                "message": "Managed targets differ from package state and require updates.",
+                "details": conflict,
+            }
+        )
+
+    unmanaged_files = collect_unmanaged_files(context["workspacePath"], context["manifest"], {entry["target"] for entry in context["manifest"].get("managedFiles", [])} if context["manifest"] else set())
+    if unmanaged_files:
+        conflict = {
+            "class": "unmanaged-lookalike",
+            "targets": unmanaged_files,
+        }
+        conflicts.append(conflict)
+        warnings.append(
+            {
+                "code": "unmanaged_lookalike",
+                "message": "Unmanaged files exist in managed target directories.",
+                "details": conflict,
+            }
+        )
+
+    if context["legacyVersionState"]["malformed"] or context["lockfileState"]["malformed"]:
+        details = {
+            "legacyVersionMalformed": context["legacyVersionState"]["malformed"],
+            "lockfileMalformed": context["lockfileState"]["malformed"],
+        }
+        conflicts.append({"class": "malformed-managed-state", "details": details})
+        warnings.append(
+            {
+                "code": "malformed_managed_state",
+                "message": "Existing managed state is malformed and may require repair.",
+                "details": details,
+            }
+        )
+
+    if retired_targets:
+        conflict = {
+            "class": "retired-file-present",
+            "targets": retired_targets,
+        }
+        conflicts.append(conflict)
+        warnings.append(
+            {
+                "code": "retired_file_present",
+                "message": "Retired managed files are still present in the workspace.",
+                "details": conflict,
+            }
+        )
+
+    return conflicts, warnings
+
+
+def build_conflict_summary(conflicts: list[dict]) -> dict:
+    summary: dict[str, int] = {}
+    for conflict in conflicts:
+        conflict_class = conflict["class"]
+        summary[conflict_class] = summary.get(conflict_class, 0) + 1
+    return summary
+
+
+def write_plan_output(path_value: str | None, payload: dict) -> str | None:
+    if path_value is None:
+        return None
+
+    output_path = Path(path_value).resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return str(output_path)
+
+
+def sha256_json(data: object) -> str:
+    encoded = json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
+
+
+def seed_answers_from_install_state(mode: str, questions: list[dict], lockfile_state: dict, answers: dict) -> dict:
+    if mode not in {"update", "repair", "factory-restore"}:
+        return dict(answers)
+
+    seeded_answers = dict(answers)
+    question_map = {question["id"]: question for question in questions}
+
+    profile_question = question_map.get("profile.selected")
+    installed_profile = lockfile_state.get("profile")
+    if profile_question and "profile.selected" not in seeded_answers and installed_profile in profile_question.get("options", []):
+        seeded_answers["profile.selected"] = installed_profile
+
+    packs_question = question_map.get("packs.selected")
+    installed_packs = lockfile_state.get("selectedPacks", [])
+    if packs_question and "packs.selected" not in seeded_answers and isinstance(installed_packs, list):
+        valid_packs = [pack_id for pack_id in installed_packs if pack_id in packs_question.get("options", [])]
+        seeded_answers["packs.selected"] = valid_packs
+
+    return seeded_answers
+
+
+def determine_repair_reasons(context: dict) -> list[str]:
+    reasons: list[str] = []
+    if context["installState"] == "legacy-version-only":
+        reasons.append("legacy-version-only")
+    if context["legacyVersionState"]["malformed"]:
+        reasons.append("malformed-legacy-version")
+    if context["lockfileState"]["malformed"]:
+        reasons.append("malformed-lockfile")
+    return reasons
+
+
+def build_planned_lockfile(
+    context: dict,
+    ownership_by_surface: dict,
+    resolved_answers: dict,
+    actions: list[dict],
+    skipped_actions: list[dict],
+    retired_targets: list[str],
+    backup_plan: dict,
+) -> dict:
+    manifest = context["manifest"] or {"schemaVersion": "unknown", "managedFiles": [], "retiredFiles": []}
+    manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
+    file_records = []
+
+    for action in actions:
+        if action["action"] == "archive-retired":
+            continue
+
+        manifest_entry = manifest_entries.get(action["id"])
+        if manifest_entry is None:
+            continue
+
+        file_records.append(
+            {
+                "id": action["id"],
+                "target": action["target"],
+                "sourceHash": manifest_entry["hash"],
+                "installedHash": manifest_entry["hash"],
+                "ownershipMode": action["ownershipMode"],
+                "status": "applied",
+            }
+        )
+
+    archive_targets = {entry["target"]: entry["archivePath"] for entry in backup_plan.get("archiveTargets", [])}
+    retired_records = []
+    for retired_entry in manifest.get("retiredFiles", []):
+        target = retired_entry.get("target")
+        if target not in retired_targets:
+            continue
+        retired_record = {
+            "id": retired_entry["id"],
+            "action": "archived" if target in archive_targets else "reported",
+        }
+        if target is not None:
+            retired_record["target"] = target
+        if target in archive_targets:
+            retired_record["archivePath"] = archive_targets[target]
+        retired_records.append(retired_record)
+
+    lockfile_contents = {
+        "schemaVersion": "0.1.0",
+        "package": {
+            "name": "xanad-assistant",
+        },
+        "manifest": {
+            "schemaVersion": manifest.get("schemaVersion", "0.1.0"),
+            "hash": sha256_json(manifest),
+        },
+        "timestamps": {
+            "appliedAt": "<apply-timestamp>",
+            "updatedAt": "<apply-timestamp>",
+        },
+        "selectedPacks": resolved_answers.get("packs.selected", []),
+        "profile": resolved_answers.get("profile.selected"),
+        "ownershipBySurface": ownership_by_surface,
+        "setupAnswers": resolved_answers,
+        "installMetadata": {
+            "mcpAvailable": True,
+            "mcpEnabled": bool(resolved_answers.get("mcp.enabled", False)),
+        },
+        "files": sorted(file_records, key=lambda record: record["target"]),
+        "skippedManagedFiles": sorted(entry["target"] for entry in skipped_actions),
+        "retiredManagedFiles": retired_records,
+        "unknownValues": {},
+    }
+    if backup_plan.get("required") and backup_plan.get("root"):
+        lockfile_contents["lastBackup"] = {"path": backup_plan["root"]}
+
+    return {
+        "path": ".github/xanad-assistant-lock.json",
+        "contents": lockfile_contents,
+    }
+
+
+def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_path: str | None, non_interactive: bool) -> dict:
+    if mode not in {"setup", "update", "repair", "factory-restore"}:
+        return build_not_implemented_payload("plan", workspace, package_root, mode)
+
+    context = collect_context(workspace, package_root)
+    if mode == "update" and context["installState"] == "not-installed":
+        raise LifecycleCommandError(
+            "inspection_failure",
+            "Update planning requires an existing install state.",
+            5,
+            {"installState": context["installState"]},
+        )
+    if mode == "repair":
+        repair_reasons = determine_repair_reasons(context)
+        if context["installState"] == "not-installed":
+            raise LifecycleCommandError(
+                "inspection_failure",
+                "Repair planning requires an existing install state.",
+                5,
+                {"installState": context["installState"]},
+            )
+        if not repair_reasons:
+            raise LifecycleCommandError(
+                "inspection_failure",
+                "Repair planning requires legacy or malformed managed state.",
+                5,
+                {"installState": context["installState"]},
+            )
+    else:
+        repair_reasons = []
+    if mode == "factory-restore" and context["installState"] == "not-installed":
+        raise LifecycleCommandError(
+            "inspection_failure",
+            "Factory-restore planning requires an existing install state.",
+            5,
+            {"installState": context["installState"]},
+        )
+
+    questions = build_interview_questions(context["policy"], context["metadata"], mode)
+    answers = seed_answers_from_install_state(mode, questions, context["lockfileState"], load_answers(answers_path))
+    resolved_answers, unresolved = resolve_question_answers(questions, answers)
+    resolved_answers = normalize_plan_answers(context["policy"], resolved_answers)
+    if non_interactive and unresolved:
+        raise LifecycleCommandError(
+            "approval_or_answers_required",
+            "Required answers are missing for non-interactive planning.",
+            6,
+            {"questionIds": unresolved},
+        )
+
+    ownership_by_surface = resolve_ownership_by_surface(
+        context["policy"],
+        context["manifest"],
+        context["lockfileState"],
+        resolved_answers,
+    )
+    token_values = resolve_token_values(context["policy"], workspace, resolved_answers)
+    context["workspacePath"] = workspace
+    writes, actions, skipped_actions, retired_targets = build_setup_plan_actions(
+        workspace,
+        context["manifest"],
+        ownership_by_surface,
+        resolved_answers,
+        token_values,
+        force_reinstall=mode == "factory-restore",
+    )
+    conflicts, warnings = classify_plan_conflicts(context, actions, retired_targets)
+    token_plan = build_token_plan_summary(context["policy"], actions, token_values)
+
+    backup_required = any(count > 0 for count in writes.values())
+    backup_plan = build_backup_plan(context["policy"], actions, backup_required)
+    planned_lockfile = build_planned_lockfile(
+        context,
+        ownership_by_surface,
+        resolved_answers,
+        actions,
+        skipped_actions,
+        retired_targets,
+        backup_plan,
+    )
+    approval_required = backup_required
+
+    return {
+        "command": "plan",
+        "mode": mode,
+        "workspace": str(workspace),
+        "source": build_source_summary(package_root),
+        "status": "approval-required" if approval_required else "ok",
+        "warnings": warnings,
+        "errors": [],
+        "result": {
+            "installState": context["installState"],
+            "installPaths": context["installPaths"],
+            "contracts": context["artifacts"],
+            "discoveryMetadata": context["metadataArtifacts"],
+            "approvalRequired": approval_required,
+            "backupRequired": backup_required,
+            "backupPlan": backup_plan,
+            "plannedLockfile": planned_lockfile,
+            "writes": writes,
+            "conflicts": conflicts,
+            "conflictSummary": build_conflict_summary(conflicts),
+            "actions": actions,
+            "skippedActions": skipped_actions,
+            "tokenSubstitutions": token_plan,
+            "ownershipBySurface": ownership_by_surface,
+            "packs": resolved_answers.get("packs.selected", []),
+            "profile": resolved_answers.get("profile.selected"),
+            "factoryRestore": mode == "factory-restore",
+            "repairReasons": repair_reasons,
+            "retired": retired_targets,
+            "questionsResolved": not unresolved,
+            "resolvedAnswers": resolved_answers,
+            "questions": questions,
+        },
+    }
+
+
+def emit_json(payload: dict) -> None:
+    sys.stdout.write(json.dumps(payload, indent=2) + "\n")
+
+
+def emit_json_lines(payload: dict) -> None:
+    command = payload["command"]
+    if command == "inspect":
+        events = [
+            {
+                "type": "phase",
+                "command": command,
+                "sequence": 1,
+                "phase": "Preflight",
+            },
+            {
+                "type": "inspect-summary",
+                "command": command,
+                "sequence": 2,
+                "installState": payload["result"]["installState"],
+                "manifestSummary": payload["result"]["manifestSummary"],
+                "contracts": payload["result"]["contracts"],
+            },
+            {
+                "type": "receipt",
+                "command": command,
+                "sequence": 3,
+                "status": payload["status"],
+            },
+        ]
+    elif command == "check":
+        events = [
+            {
+                "type": "phase",
+                "command": command,
+                "sequence": 1,
+                "phase": "Preflight",
+            },
+            {
+                "type": "check-summary",
+                "command": command,
+                "sequence": 2,
+                "status": payload["status"],
+                "summary": payload["result"]["summary"],
+                "unmanagedFiles": payload["result"]["unmanagedFiles"],
+            },
+            {
+                "type": "receipt",
+                "command": command,
+                "sequence": 3,
+                "status": payload["status"],
+            },
+        ]
+    elif command == "interview":
+        events = [
+            {
+                "type": "phase",
+                "command": command,
+                "sequence": 1,
+                "phase": "Interview",
+            }
+        ]
+        for question in payload["result"]["questions"]:
+            event = {
+                "type": "question",
+                "command": command,
+                "sequence": 0,
+            }
+            event.update(question)
+            events.append(event)
+        events.append(
+            {
+                "type": "receipt",
+                "command": command,
+                "sequence": 0,
+                "status": payload["status"],
+            }
+        )
+    elif command == "plan":
+        events = [
+            {
+                "type": "phase",
+                "command": command,
+                "sequence": 1,
+                "phase": "Preflight",
+            },
+            {
+                "type": "inspect-summary",
+                "command": command,
+                "sequence": 2,
+                "installState": payload["result"]["installState"],
+                "legacyVersionFile": payload["result"]["installPaths"]["legacyVersionFile"],
+                "lockfile": bool(payload["result"]["installPaths"]["lockfile"]),
+            },
+        ]
+        for question in payload["result"]["questions"]:
+            event = {
+                "type": "question",
+                "command": command,
+                "sequence": 0,
+            }
+            event.update(question)
+            events.append(event)
+        events.extend(
+            [
+                {
+                    "type": "phase",
+                    "command": command,
+                    "sequence": 0,
+                    "phase": "Plan",
+                },
+                {
+                    "type": "plan-summary",
+                    "command": command,
+                    "sequence": 0,
+                    "mode": payload["mode"],
+                    "approvalRequired": payload["result"]["approvalRequired"],
+                    "backupRequired": payload["result"]["backupRequired"],
+                    "backupPlan": payload["result"]["backupPlan"],
+                    "plannedLockfile": payload["result"]["plannedLockfile"],
+                    "writes": payload["result"]["writes"],
+                    "conflicts": payload["result"]["conflictSummary"],
+                },
+                {
+                    "type": "receipt",
+                    "command": command,
+                    "sequence": 0,
+                    "status": payload["status"],
+                },
+            ]
+        )
+    else:
+        events = [
+            {
+                "type": "error",
+                "command": command,
+                "sequence": 1,
+                "code": "not_implemented",
+                "message": payload["errors"][0]["message"],
+                "details": payload["errors"][0].get("details", {}),
+            }
+        ]
+
+    for warning in payload.get("warnings", []):
+        events.insert(
+            2,
+            {
+                "type": "warning",
+                "command": payload["command"],
+                "sequence": 99,
+                "code": warning["code"],
+                "message": warning["message"],
+                "details": warning.get("details", {}),
+                "backupPlan": payload["result"]["backupPlan"],
+            },
+        )
+
+    for index, event in enumerate(events, start=1):
+        event["sequence"] = index
+        sys.stdout.write(json.dumps(event) + "\n")
+
+
+def emit_agent_progress(payload: dict) -> None:
+    print("xanad-assistant", file=sys.stderr)
+    if payload["command"] == "inspect":
+        print("Preflight", file=sys.stderr)
+        print("  Package contracts loaded", file=sys.stderr)
+        print(f"  Install state: {payload['result']['installState']}", file=sys.stderr)
+        print(
+            f"  Manifest entries: {payload['result']['manifestSummary']['declared']}",
+            file=sys.stderr,
+        )
+        return
+
+    if payload["command"] == "check":
+        print("Preflight", file=sys.stderr)
+        print(f"  Check status: {payload['status']}", file=sys.stderr)
+        print(f"  Missing targets: {payload['result']['summary']['missing']}", file=sys.stderr)
+        return
+
+    if payload["command"] == "interview":
+        print("Interview", file=sys.stderr)
+        print(f"  Questions emitted: {payload['result']['questionCount']}", file=sys.stderr)
+        return
+
+    if payload["command"] == "plan":
+        print("Preflight", file=sys.stderr)
+        print(f"  Install state: {payload['result']['installState']}", file=sys.stderr)
+        print("Plan", file=sys.stderr)
+        print(
+            f"  Planned writes: {sum(payload['result']['writes'].values())}",
+            file=sys.stderr,
+        )
+        if payload["result"]["conflicts"]:
+            print(
+                f"  Conflict classes: {len(payload['result']['conflicts'])}",
+                file=sys.stderr,
+            )
+        if payload["result"]["approvalRequired"]:
+            print("  Waiting on Copilot", file=sys.stderr)
+        return
+
+    print("Preflight", file=sys.stderr)
+
+
+def emit_payload(payload: dict, ui_mode: str, use_json_lines: bool) -> None:
+    if ui_mode == "agent":
+        emit_agent_progress(payload)
+
+    if use_json_lines:
+        emit_json_lines(payload)
+        return
+    emit_json(payload)
+
+
+def build_not_implemented_payload(command: str, workspace: Path, package_root: Path, mode: str | None = None) -> dict:
+    return {
+        "command": command,
+        "mode": mode,
+        "workspace": str(workspace),
+        "source": build_source_summary(package_root),
+        "status": "not-implemented",
+        "warnings": [],
+        "errors": [
+            {
+                "code": "not_implemented",
+                "message": f"{command} is not implemented in the current lifecycle slice.",
+                "details": {"mode": mode},
+            }
+        ],
+        "result": {},
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    workspace = resolve_workspace(args.workspace)
+    package_root = resolve_package_root(args.package_root)
+    use_json_lines = args.json_lines
+
+    if args.command == "inspect":
+        payload = build_inspect_result(workspace, package_root)
+        emit_payload(payload, args.ui, use_json_lines)
+        return 0
+
+    if args.command == "check":
+        payload = build_check_result(workspace, package_root)
+        emit_payload(payload, args.ui, use_json_lines)
+        return 0 if payload["status"] == "clean" else 7
+
+    if args.command == "interview":
+        payload = build_interview_result(workspace, package_root, args.mode)
+        emit_payload(payload, args.ui, use_json_lines)
+        return 0
+
+    if args.command == "plan":
+        try:
+            payload = build_plan_result(workspace, package_root, args.mode, args.answers, args.non_interactive)
+        except LifecycleCommandError as error:
+            payload, exit_code = build_error_payload(
+                "plan",
+                workspace,
+                package_root,
+                error.code,
+                error.message,
+                error.exit_code,
+                mode=args.mode,
+                details=error.details,
+            )
+            emit_payload(payload, args.ui, use_json_lines)
+            return exit_code
+        plan_out_path = write_plan_output(args.plan_out, payload)
+        if plan_out_path is not None:
+            payload["result"]["planOut"] = plan_out_path
+        emit_payload(payload, args.ui, use_json_lines)
+        return 0 if not payload["errors"] else 1
+
+    mode = getattr(args, "mode", None)
+    payload = build_not_implemented_payload(args.command, workspace, package_root, mode)
+    emit_payload(payload, args.ui, use_json_lines)
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
