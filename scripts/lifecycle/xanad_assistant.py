@@ -4,9 +4,12 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
+import stat
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -430,6 +433,125 @@ def resolve_token_values(policy: dict, workspace: Path, resolved_answers: dict) 
     return token_values
 
 
+def render_tokenized_text(template_text: str, token_values: dict[str, str]) -> str:
+    rendered_text = template_text
+    for token, value in token_values.items():
+        rendered_text = rendered_text.replace(token, value)
+    return rendered_text
+
+
+def sha256_bytes(data: bytes) -> str:
+    return f"sha256:{hashlib.sha256(data).hexdigest()}"
+
+
+def merge_json_objects(existing_data: dict, source_data: dict) -> dict:
+    merged = dict(existing_data)
+    for key, source_value in source_data.items():
+        existing_value = merged.get(key)
+        if isinstance(existing_value, dict) and isinstance(source_value, dict):
+            merged[key] = merge_json_objects(existing_value, source_value)
+        else:
+            merged[key] = source_value
+    return merged
+
+
+def serialize_json_object(data: dict) -> bytes:
+    return (json.dumps(data, indent=2) + "\n").encode("utf-8")
+
+
+def extract_markdown_heading_block(markdown_text: str, heading: str) -> str | None:
+    lines = markdown_text.splitlines()
+    for index, line in enumerate(lines):
+        if line.strip() != heading:
+            continue
+        end_index = len(lines)
+        for candidate in range(index + 1, len(lines)):
+            if lines[candidate].startswith("## "):
+                end_index = candidate
+                break
+        block = "\n".join(lines[index:end_index]).strip()
+        return block if block else None
+    return None
+
+
+def extract_marked_markdown_blocks(markdown_text: str, marker_name: str) -> list[str]:
+    pattern = re.compile(
+        rf"<!--\s*{re.escape(marker_name)}\s*-->(.*?)<!--\s*/{re.escape(marker_name)}\s*-->",
+        re.DOTALL,
+    )
+    return [match.group(0).strip() for match in pattern.finditer(markdown_text)]
+
+
+def merge_markdown_with_preserved_blocks(existing_text: str, source_text: str) -> str:
+    merged_text = source_text.rstrip("\n")
+    preserved_blocks: list[str] = []
+
+    overrides_block = extract_markdown_heading_block(existing_text, "## §10 - Project-Specific Overrides")
+    if overrides_block is not None:
+        preserved_blocks.append(overrides_block)
+
+    for marker_name in ("user-added", "migrated"):
+        for block in extract_marked_markdown_blocks(existing_text, marker_name):
+            if block not in preserved_blocks:
+                preserved_blocks.append(block)
+
+    if not preserved_blocks:
+        return source_text
+
+    for block in preserved_blocks:
+        if block and block not in merged_text:
+            merged_text = f"{merged_text}\n\n{block}"
+
+    return merged_text + "\n"
+
+
+def expected_entry_bytes(
+    package_root: Path,
+    entry: dict,
+    token_values: dict[str, str],
+    target_path: Path | None = None,
+) -> bytes | None:
+    source_path = package_root / entry["source"]
+    strategy = entry.get("strategy")
+
+    if strategy == "token-replace":
+        rendered_text = render_tokenized_text(source_path.read_text(encoding="utf-8"), token_values)
+        return rendered_text.encode("utf-8")
+
+    if strategy == "merge-json-object":
+        if target_path is None or not target_path.exists():
+            return source_path.read_bytes()
+        try:
+            existing_data = load_json(target_path)
+            source_data = load_json(source_path)
+        except json.JSONDecodeError:
+            return None
+        if not isinstance(existing_data, dict) or not isinstance(source_data, dict):
+            return None
+        return serialize_json_object(merge_json_objects(existing_data, source_data))
+
+    if strategy == "preserve-marked-markdown-blocks":
+        source_text = source_path.read_text(encoding="utf-8")
+        if target_path is None or not target_path.exists():
+            return source_path.read_bytes()
+        existing_text = target_path.read_text(encoding="utf-8")
+        return merge_markdown_with_preserved_blocks(existing_text, source_text).encode("utf-8")
+
+    return source_path.read_bytes()
+
+
+def expected_entry_hash(
+    package_root: Path,
+    entry: dict,
+    token_values: dict[str, str],
+    target_path: Path | None = None,
+) -> str | None:
+    expected_bytes = expected_entry_bytes(package_root, entry, token_values, target_path)
+    if expected_bytes is None:
+        return None
+    return sha256_bytes(expected_bytes)
+
+
 def build_token_plan_summary(policy: dict, actions: list[dict], token_values: dict[str, str]) -> list[dict]:
     active_targets_by_token: dict[str, list[str]] = {}
     token_requirements = {rule["token"]: rule for rule in policy.get("tokenRules", [])}
@@ -511,7 +633,15 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
     legacy_version_state = parse_legacy_version_file(workspace)
     lockfile_state = parse_lockfile_state(workspace)
     default_answers, ownership_by_surface = derive_effective_plan_defaults(policy, metadata, manifest, lockfile_state)
-    manifest_with_status = annotate_manifest_entries(workspace, manifest, ownership_by_surface, default_answers)
+    token_values = resolve_token_values(policy, workspace, default_answers)
+    manifest_with_status = annotate_manifest_entries(
+        workspace,
+        package_root,
+        manifest,
+        ownership_by_surface,
+        default_answers,
+        token_values,
+    )
     manifest_summary = summarize_manifest_targets(workspace, manifest_with_status)
 
     if not artifacts["manifest"]["loaded"]:
@@ -525,6 +655,7 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
 
     return {
         "policy": policy,
+        "packageRoot": package_root,
         "artifacts": artifacts,
         "metadata": metadata,
         "metadataArtifacts": metadata_artifacts,
@@ -565,9 +696,14 @@ def build_inspect_result(workspace: Path, package_root: Path) -> dict:
             "manifestSummary": context["manifestSummary"],
         },
     }
-
-
-def annotate_manifest_entries(workspace: Path, manifest: dict | None, ownership_by_surface: dict, resolved_answers: dict) -> dict | None:
+def annotate_manifest_entries(
+    workspace: Path,
+    package_root: Path,
+    manifest: dict | None,
+    ownership_by_surface: dict,
+    resolved_answers: dict,
+    token_values: dict[str, str],
+) -> dict | None:
     if manifest is None:
         return None
 
@@ -588,7 +724,12 @@ def annotate_manifest_entries(workspace: Path, manifest: dict | None, ownership_
                 annotated_entry["status"] = "missing"
             else:
                 installed_hash = sha256_file(target_path)
-                annotated_entry["status"] = "clean" if installed_hash == entry["hash"] else "stale"
+                expected_hash = expected_entry_hash(package_root, entry, token_values, target_path)
+                annotated_entry["status"] = (
+                    "clean"
+                    if expected_hash is not None and installed_hash == expected_hash
+                    else "stale"
+                )
         annotated_entries.append(annotated_entry)
 
     annotated_manifest["managedFiles"] = annotated_entries
@@ -1027,6 +1168,7 @@ def resolve_ownership_by_surface(policy: dict, manifest: dict | None, lockfile_s
 
 def build_setup_plan_actions(
     workspace: Path,
+    package_root: Path,
     manifest: dict | None,
     ownership_by_surface: dict,
     resolved_answers: dict,
@@ -1084,7 +1226,8 @@ def build_setup_plan_actions(
                 action = "merge" if entry["strategy"] in merge_strategies else "replace"
             else:
                 installed_hash = sha256_file(target_path)
-                if installed_hash == entry["hash"]:
+                expected_hash = expected_entry_hash(package_root, entry, token_values, target_path)
+                if expected_hash is not None and installed_hash == expected_hash:
                     continue
                 action = "merge" if entry["strategy"] in merge_strategies else "replace"
 
@@ -1203,6 +1346,16 @@ def write_plan_output(path_value: str | None, payload: dict) -> str | None:
     return str(output_path)
 
 
+def write_report_output(path_value: str | None, payload: dict) -> str | None:
+    if path_value is None:
+        return None
+
+    output_path = Path(path_value).resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return str(output_path)
+
+
 def sha256_json(data: object) -> str:
     encoded = json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
@@ -1244,6 +1397,7 @@ def build_planned_lockfile(
     context: dict,
     ownership_by_surface: dict,
     resolved_answers: dict,
+    token_values: dict[str, str],
     actions: list[dict],
     skipped_actions: list[dict],
     retired_targets: list[str],
@@ -1266,7 +1420,12 @@ def build_planned_lockfile(
                 "id": action["id"],
                 "target": action["target"],
                 "sourceHash": manifest_entry["hash"],
-                "installedHash": manifest_entry["hash"],
+                "installedHash": expected_entry_hash(
+                    context["packageRoot"],
+                    manifest_entry,
+                    token_values,
+                    context["workspacePath"] / action["target"],
+                ) or "unknown",
                 "ownershipMode": action["ownershipMode"],
                 "status": "applied",
             }
@@ -1383,6 +1542,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
     context["workspacePath"] = workspace
     writes, actions, skipped_actions, retired_targets = build_setup_plan_actions(
         workspace,
+        package_root,
         context["manifest"],
         ownership_by_surface,
         resolved_answers,
@@ -1398,6 +1558,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
         context,
         ownership_by_surface,
         resolved_answers,
+        token_values,
         actions,
         skipped_actions,
         retired_targets,
@@ -1439,6 +1600,281 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
             "questions": questions,
         },
     }
+
+
+def generate_apply_timestamps() -> tuple[str, str]:
+    current = datetime.now(timezone.utc).replace(microsecond=0)
+    return current.isoformat().replace("+00:00", "Z"), current.strftime("%Y-%m-%dT%H-%M-%SZ")
+
+
+def materialize_apply_timestamp(value: str | None, path_timestamp: str) -> str | None:
+    if value is None:
+        return None
+    return value.replace("<apply-timestamp>", path_timestamp)
+
+
+def render_entry_bytes(package_root: Path, manifest_entry: dict, token_values: dict[str, str]) -> bytes:
+    expected_bytes = expected_entry_bytes(package_root, manifest_entry, token_values)
+    if expected_bytes is None:
+        raise LifecycleCommandError(
+            "apply_failure",
+            "Unable to render managed file bytes for apply.",
+            9,
+            {"id": manifest_entry["id"], "strategy": manifest_entry.get("strategy")},
+        )
+    return expected_bytes
+
+
+def merge_json_object_file(target_path: Path, package_root: Path, manifest_entry: dict) -> None:
+    source_path = package_root / manifest_entry["source"]
+    if target_path.exists():
+        try:
+            existing_data = load_json(target_path)
+            source_data = load_json(source_path)
+        except json.JSONDecodeError as error:
+            raise LifecycleCommandError(
+                "apply_failure",
+                "Existing JSON target could not be merged.",
+                9,
+                {"target": str(target_path), "error": str(error)},
+            ) from error
+        if not isinstance(existing_data, dict) or not isinstance(source_data, dict):
+            raise LifecycleCommandError(
+                "apply_failure",
+                "JSON merge targets must both be objects.",
+                9,
+                {"target": str(target_path), "source": str(source_path)},
+            )
+        merged_data = merge_json_objects(existing_data, source_data)
+    else:
+        source_data = load_json(source_path)
+        if not isinstance(source_data, dict):
+            raise LifecycleCommandError(
+                "apply_failure",
+                "JSON merge source must be an object.",
+                9,
+                {"source": str(source_path)},
+            )
+        merged_data = source_data
+
+    target_path.write_bytes(serialize_json_object(merged_data))
+
+
+def merge_markdown_file(target_path: Path, package_root: Path, manifest_entry: dict) -> None:
+    source_path = package_root / manifest_entry["source"]
+    source_text = source_path.read_text(encoding="utf-8")
+    if target_path.exists():
+        existing_text = target_path.read_text(encoding="utf-8")
+        merged_text = merge_markdown_with_preserved_blocks(existing_text, source_text)
+    else:
+        merged_text = source_text
+    target_path.write_text(merged_text, encoding="utf-8")
+
+
+def build_copilot_version_summary(lockfile_contents: dict, manifest: dict | None) -> str:
+    package_version = None
+    if manifest is not None:
+        package_version = manifest.get("packageVersion")
+    if not package_version:
+        package_version = "unknown"
+
+    summary_digest = {
+        "version": package_version,
+        "profile": lockfile_contents.get("profile"),
+        "selectedPacks": lockfile_contents.get("selectedPacks", []),
+        "manifestHash": lockfile_contents.get("manifest", {}).get("hash"),
+        "appliedAt": lockfile_contents.get("timestamps", {}).get("appliedAt"),
+    }
+
+    selected_packs = lockfile_contents.get("selectedPacks", [])
+    packs_summary = ", ".join(selected_packs) if selected_packs else "none"
+
+    return (
+        "# Xanad Assistant Installed Summary\n\n"
+        f"Version: {package_version}\n"
+        f"Profile: {lockfile_contents.get('profile') or 'unknown'}\n"
+        f"Selected packs: {packs_summary}\n"
+        f"Applied at: {lockfile_contents.get('timestamps', {}).get('appliedAt') or 'unknown'}\n"
+        f"Lockfile: .github/xanad-assistant-lock.json\n\n"
+        "```json\n"
+        f"{json.dumps(summary_digest, indent=2)}\n"
+        "```\n"
+    )
+
+
+def apply_chmod_rule(target_path: Path, chmod_rule: str) -> None:
+    if chmod_rule != "executable":
+        return
+    current_mode = stat.S_IMODE(target_path.stat().st_mode)
+    target_path.chmod(current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+
+def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict) -> dict:
+    manifest = load_manifest(package_root, load_json(package_root / DEFAULT_POLICY_PATH)) or {"managedFiles": []}
+    manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
+    actions = plan_payload["result"].get("actions", [])
+    backup_plan = plan_payload["result"].get("backupPlan", {})
+    planned_lockfile = json.loads(json.dumps(plan_payload["result"]["plannedLockfile"]))
+    factory_restore = bool(plan_payload["result"].get("factoryRestore", False))
+    apply_timestamp, path_timestamp = generate_apply_timestamps()
+
+    backup_root = materialize_apply_timestamp(backup_plan.get("root"), path_timestamp)
+    if backup_root is not None:
+        (workspace / backup_root).mkdir(parents=True, exist_ok=True)
+
+    for backup_target in backup_plan.get("targets", []):
+        source_path = workspace / backup_target["target"]
+        if not source_path.exists():
+            continue
+        backup_path = materialize_apply_timestamp(backup_target["backupPath"], path_timestamp)
+        if backup_path is None:
+            continue
+        destination = workspace / backup_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, destination)
+
+    if factory_restore:
+        managed_targets = {entry["target"] for entry in manifest.get("managedFiles", [])}
+        unmanaged_files = collect_unmanaged_files(workspace, manifest, managed_targets)
+        for relative_path in unmanaged_files:
+            source_path = workspace / relative_path
+            if backup_root is not None and source_path.exists():
+                backup_path = workspace / backup_root / relative_path
+                backup_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source_path, backup_path)
+            if source_path.exists():
+                source_path.unlink()
+
+    writes = {
+        "added": 0,
+        "replaced": 0,
+        "merged": 0,
+        "skipped": len(plan_payload["result"].get("skippedActions", [])),
+    }
+
+    for action in actions:
+        if action["action"] == "archive-retired":
+            raise LifecycleCommandError(
+                "apply_failure",
+                "Retired file handling is not implemented in the current apply slice.",
+                9,
+                {"target": action["target"], "action": action["action"]},
+            )
+        if action["action"] == "merge" and action["strategy"] not in {"merge-json-object", "preserve-marked-markdown-blocks"}:
+            raise LifecycleCommandError(
+                "apply_failure",
+                "Merge actions are not implemented in the current apply slice.",
+                9,
+                {"target": action["target"], "strategy": action["strategy"]},
+            )
+
+        manifest_entry = manifest_entries.get(action["id"])
+        if manifest_entry is None:
+            raise LifecycleCommandError(
+                "apply_failure",
+                "Plan references a managed entry missing from the manifest.",
+                9,
+                {"id": action["id"]},
+            )
+
+        target_path = workspace / action["target"]
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if action["action"] == "merge":
+            if action["strategy"] == "merge-json-object":
+                merge_json_object_file(target_path, package_root, manifest_entry)
+            else:
+                merge_markdown_file(target_path, package_root, manifest_entry)
+            writes["merged"] += 1
+            continue
+
+        target_path.write_bytes(render_entry_bytes(package_root, manifest_entry, action.get("tokenValues", {})))
+        apply_chmod_rule(target_path, manifest_entry.get("chmod", "none"))
+
+        if action["action"] == "add":
+            writes["added"] += 1
+        elif action["action"] == "replace":
+            writes["replaced"] += 1
+
+    planned_lockfile["contents"]["timestamps"] = {
+        "appliedAt": apply_timestamp,
+        "updatedAt": apply_timestamp,
+    }
+    if "lastBackup" in planned_lockfile["contents"]:
+        planned_lockfile["contents"]["lastBackup"]["path"] = materialize_apply_timestamp(
+            planned_lockfile["contents"]["lastBackup"]["path"],
+            path_timestamp,
+        )
+
+    lockfile_path = workspace / planned_lockfile["path"]
+    lockfile_path.parent.mkdir(parents=True, exist_ok=True)
+    lockfile_path.write_text(json.dumps(planned_lockfile["contents"], indent=2) + "\n", encoding="utf-8")
+
+    summary_path = workspace / ".github" / "copilot-version.md"
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(
+        build_copilot_version_summary(planned_lockfile["contents"], manifest),
+        encoding="utf-8",
+    )
+
+    validation = build_check_result(workspace, package_root)
+    if validation["status"] != "clean":
+        raise LifecycleCommandError(
+            "apply_failure",
+            "Applied workspace did not validate cleanly.",
+            9,
+            {
+                "backupPath": backup_root,
+                "summary": validation["result"]["summary"],
+            },
+        )
+
+    return {
+        "backup": {
+            "created": backup_root is not None,
+            "path": backup_root,
+        },
+        "writes": writes,
+        "retired": [],
+        "lockfile": {
+            "written": True,
+            "path": planned_lockfile["path"],
+        },
+        "summary": {
+            "written": True,
+            "path": ".github/copilot-version.md",
+        },
+        "validation": {
+            "status": "passed",
+        },
+    }
+
+
+def build_execution_result(
+    command: str,
+    mode: str,
+    workspace: Path,
+    package_root: Path,
+    answers_path: str | None,
+    non_interactive: bool,
+) -> dict:
+    plan_payload = build_plan_result(workspace, package_root, mode, answers_path, non_interactive)
+    apply_result = execute_apply_plan(workspace, package_root, plan_payload)
+
+    return {
+        "command": command,
+        "mode": mode,
+        "workspace": str(workspace),
+        "source": build_source_summary(package_root),
+        "status": "ok",
+        "warnings": plan_payload["warnings"],
+        "errors": [],
+        "result": apply_result,
+    }
+
+
+def build_apply_result(workspace: Path, package_root: Path, answers_path: str | None, non_interactive: bool) -> dict:
+    return build_execution_result("apply", "setup", workspace, package_root, answers_path, non_interactive)
 
 
 def emit_json(payload: dict) -> None:
@@ -1571,6 +2007,32 @@ def emit_json_lines(payload: dict) -> None:
                 },
             ]
         )
+    elif command in {"apply", "update", "repair", "factory-restore"}:
+        events = [
+            {
+                "type": "phase",
+                "command": command,
+                "sequence": 1,
+                "phase": "Apply",
+            },
+            {
+                "type": "apply-report",
+                "command": command,
+                "sequence": 2,
+                "backup": payload["result"]["backup"],
+                "writes": payload["result"]["writes"],
+                "retired": payload["result"]["retired"],
+                "lockfile": payload["result"]["lockfile"],
+                "summary": payload["result"]["summary"],
+                "validation": payload["result"]["validation"],
+            },
+            {
+                "type": "receipt",
+                "command": command,
+                "sequence": 3,
+                "status": payload["status"],
+            },
+        ]
     else:
         events = [
             {
@@ -1640,6 +2102,15 @@ def emit_agent_progress(payload: dict) -> None:
             )
         if payload["result"]["approvalRequired"]:
             print("  Waiting on Copilot", file=sys.stderr)
+        return
+
+    if payload["command"] in {"apply", "update", "repair", "factory-restore"}:
+        print("Apply", file=sys.stderr)
+        print(f"  Files added: {payload['result']['writes']['added']}", file=sys.stderr)
+        print(f"  Files replaced: {payload['result']['writes']['replaced']}", file=sys.stderr)
+        print(f"  Summary written: {payload['result']['summary']['path']}", file=sys.stderr)
+        print("Validate", file=sys.stderr)
+        print(f"  Validation: {payload['result']['validation']['status']}", file=sys.stderr)
         return
 
     print("Preflight", file=sys.stderr)
@@ -1718,6 +2189,117 @@ def main(argv: list[str] | None = None) -> int:
             payload["result"]["planOut"] = plan_out_path
         emit_payload(payload, args.ui, use_json_lines)
         return 0 if not payload["errors"] else 1
+
+    if args.command == "apply":
+        try:
+            payload = build_apply_result(workspace, package_root, args.answers, args.non_interactive)
+        except LifecycleCommandError as error:
+            payload, exit_code = build_error_payload(
+                "apply",
+                workspace,
+                package_root,
+                error.code,
+                error.message,
+                error.exit_code,
+                mode="setup",
+                details=error.details,
+            )
+            report_out_path = write_report_output(args.report_out, payload)
+            if report_out_path is not None:
+                payload.setdefault("result", {})["reportOut"] = report_out_path
+            emit_payload(payload, args.ui, use_json_lines)
+            return exit_code
+
+        report_out_path = write_report_output(args.report_out, payload)
+        if report_out_path is not None:
+            payload["result"]["reportOut"] = report_out_path
+        emit_payload(payload, args.ui, use_json_lines)
+        return 0
+
+    if args.command == "update":
+        try:
+            payload = build_execution_result("update", "update", workspace, package_root, args.answers, args.non_interactive)
+        except LifecycleCommandError as error:
+            payload, exit_code = build_error_payload(
+                "update",
+                workspace,
+                package_root,
+                error.code,
+                error.message,
+                error.exit_code,
+                mode="update",
+                details=error.details,
+            )
+            report_out_path = write_report_output(args.report_out, payload)
+            if report_out_path is not None:
+                payload.setdefault("result", {})["reportOut"] = report_out_path
+            emit_payload(payload, args.ui, use_json_lines)
+            return exit_code
+
+        report_out_path = write_report_output(args.report_out, payload)
+        if report_out_path is not None:
+            payload["result"]["reportOut"] = report_out_path
+        emit_payload(payload, args.ui, use_json_lines)
+        return 0
+
+    if args.command == "repair":
+        try:
+            payload = build_execution_result("repair", "repair", workspace, package_root, args.answers, args.non_interactive)
+        except LifecycleCommandError as error:
+            payload, exit_code = build_error_payload(
+                "repair",
+                workspace,
+                package_root,
+                error.code,
+                error.message,
+                error.exit_code,
+                mode="repair",
+                details=error.details,
+            )
+            report_out_path = write_report_output(args.report_out, payload)
+            if report_out_path is not None:
+                payload.setdefault("result", {})["reportOut"] = report_out_path
+            emit_payload(payload, args.ui, use_json_lines)
+            return exit_code
+
+        report_out_path = write_report_output(args.report_out, payload)
+        if report_out_path is not None:
+            payload["result"]["reportOut"] = report_out_path
+        emit_payload(payload, args.ui, use_json_lines)
+        return 0
+
+    if args.command == "factory-restore":
+        try:
+            payload = build_execution_result(
+                "factory-restore",
+                "factory-restore",
+                workspace,
+                package_root,
+                args.answers,
+                args.non_interactive,
+            )
+        except LifecycleCommandError as error:
+            payload, exit_code = build_error_payload(
+                "factory-restore",
+                workspace,
+                package_root,
+                error.code,
+                error.message,
+                error.exit_code,
+                mode="factory-restore",
+                details=error.details,
+            )
+            report_out_path = write_report_output(args.report_out, payload)
+            if report_out_path is not None:
+                payload.setdefault("result", {})["reportOut"] = report_out_path
+            emit_payload(payload, args.ui, use_json_lines)
+            return exit_code
+
+        report_out_path = write_report_output(args.report_out, payload)
+        if report_out_path is not None:
+            payload["result"]["reportOut"] = report_out_path
+        emit_payload(payload, args.ui, use_json_lines)
+        return 0
 
     mode = getattr(args, "mode", None)
     payload = build_not_implemented_payload(args.command, workspace, package_root, mode)

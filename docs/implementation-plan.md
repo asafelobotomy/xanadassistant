@@ -93,11 +93,27 @@ Implementation spans five parallel concerns, but they should land in the phase o
 Audit status as of 2026-05-07:
 
 - Phases 0 through 3 are complete and validated in repo artifacts, code, and tests.
-- Phase 4 has started with initial `plan setup`, `plan update`, `plan repair`, and `plan factory-restore` slices: the CLI now emits deterministic no-write plans for current core surfaces plus conditional agent, skill, hook, and MCP surfaces, with write summaries, backup path planning, retired-file planning, ownership resolution, token substitution summaries for tokenized managed files, planned lockfile output, validated answer-file handling for profile and pack selection, explicit conflict and warning classification, and `--plan-out` serialization. Phase 4 planning coverage is now complete for the currently modeled surfaces.
+- Phase 4 is complete for the currently modeled surfaces: the CLI emits deterministic no-write plans for current core surfaces plus conditional agent, skill, hook, and MCP surfaces, with write summaries, backup path planning, retired-file planning, ownership resolution, token substitution summaries for tokenized managed files, planned lockfile output, validated answer-file handling for profile and pack selection, explicit conflict and warning classification, and `--plan-out` serialization. Token-aware prompt hashing is now applied consistently across inspect, check, planning, and lockfile output for the current setup slice.
+- Phase 5 has started with a validated public execution slice: `apply` now performs setup planning plus managed writes for the currently supported setup actions, creates backup roots, renders tokenized prompt output, performs deterministic `merge-json-object` writes for MCP config while preserving unrelated keys, preserves explicit user-owned Markdown blocks and the `## §10 - Project-Specific Overrides` section in managed instructions, writes structured lockfile state, generates `.github/copilot-version.md` as a readable derivative summary, emits `apply-report` JSON Lines events, supports `--report-out`, and validates the resulting workspace with `check`. Top-level `update`, `repair`, and `factory-restore` now execute the existing plan and apply path for the currently modeled surfaces, and `factory-restore` now backs up and purges unmanaged lookalikes before reinstalling managed files. Retired-file handling remains pending.
 - Phase 9 has partial groundwork only: pack and profile registries exist, the catalog artifact exists, and read-only commands load discovery metadata, but optional capability behavior is not implemented yet.
-- Phases 5 through 8 and Phase 10 remain unstarted for execution behavior. `apply`, `update`, `repair`, and `factory-restore` still return structured not-implemented payloads.
+- Phase 6 remains unstarted for release/ref resolution, cache behavior, integrity checks, stale-upgrade handling, and incomplete-install recovery, and Phases 7, 8, and 10 remain unstarted for Copilot integration, UI polish, and repo cleanup.
 - The current fixture consumer strategy is ephemeral temporary workspaces in unit tests rather than committed fixture repositories. That is sufficient for current Phases 2 and 3 validation, but not for later end-to-end upgrade and restore coverage.
 - Checklist state below should track implemented behavior and verified documentation, not intended sequence alone.
+
+## Current Remaining Work
+
+The remaining implementation work is now concentrated in the unfinished execution behaviors and the later integration phases.
+
+### Immediate Remaining Work
+
+- Finish the remaining Phase 5 write strategies: `copy-if-missing` and retired-file handling.
+- Make validation failure reporting leave an understandable post-failure state with backups intact.
+- Expand Phase 5 tests beyond the current setup-apply slice to cover remaining strategies, lockfile schema validation, repair behavior, factory-restore behavior, and validation-failure paths.
+
+### Next Execution Work
+
+- Implement release/ref source resolution, package caching, integrity checks, stale-upgrade handling, and incomplete-install recovery.
+- Introduce committed fixture repos or equivalent stable end-to-end fixtures before relying on upgrade and restore gates.
 
 ## Phase 0 - Freeze The Contracts
 
@@ -374,6 +390,8 @@ The main missing behavior has shifted from planning to execution: `plan setup`, 
 
 Build the write engine with backups, strategy execution, lockfile output, and validation.
 
+Current validated scope in this phase: public `apply` now drives the setup slice end to end for the currently supported setup actions. Top-level `update`, `repair`, and `factory-restore` also execute end to end for the currently modeled surfaces through the same planning and write engine. The write path creates backup roots, writes add/replace setup targets, renders tokenized prompt content, performs deterministic `merge-json-object` writes for MCP config, preserves explicit user-owned Markdown blocks during managed instruction updates, backs up and purges unmanaged lookalikes during `factory-restore`, writes structured lockfile state, generates `.github/copilot-version.md`, emits apply reports, supports `--report-out`, and validates the resulting workspace with `check`.
+
 ### Phase 5 Deliverables
 
 - backup creation
@@ -385,28 +403,35 @@ Build the write engine with backups, strategy execution, lockfile output, and va
 
 ### Phase 5 Checklist
 
-- [ ] Create timestamped backup before the first write.
-- [ ] Implement `replace-verbatim`.
+- [x] Create timestamped backup before the first write.
+- [x] Implement `replace-verbatim`.
 - [ ] Implement `copy-if-missing`.
-- [ ] Implement `merge-json-object`.
-- [ ] Implement `preserve-marked-markdown-blocks`.
-- [ ] Implement `token-replace`.
+- [x] Implement `merge-json-object`.
+- [x] Implement `preserve-marked-markdown-blocks`.
+- [x] Implement `token-replace`.
 - [ ] Implement `archive-retired` and `report-retired`.
-- [ ] Implement chmod application.
-- [ ] Implement structured lockfile writing.
-- [ ] Implement generated Markdown summary writing.
-- [ ] Implement post-write validation and failure reporting.
+- [x] Implement chmod application.
+- [x] Implement structured lockfile writing.
+- [x] Implement generated Markdown summary writing.
+- [x] Implement post-write validation and failure reporting.
 - [ ] Implement legacy repair rewrite behavior.
 
 ### Phase 5 Validation Gate
 
 - [ ] A failed validation leaves the workspace in an understandable state with backup intact.
-- [ ] Lockfile content fully reflects applied state.
-- [ ] Generated Markdown summary is readable but not authoritative.
+- [x] Lockfile content fully reflects applied state for the current setup slice.
+- [x] Generated Markdown summary is readable but not authoritative.
 
 ### Phase 5 Test Checklist
 
-- [ ] backup creation test
+- [x] backup creation test
+- [x] setup apply end-to-end test
+- [x] apply JSON Lines and `--ui agent` test
+- [x] focused `merge-json-object` apply test
+- [x] focused `preserve-marked-markdown-blocks` apply test
+- [x] generated summary writing test
+- [x] end-to-end `repair`
+- [x] end-to-end `factory-restore`
 - [ ] strategy tests for each write strategy
 - [ ] lockfile schema validation test
 - [ ] legacy migration repair test
@@ -428,9 +453,9 @@ Complete the transactional lifecycle path for real setup, update, repair, and re
 
 ### Phase 6 Checklist
 
-- [ ] Implement `update` as inspect plus plan plus approved apply.
-- [ ] Implement `repair` as inspect plus repair plan plus apply.
-- [ ] Implement `factory-restore` as backup plus purge plus reinstall.
+- [x] Implement `update` as inspect plus plan plus approved apply for the current modeled surfaces.
+- [x] Implement `repair` as inspect plus repair plan plus apply for the current modeled surfaces.
+- [x] Implement `factory-restore` as backup plus purge plus reinstall for the current modeled surfaces.
 - [ ] Implement GitHub release resolution.
 - [ ] Implement explicit ref resolution.
 - [ ] Implement package caching.
