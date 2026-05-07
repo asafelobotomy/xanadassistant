@@ -1,0 +1,6 @@
+{"type":"phase","command":"plan","sequence":1,"phase":"Preflight"}
+{"type":"inspect-summary","command":"plan","sequence":2,"installState":"stale","legacyVersionFile":true,"lockfile":false}
+{"type":"question","command":"plan","sequence":3,"id":"ownership.hooks","kind":"choice","prompt":"How should hooks be owned?","required":true,"options":["local","plugin-backed-copilot-format"],"recommended":"local"}
+{"type":"phase","command":"plan","sequence":4,"phase":"Plan"}
+{"type":"plan-summary","command":"plan","sequence":5,"mode":"setup","approvalRequired":true,"backupRequired":true,"writes":{"add":12,"replace":0,"merge":2,"archiveRetired":0}}
+{"type":"receipt","command":"plan","sequence":6,"status":"approval-required"}

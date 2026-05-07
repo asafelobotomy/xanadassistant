@@ -1,0 +1,26 @@
+{
+  "command": "plan",
+  "mode": "setup",
+  "workspace": ".",
+  "source": {
+    "kind": "package-root",
+    "packageRoot": "/path/to/xanad-assistant"
+  },
+  "status": "approval-required",
+  "warnings": [],
+  "errors": [],
+  "result": {
+    "approvalRequired": true,
+    "backupRequired": true,
+    "writes": {
+      "add": 12,
+      "replace": 0,
+      "merge": 2,
+      "archiveRetired": 0
+    },
+    "packs": [],
+    "profile": "balanced",
+    "retired": [],
+    "questionsResolved": true
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "command": "inspect",
+  "workspace": "/path/to/workspace",
+  "source": {
+    "kind": "package-root",
+    "packageRoot": "/path/to/xanad-assistant"
+  },
+  "status": "ok",
+  "warnings": [],
+  "errors": [],
+  "result": {
+    "installState": "not-installed",
+    "installPaths": {
+      "lockfile": null,
+      "legacyVersionFile": false
+    },
+    "git": {
+      "present": false,
+      "dirty": null
+    },
+    "contracts": {
+      "policy": {
+        "path": "/path/to/xanad-assistant/template/setup/install-policy.json",
+        "loaded": true
+      },
+      "policySchema": {
+        "path": "/path/to/xanad-assistant/template/setup/install-policy.schema.json",
+        "loaded": true
+      },
+      "manifestSchema": {
+        "path": "/path/to/xanad-assistant/template/setup/install-manifest.schema.json",
+        "loaded": true
+      },
+      "lockSchema": {
+        "path": "/path/to/xanad-assistant/template/setup/xanad-assistant-lock.schema.json",
+        "loaded": true
+      },
+      "manifest": {
+        "path": "/path/to/xanad-assistant/template/setup/install-manifest.json",
+        "loaded": true
+      }
+    },
+    "manifestSummary": {
+      "declared": 2,
+      "present": 0,
+      "missing": 2,
+      "retired": 0
+    }
+  }
+}
