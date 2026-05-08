@@ -74,6 +74,16 @@ Targeted example: `python3 -m unittest tests.test_xanad_assistant_inspect`
 **Refactor**: no behaviour changes; tests pass before and after.
 **Planning**: produce task breakdown before writing code.
 
+## Memory
+
+Use memory as optional recall, not as lifecycle authority.
+
+- Put current task notes and temporary reminders in `/memories/session/`.
+- Put personal cross-repo preferences in `/memories/`.
+- Put in-flight repo facts in `/memories/repo/` first.
+- Promote only validated, durable repo facts into `docs/memory.md`.
+- Keep durable memory short and source-backed; contracts, tests, and canonical code win if memory drifts.
+
 ## Skills and Agents
 
 - `lifecycle-audit` skill — use before any lifecycle operation on this workspace

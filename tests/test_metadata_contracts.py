@@ -81,6 +81,17 @@ class MetadataContractTests(unittest.TestCase):
                 self.assertIn("| Code review, architecture review", text)
                 self.assertIn("| xanad-assistant inspect, check, plan", text)
 
+    def test_instructions_define_memory_routing(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        for path in [repo_root / "template" / "copilot-instructions.md", repo_root / ".github" / "copilot-instructions.md"]:
+            with self.subTest(path=path):
+                text = path.read_text(encoding="utf-8")
+                self.assertIn("## Memory", text)
+                self.assertIn("/memories/session/", text)
+                self.assertIn("/memories/repo/", text)
+                self.assertIn("docs/memory.md", text)
+                self.assertIn("not as lifecycle authority", text)
+
 
 if __name__ == "__main__":
     unittest.main()

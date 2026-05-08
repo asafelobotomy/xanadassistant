@@ -6,6 +6,8 @@ This document defines the boundary between core lifecycle behavior and optional 
 
 This file is normative for Phase 0 memory separation.
 
+See `docs/contracts/memory-v1.md` for the operational v1 scope and routing model.
+
 ## Core Rule
 
 The lifecycle engine must not depend on optional memory infrastructure to inspect, plan, apply, update, repair, or restore the package.

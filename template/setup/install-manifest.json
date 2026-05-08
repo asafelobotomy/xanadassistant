@@ -100,7 +100,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:d5ef8ee3c3faf5aa9b80b7bb20e6052f65c70b2946d6ef1d25afdc21ae97539e"
+      "hash": "sha256:6ddc84caf95efd974ef51d469774f6a78dd35f111143a48e4dde60ea5fae42ad"
     },
     {
       "id": "hook-scripts.xanad-workspace-mcp.py",

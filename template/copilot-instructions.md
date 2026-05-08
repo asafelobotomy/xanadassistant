@@ -63,6 +63,16 @@ Plan → Do → Check → Act on every non-trivial change.
 **Review**: read-only; state findings before proposing fixes.
 **Refactor**: no behaviour changes; tests pass before and after.
 
+## Memory
+
+Use memory as optional recall, not as lifecycle authority.
+
+- Put current task notes and temporary reminders in `/memories/session/`.
+- Put personal cross-repo preferences in `/memories/`.
+- Put in-flight repo facts in `/memories/repo/` first.
+- Promote only validated, durable repo facts into `docs/memory.md`.
+- Keep durable memory short and source-backed; contracts, tests, and canonical code win if memory drifts.
+
 ## Skills and Agents
 
 - `lifecycle-audit` skill — loaded on demand; run before any lifecycle operation

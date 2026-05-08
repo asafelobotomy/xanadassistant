@@ -79,6 +79,7 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 ### Memory Checklist
 
 - [x] Core lifecycle does not depend on optional memory infrastructure.
+- [x] Memory v1 scope, routing, and verification rules are defined. (`docs/contracts/memory-v1.md`)
 - [ ] Durable memory uses citations or directly verifiable source anchors.
 - [ ] Memory state can be expired, repaired, or discarded safely.
 - [ ] Repo-scoped memory is kept separate from user-wide preference memory.
