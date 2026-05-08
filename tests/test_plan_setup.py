@@ -21,8 +21,10 @@ class PlanSetupTests(XanadTestBase):
         self.assertIn("packs.selected", question_ids)
         self.assertIn("ownership.agents", question_ids)
         self.assertIn("ownership.skills", question_ids)
-        self.assertIn("hooks.enabled", question_ids)
         self.assertIn("mcp.enabled", question_ids)
+        mcp_question = next(question for question in payload["result"]["questions"] if question["id"] == "mcp.enabled")
+        self.assertTrue(mcp_question["default"])
+        self.assertTrue(mcp_question["recommended"])
         self.assertTrue(payload["result"]["discoveryMetadata"]["profileRegistry"]["loaded"])
 
     def test_plan_setup_from_empty_workspace_emits_summary(self) -> None:
@@ -35,7 +37,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual("approval-required", payload["status"])
         self.assertTrue(payload["result"]["approvalRequired"])
         self.assertTrue(payload["result"]["backupRequired"])
-        self.assertEqual(4, payload["result"]["writes"]["add"])
+        self.assertEqual(6, payload["result"]["writes"]["add"])
         self.assertEqual(0, payload["result"]["writes"]["replace"])
         self.assertEqual(0, payload["result"]["writes"]["merge"])
         self.assertEqual("balanced", payload["result"]["profile"])
@@ -55,10 +57,8 @@ class PlanSetupTests(XanadTestBase):
                 ".github/agents/explore.agent.md",
                 ".github/agents/lifecycle-planning.agent.md",
                 ".github/agents/review.agent.md",
-                ".github/hooks/scripts/xanad-workspace-mcp.py",
                 ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
-                ".vscode/mcp.json",
             ],
             payload["result"]["plannedLockfile"]["contents"]["skippedManagedFiles"],
         )
@@ -100,7 +100,7 @@ class PlanSetupTests(XanadTestBase):
             },
             payload["result"]["ownershipBySurface"],
         )
-        self.assertEqual(8, len(payload["result"]["skippedActions"]))
+        self.assertEqual(6, len(payload["result"]["skippedActions"]))
         self.assertEqual({}, payload["result"]["conflictSummary"])
 
         prompt_action = next(action for action in payload["result"]["actions"] if action["target"] == ".github/prompts/setup.md")
@@ -139,7 +139,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("approval-required", payload["status"])
-        self.assertEqual(2, payload["result"]["writes"]["add"])
+        self.assertEqual(4, payload["result"]["writes"]["add"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
         actions_by_target = {action["target"]: action["action"] for action in payload["result"]["actions"]}

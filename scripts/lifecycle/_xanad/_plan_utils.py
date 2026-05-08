@@ -28,7 +28,10 @@ def expected_entry_bytes(
 
     if strategy == "merge-json-object":
         if target_path is None or not target_path.exists():
-            return source_path.read_bytes()
+            source_data = load_json(source_path)
+            if not isinstance(source_data, dict):
+                return None
+            return serialize_json_object(source_data)
         try:
             existing_data = load_json(target_path)
             source_data = load_json(source_path)

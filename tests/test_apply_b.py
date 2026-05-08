@@ -47,22 +47,12 @@ class ApplyTests(XanadTestBase):
 
             (github_dir / "xanad-assistant-lock.json").write_text(
                 json.dumps(
-                    {
-                        "schemaVersion": "0.1.0",
-                        "package": {"name": "xanad-assistant"},
-                        "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
-                        "timestamps": {
-                            "appliedAt": "2026-05-07T00:00:00Z",
-                            "updatedAt": "2026-05-07T00:00:00Z"
-                        },
-                        "selectedPacks": [],
-                        "profile": "balanced",
-                        "ownershipBySurface": {
+                    self.make_minimal_lockfile(
+                        ownershipBySurface={
                             "instructions": "local",
-                            "prompts": "local"
+                            "prompts": "local",
                         },
-                        "files": []
-                    },
+                    ),
                     indent=2,
                 ) + "\n",
                 encoding="utf-8",

@@ -21,22 +21,13 @@ class PlanLifecycleTests(XanadTestBase):
 
             (github_dir / "xanad-assistant-lock.json").write_text(
                 json.dumps(
-                    {
-                        "schemaVersion": "0.1.0",
-                        "package": {"name": "xanad-assistant"},
-                        "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
-                        "timestamps": {
-                            "appliedAt": "2026-05-07T00:00:00Z",
-                            "updatedAt": "2026-05-07T00:00:00Z"
-                        },
-                        "selectedPacks": ["review"],
-                        "profile": "balanced",
-                        "ownershipBySurface": {
+                    self.make_minimal_lockfile(
+                        selectedPacks=["review"],
+                        ownershipBySurface={
                             "instructions": "local",
-                            "prompts": "local"
+                            "prompts": "local",
                         },
-                        "files": []
-                    },
+                    ),
                     indent=2,
                 ) + "\n",
                 encoding="utf-8",
@@ -51,19 +42,18 @@ class PlanLifecycleTests(XanadTestBase):
         self.assertEqual("installed", payload["result"]["installState"])
         self.assertEqual("balanced", payload["result"]["profile"])
         self.assertEqual(["review"], payload["result"]["packs"])
+        self.assertEqual(4, payload["result"]["writes"]["add"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
-        self.assertEqual(4, len(payload["result"]["plannedLockfile"]["contents"]["files"]))
+        self.assertEqual(6, len(payload["result"]["plannedLockfile"]["contents"]["files"]))
         self.assertEqual(
             [
                 ".github/agents/commit.agent.md",
                 ".github/agents/explore.agent.md",
                 ".github/agents/lifecycle-planning.agent.md",
                 ".github/agents/review.agent.md",
-                ".github/hooks/scripts/xanad-workspace-mcp.py",
                 ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
-                ".vscode/mcp.json",
             ],
             payload["result"]["plannedLockfile"]["contents"]["skippedManagedFiles"],
         )
@@ -96,22 +86,13 @@ class PlanLifecycleTests(XanadTestBase):
 
             (github_dir / "xanad-assistant-lock.json").write_text(
                 json.dumps(
-                    {
-                        "schemaVersion": "0.1.0",
-                        "package": {"name": "xanad-assistant"},
-                        "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
-                        "timestamps": {
-                            "appliedAt": "2026-05-07T00:00:00Z",
-                            "updatedAt": "2026-05-07T00:00:00Z"
-                        },
-                        "selectedPacks": ["review"],
-                        "profile": "balanced",
-                        "ownershipBySurface": {
+                    self.make_minimal_lockfile(
+                        selectedPacks=["review"],
+                        ownershipBySurface={
                             "instructions": "local",
-                            "prompts": "local"
+                            "prompts": "local",
                         },
-                        "files": []
-                    },
+                    ),
                     indent=2,
                 ) + "\n",
                 encoding="utf-8",
@@ -198,24 +179,33 @@ class PlanLifecycleTests(XanadTestBase):
                 encoding="utf-8",
             )
 
+            hooks_dir = github_dir / "hooks" / "scripts"
+            hooks_dir.mkdir(parents=True, exist_ok=True)
+            (hooks_dir / "xanad-workspace-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "xanad-workspace-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+
+            vscode_dir = workspace / ".vscode"
+            vscode_dir.mkdir(parents=True, exist_ok=True)
+            (vscode_dir / "mcp.json").write_text(
+                json.dumps(
+                    json.loads((repo_root / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8")),
+                    indent=2,
+                ) + "\n",
+                encoding="utf-8",
+            )
+
             (github_dir / "xanad-assistant-lock.json").write_text(
                 json.dumps(
-                    {
-                        "schemaVersion": "0.1.0",
-                        "package": {"name": "xanad-assistant"},
-                        "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
-                        "timestamps": {
-                            "appliedAt": "2026-05-07T00:00:00Z",
-                            "updatedAt": "2026-05-07T00:00:00Z"
-                        },
-                        "selectedPacks": [],
-                        "profile": "balanced",
-                        "ownershipBySurface": {
+                    self.make_minimal_lockfile(
+                        ownershipBySurface={
                             "instructions": "local",
-                            "prompts": "local"
+                            "prompts": "local",
+                            "hooks": "local",
+                            "mcp": "local",
                         },
-                        "files": []
-                    },
+                    ),
                     indent=2,
                 ) + "\n",
                 encoding="utf-8",

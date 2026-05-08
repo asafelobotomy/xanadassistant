@@ -30,9 +30,7 @@ from scripts.lifecycle._xanad._source import build_source_summary
 
 def _build_lockfile_package_info() -> dict:
     """Return the lockfile package dict, populated from session source info when available."""
-    # Late import so tests can override via scripts.lifecycle.xanad_assistant._session_source_info.
-    import scripts.lifecycle.xanad_assistant as _xa
-    source_info = getattr(_xa, "_session_source_info", None) or _State.session_source_info
+    source_info = _State.session_source_info
     info: dict = {"name": "xanad-assistant"}
     if source_info is not None:
         if "version" in source_info:
@@ -45,6 +43,7 @@ def _build_lockfile_package_info() -> dict:
 
 
 def build_planned_lockfile(
+    workspace: Path,
     context: dict,
     ownership_by_surface: dict,
     resolved_answers: dict,
@@ -74,7 +73,7 @@ def build_planned_lockfile(
                 context["packageRoot"],
                 manifest_entry,
                 token_values,
-                context["workspacePath"] / action["target"],
+                workspace / action["target"],
             ) or "unknown",
             "ownershipMode": action["ownershipMode"],
             "status": "applied",
@@ -121,17 +120,6 @@ def build_planned_lockfile(
         lockfile_contents["lastBackup"] = {"path": backup_plan["root"]}
 
     return {"path": ".github/xanad-assistant-lock.json", "contents": lockfile_contents}
-
-
-def derive_effective_plan_defaults(policy: dict, metadata: dict, manifest: dict | None, lockfile_state: dict) -> tuple[dict, dict]:
-    questions = build_interview_questions(policy, metadata, "setup")
-    question_ids = {q["id"] for q in questions}
-    seeded_answers = seed_answers_from_install_state("update", questions, lockfile_state, {})
-    seeded_answers = seed_answers_from_profile(metadata.get("profileRegistry") or {}, seeded_answers, question_ids)
-    resolved_answers, _ = resolve_question_answers(questions, seeded_answers)
-    resolved_answers = normalize_plan_answers(policy, resolved_answers)
-    ownership_by_surface = resolve_ownership_by_surface(policy, manifest, lockfile_state, resolved_answers)
-    return resolved_answers, ownership_by_surface
 
 
 def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_path: str | None, non_interactive: bool) -> dict:
@@ -182,18 +170,17 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
         context["policy"], context["manifest"], context["lockfileState"], resolved_answers,
     )
     token_values = resolve_token_values(context["policy"], workspace, resolved_answers)
-    context["workspacePath"] = workspace
 
     writes, actions, skipped_actions, retired_targets = build_setup_plan_actions(
         workspace, package_root, context["manifest"], ownership_by_surface,
         resolved_answers, token_values, force_reinstall=(mode == "factory-restore"),
     )
-    conflicts, warnings = classify_plan_conflicts(context, actions, retired_targets)
+    conflicts, warnings = classify_plan_conflicts(workspace, context, actions, retired_targets)
     token_plan = build_token_plan_summary(context["policy"], actions, token_values)
     backup_required = any(count > 0 for count in writes.values())
     backup_plan = build_backup_plan(context["policy"], actions, backup_required)
     planned_lockfile = build_planned_lockfile(
-        context, ownership_by_surface, resolved_answers, token_values,
+        workspace, context, ownership_by_surface, resolved_answers, token_values,
         actions, skipped_actions, retired_targets, backup_plan,
     )
     approval_required = backup_required

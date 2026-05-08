@@ -4,6 +4,7 @@ from pathlib import Path
 
 from scripts.lifecycle.generate_manifest import sha256_file
 from scripts.lifecycle._xanad._conditions import entry_required_for_plan, resolve_token_values
+from scripts.lifecycle._xanad._defaults import derive_effective_plan_defaults
 from scripts.lifecycle._xanad._loader import load_contract_artifacts, load_discovery_metadata, load_manifest
 from scripts.lifecycle._xanad._merge import sha256_json
 from scripts.lifecycle._xanad._plan_utils import expected_entry_hash
@@ -74,12 +75,7 @@ def classify_manifest_entries(workspace: Path, manifest: dict | None) -> tuple[d
         managed_targets.add(target)
         status = entry.get("status")
         if status is None:
-            target_path = workspace / target
-            if not target_path.exists():
-                status = "missing"
-            else:
-                installed_hash = sha256_file(target_path)
-                status = "clean" if installed_hash == entry["hash"] else "stale"
+            raise ValueError(f"Managed manifest entry must be annotated with status before classification: {entry['id']}")
 
         counts[status] += 1
         entries.append({"id": entry["id"], "target": target, "status": status})
@@ -120,9 +116,6 @@ def collect_unmanaged_files(workspace: Path, manifest: dict | None, managed_targ
 
 
 def collect_context(workspace: Path, package_root: Path) -> dict:
-    # Lazy import to avoid circular dependency with _plan_b
-    from scripts.lifecycle._xanad._plan_b import derive_effective_plan_defaults
-
     warnings: list[dict] = []
     policy, artifacts = load_contract_artifacts(package_root)
     metadata, metadata_artifacts = load_discovery_metadata(package_root)

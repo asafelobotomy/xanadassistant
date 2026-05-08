@@ -55,27 +55,15 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
             "requiredFor": [surface],
         })
 
-    if "hook-scripts" in policy.get("canonicalSurfaces", []):
-        questions.append({
-            "id": "hooks.enabled",
-            "kind": "confirm",
-            "prompt": "Enable workspace-local hook scripts for this workspace?",
-            "required": True,
-            "default": False,
-            "recommended": False,
-            "reason": "Hooks stay opt-in so the default install stays lean until a workspace needs local executable paths.",
-            "requiredFor": ["hook-scripts"],
-        })
-
     if "mcp-config" in policy.get("canonicalSurfaces", []):
         questions.append({
             "id": "mcp.enabled",
             "kind": "confirm",
             "prompt": "Enable MCP configuration for this workspace?",
             "required": True,
-            "default": False,
-            "recommended": False,
-            "reason": "MCP stays opt-in until the workspace chooses a local server configuration.",
+            "default": True,
+            "recommended": True,
+            "reason": "MCP stays enabled by default; outbound access is governed by each server, not by whether the workspace installs its local MCP configuration.",
             "requiredFor": ["mcp-config"],
         })
 

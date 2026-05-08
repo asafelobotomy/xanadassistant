@@ -1,38 +1,15 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+from tests._test_base import XanadTestBase
 
-class XanadAssistantPhase6Tests(unittest.TestCase):
+
+class XanadAssistantPhase6Tests(XanadTestBase):
     """Phase 6: source resolution, integrity, stale-version, incomplete-install, dry-run."""
-
-    REPO_ROOT = Path(__file__).resolve().parents[1]
-    SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
-
-    def _run(self, command: str, *extra_args: str, workspace: Path | None = None) -> subprocess.CompletedProcess[str]:
-        """Run the lifecycle script with the given subcommand.
-
-        For 'plan', the first extra_arg is the mode (e.g. 'repair').
-        workspace inserts --workspace and --package-root after the subcommand(s).
-        """
-        cmd = [sys.executable, str(self.SCRIPT), command]
-        if command == "plan" and extra_args and not extra_args[0].startswith("-"):
-            cmd.append(extra_args[0])
-            extra_args = extra_args[1:]
-        if workspace is not None:
-            cmd += ["--workspace", str(workspace), "--package-root", str(self.REPO_ROOT)]
-        return subprocess.run(
-            cmd + list(extra_args),
-            cwd=self.REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
 
     def _apply(self, workspace: Path) -> dict:
         """Run a full apply in workspace and return the parsed payload."""

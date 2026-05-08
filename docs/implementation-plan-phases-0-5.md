@@ -103,7 +103,7 @@ The current validated inputs for Phase 4 are:
 - manifest freshness coverage
 - temporary-workspace fixture strategy for unit-level planning tests
 
-The main missing behavior has shifted from planning to execution: `plan setup`, `plan update`, `plan repair`, and `plan factory-restore` now compute intended writes, approval state, ownership resolution for current core surfaces plus plugin-backed agent and skill skips and opt-in local hook and MCP planning, token substitution summaries for tokenized files, deterministic backup path planning, planned lockfile output, validated answer-driven profile and pack selection, conflict summaries, and serialized no-write plan output for the currently modeled surfaces.
+The main missing behavior has shifted from planning to execution: `plan setup`, `plan update`, `plan repair`, and `plan factory-restore` now compute intended writes, approval state, ownership resolution for current core surfaces plus plugin-backed agent and skill skips and default-on managed MCP planning with atomic local hook installation, token substitution summaries for tokenized files, deterministic backup path planning, planned lockfile output, validated answer-driven profile and pack selection, conflict summaries, and serialized no-write plan output for the currently modeled surfaces.
 
 ### Phase 4 Deliverables
 

@@ -37,7 +37,7 @@ class InspectCheckTests(XanadTestBase):
         self.assertEqual("check", payload["command"])
         self.assertEqual("drift", payload["status"])
         self.assertGreater(payload["result"]["summary"]["missing"], 0)
-        self.assertEqual(8, payload["result"]["summary"]["skipped"])
+        self.assertEqual(6, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["unmanaged"])
 
     def test_check_detects_clean_and_unmanaged_targets(self) -> None:
@@ -82,14 +82,31 @@ class InspectCheckTests(XanadTestBase):
                 encoding="utf-8",
             )
 
+            hooks_dir = workspace / ".github" / "hooks" / "scripts"
+            hooks_dir.mkdir(parents=True, exist_ok=True)
+            (hooks_dir / "xanad-workspace-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "xanad-workspace-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+
+            vscode_dir = workspace / ".vscode"
+            vscode_dir.mkdir(parents=True, exist_ok=True)
+            (vscode_dir / "mcp.json").write_text(
+                json.dumps(
+                    json.loads((repo_root / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8")),
+                    indent=2,
+                ) + "\n",
+                encoding="utf-8",
+            )
+
         result = self.run_command("check", "--json", workspace_setup=workspace_setup)
 
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("clean", payload["status"])
-        self.assertEqual(4, payload["result"]["summary"]["clean"])
+        self.assertEqual(6, payload["result"]["summary"]["clean"])
         self.assertEqual(0, payload["result"]["summary"]["missing"])
-        self.assertEqual(8, payload["result"]["summary"]["skipped"])
+        self.assertEqual(6, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["stale"])
 
     def test_check_reports_stale_when_target_content_differs(self) -> None:
@@ -115,35 +132,15 @@ class InspectCheckTests(XanadTestBase):
             (github_dir / "copilot-version.md").write_text("Version: 0.9.0\n", encoding="utf-8")
             (github_dir / "xanad-assistant-lock.json").write_text(
                 json.dumps(
-                    {
-                        "schemaVersion": "0.1.0",
-                        "package": {
-                            "name": "xanad-assistant"
-                        },
-                        "manifest": {
-                            "schemaVersion": "0.1.0",
-                            "hash": "sha256:test"
-                        },
-                        "timestamps": {
-                            "appliedAt": "2026-05-07T00:00:00Z",
-                            "updatedAt": "2026-05-07T00:00:00Z"
-                        },
-                        "selectedPacks": [
-                            "review"
-                        ],
-                        "profile": "balanced",
-                        "ownershipBySurface": {
+                    self.make_minimal_lockfile(
+                        selectedPacks=["review"],
+                        ownershipBySurface={
                             "agents": "plugin-backed-copilot-format",
-                            "prompts": "local"
+                            "prompts": "local",
                         },
-                        "skippedManagedFiles": [
-                            ".github/prompts/setup.md"
-                        ],
-                        "unknownValues": {
-                            "legacy": True
-                        },
-                        "files": []
-                    },
+                        skippedManagedFiles=[".github/prompts/setup.md"],
+                        unknownValues={"legacy": True},
+                    ),
                     indent=2,
                 ) + "\n",
                 encoding="utf-8",
@@ -170,33 +167,18 @@ class InspectCheckTests(XanadTestBase):
             (github_dir / "copilot-version.md").write_text("broken legacy metadata\n", encoding="utf-8")
             (github_dir / "xanad-assistant-lock.json").write_text(
                 json.dumps(
-                    {
-                        "schemaVersion": "0.1.0",
-                        "package": {
-                            "name": "xanad-assistant"
-                        },
-                        "manifest": {
-                            "schemaVersion": "0.1.0",
-                            "hash": "sha256:test"
-                        },
-                        "timestamps": {
-                            "appliedAt": "2026-05-07T00:00:00Z",
-                            "updatedAt": "2026-05-07T00:00:00Z"
-                        },
-                        "selectedPacks": [],
-                        "files": [
+                    self.make_minimal_lockfile(
+                        files=[
                             {
                                 "id": "prompt.setup",
                                 "target": ".github/prompts/setup.md",
                                 "sourceHash": "sha256:test",
                                 "installedHash": "unknown",
-                                "status": "unknown"
+                                "status": "unknown",
                             }
                         ],
-                        "unknownValues": {
-                            "legacyOwnership": True
-                        }
-                    },
+                        unknownValues={"legacyOwnership": True},
+                    ),
                     indent=2,
                 ) + "\n",
                 encoding="utf-8",

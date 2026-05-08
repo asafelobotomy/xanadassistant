@@ -13,7 +13,6 @@ from scripts.lifecycle._xanad._plan_utils import expected_entry_hash
 
 def resolve_ownership_by_surface(policy: dict, manifest: dict | None, lockfile_state: dict, resolved_answers: dict) -> dict:
     ownership_defaults = policy.get("ownershipDefaults", {})
-    canonical_surfaces = policy.get("canonicalSurfaces", [])
     existing_ownership = lockfile_state.get("ownershipBySurface", {})
 
     ownership_by_surface: dict[str, str] = {}
@@ -24,8 +23,6 @@ def resolve_ownership_by_surface(policy: dict, manifest: dict | None, lockfile_s
         canonical_surface = entry["id"].split(".", 1)[0]
         target_surface = entry["surface"]
         default_ownership = ownership_defaults.get(canonical_surface)
-        if canonical_surface in canonical_surfaces:
-            default_ownership = ownership_defaults.get(canonical_surface)
         if default_ownership is None:
             default_ownership = entry["ownership"][0]
 
@@ -137,7 +134,12 @@ def build_setup_plan_actions(
     return writes, actions, skipped_actions, retired_targets
 
 
-def classify_plan_conflicts(context: dict, actions: list[dict], retired_targets: list[str]) -> tuple[list[dict], list[dict]]:
+def classify_plan_conflicts(
+    workspace: Path,
+    context: dict,
+    actions: list[dict],
+    retired_targets: list[str],
+) -> tuple[list[dict], list[dict]]:
     conflicts: list[dict] = []
     warnings: list[dict] = list(context["warnings"])
 
@@ -152,7 +154,7 @@ def classify_plan_conflicts(context: dict, actions: list[dict], retired_targets:
         })
 
     unmanaged_files = collect_unmanaged_files(
-        context["workspacePath"], context["manifest"],
+        workspace, context["manifest"],
         {entry["target"] for entry in context["manifest"].get("managedFiles", [])} if context["manifest"] else set(),
     )
     if unmanaged_files:
@@ -197,15 +199,6 @@ def build_conflict_summary(conflicts: list[dict]) -> dict:
 
 
 def write_plan_output(path_value: str | None, payload: dict) -> str | None:
-    if path_value is None:
-        return None
-    output_path = Path(path_value).resolve()
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    return str(output_path)
-
-
-def write_report_output(path_value: str | None, payload: dict) -> str | None:
     if path_value is None:
         return None
     output_path = Path(path_value).resolve()

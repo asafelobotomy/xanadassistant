@@ -33,8 +33,8 @@ def entry_required_for_plan(entry: dict, resolved_answers: dict) -> bool:
 
 def normalize_plan_answers(policy: dict, resolved_answers: dict) -> dict:
     normalized_answers = dict(resolved_answers)
-    if "hook-scripts" in policy.get("canonicalSurfaces", []) and normalized_answers.get("mcp.enabled"):
-        normalized_answers["hooks.enabled"] = True
+    if "hook-scripts" in policy.get("canonicalSurfaces", []) and "mcp-config" in policy.get("canonicalSurfaces", []):
+        normalized_answers["hooks.enabled"] = bool(normalized_answers.get("mcp.enabled"))
     return normalized_answers
 
 

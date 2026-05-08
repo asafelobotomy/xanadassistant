@@ -16,24 +16,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
+from tests._test_base import TEST_REPO_ROOT, run_lifecycle_subprocess
+
+REPO_ROOT = TEST_REPO_ROOT
 STALE_FIXTURE = REPO_ROOT / "tests" / "fixtures" / "stale-consumer"
 
 
 def _run(command: str, *extra_args: str, workspace: Path) -> subprocess.CompletedProcess[str]:
-    cmd = [sys.executable, str(SCRIPT), command]
-    if command == "plan" and extra_args and not extra_args[0].startswith("-"):
-        cmd.append(extra_args[0])
-        extra_args = extra_args[1:]
-    cmd += ["--workspace", str(workspace), "--package-root", str(REPO_ROOT)]
-    return subprocess.run(
-        cmd + list(extra_args),
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    return run_lifecycle_subprocess(command, *extra_args, workspace=workspace, repo_root=REPO_ROOT)
 
 
 def _apply_fresh(workspace: Path) -> subprocess.CompletedProcess[str]:

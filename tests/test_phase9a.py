@@ -1,33 +1,15 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+from tests._test_base import XanadTestBase
 
-class XanadAssistantPhase9Tests(unittest.TestCase):
+
+class XanadAssistantPhase9Tests(XanadTestBase):
     """Phase 9: pack selection, profile defaults, lean skill, catalog generation."""
-
-    REPO_ROOT = Path(__file__).resolve().parents[1]
-    SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
-
-    def _run(self, command: str, *extra_args: str, workspace: Path | None = None) -> subprocess.CompletedProcess[str]:
-        cmd = [sys.executable, str(self.SCRIPT), command]
-        if command == "plan" and extra_args and not extra_args[0].startswith("-"):
-            cmd.append(extra_args[0])
-            extra_args = extra_args[1:]
-        if workspace is not None:
-            cmd += ["--workspace", str(workspace), "--package-root", str(self.REPO_ROOT)]
-        return subprocess.run(
-            cmd + list(extra_args),
-            cwd=self.REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
 
     # ------------------------------------------------------------------
     # condition_matches – list membership

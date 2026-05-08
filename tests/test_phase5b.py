@@ -7,8 +7,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests._test_base import XanadTestBase
 
-class XanadAssistantPhase5Tests(unittest.TestCase):
+
+class XanadAssistantPhase5Tests(XanadTestBase):
     def _make_copy_if_missing_entry(self, target: str) -> dict:
         return {
             "id": f"test-cim-{target.replace('/', '-')}",
@@ -59,21 +61,16 @@ class XanadAssistantPhase5Tests(unittest.TestCase):
                 },
                 "plannedLockfile": {
                     "path": ".github/xanad-assistant-lock.json",
-                    "contents": {
-                        "schemaVersion": "0.1.0",
-                        "package": {"name": "xanad-assistant"},
-                        "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
-                        "timestamps": {
+                    "contents": self.make_minimal_lockfile(
+                        timestamps={
                             "appliedAt": "<apply-timestamp>",
                             "updatedAt": "<apply-timestamp>",
                         },
-                        "selectedPacks": [],
-                        "files": [],
-                        "skippedManagedFiles": [],
-                        "retiredManagedFiles": [],
-                        "unknownValues": {},
-                        "lastBackup": {"path": ".xanad-assistant/backups/<apply-timestamp>"},
-                    },
+                        skippedManagedFiles=[],
+                        retiredManagedFiles=[],
+                        unknownValues={},
+                        lastBackup={"path": ".xanad-assistant/backups/<apply-timestamp>"},
+                    ),
                 },
                 "skippedActions": [],
                 "factoryRestore": False,

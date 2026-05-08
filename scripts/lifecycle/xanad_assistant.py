@@ -50,10 +50,11 @@ from scripts.lifecycle._xanad._interview import (
     build_interview_questions, build_interview_result, build_error_payload,
     load_answers, validate_answer_value, resolve_question_answers,
 )
+from scripts.lifecycle._xanad._defaults import derive_effective_plan_defaults
 from scripts.lifecycle._xanad._plan_a import (
     resolve_ownership_by_surface, build_setup_plan_actions,
     classify_plan_conflicts, build_conflict_summary,
-    write_plan_output, write_report_output,
+    write_plan_output,
     verify_manifest_integrity,
 )
 from scripts.lifecycle._xanad._plan_c import (
@@ -62,7 +63,7 @@ from scripts.lifecycle._xanad._plan_c import (
 )
 from scripts.lifecycle._xanad._plan_b import (
     _build_lockfile_package_info, build_planned_lockfile,
-    build_plan_result, derive_effective_plan_defaults,
+    build_plan_result,
 )
 from scripts.lifecycle._xanad._apply import (
     generate_apply_timestamps, materialize_apply_timestamp, render_entry_bytes,
@@ -77,10 +78,6 @@ from scripts.lifecycle._xanad._progress import (
     emit_agent_progress, emit_payload, build_not_implemented_payload,
 )
 from scripts.lifecycle._xanad._main import main
-
-# Module-level attribute preserved for backward compatibility with tests that
-# read/write _engine._session_source_info directly.
-_session_source_info: "dict | None" = None
 
 if __name__ == "__main__":
     raise SystemExit(main())

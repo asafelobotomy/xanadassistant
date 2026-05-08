@@ -56,12 +56,15 @@ The script should emit question objects such as:
   "kind": "confirm",
   "prompt": "Enable the fetch MCP server for this workspace?",
   "default": true,
+  "recommended": true,
   "reason": "The package can install the required local hook script atomically.",
   "requiredFor": ["mcp.fetch"]
 }
 ```
 
 Copilot can present those questions conversationally and return `answers.json`.
+
+Default MCP enablement should be treated as lifecycle policy, not as a proxy for whether a server might make outbound requests at runtime. Runtime network capabilities belong in per-server documentation, approval flows, or sandbox policy.
 
 ### Planner
 
@@ -163,6 +166,5 @@ Required surfaces:
 - workspace files from `template/workspace/`
 - starter kits from `starter-kits/`
 - Claude compatibility files and workflow files
-
 The manifest should also declare retired managed files so the updater can report, archive, or remove them according to policy.
 

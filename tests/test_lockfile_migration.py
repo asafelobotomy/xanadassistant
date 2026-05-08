@@ -1,32 +1,15 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+from tests._test_base import XanadTestBase
 
-class LockfileMigrationTests(unittest.TestCase):
+
+class LockfileMigrationTests(XanadTestBase):
     """Coverage for pre-0.1.0 lockfile shapes that are valid JSON but structurally incomplete."""
-
-    REPO_ROOT = Path(__file__).resolve().parents[1]
-    SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
-
-    def _run(self, command: str, *extra_args: str, workspace: Path) -> subprocess.CompletedProcess[str]:
-        cmd = [sys.executable, str(self.SCRIPT), command]
-        if command == "plan" and extra_args and not extra_args[0].startswith("-"):
-            cmd.append(extra_args[0])
-            extra_args = extra_args[1:]
-        cmd += ["--workspace", str(workspace), "--package-root", str(self.REPO_ROOT)]
-        return subprocess.run(
-            cmd + list(extra_args),
-            cwd=self.REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
 
     def _write_lockfile(self, workspace: Path, data: dict) -> None:
         path = workspace / ".github" / "xanad-assistant-lock.json"
@@ -43,50 +26,30 @@ class LockfileMigrationTests(unittest.TestCase):
 
     def test_needs_migration_missing_files(self) -> None:
         from scripts.lifecycle.xanad_assistant import _lockfile_needs_migration
-        data = {
-            "schemaVersion": "0.1.0",
-            "package": {"name": "xanad-assistant"},
-            "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
-            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
-            "selectedPacks": [],
-            # "files" intentionally absent
-        }
+        data = self.make_minimal_lockfile(
+            manifest={"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+            remove_paths=("files",),
+        )
         self.assertTrue(_lockfile_needs_migration(data))
 
     def test_needs_migration_missing_manifest_hash(self) -> None:
         from scripts.lifecycle.xanad_assistant import _lockfile_needs_migration
-        data = {
-            "schemaVersion": "0.1.0",
-            "package": {"name": "xanad-assistant"},
-            "manifest": {"schemaVersion": "0.1.0"},  # hash absent
-            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
-            "selectedPacks": [],
-            "files": [],
-        }
+        data = self.make_minimal_lockfile(remove_paths=("manifest.hash",))
         self.assertTrue(_lockfile_needs_migration(data))
 
     def test_needs_migration_missing_package_name(self) -> None:
         from scripts.lifecycle.xanad_assistant import _lockfile_needs_migration
-        data = {
-            "schemaVersion": "0.1.0",
-            "package": {},  # name absent
-            "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
-            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
-            "selectedPacks": [],
-            "files": [],
-        }
+        data = self.make_minimal_lockfile(
+            manifest={"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+            remove_paths=("package.name",),
+        )
         self.assertTrue(_lockfile_needs_migration(data))
 
     def test_needs_migration_valid_shape_returns_false(self) -> None:
         from scripts.lifecycle.xanad_assistant import _lockfile_needs_migration
-        data = {
-            "schemaVersion": "0.1.0",
-            "package": {"name": "xanad-assistant"},
-            "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc123"},
-            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
-            "selectedPacks": [],
-            "files": [],
-        }
+        data = self.make_minimal_lockfile(
+            manifest={"schemaVersion": "0.1.0", "hash": "sha256:abc123"},
+        )
         self.assertFalse(_lockfile_needs_migration(data))
 
     # ------------------------------------------------------------------
@@ -106,15 +69,12 @@ class LockfileMigrationTests(unittest.TestCase):
 
     def test_migrate_preserves_existing_fields(self) -> None:
         from scripts.lifecycle.xanad_assistant import migrate_lockfile_shape
-        data = {
-            "schemaVersion": "0.1.0",
-            "package": {"name": "xanad-assistant"},
-            "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
-            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
-            "selectedPacks": ["lean"],
-            "profile": "lean",
-            # files absent
-        }
+        data = self.make_minimal_lockfile(
+            manifest={"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+            selectedPacks=["lean"],
+            profile="lean",
+            remove_paths=("files",),
+        )
         migrated = migrate_lockfile_shape(data)
         self.assertEqual(["lean"], migrated["selectedPacks"])
         self.assertEqual("lean", migrated["profile"])
@@ -138,14 +98,12 @@ class LockfileMigrationTests(unittest.TestCase):
         from scripts.lifecycle.xanad_assistant import parse_lockfile_state
         with tempfile.TemporaryDirectory() as tmp:
             workspace = Path(tmp)
-            self._write_lockfile(workspace, {
-                "schemaVersion": "0.1.0",
-                "package": {"name": "xanad-assistant"},
-                "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
-                "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
-                "selectedPacks": [],
-                "files": [],
-            })
+            self._write_lockfile(
+                workspace,
+                self.make_minimal_lockfile(
+                    manifest={"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+                ),
+            )
             state = parse_lockfile_state(workspace)
             self.assertFalse(state["malformed"])
             self.assertFalse(state["needsMigration"])
@@ -166,14 +124,11 @@ class LockfileMigrationTests(unittest.TestCase):
     def test_schema_migration_appears_as_repair_reason_for_missing_files_field(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             workspace = Path(tmp)
-            self._write_lockfile(workspace, {
-                "schemaVersion": "0.1.0",
-                "package": {"name": "xanad-assistant"},
-                "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
-                "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
-                "selectedPacks": [],
-                # "files" absent
-            })
+            data = self.make_minimal_lockfile(
+                manifest={"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+                remove_paths=("files",),
+            )
+            self._write_lockfile(workspace, data)
             result = self._run("plan", "repair", "--json", "--non-interactive", workspace=workspace)
             self.assertEqual(0, result.returncode, result.stderr)
             payload = json.loads(result.stdout)
@@ -182,14 +137,12 @@ class LockfileMigrationTests(unittest.TestCase):
     def test_schema_migration_does_not_appear_for_valid_lockfile(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             workspace = Path(tmp)
-            self._write_lockfile(workspace, {
-                "schemaVersion": "0.1.0",
-                "package": {"name": "xanad-assistant"},
-                "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
-                "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
-                "selectedPacks": [],
-                "files": [],
-            })
+            self._write_lockfile(
+                workspace,
+                self.make_minimal_lockfile(
+                    manifest={"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+                ),
+            )
             result = self._run("plan", "repair", "--json", "--non-interactive", workspace=workspace)
             payload = json.loads(result.stdout)
             self.assertNotIn("schema-migration-required", payload["result"].get("repairReasons", []))

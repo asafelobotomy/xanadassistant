@@ -38,6 +38,7 @@ Legacy repair behavior:
 Default architecture:
 
 - Keep plugin delivery as the package channel.
+- Keep the managed MCP configuration enabled by default when the workspace uses the package lifecycle defaults.
 - Make hooks and MCP servers local whenever `.vscode/mcp.json` uses workspace-local executable paths.
 - Keep agents and skills plugin-backed by default.
 - Treat all-local mode as an explicit customization choice.
@@ -46,6 +47,7 @@ Default architecture:
 Rationale:
 
 - Hooks and MCP often require executable paths and must be atomic with workspace config.
+- Outbound networking is a per-server runtime property and should not decide whether the workspace installs or enables its MCP configuration by default.
 - Agents and skills are better left plugin-backed when the plugin can supply them reliably.
 - All-local installs are useful but should not be the default surprise footprint.
 
@@ -56,6 +58,7 @@ MCP config and hook scripts must update together.
 Rules:
 
 - If an MCP server entry launches `${workspaceFolder}/.github/hooks/scripts/<name>.py`, that script must exist and match the package hash.
+- Default lifecycle answers should install the managed MCP config and any required local hook scripts together unless the user explicitly disables MCP.
 - If a required script is missing or stale, the plan must include it.
 - If hooks are plugin-owned and the active package format cannot provide hook or MCP executable paths, the plan must switch that surface to local installation or request confirmation.
 - If package-root paths are used, the plan must verify that the active plugin format supports those paths.
@@ -88,7 +91,7 @@ Rules:
 - Preserve `## §10 - Project-Specific Overrides` in installed instructions.
 - Preserve blocks marked `<!-- user-added -->` or `<!-- migrated -->`.
 - Merge VS Code settings instead of replacing the whole file.
-- Preserve MCP enabled/disabled choices unless a server is new or retired.
+- Preserve explicit MCP enabled/disabled choices recorded by the workspace unless a server is new or retired.
 - Preserve local custom files not listed in the lockfile.
 - Back up every managed file before modification.
 - Report unmanaged files that resemble package files instead of assuming ownership.
@@ -160,6 +163,5 @@ Suggested codes:
 - `6`: workspace state prevents safe writes
 - `7`: partial apply or rollback required attention
 - `8`: invalid command, options, or answer file
-
 Copilot should use these codes to decide whether to ask the user, retry with answers, summarize warnings, or stop.
 

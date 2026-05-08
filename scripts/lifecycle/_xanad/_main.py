@@ -9,10 +9,63 @@ from scripts.lifecycle._xanad._cli import build_parser
 from scripts.lifecycle._xanad._errors import LifecycleCommandError, _State
 from scripts.lifecycle._xanad._inspect import build_inspect_result
 from scripts.lifecycle._xanad._interview import build_error_payload, build_interview_result
-from scripts.lifecycle._xanad._plan_a import write_plan_output, write_report_output
+from scripts.lifecycle._xanad._plan_a import write_plan_output
 from scripts.lifecycle._xanad._plan_b import build_plan_result
 from scripts.lifecycle._xanad._progress import build_not_implemented_payload, emit_payload
 from scripts.lifecycle._xanad._source import resolve_effective_package_root, resolve_workspace
+
+
+def _attach_output_path(path_value: str | None, payload: dict, result_key: str) -> None:
+    output_path = write_plan_output(path_value, payload)
+    if output_path is not None:
+        payload.setdefault("result", {})[result_key] = output_path
+
+
+def _run_execution_command(
+    args: argparse.Namespace,
+    workspace: Path,
+    package_root: Path,
+    use_json_lines: bool,
+    command: str,
+    mode: str,
+) -> int:
+    try:
+        if command == "apply":
+            payload = build_apply_result(
+                workspace,
+                package_root,
+                args.answers,
+                args.non_interactive,
+                dry_run=args.dry_run,
+            )
+        else:
+            payload = build_execution_result(
+                command,
+                mode,
+                workspace,
+                package_root,
+                args.answers,
+                args.non_interactive,
+                dry_run=args.dry_run,
+            )
+    except LifecycleCommandError as error:
+        payload, exit_code = build_error_payload(
+            command,
+            workspace,
+            package_root,
+            error.code,
+            error.message,
+            error.exit_code,
+            mode=mode,
+            details=error.details,
+        )
+        _attach_output_path(args.report_out, payload, "reportOut")
+        emit_payload(payload, args.ui, use_json_lines)
+        return exit_code
+
+    _attach_output_path(args.report_out, payload, "reportOut")
+    emit_payload(payload, args.ui, use_json_lines)
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -44,9 +97,6 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
             getattr(args, "ref", None),
         )
         _State.session_source_info = _resolved_source_info
-        # Keep xanad_assistant module attribute in sync for backward compat.
-        import scripts.lifecycle.xanad_assistant as _xa_mod
-        _xa_mod._session_source_info = _resolved_source_info
     except LifecycleCommandError as error:
         payload, exit_code = build_error_payload(
             getattr(args, "command", "unknown"),
@@ -81,91 +131,28 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
             )
             emit_payload(payload, args.ui, use_json_lines)
             return exit_code
-        plan_out_path = write_plan_output(args.plan_out, payload)
-        if plan_out_path is not None:
-            payload["result"]["planOut"] = plan_out_path
+        _attach_output_path(args.plan_out, payload, "planOut")
         emit_payload(payload, args.ui, use_json_lines)
         return 0 if not payload["errors"] else 1
 
     if args.command == "apply":
-        try:
-            payload = build_apply_result(workspace, package_root, args.answers, args.non_interactive, dry_run=args.dry_run)
-        except LifecycleCommandError as error:
-            payload, exit_code = build_error_payload(
-                "apply", workspace, package_root,
-                error.code, error.message, error.exit_code, mode="setup", details=error.details,
-            )
-            report_out_path = write_report_output(args.report_out, payload)
-            if report_out_path is not None:
-                payload.setdefault("result", {})["reportOut"] = report_out_path
-            emit_payload(payload, args.ui, use_json_lines)
-            return exit_code
-        report_out_path = write_report_output(args.report_out, payload)
-        if report_out_path is not None:
-            payload["result"]["reportOut"] = report_out_path
-        emit_payload(payload, args.ui, use_json_lines)
-        return 0
+        return _run_execution_command(args, workspace, package_root, use_json_lines, "apply", "setup")
 
     if args.command == "update":
-        try:
-            payload = build_execution_result("update", "update", workspace, package_root, args.answers, args.non_interactive, dry_run=args.dry_run)
-        except LifecycleCommandError as error:
-            payload, exit_code = build_error_payload(
-                "update", workspace, package_root,
-                error.code, error.message, error.exit_code, mode="update", details=error.details,
-            )
-            report_out_path = write_report_output(args.report_out, payload)
-            if report_out_path is not None:
-                payload.setdefault("result", {})["reportOut"] = report_out_path
-            emit_payload(payload, args.ui, use_json_lines)
-            return exit_code
-        report_out_path = write_report_output(args.report_out, payload)
-        if report_out_path is not None:
-            payload["result"]["reportOut"] = report_out_path
-        emit_payload(payload, args.ui, use_json_lines)
-        return 0
+        return _run_execution_command(args, workspace, package_root, use_json_lines, "update", "update")
 
     if args.command == "repair":
-        try:
-            payload = build_execution_result("repair", "repair", workspace, package_root, args.answers, args.non_interactive, dry_run=args.dry_run)
-        except LifecycleCommandError as error:
-            payload, exit_code = build_error_payload(
-                "repair", workspace, package_root,
-                error.code, error.message, error.exit_code, mode="repair", details=error.details,
-            )
-            report_out_path = write_report_output(args.report_out, payload)
-            if report_out_path is not None:
-                payload.setdefault("result", {})["reportOut"] = report_out_path
-            emit_payload(payload, args.ui, use_json_lines)
-            return exit_code
-        report_out_path = write_report_output(args.report_out, payload)
-        if report_out_path is not None:
-            payload["result"]["reportOut"] = report_out_path
-        emit_payload(payload, args.ui, use_json_lines)
-        return 0
+        return _run_execution_command(args, workspace, package_root, use_json_lines, "repair", "repair")
 
     if args.command == "factory-restore":
-        try:
-            payload = build_execution_result(
-                "factory-restore", "factory-restore", workspace, package_root,
-                args.answers, args.non_interactive, dry_run=args.dry_run,
-            )
-        except LifecycleCommandError as error:
-            payload, exit_code = build_error_payload(
-                "factory-restore", workspace, package_root,
-                error.code, error.message, error.exit_code,
-                mode="factory-restore", details=error.details,
-            )
-            report_out_path = write_report_output(args.report_out, payload)
-            if report_out_path is not None:
-                payload.setdefault("result", {})["reportOut"] = report_out_path
-            emit_payload(payload, args.ui, use_json_lines)
-            return exit_code
-        report_out_path = write_report_output(args.report_out, payload)
-        if report_out_path is not None:
-            payload["result"]["reportOut"] = report_out_path
-        emit_payload(payload, args.ui, use_json_lines)
-        return 0
+        return _run_execution_command(
+            args,
+            workspace,
+            package_root,
+            use_json_lines,
+            "factory-restore",
+            "factory-restore",
+        )
 
     mode = getattr(args, "mode", None)
     payload = build_not_implemented_payload(args.command, workspace, package_root, mode)

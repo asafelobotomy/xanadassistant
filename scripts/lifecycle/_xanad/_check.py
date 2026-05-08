@@ -8,7 +8,6 @@ from scripts.lifecycle._xanad._inspect import (
     collect_unmanaged_files,
 )
 from scripts.lifecycle._xanad._source import build_source_summary
-from scripts.lifecycle._xanad._state import read_lockfile_status
 
 
 def build_check_result(workspace: Path, package_root: Path) -> dict:
@@ -17,8 +16,7 @@ def build_check_result(workspace: Path, package_root: Path) -> dict:
     unmanaged_files = collect_unmanaged_files(workspace, context["manifestWithStatus"], managed_targets)
     counts["unmanaged"] = len(unmanaged_files)
 
-    lockfile_status = read_lockfile_status(workspace)
-    if lockfile_status["malformed"]:
+    if context["lockfileState"]["malformed"]:
         counts["malformed"] += 1
     if context["legacyVersionState"]["malformed"]:
         counts["malformed"] += 1

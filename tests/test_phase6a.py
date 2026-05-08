@@ -1,38 +1,15 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+from tests._test_base import XanadTestBase
 
-class XanadAssistantPhase6Tests(unittest.TestCase):
+
+class XanadAssistantPhase6Tests(XanadTestBase):
     """Phase 6: source resolution, integrity, stale-version, incomplete-install, dry-run."""
-
-    REPO_ROOT = Path(__file__).resolve().parents[1]
-    SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
-
-    def _run(self, command: str, *extra_args: str, workspace: Path | None = None) -> subprocess.CompletedProcess[str]:
-        """Run the lifecycle script with the given subcommand.
-
-        For 'plan', the first extra_arg is the mode (e.g. 'repair').
-        workspace inserts --workspace and --package-root after the subcommand(s).
-        """
-        cmd = [sys.executable, str(self.SCRIPT), command]
-        if command == "plan" and extra_args and not extra_args[0].startswith("-"):
-            cmd.append(extra_args[0])
-            extra_args = extra_args[1:]
-        if workspace is not None:
-            cmd += ["--workspace", str(workspace), "--package-root", str(self.REPO_ROOT)]
-        return subprocess.run(
-            cmd + list(extra_args),
-            cwd=self.REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
 
     def _apply(self, workspace: Path) -> dict:
         """Run a full apply in workspace and return the parsed payload."""
@@ -138,30 +115,30 @@ class XanadAssistantPhase6Tests(unittest.TestCase):
     # ------------------------------------------------------------------
 
     def test_build_lockfile_package_info_default(self) -> None:
-        import scripts.lifecycle.xanad_assistant as _engine
+        from scripts.lifecycle.xanad_assistant import _State, _build_lockfile_package_info
 
-        original = _engine._session_source_info
+        original = _State.session_source_info
         try:
-            _engine._session_source_info = None
-            info = _engine._build_lockfile_package_info()
+            _State.session_source_info = None
+            info = _build_lockfile_package_info()
         finally:
-            _engine._session_source_info = original
+            _State.session_source_info = original
         self.assertEqual({"name": "xanad-assistant"}, info)
 
     def test_build_lockfile_package_info_with_release(self) -> None:
-        import scripts.lifecycle.xanad_assistant as _engine
+        from scripts.lifecycle.xanad_assistant import _State, _build_lockfile_package_info
 
-        original = _engine._session_source_info
+        original = _State.session_source_info
         try:
-            _engine._session_source_info = {
+            _State.session_source_info = {
                 "kind": "github-release",
                 "source": "github:myorg/myrepo",
                 "version": "v1.2.3",
                 "packageRoot": "/fake/path",
             }
-            info = _engine._build_lockfile_package_info()
+            info = _build_lockfile_package_info()
         finally:
-            _engine._session_source_info = original
+            _State.session_source_info = original
         self.assertEqual("xanad-assistant", info["name"])
         self.assertEqual("v1.2.3", info["version"])
         self.assertEqual("github:myorg/myrepo", info["source"])
@@ -210,6 +187,25 @@ class XanadAssistantPhase6Tests(unittest.TestCase):
         )
         self.assertFalse(ok)
         self.assertIn("Manifest hash mismatch", reason)
+
+    def test_classify_manifest_entries_requires_annotated_status(self) -> None:
+        from scripts.lifecycle.xanad_assistant import classify_manifest_entries
+
+        manifest = {
+            "managedFiles": [
+                {
+                    "id": "prompts.setup.md",
+                    "target": ".github/prompts/setup.md",
+                    "hash": "sha256:test",
+                }
+            ],
+            "retiredFiles": [],
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            with self.assertRaisesRegex(ValueError, "must be annotated with status"):
+                classify_manifest_entries(workspace, manifest)
 
     # ------------------------------------------------------------------
     # Stale-version warning – subprocess test
