@@ -8,6 +8,8 @@ from pathlib import Path
 from scripts.lifecycle._xanad._loader import load_json, load_optional_json
 
 
+CURRENT_PACKAGE_NAME = "xanad-assistant"
+PREDECESSOR_PACKAGE_NAMES = frozenset({"copilot-instructions-template"})
 _LOCKFILE_REQUIRED_FIELDS = frozenset({"schemaVersion", "package", "manifest", "timestamps", "selectedPacks", "files"})
 
 
@@ -86,15 +88,40 @@ def _lockfile_needs_migration(data: dict) -> bool:
     package_block = data.get("package")
     if not isinstance(package_block, dict) or "name" not in package_block:
         return True
+    if package_block.get("name") != CURRENT_PACKAGE_NAME:
+        return True
     return False
+
+
+def get_lockfile_package_name(lockfile_state: dict) -> str | None:
+    data = lockfile_state.get("data")
+    if not isinstance(data, dict):
+        return None
+    package_block = data.get("package")
+    if not isinstance(package_block, dict):
+        return None
+    package_name = package_block.get("name")
+    return package_name if isinstance(package_name, str) else None
+
+
+def get_predecessor_package_name(lockfile_state: dict) -> str | None:
+    package_name = lockfile_state.get("originalPackageName")
+    if not isinstance(package_name, str):
+        package_name = get_lockfile_package_name(lockfile_state)
+    if package_name in PREDECESSOR_PACKAGE_NAMES:
+        return package_name
+    return None
 
 
 def migrate_lockfile_shape(data: dict) -> dict:
     """Return a copy of *data* with missing required fields filled with safe defaults."""
     migrated = dict(data)
     migrated.setdefault("schemaVersion", "0.1.0")
-    if not isinstance(migrated.get("package"), dict) or "name" not in migrated.get("package", {}):
-        migrated["package"] = {"name": "xanad-assistant"}
+    existing_package_name = None
+    if isinstance(migrated.get("package"), dict):
+        existing_package_name = migrated.get("package", {}).get("name")
+    if not isinstance(migrated.get("package"), dict) or migrated.get("package", {}).get("name") != CURRENT_PACKAGE_NAME:
+        migrated["package"] = {"name": CURRENT_PACKAGE_NAME}
     manifest_block = migrated.get("manifest")
     if not isinstance(manifest_block, dict):
         migrated["manifest"] = {"schemaVersion": "0.1.0", "hash": "sha256:unknown"}
@@ -113,6 +140,8 @@ def migrate_lockfile_shape(data: dict) -> dict:
     if not isinstance(migrated.get("files"), list):
         migrated["files"] = []
     migrated.setdefault("unknownValues", {})
+    if isinstance(existing_package_name, str) and existing_package_name != CURRENT_PACKAGE_NAME:
+        migrated["unknownValues"].setdefault("migratedFromPackageName", existing_package_name)
     migrated.setdefault("skippedManagedFiles", [])
     return migrated
 
@@ -137,6 +166,12 @@ def parse_lockfile_state(workspace: Path) -> dict:
             "skippedManagedFiles": [], "unknownValues": {}, "files": [],
         }
 
+    original_package_name = None
+    if isinstance(data.get("package"), dict):
+        package_name = data.get("package", {}).get("name")
+        if isinstance(package_name, str):
+            original_package_name = package_name
+
     needs_migration = _lockfile_needs_migration(data)
     if needs_migration:
         data = migrate_lockfile_shape(data)
@@ -144,6 +179,7 @@ def parse_lockfile_state(workspace: Path) -> dict:
     return {
         "present": True, "malformed": False, "needsMigration": needs_migration,
         "path": str(lockfile_path), "data": data,
+        "originalPackageName": original_package_name,
         "selectedPacks": data.get("selectedPacks", []),
         "profile": data.get("profile"),
         "ownershipBySurface": data.get("ownershipBySurface", {}),

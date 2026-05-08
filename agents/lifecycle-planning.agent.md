@@ -1,9 +1,10 @@
 ---
 name: xanad-lifecycle-planning
-description: >
-  Coordinate xanad-assistant lifecycle commands. Use this agent for any setup,
-  update, repair, restore, or inspection task in a consumer workspace.
-tools: []
+description: "Use when: set up xanad-assistant, inspect workspace, run lifecycle check, plan setup, apply setup, update xanad-assistant, repair install, factory restore, or coordinate xanad-assistant lifecycle commands in a consumer workspace."
+argument-hint: "Describe the lifecycle operation: inspect, check, plan setup, apply, update, repair, or factory restore."
+tools: [runCommands, askQuestions]
+agents: []
+user-invocable: true
 ---
 
 ## Authority

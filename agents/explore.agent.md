@@ -1,6 +1,6 @@
 ---
 name: Explore
-description: Fast read-only codebase exploration and Q&A subagent. Prefer over manually chaining multiple search and file-reading operations to avoid cluttering the main conversation. Safe to call in parallel. Specify thoroughness: quick, medium, or thorough.
+description: "Use when: broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, dependency tracing, finding where behavior lives, searching for examples, or answering repository structure questions."
 argument-hint: Describe WHAT you're looking for and desired thoroughness (quick/medium/thorough)
 model:
   - Claude Haiku 4.5
@@ -8,6 +8,7 @@ model:
   - GPT-5 mini
   - Claude Sonnet 4.6
 tools: [agent, codebase, search, runCommands]
+agents: []
 user-invocable: true
 ---
 

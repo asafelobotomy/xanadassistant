@@ -10,6 +10,7 @@ Add packs, profiles, and optional memory behavior only after the lifecycle core 
 - initial profile implementation
 - optional memory pack design and possibly first implementation slice
 - catalog artifact
+- first-party tooling MCP contract and initial server/tool boundary
 
 ### Phase 9 Checklist
 
@@ -20,6 +21,9 @@ Add packs, profiles, and optional memory behavior only after the lifecycle core 
 - [x] Implement catalog generation.
 - [x] Decide whether the first memory slice is documentation-only, metadata-only, or executable. (Decision: metadata-only, kept planned.)
 - [ ] If memory pack begins implementation, keep it local-first, optional, and verification-aware.
+- [ ] Define the first-party tooling MCP contract and keep its tool surface semantic, narrow, and repo-owned.
+- [ ] Keep lifecycle CLI as the authority even if first-party MCP tools wrap lifecycle workflows.
+- [ ] Define a first executable tooling MCP slice that works in consumer workspaces without assuming a local xanad-assistant package checkout.
 
 ### Phase 9 Validation Gate
 
@@ -70,6 +74,7 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 - [ ] Secrets are never hardcoded in hook scripts or MCP configs.
 - [ ] Network and file-system assumptions are clear for local and sandboxed operation.
 - [ ] Auto-approval assumptions are explicit and conservative by default.
+- [ ] First-party MCP tools avoid arbitrary shell passthrough and document every privileged workflow they expose.
 
 ### Memory Checklist
 
@@ -100,6 +105,7 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 - [x] add `docs/contracts/write-model.md`
 - [x] add `docs/contracts/memory-boundary.md`
 - [x] add `docs/contracts/ui-agent-contract.md`
+- [x] add `docs/contracts/tool-mcp-boundary.md`
 - [x] add protocol fixture examples under `docs/contracts/examples/`
 
 ### Slice 2 - Generated Manifest

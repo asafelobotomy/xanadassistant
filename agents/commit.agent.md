@@ -1,12 +1,13 @@
 ---
 name: Commit
-description: Full git lifecycle — stage, commit, push, pull, rebase, branch, stash, tag, and PR creation
-argument-hint: "Say 'commit my changes', 'push', 'pull and rebase', 'create a branch', 'create a PR', 'tag this version', or describe the change to commit"
+description: "Use when: git status, staging files, unstaging files, writing commit messages, committing, preflight checks before push, pushing, pulling, rebasing, branching, stashing, tagging, release notes, creating pull requests, writing PR titles, or writing PR bodies."
+argument-hint: "Describe the git operation: commit, push, preflight, PR, branch, tag, stash, rebase, or release notes."
 model:
   - GPT-5 mini
   - GPT-5.2
   - Claude Sonnet 4.6
 tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions]
+agents: [Explore, Review]
 user-invocable: true
 ---
 

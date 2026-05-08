@@ -28,6 +28,21 @@ Use the **lifecycle-planning** agent for all xanad-assistant operations. Trigger
 | `"factory restore"` | Reset to clean managed state |
 
 Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanad-assistant. Use the `lifecycle-audit` skill to review state before proposing any lifecycle operation.
+If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`,
+the workspace is being migrated from `copilot-instructions-template`; use `repair`
+or `update` so xanad-assistant can archive predecessor-owned files and install the
+current bundle atomically.
+
+## Agent Routing
+
+Route specialist work to the matching agent before acting directly. If a task has multiple phases, delegate the specialist phase first and continue from the returned result.
+
+| Work type | Required agent |
+|---|---|
+| Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
+| Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
+| Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
+| xanad-assistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle-planning` |
 
 ## Coding Conventions
 

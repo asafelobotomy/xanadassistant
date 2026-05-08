@@ -37,7 +37,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:09cf7774823887f5f1f3ab24b771927c242f7894fd65d13fc16e595d5e844718"
+      "hash": "sha256:b6fcd246d817eb9395fd802efef9b5f5cad7813a5ee485b9bcaafaf003cd7521"
     },
     {
       "id": "agents.explore.agent.md",
@@ -53,7 +53,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:10bfee2171e5f2b054984ca61304c4c768ef32426bdd52ee39e383d12f061450"
+      "hash": "sha256:a9b3c27961d90db8fcecdc537dfa5fc310bae04333d49f5b7cb00eaf83ffcb03"
     },
     {
       "id": "agents.lifecycle-planning.agent.md",
@@ -69,7 +69,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:db95bacd2f6d42a00a12de5e7ed3a47fefcfa2477495832b9662d415412a22b9"
+      "hash": "sha256:43aa32fce5e02add5a47a3cc5c6638fd4d9c4183fc582159ee1f7e3a96ad7e3e"
     },
     {
       "id": "agents.review.agent.md",
@@ -85,7 +85,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:ccef3f1eeb9216f491347743099e8171057c600a89c80d316fcc23effa9be09d"
+      "hash": "sha256:42de72990251b1a9da94ea3a4b47ffea8bbb4fba0014643029516cba737a78f5"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -100,7 +100,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:986abbdd7c894ddf351cd3f0512466b137b815b8cbc3557e8025f39df7d8c8eb"
+      "hash": "sha256:d5ef8ee3c3faf5aa9b80b7bb20e6052f65c70b2946d6ef1d25afdc21ae97539e"
     },
     {
       "id": "hook-scripts.xanad-workspace-mcp.py",
@@ -117,7 +117,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:fc96c0462d9870925cee24b152619ebc3d592d8cf8d67c0c9bf36ec24db03fc3"
+      "hash": "sha256:65bdf019871b480a14f1d320c90fa4a20cf09e915de9906879d8e79688536461"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -165,7 +165,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:22dce383a294ba928469f22bbe0abc1c8d47f48cb956f14d85427db9beba3e9f"
+      "hash": "sha256:82d58ef5ef5c5193f2fb5561345ce8830263885c641e4e52bba43f82c931a36c"
     },
     {
       "id": "lean-skills.lean-output.SKILL.md",
@@ -216,7 +216,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:e886574dc21f6c91643d5edd55fcf497707fbd5542b99a34b436fce05770fdad"
+      "hash": "sha256:d746ecfd19257098333d18a241fc2283f26b68a46dc5be87620b05e8219502d7"
     }
   ],
   "retiredFiles": []

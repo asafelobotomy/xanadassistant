@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from scripts.lifecycle._xanad._state import CURRENT_PACKAGE_NAME, get_lockfile_package_name
+
 def seed_answers_from_install_state(mode: str, questions: list[dict], lockfile_state: dict, answers: dict) -> dict:
     if mode not in {"update", "repair", "factory-restore"}:
         return dict(answers)
@@ -57,6 +59,11 @@ def determine_repair_reasons(context: dict) -> list[str]:
         reasons.append("malformed-lockfile")
     if context["lockfileState"].get("needsMigration"):
         reasons.append("schema-migration-required")
+    installed_package_name = context["lockfileState"].get("originalPackageName") or get_lockfile_package_name(context["lockfileState"])
+    if installed_package_name is not None and installed_package_name != CURRENT_PACKAGE_NAME:
+        reasons.append("package-identity-migration-required")
+    if context.get("successorMigrationTargets"):
+        reasons.append("successor-cleanup-required")
     if context["installState"] == "installed" and not context["lockfileState"].get("malformed"):
         manifest_with_status = context.get("manifestWithStatus")
         if manifest_with_status is not None:

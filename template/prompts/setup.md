@@ -20,6 +20,11 @@ python3 xanad-assistant.py inspect \
 Review `installState`, `manifestSummary`, and any warnings. Ask the user to
 confirm the target workspace path if it is not clear from context.
 
+If the warnings include `package_name_mismatch` or `successor_cleanup_required`,
+treat the workspace as a predecessor `copilot-instructions-template` install.
+Use `plan repair` plus `repair` so xanad-assistant can archive predecessor-owned
+files and adopt the workspace cleanly.
+
 ### 2. Clarify answers if needed
 
 If `installState` is `not-installed` or if the user wants to change pack or
@@ -44,6 +49,9 @@ python3 xanad-assistant.py plan setup \
   --non-interactive --json-lines
 ```
 
+For predecessor `copilot-instructions-template` installs, replace `plan setup`
+with `plan repair`.
+
 If `approvalRequired` is true in the plan payload, summarise the planned writes
 and retired files for the user and ask for approval before proceeding.
 
@@ -60,6 +68,9 @@ python3 xanad-assistant.py apply \
   --package-root <xanad-assistant-checkout> \
   --non-interactive --ui agent --json-lines
 ```
+
+For predecessor `copilot-instructions-template` installs, replace `apply` with
+`repair`.
 
 Check the `validation.status` in the apply result. If it is not `passed`,
 report the error and the `backupPath` to the user.

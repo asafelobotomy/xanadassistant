@@ -10,12 +10,28 @@ from scripts.lifecycle._xanad._merge import sha256_json
 from scripts.lifecycle._xanad._plan_utils import expected_entry_hash
 from scripts.lifecycle._xanad._source import build_source_summary
 from scripts.lifecycle._xanad._state import (
+    CURRENT_PACKAGE_NAME,
     detect_existing_surfaces,
     detect_git_state,
     determine_install_state,
+    get_lockfile_package_name,
+    get_predecessor_package_name,
     parse_legacy_version_file,
     parse_lockfile_state,
     summarize_manifest_targets,
+)
+
+
+_SUCCESSOR_MIGRATION_ROOTS = (
+    ".github/agents",
+    ".github/skills",
+    ".github/prompts",
+    ".github/instructions",
+    ".github/hooks",
+    ".copilot/workspace",
+)
+_SUCCESSOR_MIGRATION_FILES = (
+    ".mcp.json",
 )
 
 
@@ -115,6 +131,48 @@ def collect_unmanaged_files(workspace: Path, manifest: dict | None, managed_targ
     return sorted(unmanaged)
 
 
+def collect_successor_migration_files(
+    workspace: Path,
+    manifest: dict | None,
+    lockfile_state: dict,
+    legacy_version_state: dict,
+) -> list[str]:
+    if manifest is None:
+        return []
+
+    predecessor_package = get_predecessor_package_name(lockfile_state)
+    predecessor_markers = predecessor_package is not None or legacy_version_state.get("present", False)
+    if not predecessor_markers:
+        marker_paths = [workspace / ".github" / "hooks" / "copilot-hooks.json", workspace / ".mcp.json", workspace / ".copilot" / "workspace"]
+        predecessor_markers = any(path.exists() for path in marker_paths)
+    if not predecessor_markers:
+        return []
+
+    managed_targets = {entry.get("target") for entry in manifest.get("managedFiles", [])}
+    retired_targets = {entry.get("target") for entry in manifest.get("retiredFiles", [])}
+    excluded = managed_targets | retired_targets | {
+        ".github/xanad-assistant-lock.json",
+        ".github/copilot-version.md",
+    }
+    cleanup_targets: set[str] = set()
+
+    for root in _SUCCESSOR_MIGRATION_ROOTS:
+        root_path = workspace / root
+        if not root_path.exists():
+            continue
+        for file_path in sorted(path for path in root_path.rglob("*") if path.is_file()):
+            relative = file_path.relative_to(workspace).as_posix()
+            if relative not in excluded:
+                cleanup_targets.add(relative)
+
+    for relative in _SUCCESSOR_MIGRATION_FILES:
+        file_path = workspace / relative
+        if file_path.exists() and relative not in excluded:
+            cleanup_targets.add(relative)
+
+    return sorted(cleanup_targets)
+
+
 def collect_context(workspace: Path, package_root: Path) -> dict:
     warnings: list[dict] = []
     policy, artifacts = load_contract_artifacts(package_root)
@@ -158,6 +216,33 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
                     },
                 })
 
+    installed_package_name = lockfile_state.get("originalPackageName") or get_lockfile_package_name(lockfile_state)
+    if installed_package_name is not None and installed_package_name != CURRENT_PACKAGE_NAME:
+        warnings.append({
+            "code": "package_name_mismatch",
+            "message": (
+                "The installed lockfile belongs to a predecessor package and requires successor migration. "
+                "Run 'repair' or 'update' to adopt xanad-assistant ownership."
+            ),
+            "details": {
+                "installedPackageName": installed_package_name,
+                "currentPackageName": CURRENT_PACKAGE_NAME,
+            },
+        })
+
+    successor_migration_targets = collect_successor_migration_files(
+        workspace,
+        manifest,
+        lockfile_state,
+        legacy_version_state,
+    )
+    if successor_migration_targets:
+        warnings.append({
+            "code": "successor_cleanup_required",
+            "message": "Predecessor copilot-instructions-template files must be archived during migration.",
+            "details": {"targets": successor_migration_targets},
+        })
+
     return {
         "policy": policy,
         "packageRoot": package_root,
@@ -175,6 +260,7 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
         "manifestSummary": manifest_summary,
         "defaultPlanAnswers": default_answers,
         "defaultOwnershipBySurface": ownership_by_surface,
+        "successorMigrationTargets": successor_migration_targets,
         "warnings": warnings,
     }
 

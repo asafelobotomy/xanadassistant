@@ -81,12 +81,12 @@ def build_planned_lockfile(
 
     archive_targets = {entry["target"]: entry["archivePath"] for entry in backup_plan.get("archiveTargets", [])}
     retired_records = []
-    for retired_entry in manifest.get("retiredFiles", []):
-        target = retired_entry.get("target")
-        if target not in retired_targets:
+    for action in actions:
+        if action["action"] != "archive-retired":
             continue
+        target = action.get("target")
         retired_record = {
-            "id": retired_entry["id"],
+            "id": action["id"],
             "action": "archived" if target in archive_targets else "reported",
         }
         if target is not None:
@@ -175,6 +175,18 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
         workspace, package_root, context["manifest"], ownership_by_surface,
         resolved_answers, token_values, force_reinstall=(mode == "factory-restore"),
     )
+    for target in context.get("successorMigrationTargets", []):
+        if target in retired_targets:
+            continue
+        writes["archiveRetired"] += 1
+        retired_targets.append(target)
+        actions.append({
+            "id": f"migration.cleanup.{target}",
+            "target": target,
+            "action": "archive-retired",
+            "ownershipMode": None,
+            "strategy": "archive-retired",
+        })
     conflicts, warnings = classify_plan_conflicts(workspace, context, actions, retired_targets)
     token_plan = build_token_plan_summary(context["policy"], actions, token_values)
     backup_required = any(count > 0 for count in writes.values())

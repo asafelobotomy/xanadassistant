@@ -1,6 +1,6 @@
 {
   "servers": {
-    "xanad-workspace": {
+    "xanadTools": {
       "type": "stdio",
       "command": "${workspaceFolder}/.github/hooks/scripts/xanad-workspace-mcp.py",
       "args": []

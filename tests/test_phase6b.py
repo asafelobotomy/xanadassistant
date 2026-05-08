@@ -130,6 +130,12 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         prompt_text = (self.REPO_ROOT / "template" / "prompts" / "setup.md").read_text(encoding="utf-8")
         self.assertIn("dry-run", prompt_text.lower())
 
+    def test_setup_prompt_references_predecessor_migration(self) -> None:
+        prompt_text = (self.REPO_ROOT / "template" / "prompts" / "setup.md").read_text(encoding="utf-8")
+        self.assertIn("copilot-instructions-template", prompt_text)
+        self.assertIn("plan repair", prompt_text)
+        self.assertIn("repair", prompt_text)
+
     # ------------------------------------------------------------------
     # Phase 8 – UI / agent progress
     # ------------------------------------------------------------------

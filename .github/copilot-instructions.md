@@ -79,3 +79,15 @@ Targeted example: `python3 -m unittest tests.test_xanad_assistant_inspect`
 - `lifecycle-audit` skill — use before any lifecycle operation on this workspace
 - `lifecycle-planning` agent — delegate all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
 - Trigger phrases: `"inspect workspace"`, `"run lifecycle check"`, `"repair install"`, `"update xanad-assistant"`, `"factory restore"`
+- If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`, treat the workspace as a predecessor `copilot-instructions-template` migration and route it through `repair` or `update` rather than ad hoc cleanup.
+
+## Agent Routing
+
+Route specialist work to the matching agent before acting directly. If a task has multiple phases, delegate the specialist phase first and continue from the returned result.
+
+| Work type | Required agent |
+|---|---|
+| Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
+| Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
+| Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
+| xanad-assistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle-planning` |

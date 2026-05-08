@@ -79,6 +79,8 @@ It should contain at least:
 
 - Legacy `.github/copilot-version.md` may exist before the lockfile exists.
 - The lifecycle engine should read legacy version state when present.
+- A lockfile whose `package.name` is `copilot-instructions-template` is a predecessor install and must be treated as migration-required.
+- Successor migration should archive predecessor-owned local files before writing the fresh xanad-assistant lockfile.
 - A successful approved apply or repair should write a fresh lockfile.
 - The generated Markdown summary is readable output only and must not become the installed-state authority.
 

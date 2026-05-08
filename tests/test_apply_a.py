@@ -110,7 +110,7 @@ class ApplyTests(XanadTestBase):
             merged_mcp = json.loads(existing_mcp_path.read_text(encoding="utf-8"))
             self.assertTrue(merged_mcp["workspaceSetting"])
             self.assertIn("custom-server", merged_mcp["servers"])
-            self.assertIn("xanad-workspace", merged_mcp["servers"])
+            self.assertIn("xanadTools", merged_mcp["servers"])
 
             check_result = self.run_command_in_workspace(workspace, "check", "--json")
             self.assertEqual(0, check_result.returncode)
