@@ -4,6 +4,8 @@ import json
 import shutil
 from pathlib import Path
 
+import scripts.lifecycle._xanad._check as _check
+
 from scripts.lifecycle._xanad._apply import (
     apply_chmod_rule, build_copilot_version_summary, generate_apply_timestamps,
     materialize_apply_timestamp, merge_json_object_file, merge_markdown_file,
@@ -17,9 +19,6 @@ from scripts.lifecycle._xanad._source import build_source_summary
 
 
 def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, dry_run: bool = False) -> dict:
-    # Late import so that mock.patch("scripts.lifecycle.xanad_assistant.build_check_result") works.
-    import scripts.lifecycle.xanad_assistant as _xa
-
     manifest = load_manifest(package_root, load_json(package_root / DEFAULT_POLICY_PATH)) or {"managedFiles": []}
     manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
     actions = plan_payload["result"].get("actions", [])
@@ -157,7 +156,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
         build_copilot_version_summary(planned_lockfile["contents"], manifest), encoding="utf-8",
     )
 
-    validation = _xa.build_check_result(workspace, package_root)
+    validation = _check.build_check_result(workspace, package_root)
     if validation["status"] != "clean":
         raise LifecycleCommandError(
             "apply_failure", "Applied workspace did not validate cleanly.", 9,

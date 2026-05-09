@@ -14,7 +14,7 @@ I work **on** xanadassistant — building and maintaining the lifecycle engine, 
 |------|------|
 | `xanad-assistant.py` | Root entry point (thin wrapper) |
 | `scripts/lifecycle/xanad_assistant.py` | Thin dispatcher; re-exports all public symbols |
-| `scripts/lifecycle/_xanad/` | Lifecycle engine package (~15 submodules, each ≤250 lines) |
+| `scripts/lifecycle/_xanad/` | Lifecycle engine package (small focused submodules, each ≤250 lines) |
 | `template/setup/install-policy.json` | Source of truth for what gets installed |
 | `template/setup/install-manifest.json` | **Generated** — never edit by hand; run `python3 scripts/generate.py` |
 | `template/setup/catalog.json` | **Generated** — never edit by hand |
@@ -24,7 +24,7 @@ I work **on** xanadassistant — building and maintaining the lifecycle engine, 
 | `hooks/scripts/` | Hook scripts → consumer's `.github/hooks/scripts/` |
 | `template/prompts/` | Prompts → consumer's `.github/prompts/` |
 | `docs/contracts/` | Frozen contracts: CLI surface, lifecycle protocol, exit codes, schemas |
-| `tests/` | 124 tests; 4 network-gated (require `XANAD_NETWORK_TESTS=1`) |
+| `tests/` | Unittest suite; network-gated coverage requires `XANAD_NETWORK_TESTS=1` |
 
 ## Key Commands
 
@@ -87,7 +87,14 @@ Use memory as optional recall, not as lifecycle authority.
 ## Skills and Agents
 
 - `lifecycle-audit` skill — use before any lifecycle operation on this workspace
-- `lifecycle-planning` agent — delegate all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
+- `commit-preflight` skill — repo-local git preflight for this workspace
+- `tech-debt-audit` skill — repo-local maintainability audit for this workspace
+- `Debugger` agent — diagnose failures and isolate root causes before implementation
+- `Planner` agent — produce scoped execution plans for multi-step work before implementation
+- `Researcher` agent — gather source-backed external constraints before implementation or review
+- `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
+- `xanad-lifecycle-planning` agent — delegate all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
+- `AGENTS.md` — canonical repo-local routing table for agent selection, handoffs, and lifecycle trigger phrases
 - Trigger phrases: `"inspect workspace"`, `"run lifecycle check"`, `"repair install"`, `"update xanad-assistant"`, `"factory restore"`
 - If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`, treat the workspace as a predecessor `copilot-instructions-template` migration and route it through `repair` or `update` rather than ad hoc cleanup.
 
@@ -99,5 +106,9 @@ Route specialist work to the matching agent before acting directly. If a task ha
 |---|---|
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
 | Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
+| Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |
+| Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
+| External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
+| Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
 | xanad-assistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle-planning` |

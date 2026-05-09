@@ -1,7 +1,7 @@
 ---
 name: Commit
-description: "Use when: git status, staging files, unstaging files, writing commit messages, committing, preflight checks before push, pushing, pulling, rebasing, branching, stashing, tagging, release notes, creating pull requests, writing PR titles, or writing PR bodies."
-argument-hint: "Describe the git operation: commit, push, preflight, PR, branch, tag, stash, rebase, or release notes."
+description: "Use when: git status, staging files, unstaging files, commit messages, committing, preflight checks before push, pushing, pulling, rebasing, branching, stashing, tagging, release notes, pull requests, PR titles, or PR bodies."
+argument-hint: "Describe the git task: commit, push, preflight, PR, branch, tag, stash, rebase, or release notes."
 model:
   - GPT-5 mini
   - GPT-5.2

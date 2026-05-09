@@ -113,12 +113,12 @@ class XanadAssistantPhase6Tests(XanadTestBase):
     # ------------------------------------------------------------------
 
     def test_agent_file_has_lifecycle_commands(self) -> None:
-        agent_text = (self.REPO_ROOT / "agents" / "lifecycle-planning.agent.md").read_text(encoding="utf-8")
+        agent_text = (self.REPO_ROOT / "agents" / "xanad-lifecycle-planning.agent.md").read_text(encoding="utf-8")
         for term in ("inspect", "apply", "update", "repair", "factory-restore"):
             self.assertIn(term, agent_text, f"Agent file missing lifecycle command: {term}")
 
     def test_agent_file_has_trigger_phrases(self) -> None:
-        agent_text = (self.REPO_ROOT / "agents" / "lifecycle-planning.agent.md").read_text(encoding="utf-8")
+        agent_text = (self.REPO_ROOT / "agents" / "xanad-lifecycle-planning.agent.md").read_text(encoding="utf-8")
         self.assertIn("Trigger phrases", agent_text)
 
     def test_setup_prompt_has_workflow_steps(self) -> None:
@@ -135,6 +135,60 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         self.assertIn("copilot-instructions-template", prompt_text)
         self.assertIn("plan repair", prompt_text)
         self.assertIn("repair", prompt_text)
+
+    def test_setup_prompt_references_mcp_lifecycle_tools(self) -> None:
+        prompt_text = (self.REPO_ROOT / "template" / "prompts" / "setup.md").read_text(encoding="utf-8")
+        self.assertIn("xanadTools", prompt_text)
+        self.assertIn("lifecycle.plan_setup", prompt_text)
+
+    def test_lifecycle_agent_references_mcp_lifecycle_tools(self) -> None:
+        agent_text = (self.REPO_ROOT / "agents" / "xanad-lifecycle-planning.agent.md").read_text(encoding="utf-8")
+        self.assertIn("lifecycle.inspect", agent_text)
+        self.assertIn("xanadTools", agent_text)
+
+    def test_lifecycle_agent_frontmatter_enables_delegation(self) -> None:
+        agent_text = (self.REPO_ROOT / "agents" / "xanad-lifecycle-planning.agent.md").read_text(encoding="utf-8")
+        self.assertIn("tools: [agent, runCommands, askQuestions]", agent_text)
+        self.assertIn("agents: [Explore, Debugger, Planner]", agent_text)
+        self.assertIn("model:", agent_text)
+
+    def test_debugger_planner_researcher_and_docs_agents_exist_with_core_roles(self) -> None:
+        debugger_text = (self.REPO_ROOT / "agents" / "debugger.agent.md").read_text(encoding="utf-8")
+        docs_text = (self.REPO_ROOT / "agents" / "docs.agent.md").read_text(encoding="utf-8")
+        planner_text = (self.REPO_ROOT / "agents" / "planner.agent.md").read_text(encoding="utf-8")
+        researcher_text = (self.REPO_ROOT / "agents" / "researcher.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("Your role: diagnose failures before implementation starts.", debugger_text)
+        self.assertIn("Prefer targeted commands and tests", debugger_text)
+        self.assertIn("user-invocable: false", debugger_text)
+
+        self.assertIn("Your role: turn medium or large requests into scoped execution plans", planner_text)
+        self.assertIn("Stay read-only. Do not modify files.", planner_text)
+        self.assertIn("user-invocable: false", planner_text)
+
+        self.assertIn("Your role: gather source-backed information", researcher_text)
+        self.assertIn("Prefer primary sources", researcher_text)
+        self.assertIn("user-invocable: false", researcher_text)
+
+        self.assertIn("Your role: write and update documentation", docs_text)
+        self.assertIn("Prefer documentation files, guides, prompts, instructions", docs_text)
+        self.assertIn("user-invocable: true", docs_text)
+
+    def test_template_uses_canonical_lifecycle_agent_name(self) -> None:
+        instructions_text = (self.REPO_ROOT / "template" / "copilot-instructions.md").read_text(encoding="utf-8")
+        self.assertIn("xanad-lifecycle-planning", instructions_text)
+        self.assertNotIn("`lifecycle-planning` agent", instructions_text)
+
+    def test_instructions_route_debugging_planning_research_and_docs_to_specialists(self) -> None:
+        instructions_text = (self.REPO_ROOT / "template" / "copilot-instructions.md").read_text(encoding="utf-8")
+        self.assertIn("Root-cause diagnosis, failing tests", instructions_text)
+        self.assertIn("Complex multi-step planning, phased rollout", instructions_text)
+        self.assertIn("External documentation, upstream behavior", instructions_text)
+        self.assertIn("Documentation updates, migration notes", instructions_text)
+        self.assertIn("`Debugger`", instructions_text)
+        self.assertIn("`Docs`", instructions_text)
+        self.assertIn("`Planner`", instructions_text)
+        self.assertIn("`Researcher`", instructions_text)
 
     # ------------------------------------------------------------------
     # Phase 8 – UI / agent progress

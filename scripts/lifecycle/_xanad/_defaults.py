@@ -21,7 +21,7 @@ def derive_effective_plan_defaults(
         seeded_answers,
         question_ids,
     )
-    resolved_answers, _ = resolve_question_answers(questions, seeded_answers)
+    resolved_answers, _, _ = resolve_question_answers(questions, seeded_answers)
     resolved_answers = normalize_plan_answers(policy, resolved_answers)
     ownership_by_surface = resolve_ownership_by_surface(policy, manifest, lockfile_state, resolved_answers)
     return resolved_answers, ownership_by_surface

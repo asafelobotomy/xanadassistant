@@ -113,6 +113,9 @@
         "source": {
           "type": "string"
         },
+        "packageRoot": {
+          "type": "string"
+        },
         "release": {
           "type": "string"
         },

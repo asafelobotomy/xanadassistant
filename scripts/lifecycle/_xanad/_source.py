@@ -5,16 +5,13 @@ import re
 import subprocess
 from pathlib import Path
 
-from scripts.lifecycle._xanad._errors import (
-    DEFAULT_CACHE_ROOT,
-    LifecycleCommandError,
-    _State,
-)
+from scripts.lifecycle._xanad._errors import DEFAULT_CACHE_ROOT, LifecycleCommandError, _State
 
 
-def resolve_workspace(path_value: str) -> Path:
+def resolve_workspace(path_value: str, *, create: bool = False) -> Path:
     workspace = Path(path_value).resolve()
-    workspace.mkdir(parents=True, exist_ok=True)
+    if create:
+        workspace.mkdir(parents=True, exist_ok=True)
     return workspace
 
 
@@ -163,7 +160,7 @@ def resolve_effective_package_root(
         raise LifecycleCommandError(
             "source_resolution_failure",
             "Either --package-root or --source must be provided.",
-            8,
+            2,
         )
 
     owner, repo = parse_github_source(source_arg)

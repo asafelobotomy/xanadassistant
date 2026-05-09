@@ -101,7 +101,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         with self.assertRaises(LifecycleCommandError) as ctx:
             resolve_effective_package_root(None, None, None, None)
         self.assertEqual("source_resolution_failure", ctx.exception.code)
-        self.assertEqual(8, ctx.exception.exit_code)
+        self.assertEqual(2, ctx.exception.exit_code)
 
     def test_resolve_effective_with_package_root(self) -> None:
         from scripts.lifecycle.xanad_assistant import resolve_effective_package_root
@@ -142,7 +142,24 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         self.assertEqual("xanad-assistant", info["name"])
         self.assertEqual("v1.2.3", info["version"])
         self.assertEqual("github:myorg/myrepo", info["source"])
+        self.assertEqual("/fake/path", info["packageRoot"])
         self.assertNotIn("ref", info)
+
+    def test_build_lockfile_package_info_with_package_root(self) -> None:
+        from scripts.lifecycle.xanad_assistant import _State, _build_lockfile_package_info
+
+        original = _State.session_source_info
+        try:
+            _State.session_source_info = {
+                "kind": "package-root",
+                "packageRoot": "/fake/local/xanadassistant",
+            }
+            info = _build_lockfile_package_info()
+        finally:
+            _State.session_source_info = original
+
+        self.assertEqual("xanad-assistant", info["name"])
+        self.assertEqual("/fake/local/xanadassistant", info["packageRoot"])
 
     # ------------------------------------------------------------------
     # verify_manifest_integrity – unit tests

@@ -8,7 +8,7 @@ This file is normative for the first executable slice of the tooling MCP.
 
 ## V1 Goal
 
-Ship one small first-party MCP server that is useful in consumer workspaces without requiring the full xanad-assistant package checkout to be present.
+Ship one small first-party MCP server that is useful in consumer workspaces without requiring the full xanad-assistant package checkout to be present for every tool.
 
 ## Controlling Constraint
 
@@ -20,7 +20,7 @@ That script must not assume that:
 - `xanad-assistant.py` is importable as a Python module
 - the original package root can be rediscovered later
 
-Because of that, V1 must avoid lifecycle tools that directly wrap the lifecycle CLI unless a later install slice records a stable package source contract for the MCP server to use.
+Because of that, V1 must avoid lifecycle tools that directly wrap the lifecycle CLI unless the workspace records a stable package-source contract for the MCP server to use.
 
 ## V1 Source Of Truth
 
@@ -112,14 +112,151 @@ Output requirements:
 - `commands`: array of `{label, command}`
 - `summary`
 
+### `lifecycle.inspect`
+
+Purpose:
+
+- Run `xanad-assistant.py inspect` for the current workspace when a local package root is explicit or recorded, or when a GitHub source contract is explicit or recorded in the installed lockfile.
+
+Input schema:
+
+- `packageRoot`: optional string path to a local xanad-assistant checkout
+- `source`: optional string package source such as `github:owner/repo`
+- `version`: optional release version for GitHub release resolution
+- `ref`: optional Git ref for GitHub ref resolution
+
+Behavior:
+
+- If `packageRoot` is provided, validate that it points at a local xanad-assistant checkout.
+- Otherwise, read `.github/xanad-assistant-lock.json` and prefer `package.packageRoot` when present.
+- If no usable local package root is available, resolve `source` plus `version` or `ref` from tool input or the installed lockfile's `package` block.
+- For GitHub release sources, use the package cache when present and otherwise download the release tarball into the cache.
+- For GitHub ref sources, use the package cache when present and otherwise perform a shallow clone into the cache.
+- Invoke the lifecycle CLI with `--workspace <workspace-root> --package-root <resolved-package-root> --json`.
+- Return `unavailable` when no package root or supported remote source can be resolved safely.
+
+Output requirements:
+
+- `status`: `ok`, `failed`, or `unavailable`
+- `command`: resolved command string when executed
+- `exitCode`: integer when executed
+- `payload`: parsed lifecycle JSON payload when available
+- `summary`
+
+### `lifecycle.interview`
+
+Purpose:
+
+- Run `xanad-assistant.py interview` for setup-oriented workflow decisions when a local package root is explicit or recorded.
+
+Input schema:
+
+- `packageRoot`: optional string path to a local xanad-assistant checkout
+- `source`: optional string package source such as `github:owner/repo`
+- `version`: optional release version for GitHub release resolution
+- `ref`: optional Git ref for GitHub ref resolution
+- `mode`: optional enum: `setup`, `update`, `repair`, `factory-restore`
+
+Behavior:
+
+- Same package-root and remote-source resolution rules as `lifecycle.inspect`.
+- Invoke the lifecycle CLI with `interview --mode <mode> --json`.
+
+Output requirements:
+
+- `status`
+- `command`
+- `exitCode`
+- `payload`
+- `summary`
+
+### `lifecycle.plan_setup`
+
+Purpose:
+
+- Run `xanad-assistant.py plan setup` through the workspace-local MCP when a local package root is explicit or recorded.
+
+Input schema:
+
+- `packageRoot`: optional string path to a local xanad-assistant checkout
+- `source`: optional string package source such as `github:owner/repo`
+- `version`: optional release version for GitHub release resolution
+- `ref`: optional Git ref for GitHub ref resolution
+- `answersPath`: optional string path to a JSON answer file
+- `nonInteractive`: optional boolean
+
+Behavior:
+
+- Same package-root and remote-source resolution rules as `lifecycle.inspect`.
+- Invoke the lifecycle CLI with `plan setup --json` and optional `--answers` / `--non-interactive` flags.
+
+Output requirements:
+
+- `status`
+- `command`
+- `exitCode`
+- `payload`
+- `summary`
+
+### `lifecycle.apply`
+
+Purpose:
+
+- Run `xanad-assistant.py apply` through the workspace-local MCP when a local package root is explicit or recorded.
+
+Input schema:
+
+- `packageRoot`: optional string path to a local xanad-assistant checkout
+- `source`: optional string package source such as `github:owner/repo`
+- `version`: optional release version for GitHub release resolution
+- `ref`: optional Git ref for GitHub ref resolution
+- `answersPath`: optional string path to a JSON answer file
+- `nonInteractive`: optional boolean
+- `dryRun`: optional boolean
+
+Behavior:
+
+- Same package-root and remote-source resolution rules as `lifecycle.inspect`.
+- Invoke the lifecycle CLI with `apply --json` and optional `--answers`, `--non-interactive`, and `--dry-run` flags.
+
+Output requirements:
+
+- `status`
+- `command`
+- `exitCode`
+- `payload`
+- `summary`
+
+### `lifecycle.check`
+
+Purpose:
+
+- Run `xanad-assistant.py check` for final setup confirmation when a local package root is explicit or recorded.
+
+Input schema:
+
+- `packageRoot`: optional string path to a local xanad-assistant checkout
+- `source`: optional string package source such as `github:owner/repo`
+- `version`: optional release version for GitHub release resolution
+- `ref`: optional Git ref for GitHub ref resolution
+
+Behavior:
+
+- Same package-root and remote-source resolution rules as `lifecycle.inspect`.
+- Invoke the lifecycle CLI with `check --json`.
+
+Output requirements:
+
+- `status`
+- `command`
+- `exitCode`
+- `payload`
+- `summary`
+
 ## Deferred Tools
 
 These tools are intentionally deferred from V1:
 
-- `lifecycle.inspect`
-- `lifecycle.check`
-- `lifecycle.plan_*`
-- `lifecycle.apply`
 - `lifecycle.update`
 - `lifecycle.repair`
 - `lifecycle.factory_restore`
@@ -128,7 +265,7 @@ These tools are intentionally deferred from V1:
 
 Reason:
 
-- they depend on package-root-aware execution or contributor-repo-only assets that are not guaranteed to exist in a consumer workspace
+- they still depend on lifecycle modes or contributor-repo-only assets that are not guaranteed to exist safely from the workspace-local server slice
 
 ## Security Rules
 
@@ -138,7 +275,7 @@ V1 tools must follow these restrictions:
 - never accept an arbitrary command string from the agent
 - execute from the workspace root only
 - return bounded output excerpts rather than full unbounded terminal dumps
-- make no outbound network calls
+- only make outbound network calls for explicit or lockfile-recorded lifecycle source resolution
 
 ## Failure Model
 
@@ -149,3 +286,5 @@ It must not fall back to inferred shell commands.
 ## Upgrade Path
 
 Lifecycle tools may be added in a later slice only after xanad-assistant records a stable package-source contract that the workspace-local MCP server can use safely and deterministically.
+
+The current lifecycle MCP slice supports explicit local package roots, installed lockfiles that record `package.packageRoot`, and explicit or lockfile-recorded GitHub `source` plus `version` or `ref` values.

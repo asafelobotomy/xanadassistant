@@ -74,7 +74,7 @@ def iter_source_files(base_path: Path, source_kind: str) -> Iterable[tuple[Path,
         return
     if not base_path.is_dir():
         return
-    for file_path in sorted(path for path in base_path.rglob("*") if path.is_file()):
+    for file_path in sorted(path for path in base_path.rglob("*") if path.is_file() and "__pycache__" not in path.parts):
         yield file_path, file_path.relative_to(base_path)
 
 

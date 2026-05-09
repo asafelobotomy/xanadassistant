@@ -37,7 +37,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual("approval-required", payload["status"])
         self.assertTrue(payload["result"]["approvalRequired"])
         self.assertTrue(payload["result"]["backupRequired"])
-        self.assertEqual(6, payload["result"]["writes"]["add"])
+        self.assertEqual(7, payload["result"]["writes"]["add"])
         self.assertEqual(0, payload["result"]["writes"]["replace"])
         self.assertEqual(0, payload["result"]["writes"]["merge"])
         self.assertEqual("balanced", payload["result"]["profile"])
@@ -54,9 +54,13 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual(
             [
                 ".github/agents/commit.agent.md",
+                ".github/agents/debugger.agent.md",
+                ".github/agents/docs.agent.md",
                 ".github/agents/explore.agent.md",
-                ".github/agents/lifecycle-planning.agent.md",
+                ".github/agents/planner.agent.md",
+                ".github/agents/researcher.agent.md",
                 ".github/agents/review.agent.md",
+                ".github/agents/xanad-lifecycle-planning.agent.md",
                 ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
             ],
@@ -100,7 +104,7 @@ class PlanSetupTests(XanadTestBase):
             },
             payload["result"]["ownershipBySurface"],
         )
-        self.assertEqual(6, len(payload["result"]["skippedActions"]))
+        self.assertEqual(10, len(payload["result"]["skippedActions"]))
         self.assertEqual({}, payload["result"]["conflictSummary"])
 
         prompt_action = next(action for action in payload["result"]["actions"] if action["target"] == ".github/prompts/setup.md")
@@ -139,7 +143,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("approval-required", payload["status"])
-        self.assertEqual(4, payload["result"]["writes"]["add"])
+        self.assertEqual(5, payload["result"]["writes"]["add"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
         actions_by_target = {action["target"]: action["action"] for action in payload["result"]["actions"]}
@@ -201,7 +205,7 @@ class PlanSetupTests(XanadTestBase):
 
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
-        self.assertEqual(6, payload["result"]["writes"]["add"])
+        self.assertEqual(7, payload["result"]["writes"]["add"])
         self.assertEqual(True, payload["result"]["resolvedAnswers"]["mcp.enabled"])
         self.assertEqual(True, payload["result"]["resolvedAnswers"]["hooks.enabled"])
 
@@ -210,8 +214,27 @@ class PlanSetupTests(XanadTestBase):
         self.assertIn(".vscode/mcp.json", action_targets)
 
         skipped = {entry["target"]: entry["reason"] for entry in payload["result"]["skippedActions"]}
-        self.assertEqual("plugin-backed-ownership", skipped[".github/agents/lifecycle-planning.agent.md"])
+        self.assertEqual("plugin-backed-ownership", skipped[".github/agents/xanad-lifecycle-planning.agent.md"])
         self.assertEqual("plugin-backed-ownership", skipped[".github/skills/lifecycle-audit/SKILL.md"])
+
+    def test_plan_setup_ignores_unknown_answer_ids_with_warning(self) -> None:
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as handle:
+            handle.write(json.dumps({"profile.selected": "lean", "legacy.question": True}))
+            answers_path = handle.name
+
+        try:
+            result = self.run_command("plan", "setup", "--json", "--answers", answers_path)
+        finally:
+            Path(answers_path).unlink(missing_ok=True)
+
+        self.assertEqual(0, result.returncode)
+        payload = json.loads(result.stdout)
+        self.assertEqual("lean", payload["result"]["resolvedAnswers"]["profile.selected"])
+        warning = next(
+            item for item in payload["warnings"]
+            if item["code"] == "unknown_answer_ids_ignored"
+        )
+        self.assertEqual(["legacy.question"], warning["details"]["questionIds"])
 
 
 if __name__ == "__main__":

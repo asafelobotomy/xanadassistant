@@ -33,6 +33,8 @@ def _build_lockfile_package_info() -> dict:
     source_info = _State.session_source_info
     info: dict = {"name": "xanad-assistant"}
     if source_info is not None:
+        if "packageRoot" in source_info:
+            info["packageRoot"] = source_info["packageRoot"]
         if "version" in source_info:
             info["version"] = source_info["version"]
         if "source" in source_info:
@@ -157,7 +159,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
     question_ids = {q["id"] for q in questions}
     answers = seed_answers_from_install_state(mode, questions, context["lockfileState"], load_answers(answers_path))
     answers = seed_answers_from_profile(context["metadata"].get("profileRegistry") or {}, answers, question_ids)
-    resolved_answers, unresolved = resolve_question_answers(questions, answers)
+    resolved_answers, unresolved, unknown_answer_ids = resolve_question_answers(questions, answers)
     resolved_answers = normalize_plan_answers(context["policy"], resolved_answers)
     if non_interactive and unresolved:
         raise LifecycleCommandError(
@@ -188,6 +190,12 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
             "strategy": "archive-retired",
         })
     conflicts, warnings = classify_plan_conflicts(workspace, context, actions, retired_targets)
+    if unknown_answer_ids:
+        warnings.append({
+            "code": "unknown_answer_ids_ignored",
+            "message": "Answer file keys not present in the current question set were ignored.",
+            "details": {"questionIds": unknown_answer_ids},
+        })
     token_plan = build_token_plan_summary(context["policy"], actions, token_values)
     backup_required = any(count > 0 for count in writes.values())
     backup_plan = build_backup_plan(context["policy"], actions, backup_required)

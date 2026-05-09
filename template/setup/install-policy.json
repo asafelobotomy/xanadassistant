@@ -153,7 +153,15 @@
   "retiredFilePolicy": {
     "defaultAction": "report-retired",
     "archiveRoot": ".xanad-assistant/archive",
-    "entries": []
+    "entries": [
+      {
+        "id": "retired.agents.lifecycle-planning.agent.md",
+        "target": ".github/agents/lifecycle-planning.agent.md",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/agents/xanad-lifecycle-planning.agent.md to match the canonical agent name."
+      }
+    ]
   },
   "packageFormatDeliveryRules": {
     "agents": {

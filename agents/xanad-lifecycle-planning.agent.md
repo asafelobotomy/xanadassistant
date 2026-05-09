@@ -1,9 +1,12 @@
 ---
 name: xanad-lifecycle-planning
-description: "Use when: set up xanad-assistant, inspect workspace, run lifecycle check, plan setup, apply setup, update xanad-assistant, repair install, factory restore, or coordinate xanad-assistant lifecycle commands in a consumer workspace."
-argument-hint: "Describe the lifecycle operation: inspect, check, plan setup, apply, update, repair, or factory restore."
-tools: [runCommands, askQuestions]
-agents: []
+description: "Use when: set up xanad-assistant, inspect workspace, run lifecycle check, plan setup, apply setup, update xanad-assistant, repair install, factory restore, or coordinate lifecycle commands in a consumer workspace."
+argument-hint: "Describe the lifecycle task: inspect, check, plan setup, apply, update, repair, or factory restore."
+model:
+  - Claude Sonnet 4.6
+  - GPT-5
+tools: [agent, runCommands, askQuestions]
+agents: [Explore, Debugger, Planner]
 user-invocable: true
 ---
 
@@ -12,6 +15,12 @@ user-invocable: true
 Use `xanad-assistant.py` as the single lifecycle entrypoint. Do not edit managed
 files directly when the lifecycle engine can express the same change.
 
+When the workspace `xanadTools` MCP server is connected and can resolve a local
+package root or a supported remote source, prefer its `lifecycle.inspect`, `lifecycle.interview`,
+`lifecycle.plan_setup`, `lifecycle.apply`, and `lifecycle.check` tools for setup
+mode. Fall back to direct CLI invocation when MCP is unavailable or package
+source resolution is missing.
+
 ## Trigger phrases
 
 - Install or set up xanad-assistant → run `apply` (after `inspect` and `plan setup`)
@@ -19,6 +28,7 @@ files directly when the lifecycle engine can express the same change.
 - Repair a broken or incomplete install → run `repair`
 - Restore to factory defaults → run `factory-restore`
 - Check current workspace state → run `inspect` or `check`
+- Natural-language requests to add a convention or preference to instructions are not lifecycle operations; do not invoke this agent for phrases like `Remember this for next time` or `Add this to your instructions`.
 
 ## Workflow discipline
 
@@ -29,6 +39,8 @@ files directly when the lifecycle engine can express the same change.
    true in the plan payload.
 3. **Apply only after approval.** Once approved, run `apply`, `update`, `repair`,
    or `factory-restore` as appropriate.
+4. **Diagnose unclear failures.** Use `Debugger` when lifecycle commands fail, drift is surprising, or the controlling state is unclear.
+5. **Scope complex remediation.** Use `Planner` when repair, update, or migration work spans multiple managed surfaces or needs phased execution.
 
 ## Command reference
 

@@ -22,11 +22,11 @@ def build_check_result(workspace: Path, package_root: Path) -> dict:
         counts["malformed"] += 1
 
     skipped_files = context["lockfileState"].get("skippedManagedFiles", [])
-    counts["skipped"] += len(skipped_files)
     recorded_targets = {entry["target"] for entry in entries}
     for skipped_target in skipped_files:
         if skipped_target in recorded_targets:
             continue
+        counts["skipped"] += 1
         entries.append({"id": skipped_target, "target": skipped_target, "status": "skipped"})
 
     unknown_values = context["lockfileState"].get("unknownValues", {})

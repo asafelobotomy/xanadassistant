@@ -2,234 +2,239 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-
-def encode_message(payload: dict) -> bytes:
-    body = json.dumps(payload).encode("utf-8")
-    return f"Content-Length: {len(body)}\r\n\r\n".encode("utf-8") + body
-
-
-def decode_message(stream) -> dict:
-    headers: dict[str, str] = {}
-    while True:
-        line = stream.readline()
-        if line in (b"\r\n", b"\n"):
-            break
-        key, _, value = line.decode("utf-8").partition(":")
-        headers[key.strip().lower()] = value.strip()
-    body = stream.read(int(headers["content-length"]))
-    return json.loads(body.decode("utf-8"))
+from tests._mcp_test_utils import (
+    REPO_ROOT,
+    call_tool,
+    initialize_server,
+    make_fake_cached_release,
+    make_workspace,
+    rpc,
+    start_server,
+    write_key_commands,
+    write_test_runner,
+)
 
 
 class ToolMcpV1Tests(unittest.TestCase):
-    REPO_ROOT = Path(__file__).resolve().parents[1]
-    SOURCE_SERVER = REPO_ROOT / "hooks" / "scripts" / "xanad-workspace-mcp.py"
-
-    def make_workspace(self) -> Path:
-        temp_dir = tempfile.TemporaryDirectory()
-        self.addCleanup(temp_dir.cleanup)
-        workspace = Path(temp_dir.name)
-        server_path = workspace / ".github" / "hooks" / "scripts" / "xanad-workspace-mcp.py"
-        server_path.parent.mkdir(parents=True, exist_ok=True)
-        server_path.write_text(self.SOURCE_SERVER.read_text(encoding="utf-8"), encoding="utf-8")
-        return workspace
-
-    def start_server(self, workspace: Path) -> subprocess.Popen[bytes]:
-        server_path = workspace / ".github" / "hooks" / "scripts" / "xanad-workspace-mcp.py"
-        process = subprocess.Popen(
-            [sys.executable, str(server_path)],
-            cwd=workspace,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        self.addCleanup(self.stop_server, process)
-        return process
-
-    def stop_server(self, process: subprocess.Popen[bytes]) -> None:
-        if process.stdin is not None and not process.stdin.closed:
-            process.stdin.close()
-        if process.poll() is None:
-            process.terminate()
-            try:
-                process.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait(timeout=2)
-        if process.stdout is not None and not process.stdout.closed:
-            process.stdout.close()
-        if process.stderr is not None and not process.stderr.closed:
-            process.stderr.close()
-
-    def rpc(self, process: subprocess.Popen[bytes], payload: dict) -> dict:
-        assert process.stdin is not None
-        assert process.stdout is not None
-        process.stdin.write(encode_message(payload))
-        process.stdin.flush()
-        return decode_message(process.stdout)
+    REPO_ROOT = REPO_ROOT
 
     def test_initialize_and_tools_list_use_stdio_protocol(self) -> None:
-        workspace = self.make_workspace()
-        process = self.start_server(workspace)
-
-        init_response = self.rpc(
-            process,
-            {
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "initialize",
-                "params": {
-                    "protocolVersion": "2025-06-18",
-                    "capabilities": {},
-                    "clientInfo": {"name": "test-client", "version": "1.0.0"},
-                },
-            },
-        )
+        workspace = make_workspace(self)
+        process = start_server(self, workspace)
+        init_response = initialize_server(process)
         self.assertEqual("xanadTools", init_response["result"]["serverInfo"]["name"])
-
-        assert process.stdin is not None
-        process.stdin.write(encode_message({"jsonrpc": "2.0", "method": "notifications/initialized"}))
-        process.stdin.flush()
-
-        tools_response = self.rpc(process, {"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
+        tools_response = rpc(process, {"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tool_names = {tool["name"] for tool in tools_response["result"]["tools"]}
         self.assertEqual(
-            {"workspace.show_key_commands", "workspace.run_tests", "workspace.run_check_loc"},
+            {
+                "workspace_show_key_commands",
+                "workspace_run_tests",
+                "workspace_run_check_loc",
+                "lifecycle_inspect",
+                "lifecycle_check",
+                "lifecycle_interview",
+                "lifecycle_plan_setup",
+                "lifecycle_apply",
+            },
             tool_names,
         )
 
     def test_show_key_commands_reads_managed_instructions(self) -> None:
-        workspace = self.make_workspace()
-        instructions_path = workspace / ".github" / "copilot-instructions.md"
-        instructions_path.parent.mkdir(parents=True, exist_ok=True)
-        instructions_path.write_text(
-            "# Example\n\n"
-            "## Key Commands\n\n"
-            "| Task | Command |\n"
-            "|------|---------|\n"
-            "| Run tests | `python3 -m unittest` |\n"
-            "| Check state | `python3 tool.py check` |\n",
-            encoding="utf-8",
-        )
-
-        process = self.start_server(workspace)
-        self.rpc(
-            process,
-            {
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "initialize",
-                "params": {
-                    "protocolVersion": "2025-06-18",
-                    "capabilities": {},
-                    "clientInfo": {"name": "test-client", "version": "1.0.0"},
-                },
-            },
-        )
-        assert process.stdin is not None
-        process.stdin.write(encode_message({"jsonrpc": "2.0", "method": "notifications/initialized"}))
-        process.stdin.flush()
-
-        response = self.rpc(
-            process,
-            {
-                "jsonrpc": "2.0",
-                "id": 3,
-                "method": "tools/call",
-                "params": {"name": "workspace.show_key_commands", "arguments": {}},
-            },
-        )
+        workspace = make_workspace(self)
+        write_key_commands(workspace, [("Run tests", "python3 -m unittest"), ("Check state", "python3 tool.py check")])
+        process = start_server(self, workspace)
+        initialize_server(process)
+        response = call_tool(process, message_id=3, name="workspace_show_key_commands")
         result = response["result"]["structuredContent"]
         self.assertEqual("ok", result["status"])
         self.assertEqual("Run tests", result["commands"][0]["label"])
         self.assertEqual("python3 -m unittest", result["commands"][0]["command"])
 
     def test_run_tests_uses_rendered_command_and_extra_args(self) -> None:
-        workspace = self.make_workspace()
-        instructions_path = workspace / ".github" / "copilot-instructions.md"
-        instructions_path.parent.mkdir(parents=True, exist_ok=True)
-        instructions_path.write_text(
-            "# Example\n\n"
-            "## Key Commands\n\n"
-            "| Task | Command |\n"
-            "|------|---------|\n"
-            "| Run tests | `python3 test_runner.py` |\n",
-            encoding="utf-8",
-        )
-        (workspace / "test_runner.py").write_text(
-            "import json\n"
-            "import sys\n"
-            "print(json.dumps({'argv': sys.argv[1:]}))\n",
-            encoding="utf-8",
-        )
-
-        process = self.start_server(workspace)
-        self.rpc(
+        workspace = make_workspace(self)
+        write_key_commands(workspace, [("Run tests", "python3 test_runner.py")])
+        write_test_runner(workspace)
+        process = start_server(self, workspace)
+        initialize_server(process)
+        response = call_tool(
             process,
-            {
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "initialize",
-                "params": {
-                    "protocolVersion": "2025-06-18",
-                    "capabilities": {},
-                    "clientInfo": {"name": "test-client", "version": "1.0.0"},
-                },
-            },
-        )
-        assert process.stdin is not None
-        process.stdin.write(encode_message({"jsonrpc": "2.0", "method": "notifications/initialized"}))
-        process.stdin.flush()
-
-        response = self.rpc(
-            process,
-            {
-                "jsonrpc": "2.0",
-                "id": 4,
-                "method": "tools/call",
-                "params": {
-                    "name": "workspace.run_tests",
-                    "arguments": {"extraArgs": ["tests.test_metadata_contracts"]},
-                },
-            },
+            message_id=4,
+            name="workspace_run_tests",
+            arguments={"extraArgs": ["tests.test_metadata_contracts"]},
         )
         result = response["result"]["structuredContent"]
         self.assertEqual("ok", result["status"])
         self.assertIn("python3 test_runner.py tests.test_metadata_contracts", result["command"])
         self.assertIn("tests.test_metadata_contracts", result["stdoutTail"])
 
-    def test_run_check_loc_is_unavailable_without_repo_contract(self) -> None:
-        workspace = self.make_workspace()
-        process = self.start_server(workspace)
-        self.rpc(
+    def test_run_tests_scope_full_runs_declared_command_without_extra_args(self) -> None:
+        workspace = make_workspace(self)
+        write_key_commands(workspace, [("Run tests", "python3 test_runner.py")])
+        write_test_runner(workspace)
+        process = start_server(self, workspace)
+        initialize_server(process)
+        response = call_tool(
             process,
-            {
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "initialize",
-                "params": {
-                    "protocolVersion": "2025-06-18",
-                    "capabilities": {},
-                    "clientInfo": {"name": "test-client", "version": "1.0.0"},
-                },
-            },
+            message_id=4,
+            name="workspace_run_tests",
+            arguments={"scope": "full"},
         )
-        assert process.stdin is not None
-        process.stdin.write(encode_message({"jsonrpc": "2.0", "method": "notifications/initialized"}))
-        process.stdin.flush()
+        result = response["result"]["structuredContent"]
+        self.assertEqual("ok", result["status"])
+        self.assertEqual("python3 test_runner.py", result["command"])
+        self.assertIn('"argv": []', result["stdoutTail"])
 
-        response = self.rpc(
+    def test_run_tests_scope_full_rejects_extra_args(self) -> None:
+        workspace = make_workspace(self)
+        write_key_commands(workspace, [("Run tests", "python3 test_runner.py")])
+        process = start_server(self, workspace)
+        initialize_server(process)
+        response = call_tool(
             process,
-            {
-                "jsonrpc": "2.0",
-                "id": 5,
-                "method": "tools/call",
-                "params": {"name": "workspace.run_check_loc", "arguments": {}},
-            },
+            message_id=4,
+            name="workspace_run_tests",
+            arguments={"scope": "full", "extraArgs": ["tests.test_metadata_contracts"]},
         )
         result = response["result"]["structuredContent"]
         self.assertEqual("unavailable", result["status"])
+        self.assertIn("scope=full", result["summary"])
+
+    def test_run_check_loc_is_unavailable_without_repo_contract(self) -> None:
+        workspace = make_workspace(self)
+        process = start_server(self, workspace)
+        initialize_server(process)
+
+        response = call_tool(process, message_id=5, name="workspace_run_check_loc")
+        result = response["result"]["structuredContent"]
+        self.assertEqual("unavailable", result["status"])
+
+    def test_lifecycle_inspect_uses_explicit_package_root(self) -> None:
+        workspace = make_workspace(self)
+        process = start_server(self, workspace)
+        initialize_server(process)
+        response = call_tool(
+            process,
+            message_id=6,
+            name="lifecycle_inspect",
+            arguments={"packageRoot": str(self.REPO_ROOT)},
+        )
+        result = response["result"]["structuredContent"]
+        self.assertEqual("ok", result["status"])
+        self.assertEqual(0, result["exitCode"])
+        self.assertEqual("inspect", result["payload"]["command"])
+        self.assertEqual("ok", result["payload"]["status"])
+
+    def test_lifecycle_apply_can_use_package_root_recorded_in_lockfile(self) -> None:
+        workspace = make_workspace(self)
+        github_dir = workspace / ".github"
+        github_dir.mkdir(parents=True, exist_ok=True)
+        (github_dir / "xanad-assistant-lock.json").write_text(
+            json.dumps(
+                {
+                    "schemaVersion": "0.1.0",
+                    "package": {"name": "xanad-assistant", "packageRoot": str(self.REPO_ROOT)},
+                    "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
+                    "timestamps": {
+                        "appliedAt": "2026-05-08T00:00:00Z",
+                        "updatedAt": "2026-05-08T00:00:00Z"
+                    },
+                    "selectedPacks": [],
+                    "files": []
+                },
+                indent=2,
+            ) + "\n",
+            encoding="utf-8",
+        )
+
+        process = start_server(self, workspace)
+        initialize_server(process)
+
+        response = call_tool(
+            process,
+            message_id=7,
+            name="lifecycle_apply",
+            arguments={"nonInteractive": True},
+        )
+        result = response["result"]["structuredContent"]
+        self.assertEqual("ok", result["status"])
+        self.assertEqual(0, result["exitCode"])
+        self.assertEqual("apply", result["payload"]["command"])
+        self.assertTrue((workspace / ".github" / "copilot-instructions.md").exists())
+
+    def test_lifecycle_plan_setup_is_unavailable_without_package_root(self) -> None:
+        workspace = make_workspace(self)
+        process = start_server(self, workspace)
+        initialize_server(process)
+        response = call_tool(
+            process,
+            message_id=8,
+            name="lifecycle_plan_setup",
+            arguments={"nonInteractive": True},
+        )
+        result = response["result"]["structuredContent"]
+        self.assertEqual("unavailable", result["status"])
+        self.assertIn("packageRoot", result["summary"])
+
+    def test_lifecycle_inspect_uses_explicit_remote_release_source(self) -> None:
+        workspace = make_workspace(self)
+        with tempfile.TemporaryDirectory() as cache_dir:
+            cache_root = Path(cache_dir)
+            make_fake_cached_release(cache_root, "github:testowner/testrepo", "v1.2.3")
+
+            process = start_server(self, workspace, env_overrides={"XANAD_PKG_CACHE": str(cache_root)})
+            initialize_server(process)
+
+            response = call_tool(
+                process,
+                message_id=9,
+                name="lifecycle_inspect",
+                arguments={"source": "github:testowner/testrepo", "version": "v1.2.3"},
+            )
+            result = response["result"]["structuredContent"]
+            self.assertEqual("ok", result["status"])
+            self.assertEqual(0, result["exitCode"])
+            self.assertEqual("inspect", result["payload"]["command"])
+            self.assertIn("--workspace", result["payload"]["argv"])
+
+    def test_lifecycle_check_uses_lockfile_remote_release_source(self) -> None:
+        workspace = make_workspace(self)
+        github_dir = workspace / ".github"
+        github_dir.mkdir(parents=True, exist_ok=True)
+        (github_dir / "xanad-assistant-lock.json").write_text(
+            json.dumps(
+                {
+                    "schemaVersion": "0.1.0",
+                    "package": {
+                        "name": "xanad-assistant",
+                        "source": "github:testowner/testrepo",
+                        "version": "v1.2.3"
+                    },
+                    "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
+                    "timestamps": {
+                        "appliedAt": "2026-05-08T00:00:00Z",
+                        "updatedAt": "2026-05-08T00:00:00Z"
+                    },
+                    "selectedPacks": [],
+                    "files": []
+                },
+                indent=2,
+            ) + "\n",
+            encoding="utf-8",
+        )
+
+        with tempfile.TemporaryDirectory() as cache_dir:
+            cache_root = Path(cache_dir)
+            make_fake_cached_release(cache_root, "github:testowner/testrepo", "v1.2.3")
+
+            process = start_server(self, workspace, env_overrides={"XANAD_PKG_CACHE": str(cache_root)})
+            initialize_server(process)
+
+            response = call_tool(process, message_id=10, name="lifecycle_check")
+            result = response["result"]["structuredContent"]
+            self.assertEqual("ok", result["status"])
+            self.assertEqual(0, result["exitCode"])
+            self.assertEqual("check", result["payload"]["command"])

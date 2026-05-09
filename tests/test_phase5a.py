@@ -155,7 +155,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
 
             plan_payload = self._make_archive_retired_plan_payload(workspace, retired_target)
 
-            with patch("scripts.lifecycle.xanad_assistant.build_check_result") as mock_check:
+            with patch("scripts.lifecycle._xanad._check.build_check_result") as mock_check:
                 mock_check.return_value = {"status": "clean", "result": {"summary": {}}}
                 result = execute_apply_plan(workspace, repo_root, plan_payload)
 
@@ -185,7 +185,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
                 workspace, retired_target, strategy="report-retired", archive_root=None
             )
 
-            with patch("scripts.lifecycle.xanad_assistant.build_check_result") as mock_check:
+            with patch("scripts.lifecycle._xanad._check.build_check_result") as mock_check:
                 mock_check.return_value = {"status": "clean", "result": {"summary": {}}}
                 result = execute_apply_plan(workspace, repo_root, plan_payload)
 

@@ -42,16 +42,20 @@ class PlanLifecycleTests(XanadTestBase):
         self.assertEqual("installed", payload["result"]["installState"])
         self.assertEqual("balanced", payload["result"]["profile"])
         self.assertEqual(["review"], payload["result"]["packs"])
-        self.assertEqual(4, payload["result"]["writes"]["add"])
+        self.assertEqual(5, payload["result"]["writes"]["add"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
-        self.assertEqual(6, len(payload["result"]["plannedLockfile"]["contents"]["files"]))
+        self.assertEqual(7, len(payload["result"]["plannedLockfile"]["contents"]["files"]))
         self.assertEqual(
             [
                 ".github/agents/commit.agent.md",
+                ".github/agents/debugger.agent.md",
+                ".github/agents/docs.agent.md",
                 ".github/agents/explore.agent.md",
-                ".github/agents/lifecycle-planning.agent.md",
+                ".github/agents/planner.agent.md",
+                ".github/agents/researcher.agent.md",
                 ".github/agents/review.agent.md",
+                ".github/agents/xanad-lifecycle-planning.agent.md",
                 ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
             ],
@@ -183,6 +187,10 @@ class PlanLifecycleTests(XanadTestBase):
             hooks_dir.mkdir(parents=True, exist_ok=True)
             (hooks_dir / "xanad-workspace-mcp.py").write_text(
                 (repo_root / "hooks" / "scripts" / "xanad-workspace-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "mcp-sequential-thinking-server.py").write_text(
+                (repo_root / "hooks" / "scripts" / "mcp-sequential-thinking-server.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
 

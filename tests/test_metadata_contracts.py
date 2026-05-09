@@ -54,9 +54,13 @@ class MetadataContractTests(unittest.TestCase):
         repo_root = Path(__file__).resolve().parents[1]
         expected_keywords = {
             "commit.agent.md": ["Use when", "commit", "push", "preflight", "pull requests", "PR bodies"],
+            "debugger.agent.md": ["Use when", "diagnosing failures", "root causes", "regressions"],
+            "docs.agent.md": ["Use when", "documentation", "migration notes", "technical guides"],
             "explore.agent.md": ["Use when", "read-only", "file discovery", "symbol discovery"],
+            "planner.agent.md": ["Use when", "scoped execution plans", "phased remediation", "before implementation"],
+            "researcher.agent.md": ["Use when", "external documentation", "upstream behavior", "source-backed comparisons"],
             "review.agent.md": ["Use when", "code review", "security review", "regression-risk"],
-            "lifecycle-planning.agent.md": ["Use when", "inspect workspace", "repair install", "factory restore"],
+            "xanad-lifecycle-planning.agent.md": ["Use when", "inspect workspace", "repair install", "factory restore"],
         }
 
         for filename, keywords in expected_keywords.items():
@@ -67,7 +71,16 @@ class MetadataContractTests(unittest.TestCase):
                     self.assertIn(keyword, description)
                 self.assertIn("tools", frontmatter)
                 self.assertNotEqual("[]", frontmatter["tools"])
-                self.assertIn("agents", frontmatter)
+                if filename != "explore.agent.md":
+                    self.assertIn("agents", frontmatter)
+
+                if filename == "xanad-lifecycle-planning.agent.md":
+                    self.assertIn("model", frontmatter)
+                    self.assertIn("agent", frontmatter["tools"])
+
+                if filename in {"debugger.agent.md", "planner.agent.md", "researcher.agent.md"}:
+                    self.assertEqual("false", frontmatter.get("user-invocable"))
+                    self.assertIn("agent", frontmatter["tools"])
 
     def test_instructions_define_agent_routing_table(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]
@@ -78,8 +91,17 @@ class MetadataContractTests(unittest.TestCase):
                 self.assertIn("Route specialist work to the matching agent", text)
                 self.assertIn("| Git status, staging, commit messages", text)
                 self.assertIn("| Broad read-only codebase exploration", text)
+                self.assertIn("| Root-cause diagnosis, failing tests", text)
+                self.assertIn("| Complex multi-step planning, phased rollout", text)
+                self.assertIn("| External documentation, upstream behavior", text)
+                self.assertIn("| Documentation updates, migration notes", text)
                 self.assertIn("| Code review, architecture review", text)
                 self.assertIn("| xanad-assistant inspect, check, plan", text)
+                self.assertIn("Debugger", text)
+                self.assertIn("Docs", text)
+                self.assertIn("Planner", text)
+                self.assertIn("Researcher", text)
+                self.assertIn("xanad-lifecycle-planning", text)
 
     def test_instructions_define_memory_routing(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]
@@ -91,6 +113,27 @@ class MetadataContractTests(unittest.TestCase):
                 self.assertIn("/memories/repo/", text)
                 self.assertIn("docs/memory.md", text)
                 self.assertIn("not as lifecycle authority", text)
+
+    def test_root_agents_document_captures_specialist_routing(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        text = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
+
+        self.assertIn("# Agent Routing", text)
+        self.assertIn("This file is the canonical routing map", text)
+        self.assertIn("`Debugger` | no | Root-cause diagnosis", text)
+        self.assertIn("`Docs` | yes | Documentation updates", text)
+        self.assertIn("`Planner` | no | Complex multi-step planning", text)
+        self.assertIn("`Researcher` | no | External documentation", text)
+        self.assertIn("| Root-cause diagnosis, failing tests", text)
+        self.assertIn("| Complex multi-step planning, phased rollout", text)
+        self.assertIn("| External documentation, upstream behavior", text)
+        self.assertIn("| Documentation updates, migration notes", text)
+        self.assertIn("## Recommended Handoff Patterns", text)
+        self.assertIn("| `Review` | `Debugger` |", text)
+        self.assertIn("| `Researcher` | `Docs` |", text)
+        self.assertIn("| `xanad-lifecycle-planning` | `Planner` |", text)
+        self.assertIn("`inspect workspace`", text)
+        self.assertIn("Remember this for next time", text)
 
 
 if __name__ == "__main__":

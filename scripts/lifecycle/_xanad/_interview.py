@@ -189,19 +189,12 @@ def validate_answer_value(question: dict, value: object) -> None:
         )
 
 
-def resolve_question_answers(questions: list[dict], answers: dict) -> tuple[dict, list[str]]:
+def resolve_question_answers(questions: list[dict], answers: dict) -> tuple[dict, list[str], list[str]]:
     resolved_answers: dict = {}
     unresolved: list[str] = []
     question_map = {question["id"]: question for question in questions}
 
     unknown_ids = sorted(answer_id for answer_id in answers if answer_id not in question_map)
-    if unknown_ids:
-        raise LifecycleCommandError(
-            "contract_input_failure",
-            "Answer file contains unknown question ids.",
-            4,
-            {"questionIds": unknown_ids},
-        )
 
     for question in questions:
         question_id = question["id"]
@@ -218,4 +211,4 @@ def resolve_question_answers(questions: list[dict], answers: dict) -> tuple[dict
         if question.get("required"):
             unresolved.append(question_id)
 
-    return resolved_answers, unresolved
+    return resolved_answers, unresolved, unknown_ids

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -37,8 +38,52 @@ class InspectCheckTests(XanadTestBase):
         self.assertEqual("check", payload["command"])
         self.assertEqual("drift", payload["status"])
         self.assertGreater(payload["result"]["summary"]["missing"], 0)
-        self.assertEqual(6, payload["result"]["summary"]["skipped"])
+        self.assertEqual(10, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["unmanaged"])
+
+    def test_inspect_does_not_create_missing_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir) / "missing-workspace"
+
+            result = self.run_command_in_workspace(workspace, "inspect", "--json")
+
+            self.assertEqual(0, result.returncode)
+            self.assertFalse(workspace.exists())
+            payload = json.loads(result.stdout)
+            self.assertEqual(str(workspace.resolve()), payload["workspace"])
+
+    def test_check_does_not_double_count_skipped_targets_from_lockfile(self) -> None:
+        def workspace_setup(workspace: Path, _repo_root: Path) -> None:
+            github_dir = workspace / ".github"
+            github_dir.mkdir(parents=True, exist_ok=True)
+            (github_dir / "xanad-assistant-lock.json").write_text(
+                json.dumps(
+                    self.make_minimal_lockfile(
+                        skippedManagedFiles=[".github/agents/commit.agent.md"],
+                    ),
+                    indent=2,
+                ) + "\n",
+                encoding="utf-8",
+            )
+
+        result = self.run_command("check", "--json", workspace_setup=workspace_setup)
+
+        self.assertEqual(7, result.returncode)
+        payload = json.loads(result.stdout)
+        self.assertEqual(10, payload["result"]["summary"]["skipped"])
+        skipped_entries = [
+            entry for entry in payload["result"]["entries"]
+            if entry["target"] == ".github/agents/commit.agent.md"
+        ]
+        self.assertEqual(1, len(skipped_entries))
+
+    def test_inspect_rejects_conflicting_json_output_flags(self) -> None:
+        result = self.run_command("inspect", "--json", "--json-lines")
+
+        self.assertEqual(2, result.returncode)
+        payload = json.loads(result.stdout)
+        self.assertEqual("error", payload["status"])
+        self.assertEqual("invalid_invocation", payload["errors"][0]["code"])
 
     def test_check_detects_clean_and_unmanaged_targets(self) -> None:
         def workspace_setup(workspace: Path, repo_root: Path) -> None:
@@ -88,6 +133,10 @@ class InspectCheckTests(XanadTestBase):
                 (repo_root / "hooks" / "scripts" / "xanad-workspace-mcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
+            (hooks_dir / "mcp-sequential-thinking-server.py").write_text(
+                (repo_root / "hooks" / "scripts" / "mcp-sequential-thinking-server.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
 
             vscode_dir = workspace / ".vscode"
             vscode_dir.mkdir(parents=True, exist_ok=True)
@@ -104,9 +153,9 @@ class InspectCheckTests(XanadTestBase):
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("clean", payload["status"])
-        self.assertEqual(6, payload["result"]["summary"]["clean"])
+        self.assertEqual(7, payload["result"]["summary"]["clean"])
         self.assertEqual(0, payload["result"]["summary"]["missing"])
-        self.assertEqual(6, payload["result"]["summary"]["skipped"])
+        self.assertEqual(10, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["stale"])
 
     def test_check_reports_stale_when_target_content_differs(self) -> None:

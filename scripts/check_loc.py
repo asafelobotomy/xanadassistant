@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LOC gate — enforces the 250-warning / 400-hard-limit per-file policy.
+"""LOC gate — enforces the default 250-warning / 400-hard-limit per-file policy.
 
 Usage:
     python3 scripts/check_loc.py [--hard-only] [file ...]
@@ -9,7 +9,9 @@ Exit codes:
     0  All files within limits.
     1  One or more files exceed the hard limit (400 lines).
 
-Files between 250 and 400 lines emit warnings but do not fail.
+Files above their warning threshold but at or below 400 lines emit warnings but do not fail.
+Some constrained surfaces may have a higher warning threshold while keeping the same
+400-line hard limit.
 
 Scoped to: *.py, *.md, *.sh files that are tracked by git (or provided explicitly).
 JSON / schema / lock files are excluded — they are data, not source.
@@ -24,6 +26,11 @@ from pathlib import Path
 WARN_LIMIT = 250
 HARD_LIMIT = 400
 EXTENSIONS = {".py", ".md", ".sh"}
+WARN_LIMIT_OVERRIDES = {
+    # Consumer workspaces receive this hook as a single file, so it needs a little
+    # more room than the default warning budget while still honoring the hard limit.
+    "hooks/scripts/xanad-workspace-mcp.py": 380,
+}
 
 
 def collect_files(roots: list[str]) -> list[Path]:
@@ -59,6 +66,14 @@ def count_lines(path: Path) -> int:
         return 0
 
 
+def warning_limit_for(path: Path) -> int:
+    try:
+        key = path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        key = path.as_posix()
+    return WARN_LIMIT_OVERRIDES.get(key, WARN_LIMIT)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--hard-only", action="store_true", help="Only report hard-limit violations.")
@@ -66,18 +81,20 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     files = collect_files(args.files)
-    warnings: list[tuple[Path, int]] = []
+    warnings: list[tuple[Path, int, int]] = []
     violations: list[tuple[Path, int]] = []
 
     for path in sorted(files):
         n = count_lines(path)
+        warn_limit = warning_limit_for(path)
         if n > HARD_LIMIT:
             violations.append((path, n))
-        elif n > WARN_LIMIT and not args.hard_only:
-            warnings.append((path, n))
+        elif n > warn_limit and not args.hard_only:
+            warnings.append((path, n, warn_limit))
 
-    for path, n in warnings:
-        print(f"WARN  {n:>5} lines  {path}", file=sys.stderr)
+    for path, n, warn_limit in warnings:
+        suffix = "" if warn_limit == WARN_LIMIT else f"  (warn limit: {warn_limit})"
+        print(f"WARN  {n:>5} lines  {path}{suffix}", file=sys.stderr)
 
     for path, n in violations:
         print(f"ERROR {n:>5} lines  {path}  (hard limit: {HARD_LIMIT})", file=sys.stderr)
@@ -91,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if warnings:
         print(
-            f"\nLOC gate: {len(warnings)} file(s) exceed the {WARN_LIMIT}-line warning threshold.",
+            f"\nLOC gate: {len(warnings)} file(s) exceed their warning threshold.",
             file=sys.stderr,
         )
 

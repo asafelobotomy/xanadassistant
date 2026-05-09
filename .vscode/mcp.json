@@ -2,7 +2,7 @@
   "servers": {
     "xanadTools": {
       "type": "stdio",
-      "command": "${workspaceFolder}/.github/hooks/scripts/xanad-workspace-mcp.py",
+      "command": "${workspaceFolder}/hooks/scripts/xanad-workspace-mcp.py",
       "args": []
     },
     "sequential-thinking": {
@@ -17,7 +17,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/mcp-sequential-thinking-server.py"
+        "${workspaceFolder}/hooks/scripts/mcp-sequential-thinking-server.py"
       ]
     }
   }

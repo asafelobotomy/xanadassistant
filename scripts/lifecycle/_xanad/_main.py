@@ -86,8 +86,23 @@ def main(argv: list[str] | None = None) -> int:
 
 def _run_lifecycle(args: argparse.Namespace) -> int:
     """Inner lifecycle dispatch — separated so main() can close _State.log_file on exit."""
-    workspace = resolve_workspace(args.workspace)
-    use_json_lines = args.json_lines
+    write_commands = {"apply", "update", "repair", "factory-restore"}
+    workspace = resolve_workspace(args.workspace, create=args.command in write_commands)
+    if args.json and args.json_lines:
+        payload, exit_code = build_error_payload(
+            args.command,
+            workspace,
+            Path("."),
+            "invalid_invocation",
+            "--json and --json-lines cannot be used together.",
+            2,
+            mode=getattr(args, "mode", None),
+            details={"flags": ["--json", "--json-lines"]},
+        )
+        emit_payload(payload, args.ui, False)
+        return exit_code
+
+    use_json_lines = bool(args.json_lines)
 
     try:
         package_root, _resolved_source_info = resolve_effective_package_root(

@@ -1,7 +1,7 @@
 # {{PROJECT_NAME}} — Copilot Instructions
 
 > This project uses **xanad-assistant** to manage its Copilot surface files (agents, skills, hooks, prompts).
-> Lifecycle authority: `xanad-assistant.py` — use the `lifecycle-planning` agent for all xanad-assistant operations.
+> Lifecycle authority: `xanad-assistant.py` — use the `xanad-lifecycle-planning` agent for all xanad-assistant operations.
 
 ## My Role
 
@@ -17,7 +17,7 @@ I work **in** {{PROJECT_NAME}} — implementing features, reviewing code, runnin
 
 ## Lifecycle Operations
 
-Use the **lifecycle-planning** agent for all xanad-assistant operations. Trigger phrases:
+Use the **xanad-lifecycle-planning** agent for all xanad-assistant operations. Trigger phrases:
 
 | Trigger phrase | Operation |
 |---|---|
@@ -28,6 +28,9 @@ Use the **lifecycle-planning** agent for all xanad-assistant operations. Trigger
 | `"factory restore"` | Reset to clean managed state |
 
 Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanad-assistant. Use the `lifecycle-audit` skill to review state before proposing any lifecycle operation.
+When the workspace-local `xanadTools` MCP server is available and can resolve a
+local xanad-assistant package root or a supported remote source, setup-oriented
+lifecycle operations may use its `lifecycle.*` tools instead of shelling out directly.
 If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`,
 the workspace is being migrated from `copilot-instructions-template`; use `repair`
 or `update` so xanad-assistant can archive predecessor-owned files and install the
@@ -41,6 +44,10 @@ Route specialist work to the matching agent before acting directly. If a task ha
 |---|---|
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
 | Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
+| Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |
+| Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
+| External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
+| Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
 | xanad-assistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle-planning` |
 
@@ -76,4 +83,8 @@ Use memory as optional recall, not as lifecycle authority.
 ## Skills and Agents
 
 - `lifecycle-audit` skill — loaded on demand; run before any lifecycle operation
-- `lifecycle-planning` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
+- `Debugger` agent — diagnose failures and isolate root causes before implementation
+- `Planner` agent — produce scoped execution plans for multi-step work before implementation
+- `Researcher` agent — gather source-backed external constraints before implementation or review
+- `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
+- `xanad-lifecycle-planning` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests

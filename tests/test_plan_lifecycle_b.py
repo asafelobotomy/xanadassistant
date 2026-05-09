@@ -42,7 +42,7 @@ class PlanLifecycleTests(XanadTestBase):
         self.assertEqual("plan", payload["command"])
         self.assertEqual("factory-restore", payload["mode"])
         self.assertTrue(payload["result"]["factoryRestore"])
-        self.assertEqual(4, payload["result"]["writes"]["add"])
+        self.assertEqual(5, payload["result"]["writes"]["add"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
         self.assertEqual(1, payload["result"]["conflictSummary"]["managed-drift"])

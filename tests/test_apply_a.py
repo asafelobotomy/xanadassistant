@@ -31,7 +31,7 @@ class ApplyTests(XanadTestBase):
             self.assertEqual("setup", payload["mode"])
             self.assertEqual("ok", payload["status"])
             self.assertTrue(payload["result"]["backup"]["created"])
-            self.assertEqual(6, payload["result"]["writes"]["added"])
+            self.assertEqual(7, payload["result"]["writes"]["added"])
             self.assertEqual(0, payload["result"]["writes"]["replaced"])
             self.assertTrue(payload["result"]["summary"]["written"])
             self.assertEqual(".github/copilot-version.md", payload["result"]["summary"]["path"])
@@ -44,6 +44,8 @@ class ApplyTests(XanadTestBase):
             )
             self.assertTrue((workspace / ".github" / "copilot-instructions.md").exists())
             self.assertTrue((workspace / ".github" / "xanad-assistant-lock.json").exists())
+            lockfile = json.loads((workspace / ".github" / "xanad-assistant-lock.json").read_text(encoding="utf-8"))
+            self.assertEqual(str(repo_root), lockfile["package"]["packageRoot"])
             summary_text = (workspace / ".github" / "copilot-version.md").read_text(encoding="utf-8")
             self.assertIn("Version: 0.1.0", summary_text)
             self.assertIn("```json", summary_text)
@@ -104,7 +106,7 @@ class ApplyTests(XanadTestBase):
 
             self.assertEqual(0, result.returncode)
             payload = json.loads(result.stdout)
-            self.assertEqual(5, payload["result"]["writes"]["added"])
+            self.assertEqual(6, payload["result"]["writes"]["added"])
             self.assertEqual(1, payload["result"]["writes"]["merged"])
 
             merged_mcp = json.loads(existing_mcp_path.read_text(encoding="utf-8"))

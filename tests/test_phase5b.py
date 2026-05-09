@@ -175,7 +175,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
             workspace = Path(temp_dir)
             plan_payload = build_plan_result(workspace, repo_root, "setup", None, False)
 
-            with patch("scripts.lifecycle.xanad_assistant.build_check_result") as mock_check:
+            with patch("scripts.lifecycle._xanad._check.build_check_result") as mock_check:
                 mock_check.return_value = {
                     "status": "drift",
                     "result": {

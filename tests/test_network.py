@@ -20,6 +20,23 @@ SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
 NETWORK_TESTS = bool(os.getenv("XANAD_NETWORK_TESTS"))
 
 
+def encode_message(payload: dict) -> bytes:
+    body = json.dumps(payload).encode("utf-8")
+    return f"Content-Length: {len(body)}\r\n\r\n".encode("utf-8") + body
+
+
+def decode_message(stream) -> dict:
+    headers: dict[str, str] = {}
+    while True:
+        line = stream.readline()
+        if line in (b"\r\n", b"\n"):
+            break
+        key, _, value = line.decode("utf-8").partition(":")
+        headers[key.strip().lower()] = value.strip()
+    body = stream.read(int(headers["content-length"]))
+    return json.loads(body.decode("utf-8"))
+
+
 def _run(command: str, *extra_args: str, workspace: Path) -> subprocess.CompletedProcess[str]:
     cmd = [sys.executable, str(SCRIPT), command]
     if command == "plan" and extra_args and not extra_args[0].startswith("-"):
@@ -45,40 +62,68 @@ def _normalise_lockfile(lockfile: dict) -> dict:
     result.pop("timestamps", None)
     result.pop("lastBackup", None)
     result.get("package", {}).pop("version", None)
+    result.get("package", {}).pop("packageRoot", None)
     return result
 
 
 @unittest.skipUnless(NETWORK_TESTS, "Set XANAD_NETWORK_TESTS=1 to enable network integration tests")
 class GitHubSourceResolutionNetworkTests(unittest.TestCase):
-    """Integration tests that exercise real GitHub API/network calls.
-
-    These tests are skipped by default.  Run them with:
-
-        XANAD_NETWORK_TESTS=1 python3 -m unittest tests.test_network
-
-    They require outbound HTTPS access to github.com.  They download small
-    tarballs or run shallow clones, so they are not destructive.
-    """
+    """Integration tests for live GitHub release/ref resolution paths."""
 
     CACHE_ROOT = Path(tempfile.gettempdir()) / "xanad-test-network-cache"
 
     def setUp(self) -> None:
         self.CACHE_ROOT.mkdir(parents=True, exist_ok=True)
 
+    def start_mcp_server(self, workspace: Path) -> subprocess.Popen[bytes]:
+        source_server = REPO_ROOT / "hooks" / "scripts" / "xanad-workspace-mcp.py"
+        server_path = workspace / ".github" / "hooks" / "scripts" / "xanad-workspace-mcp.py"
+        server_path.parent.mkdir(parents=True, exist_ok=True)
+        server_path.write_text(source_server.read_text(encoding="utf-8"), encoding="utf-8")
+        process = subprocess.Popen(
+            [sys.executable, str(server_path)],
+            cwd=workspace,
+            env={**os.environ, "XANAD_PKG_CACHE": str(self.CACHE_ROOT)},
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self.addCleanup(self.stop_process, process)
+        return process
+
+    def stop_process(self, process: subprocess.Popen[bytes]) -> None:
+        if process.stdin is not None and not process.stdin.closed:
+            process.stdin.close()
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=2)
+        if process.stdout is not None and not process.stdout.closed:
+            process.stdout.close()
+        if process.stderr is not None and not process.stderr.closed:
+            process.stderr.close()
+
+    def rpc(self, process: subprocess.Popen[bytes], payload: dict) -> dict:
+        assert process.stdin is not None
+        assert process.stdout is not None
+        process.stdin.write(encode_message(payload))
+        process.stdin.flush()
+        return decode_message(process.stdout)
+
     def test_resolve_github_ref_clones_main_branch(self) -> None:
-        """resolve_github_ref clones the main branch of asafelobotomy/xanadassistant."""
         from scripts.lifecycle.xanad_assistant import resolve_github_ref
 
         pkg_root = resolve_github_ref("asafelobotomy", "xanadassistant", "main", self.CACHE_ROOT)
         self.assertTrue(pkg_root.exists(), "Cloned package root should exist")
-        # The repo must contain the manifest generator as a sanity check.
         self.assertTrue(
             (pkg_root / "scripts" / "lifecycle" / "generate_manifest.py").exists(),
             "Cloned repo should contain generate_manifest.py",
         )
 
     def test_resolve_github_ref_result_is_cached(self) -> None:
-        """A second call to resolve_github_ref with the same ref reuses the cache."""
         from scripts.lifecycle.xanad_assistant import resolve_github_ref
 
         pkg_root_1 = resolve_github_ref("asafelobotomy", "xanadassistant", "main", self.CACHE_ROOT)
@@ -86,7 +131,6 @@ class GitHubSourceResolutionNetworkTests(unittest.TestCase):
         self.assertEqual(pkg_root_1, pkg_root_2, "Repeated calls should return the same path")
 
     def test_resolve_github_ref_package_is_usable(self) -> None:
-        """A resolved GitHub-ref package root can be used for inspect."""
         from scripts.lifecycle.xanad_assistant import resolve_github_ref
 
         pkg_root = resolve_github_ref("asafelobotomy", "xanadassistant", "main", self.CACHE_ROOT)
@@ -107,15 +151,8 @@ class GitHubSourceResolutionNetworkTests(unittest.TestCase):
             self.assertEqual("ok", payload["status"])
 
     def test_local_and_github_ref_installs_converge(self) -> None:
-        """A fresh install from local --package-root and from --source github:owner/repo
-        produce lockfiles with the same manifest hash and selectedPacks.
-
-        This is the Phase 6 convergence gate: release and local path installs
-        must converge on the same final state.
-        """
         from scripts.lifecycle.xanad_assistant import resolve_github_ref
 
-        # Install from local package root.
         with tempfile.TemporaryDirectory() as local_tmp:
             local_ws = Path(local_tmp)
             local_result = _apply_fresh(local_ws)
@@ -124,7 +161,6 @@ class GitHubSourceResolutionNetworkTests(unittest.TestCase):
                 (local_ws / ".github" / "xanad-assistant-lock.json").read_text(encoding="utf-8")
             )
 
-        # Install from GitHub-ref resolved package root.
         pkg_root = resolve_github_ref("asafelobotomy", "xanadassistant", "main", self.CACHE_ROOT)
         with tempfile.TemporaryDirectory() as remote_tmp:
             remote_ws = Path(remote_tmp)
@@ -153,6 +189,49 @@ class GitHubSourceResolutionNetworkTests(unittest.TestCase):
             remote_norm.get("manifest", {}).get("hash"),
             "Manifest hash must match between local and GitHub-ref installs",
         )
+
+    def test_mcp_lifecycle_inspect_supports_github_ref_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            process = self.start_mcp_server(workspace)
+
+            self.rpc(
+                process,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2025-06-18",
+                        "capabilities": {},
+                        "clientInfo": {"name": "test-client", "version": "1.0.0"},
+                    },
+                },
+            )
+            assert process.stdin is not None
+            process.stdin.write(encode_message({"jsonrpc": "2.0", "method": "notifications/initialized"}))
+            process.stdin.flush()
+
+            response = self.rpc(
+                process,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 2,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "lifecycle.inspect",
+                        "arguments": {
+                            "source": "github:asafelobotomy/xanadassistant",
+                            "ref": "main",
+                        },
+                    },
+                },
+            )
+            result = response["result"]["structuredContent"]
+            self.assertEqual("ok", result["status"])
+            self.assertEqual(0, result["exitCode"])
+            self.assertEqual("inspect", result["payload"]["command"])
+            self.assertEqual("ok", result["payload"]["status"])
 
 
 if __name__ == "__main__":
