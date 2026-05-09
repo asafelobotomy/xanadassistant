@@ -6,6 +6,10 @@ This document defines the first practical implementation slice for the xanad-ass
 
 This file is normative for the first executable slice of the tooling MCP.
 
+## Transport
+
+V1 uses NDJSON stdio transport: one JSON object per line, `\n` terminated, with no Content-Length headers. The server echoes the client's offered `protocolVersion` (VS Code Insiders 1.120 negotiates `2025-11-25`). Tool names must use the `[a-z0-9_-]` charset only; dots are not valid. Implemented protocol handlers: `tools/list`, `tools/call`, `prompts/list` (returns empty list), `resources/list` (empty), `resources/templates/list` (empty), `logging/setLevel` (no-op), `notifications/*` (no-op).
+
 ## V1 Goal
 
 Ship one small first-party MCP server that is useful in consumer workspaces without requiring the full xanad-assistant package checkout to be present for every tool.
@@ -40,232 +44,97 @@ Resources, prompts, and apps are out of scope for the first executable slice.
 
 ## V1 Tools
 
-### `workspace.run_tests`
+### `workspace_run_tests`
 
-Purpose:
-
-- Run the workspace test command declared in `.github/copilot-instructions.md`.
+Purpose: run the workspace test command declared in `.github/copilot-instructions.md`.
 
 Input schema:
 
-- `scope`: optional string enum: `default`, `full`
+- `scope`: optional enum: `default`, `full`
 - `extraArgs`: optional string array, default empty
 
-Behavior:
+Behavior: read the `Run tests` command from the instructions file; execute in the workspace root; reject if absent; reject if `extraArgs` would require shell interpolation rather than argv-safe extension.
 
-- Read the `Run tests` command from `.github/copilot-instructions.md`.
-- Execute that command in the workspace root.
-- Reject execution if no test command is present.
-- Reject execution if `extraArgs` would require shell interpolation rather than argv-safe extension.
+Output: `status` (`ok`, `failed`, `unavailable`), `command`, `exitCode`, `summary`, `stdoutTail`, `stderrTail`.
 
-Output requirements:
+### `workspace_run_check_loc`
 
-- `status`: `ok`, `failed`, or `unavailable`
-- `command`: resolved command string
-- `exitCode`: integer when executed
-- `summary`: short text summary
-- `stdoutTail`: optional trailing stdout excerpt
-- `stderrTail`: optional trailing stderr excerpt
+Purpose: run the repo LOC gate when explicitly present.
 
-### `workspace.run_check_loc`
+Input schema: no arguments.
 
-Purpose:
+Behavior: prefer a known repo-local command from the instructions file; in xanadassistant's own repo this resolves to `python3 scripts/check_loc.py`; return `unavailable` in consumer workspaces without a declared LOC command.
 
-- Run the repo LOC gate when that gate is explicitly present.
+Output: `status`, `command`, `exitCode`, `summary`.
 
-Input schema:
+### `workspace_show_key_commands`
 
-- no arguments
+Purpose: return commands from `.github/copilot-instructions.md` so the agent can reason from explicit workspace policy instead of scraping markdown ad hoc.
 
-Behavior:
+Input schema: no arguments.
 
-- Prefer a known repo-local command when `.github/copilot-instructions.md` or repo documentation exposes one.
-- In xanadassistant's own repo, this resolves to `python3 scripts/check_loc.py`.
-- In consumer workspaces without a declared LOC command, return `unavailable`.
+Behavior: parse the `Key Commands` table; return discovered entries as structured name/value pairs; return `unavailable` if the file is absent or malformed.
 
-Output requirements:
+Output: `status`, `commands` (array of `{label, command}`), `summary`.
 
-- `status`
-- `command`
-- `exitCode`
-- `summary`
+### Lifecycle Tools — Shared Contract
 
-### `workspace.show_key_commands`
+All five lifecycle tools share the same input schema and resolution rules.
 
-Purpose:
+**Shared input schema** (all fields optional):
 
-- Return the commands discovered from `.github/copilot-instructions.md` so the agent can reason from explicit workspace policy instead of scraping markdown ad hoc.
+- `packageRoot`: path to a local xanad-assistant checkout
+- `source`: package source string such as `github:owner/repo`
+- `version`: release version for GitHub release resolution
+- `ref`: Git ref for GitHub ref resolution
 
-Input schema:
+**Package-root resolution order:**
 
-- no arguments
+1. `packageRoot` argument — validate as local xanad-assistant checkout
+2. `.github/xanad-assistant-lock.json` `package.packageRoot`
+3. `source` + `version`/`ref` from tool input or lockfile `package` block
 
-Behavior:
+For GitHub sources, use the package cache when present; otherwise download the release tarball or perform a shallow clone into the cache. Return `unavailable` when no usable local package root or supported remote source can be resolved safely.
 
-- Parse the `Key Commands` table from `.github/copilot-instructions.md`.
-- Return discovered entries as structured name/value pairs.
-- If the file is absent or malformed, return `unavailable`.
+**Shared output fields:** `status` (`ok`, `failed`, `unavailable`), `command`, `exitCode`, `payload` (parsed lifecycle JSON), `summary`.
 
-Output requirements:
+### `lifecycle_inspect`
 
-- `status`
-- `commands`: array of `{label, command}`
-- `summary`
+Run `xanad-assistant.py inspect --workspace <workspace-root> --package-root <resolved-root> --json`. No additional inputs beyond the shared schema.
 
-### `lifecycle.inspect`
+### `lifecycle_interview`
 
-Purpose:
+Additional input: `mode` — optional enum: `setup`, `update`, `repair`, `factory-restore`.
 
-- Run `xanad-assistant.py inspect` for the current workspace when a local package root is explicit or recorded, or when a GitHub source contract is explicit or recorded in the installed lockfile.
+Run `xanad-assistant.py interview --mode <mode> --json`.
 
-Input schema:
+### `lifecycle_plan_setup`
 
-- `packageRoot`: optional string path to a local xanad-assistant checkout
-- `source`: optional string package source such as `github:owner/repo`
-- `version`: optional release version for GitHub release resolution
-- `ref`: optional Git ref for GitHub ref resolution
+Additional inputs: `answersPath` (string path), `nonInteractive` (boolean).
 
-Behavior:
+Run `xanad-assistant.py plan setup --json` with optional `--answers` / `--non-interactive` flags.
 
-- If `packageRoot` is provided, validate that it points at a local xanad-assistant checkout.
-- Otherwise, read `.github/xanad-assistant-lock.json` and prefer `package.packageRoot` when present.
-- If no usable local package root is available, resolve `source` plus `version` or `ref` from tool input or the installed lockfile's `package` block.
-- For GitHub release sources, use the package cache when present and otherwise download the release tarball into the cache.
-- For GitHub ref sources, use the package cache when present and otherwise perform a shallow clone into the cache.
-- Invoke the lifecycle CLI with `--workspace <workspace-root> --package-root <resolved-package-root> --json`.
-- Return `unavailable` when no package root or supported remote source can be resolved safely.
+### `lifecycle_apply`
 
-Output requirements:
+Additional inputs: `answersPath` (string path), `nonInteractive` (boolean), `dryRun` (boolean).
 
-- `status`: `ok`, `failed`, or `unavailable`
-- `command`: resolved command string when executed
-- `exitCode`: integer when executed
-- `payload`: parsed lifecycle JSON payload when available
-- `summary`
+Run `xanad-assistant.py apply --json` with optional `--answers`, `--non-interactive`, `--dry-run` flags.
 
-### `lifecycle.interview`
+### `lifecycle_check`
 
-Purpose:
-
-- Run `xanad-assistant.py interview` for setup-oriented workflow decisions when a local package root is explicit or recorded.
-
-Input schema:
-
-- `packageRoot`: optional string path to a local xanad-assistant checkout
-- `source`: optional string package source such as `github:owner/repo`
-- `version`: optional release version for GitHub release resolution
-- `ref`: optional Git ref for GitHub ref resolution
-- `mode`: optional enum: `setup`, `update`, `repair`, `factory-restore`
-
-Behavior:
-
-- Same package-root and remote-source resolution rules as `lifecycle.inspect`.
-- Invoke the lifecycle CLI with `interview --mode <mode> --json`.
-
-Output requirements:
-
-- `status`
-- `command`
-- `exitCode`
-- `payload`
-- `summary`
-
-### `lifecycle.plan_setup`
-
-Purpose:
-
-- Run `xanad-assistant.py plan setup` through the workspace-local MCP when a local package root is explicit or recorded.
-
-Input schema:
-
-- `packageRoot`: optional string path to a local xanad-assistant checkout
-- `source`: optional string package source such as `github:owner/repo`
-- `version`: optional release version for GitHub release resolution
-- `ref`: optional Git ref for GitHub ref resolution
-- `answersPath`: optional string path to a JSON answer file
-- `nonInteractive`: optional boolean
-
-Behavior:
-
-- Same package-root and remote-source resolution rules as `lifecycle.inspect`.
-- Invoke the lifecycle CLI with `plan setup --json` and optional `--answers` / `--non-interactive` flags.
-
-Output requirements:
-
-- `status`
-- `command`
-- `exitCode`
-- `payload`
-- `summary`
-
-### `lifecycle.apply`
-
-Purpose:
-
-- Run `xanad-assistant.py apply` through the workspace-local MCP when a local package root is explicit or recorded.
-
-Input schema:
-
-- `packageRoot`: optional string path to a local xanad-assistant checkout
-- `source`: optional string package source such as `github:owner/repo`
-- `version`: optional release version for GitHub release resolution
-- `ref`: optional Git ref for GitHub ref resolution
-- `answersPath`: optional string path to a JSON answer file
-- `nonInteractive`: optional boolean
-- `dryRun`: optional boolean
-
-Behavior:
-
-- Same package-root and remote-source resolution rules as `lifecycle.inspect`.
-- Invoke the lifecycle CLI with `apply --json` and optional `--answers`, `--non-interactive`, and `--dry-run` flags.
-
-Output requirements:
-
-- `status`
-- `command`
-- `exitCode`
-- `payload`
-- `summary`
-
-### `lifecycle.check`
-
-Purpose:
-
-- Run `xanad-assistant.py check` for final setup confirmation when a local package root is explicit or recorded.
-
-Input schema:
-
-- `packageRoot`: optional string path to a local xanad-assistant checkout
-- `source`: optional string package source such as `github:owner/repo`
-- `version`: optional release version for GitHub release resolution
-- `ref`: optional Git ref for GitHub ref resolution
-
-Behavior:
-
-- Same package-root and remote-source resolution rules as `lifecycle.inspect`.
-- Invoke the lifecycle CLI with `check --json`.
-
-Output requirements:
-
-- `status`
-- `command`
-- `exitCode`
-- `payload`
-- `summary`
+Run `xanad-assistant.py check --json`. No additional inputs beyond the shared schema.
 
 ## Deferred Tools
 
 These tools are intentionally deferred from V1:
 
-- `lifecycle.update`
-- `lifecycle.repair`
-- `lifecycle.factory_restore`
-- `package.generate`
-- `package.check_manifest_freshness`
+- `lifecycle_update`
+- `lifecycle_repair`
+- `lifecycle_factory_restore`
+- `package_generate`
+- `package_check_manifest_freshness`
 
-Reason:
-
-- they still depend on lifecycle modes or contributor-repo-only assets that are not guaranteed to exist safely from the workspace-local server slice
+Reason: still depend on lifecycle modes or contributor-repo-only assets not guaranteed to exist safely from the workspace-local server slice.
 
 ## Security Rules
 

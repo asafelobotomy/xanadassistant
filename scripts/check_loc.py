@@ -27,9 +27,10 @@ WARN_LIMIT = 250
 HARD_LIMIT = 400
 EXTENSIONS = {".py", ".md", ".sh"}
 WARN_LIMIT_OVERRIDES = {
-    # Consumer workspaces receive this hook as a single file, so it needs a little
+    # Consumer workspaces receive these hooks as single files, so they need a little
     # more room than the default warning budget while still honoring the hard limit.
     "hooks/scripts/xanad-workspace-mcp.py": 380,
+    "hooks/scripts/mcp-sequential-thinking-server.py": 380,
 }
 
 

@@ -123,7 +123,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
             if action["strategy"] == "merge-json-object":
                 merge_json_object_file(target_path, package_root, manifest_entry)
             else:
-                merge_markdown_file(target_path, package_root, manifest_entry)
+                merge_markdown_file(target_path, package_root, manifest_entry, action.get("tokenValues", {}))
             writes["merged"] += 1
             continue
 

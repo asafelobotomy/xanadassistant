@@ -6,6 +6,7 @@ import stat
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scripts.lifecycle._xanad._conditions import render_tokenized_text
 from scripts.lifecycle._xanad._errors import DEFAULT_POLICY_PATH, LifecycleCommandError
 from scripts.lifecycle._xanad._inspect import collect_unmanaged_files
 from scripts.lifecycle._xanad._loader import load_json, load_manifest
@@ -71,14 +72,17 @@ def merge_json_object_file(target_path: Path, package_root: Path, manifest_entry
     target_path.write_bytes(serialize_json_object(merged_data))
 
 
-def merge_markdown_file(target_path: Path, package_root: Path, manifest_entry: dict) -> None:
+def merge_markdown_file(
+    target_path: Path, package_root: Path, manifest_entry: dict, token_values: dict[str, str] | None = None
+) -> None:
     source_path = package_root / manifest_entry["source"]
     source_text = source_path.read_text(encoding="utf-8")
+    rendered_text = render_tokenized_text(source_text, token_values or {})
     if target_path.exists():
         existing_text = target_path.read_text(encoding="utf-8")
-        merged_text = merge_markdown_with_preserved_blocks(existing_text, source_text)
+        merged_text = merge_markdown_with_preserved_blocks(existing_text, rendered_text)
     else:
-        merged_text = source_text
+        merged_text = rendered_text
     target_path.write_text(merged_text, encoding="utf-8")
 
 

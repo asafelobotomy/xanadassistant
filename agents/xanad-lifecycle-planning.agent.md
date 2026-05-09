@@ -16,8 +16,8 @@ Use `xanad-assistant.py` as the single lifecycle entrypoint. Do not edit managed
 files directly when the lifecycle engine can express the same change.
 
 When the workspace `xanadTools` MCP server is connected and can resolve a local
-package root or a supported remote source, prefer its `lifecycle.inspect`, `lifecycle.interview`,
-`lifecycle.plan_setup`, `lifecycle.apply`, and `lifecycle.check` tools for setup
+package root or a supported remote source, prefer its `lifecycle_inspect`, `lifecycle_interview`,
+`lifecycle_plan_setup`, `lifecycle_apply`, and `lifecycle_check` tools for setup
 mode. Fall back to direct CLI invocation when MCP is unavailable or package
 source resolution is missing.
 

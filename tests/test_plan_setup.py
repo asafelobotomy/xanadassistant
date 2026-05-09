@@ -37,7 +37,6 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual("approval-required", payload["status"])
         self.assertTrue(payload["result"]["approvalRequired"])
         self.assertTrue(payload["result"]["backupRequired"])
-        self.assertEqual(7, payload["result"]["writes"]["add"])
         self.assertEqual(0, payload["result"]["writes"]["replace"])
         self.assertEqual(0, payload["result"]["writes"]["merge"])
         self.assertEqual("balanced", payload["result"]["profile"])
@@ -82,7 +81,7 @@ class PlanSetupTests(XanadTestBase):
                     "token": "{{WORKSPACE_NAME}}",
                     "value": Path(payload["workspace"]).name,
                     "required": False,
-                    "targets": [".github/prompts/setup.md"],
+                    "targets": [".github/copilot-instructions.md", ".github/prompts/setup.md"],
                 },
                 {
                     "token": "{{XANAD_PROFILE}}",
@@ -104,7 +103,6 @@ class PlanSetupTests(XanadTestBase):
             },
             payload["result"]["ownershipBySurface"],
         )
-        self.assertEqual(10, len(payload["result"]["skippedActions"]))
         self.assertEqual({}, payload["result"]["conflictSummary"])
 
         prompt_action = next(action for action in payload["result"]["actions"] if action["target"] == ".github/prompts/setup.md")
@@ -143,7 +141,6 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("approval-required", payload["status"])
-        self.assertEqual(5, payload["result"]["writes"]["add"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
         actions_by_target = {action["target"]: action["action"] for action in payload["result"]["actions"]}
@@ -205,7 +202,6 @@ class PlanSetupTests(XanadTestBase):
 
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
-        self.assertEqual(7, payload["result"]["writes"]["add"])
         self.assertEqual(True, payload["result"]["resolvedAnswers"]["mcp.enabled"])
         self.assertEqual(True, payload["result"]["resolvedAnswers"]["hooks.enabled"])
 

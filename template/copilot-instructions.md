@@ -1,11 +1,11 @@
-# {{PROJECT_NAME}} — Copilot Instructions
+# {{WORKSPACE_NAME}} — Copilot Instructions
 
 > This project uses **xanad-assistant** to manage its Copilot surface files (agents, skills, hooks, prompts).
 > Lifecycle authority: `xanad-assistant.py` — use the `xanad-lifecycle-planning` agent for all xanad-assistant operations.
 
 ## My Role
 
-I work **in** {{PROJECT_NAME}} — implementing features, reviewing code, running tests, and maintaining the project's Copilot surface via xanad-assistant. Changes to agents, skills, hooks, and prompts go through `xanad-assistant.py update` rather than direct file edits to `.github/`.
+I work **in** {{WORKSPACE_NAME}} — implementing features, reviewing code, running tests, and maintaining the project's Copilot surface via xanad-assistant. Changes to agents, skills, hooks, and prompts go through `xanad-assistant.py update` rather than direct file edits to `.github/`.
 
 ## Key Commands
 

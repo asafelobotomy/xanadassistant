@@ -13,11 +13,11 @@ server can resolve a local xanad-assistant package root or a supported remote
 source, prefer the MCP
 lifecycle tools over shelling out directly:
 
-- `lifecycle.inspect`
-- `lifecycle.interview`
-- `lifecycle.plan_setup`
-- `lifecycle.apply`
-- `lifecycle.check`
+- `lifecycle_inspect`
+- `lifecycle_interview`
+- `lifecycle_plan_setup`
+- `lifecycle_apply`
+- `lifecycle_check`
 
 For a first-time local install, pass the checkout path as `packageRoot` to the
 MCP tool call. For a remote install, pass `source` plus `version` or `ref`.
@@ -36,8 +36,9 @@ python3 xanad-assistant.py inspect \
 Review `installState`, `manifestSummary`, and any warnings. Ask the user to
 confirm the target workspace path if it is not clear from context.
 
-When `mcp.enabled` is true, the plan should also install the local hook script.
-Expect both `.github/hooks/scripts/xanad-workspace-mcp.py` and `.vscode/mcp.json`
+When `mcp.enabled` is true, the plan should also install the local hook scripts.
+Expect `.github/hooks/scripts/xanad-workspace-mcp.py`,
+`.github/hooks/scripts/mcp-sequential-thinking-server.py`, and `.vscode/mcp.json`
 to appear in the planned writes.
 
 If the warnings include `package_name_mismatch` or `successor_cleanup_required`,
@@ -100,4 +101,4 @@ report the error and the `backupPath` to the user.
 Show the user the Receipt phase output and the path to the generated
 `.github/copilot-version.md` summary.
 
-When MCP is available, prefer `lifecycle.check` for the final confirmation step.
+When MCP is available, prefer `lifecycle_check` for the final confirmation step.

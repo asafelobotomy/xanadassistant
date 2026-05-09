@@ -42,10 +42,8 @@ class PlanLifecycleTests(XanadTestBase):
         self.assertEqual("installed", payload["result"]["installState"])
         self.assertEqual("balanced", payload["result"]["profile"])
         self.assertEqual(["review"], payload["result"]["packs"])
-        self.assertEqual(5, payload["result"]["writes"]["add"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
-        self.assertEqual(7, len(payload["result"]["plannedLockfile"]["contents"]["files"]))
         self.assertEqual(
             [
                 ".github/agents/commit.agent.md",

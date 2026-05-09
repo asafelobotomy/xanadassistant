@@ -43,10 +43,11 @@ def expected_entry_bytes(
 
     if strategy == "preserve-marked-markdown-blocks":
         source_text = source_path.read_text(encoding="utf-8")
+        rendered_text = render_tokenized_text(source_text, token_values)
         if target_path is None or not target_path.exists():
-            return source_path.read_bytes()
+            return rendered_text.encode("utf-8")
         existing_text = target_path.read_text(encoding="utf-8")
-        return merge_markdown_with_preserved_blocks(existing_text, source_text).encode("utf-8")
+        return merge_markdown_with_preserved_blocks(existing_text, rendered_text).encode("utf-8")
 
     return source_path.read_bytes()
 

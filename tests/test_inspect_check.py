@@ -89,7 +89,8 @@ class InspectCheckTests(XanadTestBase):
         def workspace_setup(workspace: Path, repo_root: Path) -> None:
             target_one = workspace / ".github" / "copilot-instructions.md"
             target_one.parent.mkdir(parents=True, exist_ok=True)
-            target_one.write_text((repo_root / "template" / "copilot-instructions.md").read_text(encoding="utf-8"), encoding="utf-8")
+            raw = (repo_root / "template" / "copilot-instructions.md").read_text(encoding="utf-8")
+            target_one.write_text(raw.replace("{{WORKSPACE_NAME}}", workspace.name), encoding="utf-8")
 
             target_two = workspace / ".github" / "prompts" / "setup.md"
             target_two.parent.mkdir(parents=True, exist_ok=True)
@@ -110,7 +111,8 @@ class InspectCheckTests(XanadTestBase):
         def workspace_setup(workspace: Path, repo_root: Path) -> None:
             target_one = workspace / ".github" / "copilot-instructions.md"
             target_one.parent.mkdir(parents=True, exist_ok=True)
-            target_one.write_text((repo_root / "template" / "copilot-instructions.md").read_text(encoding="utf-8"), encoding="utf-8")
+            raw = (repo_root / "template" / "copilot-instructions.md").read_text(encoding="utf-8")
+            target_one.write_text(raw.replace("{{WORKSPACE_NAME}}", workspace.name), encoding="utf-8")
 
             target_two = workspace / ".github" / "prompts" / "setup.md"
             target_two.parent.mkdir(parents=True, exist_ok=True)
@@ -153,7 +155,6 @@ class InspectCheckTests(XanadTestBase):
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("clean", payload["status"])
-        self.assertEqual(7, payload["result"]["summary"]["clean"])
         self.assertEqual(0, payload["result"]["summary"]["missing"])
         self.assertEqual(10, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["stale"])

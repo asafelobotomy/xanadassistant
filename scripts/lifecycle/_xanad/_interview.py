@@ -63,7 +63,12 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
             "required": True,
             "default": True,
             "recommended": True,
-            "reason": "MCP stays enabled by default; outbound access is governed by each server, not by whether the workspace installs its local MCP configuration.",
+            "reason": (
+                "Enabling MCP installs three files atomically: xanad-workspace-mcp.py (lifecycle tools), "
+                "mcp-sequential-thinking-server.py (sequential-thinking tools), and .vscode/mcp.json "
+                "(VS Code server registration). Outbound access is governed by each server, not by "
+                "whether the workspace installs its local MCP configuration."
+            ),
             "requiredFor": ["mcp-config"],
         })
 

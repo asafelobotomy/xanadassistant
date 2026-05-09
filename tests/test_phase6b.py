@@ -139,11 +139,11 @@ class XanadAssistantPhase6Tests(XanadTestBase):
     def test_setup_prompt_references_mcp_lifecycle_tools(self) -> None:
         prompt_text = (self.REPO_ROOT / "template" / "prompts" / "setup.md").read_text(encoding="utf-8")
         self.assertIn("xanadTools", prompt_text)
-        self.assertIn("lifecycle.plan_setup", prompt_text)
+        self.assertIn("lifecycle_plan_setup", prompt_text)
 
     def test_lifecycle_agent_references_mcp_lifecycle_tools(self) -> None:
         agent_text = (self.REPO_ROOT / "agents" / "xanad-lifecycle-planning.agent.md").read_text(encoding="utf-8")
-        self.assertIn("lifecycle.inspect", agent_text)
+        self.assertIn("lifecycle_inspect", agent_text)
         self.assertIn("xanadTools", agent_text)
 
     def test_lifecycle_agent_frontmatter_enables_delegation(self) -> None:

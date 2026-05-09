@@ -149,7 +149,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:573c8aa2e3a448f52bf180f234248b8fc25f1f9691d3f1cccf92bf3a7d3d2575"
+      "hash": "sha256:defdf6436d6f04b86f5196c67a693adf3e726dd0ea84ca4640f40a822db392f9"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -162,9 +162,11 @@
       ],
       "strategy": "preserve-marked-markdown-blocks",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{WORKSPACE_NAME}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:37cae878eb27e5cde5416c6c264ff35155f20793978b39618316903f287233d9"
+      "hash": "sha256:327265c560783816957a0e3af31f76d106d7e782393c7ac2f2d4fd68bbf8216a"
     },
     {
       "id": "hook-scripts.mcp-sequential-thinking-server.py",
@@ -246,7 +248,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:58794659894f881a45bd15a7a8384d3df67bc5c6513179e4a4771cb368be63bd"
+      "hash": "sha256:75c5258fc6b82f1d66231ea04c6f06dc61c800691b8ac6f6cf101def06d32a9e"
     },
     {
       "id": "lean-skills.lean-output.SKILL.md",
