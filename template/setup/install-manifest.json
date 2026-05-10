@@ -176,6 +176,23 @@
       "hash": "sha256:e0221d313543fb1f3b656eff7ea2c08c3891028c3bcd22520a96845098d93578"
     },
     {
+      "id": "hook-scripts._xanad_mcp_source.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "hooks/scripts/_xanad_mcp_source.py",
+      "target": ".github/hooks/scripts/_xanad_mcp_source.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:ecda12742b6f1578c28e101d07c211260916231bb48ecbae13f1e693bc768378"
+    },
+    {
       "id": "hook-scripts.mcp-sequential-thinking-server.py",
       "surface": "hooks",
       "layer": "core",
@@ -207,7 +224,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:7634ff173e7c9504dea7104cae11f28f9109757614104ae4d12fa3c51e8d7bf4"
+      "hash": "sha256:a306bce99c4f24e03f28b28cc2a99a75e6dd9a25257984356c591e75a3f6cc7e"
     },
     {
       "id": "instructions.scripts.instructions.md",

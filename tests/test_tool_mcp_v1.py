@@ -35,6 +35,7 @@ class ToolMcpV1Tests(unittest.TestCase):
                 "workspace_run_tests",
                 "workspace_run_check_loc",
                 "workspace_validate_lockfile",
+                "workspace_show_install_state",
                 "lifecycle_inspect",
                 "lifecycle_check",
                 "lifecycle_interview",
@@ -296,3 +297,29 @@ class ToolMcpV1Tests(unittest.TestCase):
         result = response["result"]["structuredContent"]
         self.assertEqual("ok", result["status"])
         self.assertIn("schemaVersion", result["lockfile"])
+
+    def test_workspace_show_install_state_returns_install_state_and_drift(self) -> None:
+        workspace = make_workspace(self)
+        github_dir = workspace / ".github"
+        github_dir.mkdir(parents=True, exist_ok=True)
+        (github_dir / "xanad-assistant-lock.json").write_text(
+            json.dumps(
+                {
+                    "schemaVersion": "0.1.0",
+                    "package": {"name": "xanad-assistant", "packageRoot": str(self.REPO_ROOT)},
+                    "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
+                    "timestamps": {"appliedAt": "2026-05-10T00:00:00Z", "updatedAt": "2026-05-10T00:00:00Z"},
+                    "selectedPacks": [],
+                    "files": [],
+                },
+                indent=2,
+            ) + "\n",
+            encoding="utf-8",
+        )
+        process = start_server(self, workspace)
+        initialize_server(process)
+        response = call_tool(process, message_id=14, name="workspace_show_install_state")
+        result = response["result"]["structuredContent"]
+        self.assertEqual("ok", result["status"])
+        self.assertIn("installState", result)
+        self.assertIn("drift", result)

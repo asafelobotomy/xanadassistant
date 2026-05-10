@@ -2,11 +2,13 @@
 from __future__ import annotations
 import json
 import os
-import re
 import shlex
 import subprocess
 import sys
 from pathlib import Path
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).parent))
+from _xanad_mcp_source import parse_github_source, resolve_github_release, resolve_github_ref
 PROTOCOL_VERSION = "2025-11-25"
 SERVER_NAME = "xanadTools"
 SERVER_VERSION = "0.1.0"
@@ -15,7 +17,6 @@ WORKSPACE_ROOT_UNAVAILABLE = "The MCP server is not installed in a workspace roo
 WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
 WORKSPACE_INSTRUCTIONS_PATH = WORKSPACE_ROOT / ".github" / "copilot-instructions.md"
 WORKSPACE_LOCKFILE_PATH = WORKSPACE_ROOT / ".github" / "xanad-assistant-lock.json"
-SAFE_GITHUB_NAME = re.compile(r"^[A-Za-z0-9._-]+$")
 SHELL_METACHARACTERS = ["|", "&", ";", ">", "<", "\n", "\r", "`", "$((", "$("]
 def workspace_root_valid() -> bool: return (WORKSPACE_ROOT / ".github").is_dir()
 def parse_key_commands(instructions_path: Path) -> list[dict[str, str]]:
@@ -44,66 +45,6 @@ def read_lockfile() -> dict | None:
         return json.loads(WORKSPACE_LOCKFILE_PATH.read_text(encoding="utf-8")) if WORKSPACE_LOCKFILE_PATH.exists() else None
     except json.JSONDecodeError:
         return None
-def parse_github_source(source: str) -> tuple[str, str]:
-    if not source.startswith("github:"):
-        raise ValueError(f"Unsupported source scheme: {source!r}.")
-    owner, sep, repo = source[len("github:"):].partition("/")
-    if not sep or not owner or not repo or "/" in repo:
-        raise ValueError(f"Invalid GitHub source: {source!r}.")
-    if not SAFE_GITHUB_NAME.match(owner) or not SAFE_GITHUB_NAME.match(repo):
-        raise ValueError(f"GitHub owner or repo contains invalid characters in: {source!r}.")
-    return owner, repo
-def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:
-    import tarfile as _tarfile
-    import tempfile as _tempfile
-    import urllib.request as _urllib_request
-    safe_version = re.sub(r"[^A-Za-z0-9._-]", "-", version)
-    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"release-{safe_version}"
-    sentinel = cache_dir / ".complete"
-    if sentinel.exists():
-        return cache_dir
-    url = f"https://github.com/{owner}/{repo}/archive/refs/tags/{version}.tar.gz"
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    tmp_path: Path | None = None
-    try:
-        with _tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
-            tmp_path = Path(tmp.name)
-        req = _urllib_request.Request(url, headers={"User-Agent": "xanad-assistant-mcp/0.1"})
-        with _urllib_request.urlopen(req, timeout=60) as response:
-            tmp_path.write_bytes(response.read())
-        with _tarfile.open(tmp_path, "r:gz") as tar:
-            for member in tar.getmembers():
-                parts = Path(member.name).parts
-                if len(parts) < 2:
-                    continue
-                rel_path = Path(*parts[1:])
-                if ".." in rel_path.parts or rel_path.is_absolute():
-                    continue
-                dest = cache_dir / rel_path
-                if member.isdir():
-                    dest.mkdir(parents=True, exist_ok=True)
-                elif member.isfile():
-                    dest.parent.mkdir(parents=True, exist_ok=True)
-                    if (file_obj := tar.extractfile(member)) is not None:
-                        dest.write_bytes(file_obj.read())
-        sentinel.write_text("ok\n", encoding="utf-8")
-    finally:
-        if tmp_path is not None and tmp_path.exists():
-            tmp_path.unlink(missing_ok=True)
-    return cache_dir
-def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:
-    if not re.match(r"^[A-Za-z0-9._/-]+$", ref):
-        raise ValueError(f"ref contains invalid characters: {ref!r}")
-    safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)
-    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{safe_ref}"
-    clone_url = f"https://github.com/{owner}/{repo}.git"
-    if (cache_dir / ".git").exists():
-        for argv in (["git", "-C", str(cache_dir), "fetch", "--depth", "1", "origin", ref], ["git", "-C", str(cache_dir), "checkout", "FETCH_HEAD"]):
-            subprocess.run(argv, check=True, capture_output=True)
-        return cache_dir
-    cache_dir.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["git", "clone", "--depth", "1", "--branch", ref, clone_url, str(cache_dir)], check=True, capture_output=True)
-    return cache_dir
 def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None) -> tuple[Path | None, str | None]:
     lockfile = read_lockfile()
     package_block = lockfile.get("package") if isinstance(lockfile, dict) else None
@@ -297,6 +238,16 @@ def tool_workspace_validate_lockfile(arguments: dict) -> dict:
     if missing:
         return {"status": "failed", "summary": f"Lockfile is missing required keys: {missing}.", "missingKeys": missing}
     return {"status": "ok", "summary": "Lockfile is present and structurally valid.", "lockfile": lockfile}
+def tool_workspace_show_install_state(arguments: dict) -> dict:
+    del arguments
+    if not workspace_root_valid():
+        return build_unavailable_result(WORKSPACE_ROOT_UNAVAILABLE)
+    result = run_lifecycle_command("check")
+    payload = result.get("payload") if result.get("status") == "ok" else None
+    if payload is None:
+        return result
+    sub = payload.get("result", {})
+    return {"status": "ok", "summary": result["summary"], "installState": sub.get("installState"), "drift": sub.get("drift")}
 LIFECYCLE_TOOL_ENTRIES = {
     f"lifecycle_{name}": _tool_spec(
         title,
@@ -320,6 +271,7 @@ TOOLS = {
     "workspace_run_tests": _tool_spec("Run Workspace Tests", "Run the workspace test command declared in .github/copilot-instructions.md.", WORKSPACE_RUN_TESTS_INPUT_SCHEMA, tool_workspace_run_tests),
     "workspace_run_check_loc": _tool_spec("Run LOC Gate", "Run the repo-local LOC gate when this workspace defines one.", EMPTY_INPUT_SCHEMA, tool_workspace_run_check_loc),
     "workspace_validate_lockfile": _tool_spec("Validate Lockfile", "Check that .github/xanad-assistant-lock.json exists and contains the required top-level keys.", EMPTY_INPUT_SCHEMA, tool_workspace_validate_lockfile),
+    "workspace_show_install_state": _tool_spec("Show Install State", "Return the current installState and drift summary from a lifecycle check without the full check payload.", EMPTY_INPUT_SCHEMA, tool_workspace_show_install_state),
     **LIFECYCLE_TOOL_ENTRIES,
 }
 def success_response(message_id: int | str, result: dict) -> dict:

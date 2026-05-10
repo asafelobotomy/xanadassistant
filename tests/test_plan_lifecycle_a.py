@@ -191,6 +191,10 @@ class PlanLifecycleTests(XanadTestBase):
                 (repo_root / "hooks" / "scripts" / "mcp-sequential-thinking-server.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
+            (hooks_dir / "_xanad_mcp_source.py").write_text(
+                (repo_root / "hooks" / "scripts" / "_xanad_mcp_source.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
 
             vscode_dir = workspace / ".vscode"
             vscode_dir.mkdir(parents=True, exist_ok=True)

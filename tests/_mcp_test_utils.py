@@ -32,8 +32,11 @@ def make_workspace(test_case: unittest.TestCase, source_server: Path = SOURCE_SE
     temp_dir = tempfile.TemporaryDirectory()
     test_case.addCleanup(temp_dir.cleanup)
     workspace = Path(temp_dir.name)
-    server_path = workspace / ".github" / "hooks" / "scripts" / "xanad-workspace-mcp.py"
-    server_path.parent.mkdir(parents=True, exist_ok=True)
+    server_dir = workspace / ".github" / "hooks" / "scripts"
+    server_dir.mkdir(parents=True, exist_ok=True)
+    for companion in SOURCE_SERVER.parent.glob("_*.py"):
+        (server_dir / companion.name).write_text(companion.read_text(encoding="utf-8"), encoding="utf-8")
+    server_path = server_dir / source_server.name
     server_path.write_text(source_server.read_text(encoding="utf-8"), encoding="utf-8")
     return workspace
 
