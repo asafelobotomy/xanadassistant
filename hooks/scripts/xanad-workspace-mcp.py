@@ -92,6 +92,8 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
             tmp_path.unlink(missing_ok=True)
     return cache_dir
 def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:
+    if not re.match(r"^[A-Za-z0-9._/-]+$", ref):
+        raise ValueError(f"ref contains invalid characters: {ref!r}")
     safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{safe_ref}"
     clone_url = f"https://github.com/{owner}/{repo}.git"
@@ -184,7 +186,7 @@ def run_argv(argv: list[str], *, parse_payload: bool = False) -> dict:
         status = "ok"
         summary = f"Lifecycle command {payload.get('command', 'unknown')} completed."
     else:
-        status = "failed" if completed.returncode != 0 else "ok"
+        status = "failed" if completed.returncode != 0 or (payload is not None and payload.get("status") == "error") else "ok"
         if parse_payload:
             summary = "Lifecycle command completed successfully." if status == "ok" else "Lifecycle command failed."
         else:
@@ -205,7 +207,7 @@ def _lifecycle_input_schema(extra_properties: dict[str, dict] | None = None) -> 
     properties = dict(LIFECYCLE_SOURCE_PROPERTIES)
     if extra_properties: properties.update(extra_properties)
     return {"type": "object", "properties": properties, "additionalProperties": False}
-def _build_lifecycle_handler(cli_command: str, *, fixed_mode: str | None = None, allow_mode: bool = False, allow_answers: bool = False, allow_non_interactive: bool = False, allow_dry_run: bool = False):
+def _build_lifecycle_handler(cli_command: str, *, fixed_mode: str | None = None, allow_mode: bool = False, mode_as_flag: bool = False, allow_answers: bool = False, allow_non_interactive: bool = False, allow_dry_run: bool = False):
     def handler(arguments: dict) -> dict:
         kwargs: dict[str, object | None] = dict(_lifecycle_kwargs(arguments))
         if allow_mode:
@@ -213,6 +215,7 @@ def _build_lifecycle_handler(cli_command: str, *, fixed_mode: str | None = None,
             if mode not in set(LIFECYCLE_MODE_VALUES):
                 return build_tool_result(status="unavailable", summary="mode must be one of setup, update, repair, or factory-restore.")
             kwargs["mode"] = mode
+            kwargs["mode_as_flag"] = mode_as_flag
         elif fixed_mode is not None:
             kwargs["mode"] = fixed_mode
         if allow_answers:
@@ -226,7 +229,7 @@ def _build_lifecycle_handler(cli_command: str, *, fixed_mode: str | None = None,
 EMPTY_INPUT_SCHEMA = {"type": "object", "properties": {}, "additionalProperties": False}
 WORKSPACE_RUN_TESTS_INPUT_SCHEMA = {"type": "object", "properties": {"scope": {"type": "string", "enum": ["default", "full"]}, "extraArgs": {"type": "array", "items": {"type": "string"}}}, "additionalProperties": False}
 def _tool_spec(title: str, description: str, input_schema: dict, handler) -> dict: return {"title": title, "description": description, "inputSchema": input_schema, "handler": handler}
-def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None = None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None, mode: str | None = None, answers_path: object | None = None, non_interactive: object | None = None, dry_run: object | None = None) -> dict:
+def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None = None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None, mode: str | None = None, mode_as_flag: bool = False, answers_path: object | None = None, non_interactive: object | None = None, dry_run: object | None = None) -> dict:
     if not workspace_root_valid():
         return build_tool_result(status="unavailable", summary="The MCP server is not installed in a workspace root.")
     package_root, reason = resolve_lifecycle_package_root(package_root_arg, source_arg, version_arg, ref_arg)
@@ -237,11 +240,11 @@ def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None =
         return build_tool_result(status="unavailable", summary=cli_reason or "Lifecycle CLI is unavailable.")
     argv = list(cli_prefix) + [cli_command]
     if mode is not None:
-        argv.append(mode)
+        argv.extend(["--mode", mode] if mode_as_flag else [mode])
     argv.extend(["--workspace", str(WORKSPACE_ROOT), "--package-root", str(package_root), "--json"])
     if answers_path is not None:
-        if not isinstance(answers_path, str) or not answers_path.strip():
-            return build_tool_result(status="unavailable", summary="answersPath must be a non-empty string when provided.")
+        if not (isinstance(answers_path, str) and answers_path.strip() and Path(answers_path).is_file()):
+            return build_tool_result(status="unavailable", summary="answersPath must be a non-empty string pointing to an existing file.")
         argv.extend(["--answers", answers_path])
     for name, value, flag in (("nonInteractive", non_interactive, "--non-interactive"), ("dryRun", dry_run, "--dry-run")):
         if value is True:
@@ -278,9 +281,10 @@ def tool_workspace_run_check_loc(arguments: dict) -> dict:
     del arguments
     if not workspace_root_valid():
         return build_unavailable_result(WORKSPACE_ROOT_UNAVAILABLE)
-    if not (WORKSPACE_ROOT / "scripts" / "check_loc.py").exists():
-        return build_unavailable_result("No repo-local LOC gate is available in this workspace.")
-    return run_argv(["python3", "scripts/check_loc.py"])
+    command = resolve_key_command("LOC gate")
+    if command is None:
+        return build_unavailable_result("No LOC gate command is declared in .github/copilot-instructions.md.")
+    return run_argv(shlex.split(command))
 LIFECYCLE_TOOL_ENTRIES = {
     f"lifecycle_{name}": _tool_spec(
         title,
@@ -291,7 +295,7 @@ LIFECYCLE_TOOL_ENTRIES = {
     for name, title, command_text, cli_command, extra_properties, handler_kwargs in (
         ("inspect", "Inspect Lifecycle State", "inspect", "inspect", None, {}),
         ("check", "Check Lifecycle State", "check", "check", None, {}),
-        ("interview", "Interview For Lifecycle Mode", "interview", "interview", {"mode": {"type": "string", "enum": LIFECYCLE_MODE_VALUES}}, {"allow_mode": True}),
+        ("interview", "Interview For Lifecycle Mode", "interview", "interview", {"mode": {"type": "string", "enum": LIFECYCLE_MODE_VALUES}}, {"allow_mode": True, "mode_as_flag": True}),
         ("plan_setup", "Plan Setup", "plan setup", "plan", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}}, {"fixed_mode": "setup", "allow_answers": True, "allow_non_interactive": True}),
         ("apply", "Apply Setup", "apply", "apply", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}, "dryRun": {"type": "boolean"}}, {"allow_answers": True, "allow_non_interactive": True, "allow_dry_run": True}),
     )
@@ -328,7 +332,7 @@ def handle_request(request: dict) -> dict | None:
         if not isinstance(arguments, dict):
             return error_response(message_id, -32602, "Tool arguments must be an object.")
         result = TOOLS[name]["handler"](arguments)
-        return success_response(message_id, {"content": [{"type": "text", "text": json.dumps(result, indent=2, sort_keys=True)}], "structuredContent": result, "isError": result.get("status") not in {"ok"}})
+        return success_response(message_id, {"content": [{"type": "text", "text": json.dumps(result, indent=2, sort_keys=True)}], "structuredContent": result, "isError": result.get("status") == "failed"})
     if method == "prompts/list":
         return success_response(message_id, {"prompts": []})
     if method == "resources/list":
@@ -338,6 +342,8 @@ def handle_request(request: dict) -> dict | None:
     if method == "logging/setLevel":
         return success_response(message_id, {})
     if method and method.startswith("notifications/"):
+        return None
+    if message_id is None:
         return None
     return error_response(message_id, -32601, f"Method not found: {method}")
 def read_message(stream) -> dict | None:
