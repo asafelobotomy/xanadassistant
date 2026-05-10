@@ -26,10 +26,19 @@ Transport: stdio  |  Run: uvx --from "mcp[cli]" mcp run <this-file>
 from __future__ import annotations
 
 import re
+import sys
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from mcp.server.fastmcp import FastMCP
+try:
+    from mcp.server.fastmcp import FastMCP
+except ImportError as _exc:  # pragma: no cover — dependency guard
+    sys.stderr.write(
+        "ERROR: the 'mcp' package is required but not installed.\n"
+        "Install it with: pip install 'mcp[cli]'\n"
+        f"Details: {_exc}\n"
+    )
+    sys.exit(1)
 
 # ---------------------------------------------------------------------------
 # Limits

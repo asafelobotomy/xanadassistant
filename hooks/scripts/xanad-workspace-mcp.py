@@ -285,6 +285,18 @@ def tool_workspace_run_check_loc(arguments: dict) -> dict:
     if command is None:
         return build_unavailable_result("No LOC gate command is declared in .github/copilot-instructions.md.")
     return run_argv(shlex.split(command))
+def tool_workspace_validate_lockfile(arguments: dict) -> dict:
+    del arguments
+    if not workspace_root_valid():
+        return build_unavailable_result(WORKSPACE_ROOT_UNAVAILABLE)
+    lockfile = read_lockfile()
+    if lockfile is None:
+        return build_unavailable_result("No lockfile found at .github/xanad-assistant-lock.json or it contains invalid JSON.")
+    required = {"schemaVersion", "package", "manifest", "timestamps", "files"}
+    missing = sorted(required - lockfile.keys())
+    if missing:
+        return {"status": "failed", "summary": f"Lockfile is missing required keys: {missing}.", "missingKeys": missing}
+    return {"status": "ok", "summary": "Lockfile is present and structurally valid.", "lockfile": lockfile}
 LIFECYCLE_TOOL_ENTRIES = {
     f"lifecycle_{name}": _tool_spec(
         title,
@@ -298,12 +310,16 @@ LIFECYCLE_TOOL_ENTRIES = {
         ("interview", "Interview For Lifecycle Mode", "interview", "interview", {"mode": {"type": "string", "enum": LIFECYCLE_MODE_VALUES}}, {"allow_mode": True, "mode_as_flag": True}),
         ("plan_setup", "Plan Setup", "plan setup", "plan", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}}, {"fixed_mode": "setup", "allow_answers": True, "allow_non_interactive": True}),
         ("apply", "Apply Setup", "apply", "apply", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}, "dryRun": {"type": "boolean"}}, {"allow_answers": True, "allow_non_interactive": True, "allow_dry_run": True}),
+        ("update", "Update Install", "update", "update", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}, "dryRun": {"type": "boolean"}}, {"allow_answers": True, "allow_non_interactive": True, "allow_dry_run": True}),
+        ("repair", "Repair Install", "repair", "repair", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}}, {"allow_answers": True, "allow_non_interactive": True}),
+        ("factory_restore", "Factory Restore", "factory-restore", "factory-restore", {"nonInteractive": {"type": "boolean"}}, {"allow_non_interactive": True}),
     )
 }
 TOOLS = {
     "workspace_show_key_commands": _tool_spec("Show Key Commands", "Return the commands declared in .github/copilot-instructions.md.", EMPTY_INPUT_SCHEMA, tool_workspace_show_key_commands),
     "workspace_run_tests": _tool_spec("Run Workspace Tests", "Run the workspace test command declared in .github/copilot-instructions.md.", WORKSPACE_RUN_TESTS_INPUT_SCHEMA, tool_workspace_run_tests),
     "workspace_run_check_loc": _tool_spec("Run LOC Gate", "Run the repo-local LOC gate when this workspace defines one.", EMPTY_INPUT_SCHEMA, tool_workspace_run_check_loc),
+    "workspace_validate_lockfile": _tool_spec("Validate Lockfile", "Check that .github/xanad-assistant-lock.json exists and contains the required top-level keys.", EMPTY_INPUT_SCHEMA, tool_workspace_validate_lockfile),
     **LIFECYCLE_TOOL_ENTRIES,
 }
 def success_response(message_id: int | str, result: dict) -> dict:

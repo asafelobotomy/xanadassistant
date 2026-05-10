@@ -190,7 +190,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:867d972c13b20b26551deb1962619e371c68d8ac069fe804fca1c7d5cfca197d"
+      "hash": "sha256:2681e2fa1ecce85f6cb265f0fcdc6e52d484b18e692ffebf747b49256781e2e7"
     },
     {
       "id": "hook-scripts.xanad-workspace-mcp.py",
@@ -207,7 +207,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:218364ab94cf32504059ded9b947c2084697b974c3a7d7d59049e6e92e0ce649"
+      "hash": "sha256:7634ff173e7c9504dea7104cae11f28f9109757614104ae4d12fa3c51e8d7bf4"
     },
     {
       "id": "instructions.scripts.instructions.md",

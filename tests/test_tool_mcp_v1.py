@@ -34,11 +34,15 @@ class ToolMcpV1Tests(unittest.TestCase):
                 "workspace_show_key_commands",
                 "workspace_run_tests",
                 "workspace_run_check_loc",
+                "workspace_validate_lockfile",
                 "lifecycle_inspect",
                 "lifecycle_check",
                 "lifecycle_interview",
                 "lifecycle_plan_setup",
                 "lifecycle_apply",
+                "lifecycle_update",
+                "lifecycle_repair",
+                "lifecycle_factory_restore",
             },
             tool_names,
         )
@@ -238,3 +242,57 @@ class ToolMcpV1Tests(unittest.TestCase):
             self.assertEqual("ok", result["status"])
             self.assertEqual(0, result["exitCode"])
             self.assertEqual("check", result["payload"]["command"])
+
+    def test_lifecycle_interview_emits_mode_as_named_flag(self) -> None:
+        workspace = make_workspace(self)
+        with tempfile.TemporaryDirectory() as cache_dir:
+            cache_root = Path(cache_dir)
+            make_fake_cached_release(cache_root, "github:testowner/testrepo", "v1.2.3")
+            process = start_server(self, workspace, env_overrides={"XANAD_PKG_CACHE": str(cache_root)})
+            initialize_server(process)
+            response = call_tool(
+                process,
+                message_id=11,
+                name="lifecycle_interview",
+                arguments={"source": "github:testowner/testrepo", "version": "v1.2.3", "mode": "update"},
+            )
+            result = response["result"]["structuredContent"]
+            self.assertEqual("ok", result["status"])
+            argv = result["payload"]["argv"]
+            self.assertIn("--mode", argv, "interview should emit --mode as a named flag, not a positional")
+            mode_idx = argv.index("--mode")
+            self.assertEqual("update", argv[mode_idx + 1])
+            self.assertNotIn("update", argv[:mode_idx], "mode value must not appear before --mode")
+
+    def test_workspace_validate_lockfile_is_unavailable_without_lockfile(self) -> None:
+        workspace = make_workspace(self)
+        process = start_server(self, workspace)
+        initialize_server(process)
+        response = call_tool(process, message_id=12, name="workspace_validate_lockfile")
+        result = response["result"]["structuredContent"]
+        self.assertEqual("unavailable", result["status"])
+
+    def test_workspace_validate_lockfile_returns_ok_for_valid_lockfile(self) -> None:
+        workspace = make_workspace(self)
+        github_dir = workspace / ".github"
+        github_dir.mkdir(parents=True, exist_ok=True)
+        (github_dir / "xanad-assistant-lock.json").write_text(
+            json.dumps(
+                {
+                    "schemaVersion": "0.1.0",
+                    "package": {"name": "xanad-assistant", "packageRoot": "/tmp/fake"},
+                    "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
+                    "timestamps": {"appliedAt": "2026-05-10T00:00:00Z", "updatedAt": "2026-05-10T00:00:00Z"},
+                    "selectedPacks": [],
+                    "files": [],
+                },
+                indent=2,
+            ) + "\n",
+            encoding="utf-8",
+        )
+        process = start_server(self, workspace)
+        initialize_server(process)
+        response = call_tool(process, message_id=13, name="workspace_validate_lockfile")
+        result = response["result"]["structuredContent"]
+        self.assertEqual("ok", result["status"])
+        self.assertIn("schemaVersion", result["lockfile"])
