@@ -141,6 +141,30 @@ class InspectCheckTests(XanadTestBase):
                 (repo_root / "hooks" / "scripts" / "_xanad_mcp_source.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
+            (hooks_dir / "git-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "git-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "web-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "web-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "time-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "time-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "security-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "security-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "github-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "github-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "sqlite-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "sqlite-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
 
             vscode_dir = workspace / ".vscode"
             vscode_dir.mkdir(parents=True, exist_ok=True)

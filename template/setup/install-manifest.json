@@ -193,6 +193,40 @@
       "hash": "sha256:ecda12742b6f1578c28e101d07c211260916231bb48ecbae13f1e693bc768378"
     },
     {
+      "id": "hook-scripts.git-mcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "hooks/scripts/git-mcp.py",
+      "target": ".github/hooks/scripts/git-mcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:74d1287a0ecc1ce471557a1490151cfeead8b769c9aa67a7068ec480ed1a8725"
+    },
+    {
+      "id": "hook-scripts.github-mcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "hooks/scripts/github-mcp.py",
+      "target": ".github/hooks/scripts/github-mcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:de5574ebddbb5caa3649af109b70c7174dc49b03ece72fc320fa49a1aeda991a"
+    },
+    {
       "id": "hook-scripts.mcp-sequential-thinking-server.py",
       "surface": "hooks",
       "layer": "core",
@@ -208,6 +242,74 @@
       "tokens": [],
       "chmod": "executable",
       "hash": "sha256:2681e2fa1ecce85f6cb265f0fcdc6e52d484b18e692ffebf747b49256781e2e7"
+    },
+    {
+      "id": "hook-scripts.security-mcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "hooks/scripts/security-mcp.py",
+      "target": ".github/hooks/scripts/security-mcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:7629e5231c7b39e9a5cda3adbe6931b68334643b90949413928ab9577c499a3b"
+    },
+    {
+      "id": "hook-scripts.sqlite-mcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "hooks/scripts/sqlite-mcp.py",
+      "target": ".github/hooks/scripts/sqlite-mcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:be5ab88dc75f406802a00df7e1a492f03f84e9ab0d7234f55dc0e11e0804acaf"
+    },
+    {
+      "id": "hook-scripts.time-mcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "hooks/scripts/time-mcp.py",
+      "target": ".github/hooks/scripts/time-mcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:284d727aa3da9831d0f3e0cf5690bd8bc84e9ebc86e7c3556262ebf33cb6efdb"
+    },
+    {
+      "id": "hook-scripts.web-mcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "hooks/scripts/web-mcp.py",
+      "target": ".github/hooks/scripts/web-mcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:ee038df762adc70b442f0bffc0d8998c68ce14ac8463d2cfab67f684fb54e262"
     },
     {
       "id": "hook-scripts.xanad-workspace-mcp.py",
@@ -237,9 +339,12 @@
       ],
       "strategy": "replace-verbatim",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{PACKAGE_MANAGER}}",
+        "{{PRIMARY_LANGUAGE}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:37ce25ce46d9f297c5c94bc54ee47099ab7f3dbda8c86939e45033e7bb1f3efe"
+      "hash": "sha256:e8fed078fa1cf7c988ad5c49f3bfdb16412ec6db65ec3a17cc0c0f4740e31dbf"
     },
     {
       "id": "instructions.tests.instructions.md",
@@ -252,9 +357,13 @@
       ],
       "strategy": "replace-verbatim",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{PRIMARY_LANGUAGE}}",
+        "{{TESTING_PHILOSOPHY}}",
+        "{{TEST_COMMAND}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:460ff6c87d9e957f1291f6dc060a8c9e75a6c5ab062626af35012721b09430d0"
+      "hash": "sha256:99c1cda791d7774a900b386b9cc9d34f95fc8f702f291332bb58e87995f1df36"
     },
     {
       "id": "prompts.setup.md",
@@ -323,7 +432,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:d31a5e67813aa94ef514c01b808a23e5c21c0d35ac32a0cd110d973bda6e4999"
+      "hash": "sha256:905ebcdee22129e1fb97ec5816b5f524a6c493c083da98325d2b26238a29d1f5"
     }
   ],
   "retiredFiles": [

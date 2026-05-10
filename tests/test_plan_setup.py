@@ -26,6 +26,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertIn("agent.persona", question_ids)
         self.assertIn("testing.philosophy", question_ids)
         self.assertIn("mcp.enabled", question_ids)
+        self.assertIn("mcp.servers", question_ids)
         mcp_question = next(question for question in payload["result"]["questions"] if question["id"] == "mcp.enabled")
         self.assertTrue(mcp_question["default"])
         self.assertTrue(mcp_question["recommended"])
@@ -182,7 +183,7 @@ class PlanSetupTests(XanadTestBase):
                 json.dumps(
                     {
                         "profile.selected": "lean",
-                        "packs.selected": ["review", "research"],
+                        "packs.selected": ["lean"],
                     }
                 )
             )
@@ -196,7 +197,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual(0, result.returncode)
         payload = json.loads(result.stdout)
         self.assertEqual("lean", payload["result"]["profile"])
-        self.assertEqual(["review", "research"], payload["result"]["packs"])
+        self.assertEqual(["lean"], payload["result"]["packs"])
         self.assertEqual("lean", payload["result"]["resolvedAnswers"]["profile.selected"])
         prompt_action = next(action for action in payload["result"]["actions"] if action["target"] == ".github/prompts/setup.md")
         self.assertEqual("lean", prompt_action["tokenValues"]["{{XANAD_PROFILE}}"])

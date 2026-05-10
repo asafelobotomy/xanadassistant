@@ -5,7 +5,7 @@ from pathlib import Path
 
 from scripts.lifecycle._xanad._errors import LifecycleCommandError
 from scripts.lifecycle._xanad._inspect import collect_context
-from scripts.lifecycle._xanad._interview_questions import mcp_question, personalisation_questions
+from scripts.lifecycle._xanad._interview_questions import mcp_question, mcp_servers_question, personalisation_questions
 from scripts.lifecycle._xanad._loader import load_json
 from scripts.lifecycle._xanad._source import build_source_summary
 
@@ -16,7 +16,7 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
     profile_registry = metadata.get("profileRegistry") or {}
     pack_registry = metadata.get("packRegistry") or {}
 
-    profile_options = [profile["id"] for profile in profile_registry.get("profiles", [])]
+    profile_options = [profile["id"] for profile in profile_registry.get("profiles", []) if profile.get("status") == "active"]
     if profile_options:
         questions.append({
             "id": "profile.selected",
@@ -29,7 +29,7 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
             "requiredFor": ["profile"],
         })
 
-    optional_packs = [pack["id"] for pack in pack_registry.get("packs", []) if pack.get("optional", False)]
+    optional_packs = [pack["id"] for pack in pack_registry.get("packs", []) if pack.get("optional", False) and pack.get("status") == "active"]
     if optional_packs:
         questions.append({
             "id": "packs.selected",
@@ -59,6 +59,7 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
     if "mcp-config" in policy.get("canonicalSurfaces", []):
         questions.extend(personalisation_questions())
         questions.append(mcp_question())
+        questions.append(mcp_servers_question())
 
     return questions
 

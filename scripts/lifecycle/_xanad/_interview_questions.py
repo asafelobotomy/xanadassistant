@@ -64,6 +64,40 @@ def personalisation_questions() -> list[dict]:
     ]
 
 
+def mcp_servers_question() -> dict:
+    """Return the optional MCP server selection question."""
+    return {
+        "id": "mcp.servers",
+        "kind": "multi-choice",
+        "prompt": "Which optional MCP servers would you like to enable?",
+        "required": False,
+        "options": [
+            {
+                "id": "github",
+                "label": "GitHub",
+                "description": (
+                    "Issues, PRs, Actions, code search, file contents via REST API. "
+                    "Requires GITHUB_TOKEN environment variable."
+                ),
+            },
+            {
+                "id": "sqlite",
+                "label": "SQLite",
+                "description": "Query and inspect local SQLite databases (read-only by default).",
+            },
+        ],
+        "recommended": [],
+        "default": [],
+        "reason": (
+            "The git, web, time, and security servers are always enabled when MCP is on. "
+            "GitHub (requires GITHUB_TOKEN) and SQLite (workspace-specific) ship disabled "
+            "by default in .vscode/mcp.json. Select them here to enable, or toggle the "
+            '"disabled" flag directly in .vscode/mcp.json at any time.'
+        ),
+        "requiredFor": [],
+    }
+
+
 def mcp_question() -> dict:
     """Return the static mcp.enabled confirm question."""
     return {
@@ -74,10 +108,13 @@ def mcp_question() -> dict:
         "default": True,
         "recommended": True,
         "reason": (
-            "Enabling MCP installs three files atomically: xanad-workspace-mcp.py (lifecycle tools), "
-            "mcp-sequential-thinking-server.py (sequential-thinking tools), and .vscode/mcp.json "
-            "(VS Code server registration). Outbound access is governed by each server, not by "
-            "whether the workspace installs its local MCP configuration."
+            "Enabling MCP installs all hook scripts and .vscode/mcp.json atomically. "
+            "Always-on servers: xanad-workspace-mcp.py (lifecycle), git-mcp.py (git), "
+            "web-mcp.py (search + fetch), time-mcp.py (time/duration), "
+            "security-mcp.py (OSV + deps.dev), mcp-sequential-thinking-server.py (reasoning). "
+            "Optional servers (disabled by default): github-mcp.py (GitHub REST API, requires GITHUB_TOKEN), "
+            "sqlite-mcp.py (local SQLite databases). "
+            "Outbound access is governed by each server at call time."
         ),
         "requiredFor": ["mcp-config"],
     }

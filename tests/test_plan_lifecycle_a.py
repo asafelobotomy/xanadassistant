@@ -22,7 +22,7 @@ class PlanLifecycleTests(XanadTestBase):
             (github_dir / "xanad-assistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
-                        selectedPacks=["review"],
+                        selectedPacks=["lean"],
                         ownershipBySurface={
                             "instructions": "local",
                             "prompts": "local",
@@ -41,7 +41,7 @@ class PlanLifecycleTests(XanadTestBase):
         self.assertEqual("update", payload["mode"])
         self.assertEqual("installed", payload["result"]["installState"])
         self.assertEqual("balanced", payload["result"]["profile"])
-        self.assertEqual(["review"], payload["result"]["packs"])
+        self.assertEqual(["lean"], payload["result"]["packs"])
         self.assertEqual(1, payload["result"]["writes"]["replace"])
         self.assertEqual(1, payload["result"]["writes"]["merge"])
         self.assertEqual(
@@ -89,7 +89,7 @@ class PlanLifecycleTests(XanadTestBase):
             (github_dir / "xanad-assistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
-                        selectedPacks=["review"],
+                        selectedPacks=["lean"],
                         ownershipBySurface={
                             "instructions": "local",
                             "prompts": "local",
@@ -193,6 +193,30 @@ class PlanLifecycleTests(XanadTestBase):
             )
             (hooks_dir / "_xanad_mcp_source.py").write_text(
                 (repo_root / "hooks" / "scripts" / "_xanad_mcp_source.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "git-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "git-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "web-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "web-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "time-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "time-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "security-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "security-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "github-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "github-mcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "sqlite-mcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "sqlite-mcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
 
