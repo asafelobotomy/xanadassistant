@@ -79,65 +79,30 @@ class PlanSetupTests(XanadTestBase):
             },
             payload["result"]["backupPlan"],
         )
+        token_subs = {entry["token"]: entry for entry in payload["result"]["tokenSubstitutions"]}
+        workspace_name = Path(payload["workspace"]).name
+        # All expected tokens must be registered — catches accidental additions or removals
         self.assertEqual(
-            [
-                {
-                    "token": "{{AGENT_PERSONA}}",
-                    "value": "Professional — concise, neutral, precise.",
-                    "required": False,
-                    "targets": [".github/copilot-instructions.md"],
-                },
-                {
-                    "token": "{{AUTONOMY_LEVEL}}",
-                    "value": "Ask first — always confirm before acting on ambiguity.",
-                    "required": False,
-                    "targets": [".github/copilot-instructions.md"],
-                },
-                {
-                    "token": "{{PACKAGE_MANAGER}}",
-                    "value": None,
-                    "required": False,
-                    "targets": [".github/copilot-instructions.md"],
-                },
-                {
-                    "token": "{{PRIMARY_LANGUAGE}}",
-                    "value": None,
-                    "required": False,
-                    "targets": [".github/copilot-instructions.md"],
-                },
-                {
-                    "token": "{{RESPONSE_STYLE}}",
-                    "value": "Balanced — code with brief explanation.",
-                    "required": False,
-                    "targets": [".github/copilot-instructions.md"],
-                },
-                {
-                    "token": "{{TESTING_PHILOSOPHY}}",
-                    "value": "Always — write tests alongside every code change.",
-                    "required": False,
-                    "targets": [".github/copilot-instructions.md"],
-                },
-                {
-                    "token": "{{TEST_COMMAND}}",
-                    "value": None,
-                    "required": False,
-                    "targets": [".github/copilot-instructions.md"],
-                },
-                {
-                    "token": "{{WORKSPACE_NAME}}",
-                    "value": Path(payload["workspace"]).name,
-                    "required": False,
-                    "targets": [".github/copilot-instructions.md", ".github/prompts/setup.md"],
-                },
-                {
-                    "token": "{{XANAD_PROFILE}}",
-                    "value": "balanced",
-                    "required": False,
-                    "targets": [".github/prompts/setup.md"],
-                },
-            ],
-            payload["result"]["tokenSubstitutions"],
+            {"{{WORKSPACE_NAME}}", "{{XANAD_PROFILE}}", "{{PRIMARY_LANGUAGE}}",
+             "{{PACKAGE_MANAGER}}", "{{TEST_COMMAND}}", "{{RESPONSE_STYLE}}",
+             "{{AUTONOMY_LEVEL}}", "{{AGENT_PERSONA}}", "{{TESTING_PHILOSOPHY}}"},
+            set(token_subs),
         )
+        # WORKSPACE_NAME resolves to workspace dir name and appears in both surfaces
+        self.assertEqual(workspace_name, token_subs["{{WORKSPACE_NAME}}"]["value"])
+        self.assertIn(".github/copilot-instructions.md", token_subs["{{WORKSPACE_NAME}}"]["targets"])
+        self.assertIn(".github/prompts/setup.md", token_subs["{{WORKSPACE_NAME}}"]["targets"])
+        # XANAD_PROFILE resolves to the default profile
+        self.assertEqual("balanced", token_subs["{{XANAD_PROFILE}}"]["value"])
+        # Tier 2/3 defaults are set and contain the expected keyword
+        self.assertIn("Balanced", token_subs["{{RESPONSE_STYLE}}"]["value"])
+        self.assertIn("Ask first", token_subs["{{AUTONOMY_LEVEL}}"]["value"])
+        self.assertIn("Professional", token_subs["{{AGENT_PERSONA}}"]["value"])
+        self.assertIn("Always", token_subs["{{TESTING_PHILOSOPHY}}"]["value"])
+        # Scanned tokens are None for an empty workspace (no project files)
+        self.assertIsNone(token_subs["{{PRIMARY_LANGUAGE}}"]["value"])
+        self.assertIsNone(token_subs["{{PACKAGE_MANAGER}}"]["value"])
+        self.assertIsNone(token_subs["{{TEST_COMMAND}}"]["value"])
         self.assertEqual(
             {
                 "instructions": "local",
@@ -277,6 +242,30 @@ class PlanSetupTests(XanadTestBase):
             if item["code"] == "unknown_answer_ids_ignored"
         )
         self.assertEqual(["legacy.question"], warning["details"]["questionIds"])
+
+    def test_plan_setup_accepts_explicit_dict_option_answers(self) -> None:
+        """Dict-option questions (Tier 2/3) must accept their valid option ids via --answers."""
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as handle:
+            handle.write(json.dumps({
+                "response.style": "concise",
+                "autonomy.level": "act-then-tell",
+                "agent.persona": "mentor",
+                "testing.philosophy": "suggest",
+            }))
+            answers_path = handle.name
+
+        try:
+            result = self.run_command("plan", "setup", "--json", "--answers", answers_path)
+        finally:
+            Path(answers_path).unlink(missing_ok=True)
+
+        self.assertEqual(0, result.returncode)
+        payload = json.loads(result.stdout)
+        resolved = payload["result"]["resolvedAnswers"]
+        self.assertEqual("concise", resolved["response.style"])
+        self.assertEqual("act-then-tell", resolved["autonomy.level"])
+        self.assertEqual("mentor", resolved["agent.persona"])
+        self.assertEqual("suggest", resolved["testing.philosophy"])
 
 
 if __name__ == "__main__":

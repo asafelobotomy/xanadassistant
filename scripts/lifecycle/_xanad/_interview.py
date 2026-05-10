@@ -5,6 +5,7 @@ from pathlib import Path
 
 from scripts.lifecycle._xanad._errors import LifecycleCommandError
 from scripts.lifecycle._xanad._inspect import collect_context
+from scripts.lifecycle._xanad._interview_questions import mcp_question, personalisation_questions
 from scripts.lifecycle._xanad._loader import load_json
 from scripts.lifecycle._xanad._source import build_source_summary
 
@@ -56,74 +57,8 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
         })
 
     if "mcp-config" in policy.get("canonicalSurfaces", []):
-        questions.append({
-            "id": "response.style",
-            "kind": "choice",
-            "prompt": "What response style do you prefer?",
-            "required": False,
-            "default": "balanced",
-            "recommended": "balanced",
-            "options": [
-                {"id": "concise", "label": "Concise", "description": "Code with minimal prose"},
-                {"id": "balanced", "label": "Balanced", "description": "Code with brief explanation"},
-                {"id": "verbose", "label": "Verbose", "description": "Code with full step-by-step explanation"},
-            ],
-        })
-        questions.append({
-            "id": "autonomy.level",
-            "kind": "choice",
-            "prompt": "How should the assistant handle ambiguity?",
-            "required": False,
-            "default": "ask-first",
-            "recommended": "ask-first",
-            "options": [
-                {"id": "ask-first", "label": "Ask first", "description": "Always confirm before acting"},
-                {"id": "act-then-tell", "label": "Act then tell", "description": "Make a reasonable choice and explain it"},
-                {"id": "best-judgement", "label": "Best judgement", "description": "Act silently on low-risk choices"},
-            ],
-        })
-        questions.append({
-            "id": "agent.persona",
-            "kind": "choice",
-            "prompt": "What tone should the assistant use?",
-            "required": False,
-            "default": "professional",
-            "recommended": "professional",
-            "options": [
-                {"id": "professional", "label": "Professional", "description": "Concise, neutral, precise"},
-                {"id": "mentor", "label": "Mentor", "description": "Patient, explanatory, teaching-focused"},
-                {"id": "pair-programmer", "label": "Pair programmer", "description": "Collaborative, iterative, direct"},
-                {"id": "direct", "label": "Direct", "description": "Minimal chat, maximum output"},
-            ],
-        })
-        questions.append({
-            "id": "testing.philosophy",
-            "kind": "choice",
-            "prompt": "What is your testing philosophy?",
-            "required": False,
-            "default": "always",
-            "recommended": "always",
-            "options": [
-                {"id": "always", "label": "Always", "description": "Write tests alongside every code change"},
-                {"id": "suggest", "label": "Suggest", "description": "Propose tests but do not block on them"},
-                {"id": "skip", "label": "Skip", "description": "Do not write or suggest tests unless asked"},
-            ],
-        })
-        questions.append({
-            "id": "mcp.enabled",
-            "kind": "confirm",
-            "prompt": "Enable MCP configuration for this workspace?",
-            "required": True,
-            "default": True,
-            "recommended": True,
-            "reason": (
-                "Enabling MCP installs three files atomically: xanad-workspace-mcp.py (lifecycle tools), "
-                "mcp-sequential-thinking-server.py (sequential-thinking tools), and .vscode/mcp.json "
-                "(VS Code server registration). Outbound access is governed by each server, not by "
-                "whether the workspace installs its local MCP configuration."
-            ),
-            "requiredFor": ["mcp-config"],
-        })
+        questions.extend(personalisation_questions())
+        questions.append(mcp_question())
 
     return questions
 
@@ -209,15 +144,17 @@ def load_answers(path_value: str | None) -> dict:
 
 def validate_answer_value(question: dict, value: object) -> None:
     kind = question.get("kind")
-    options = question.get("options", [])
+    raw_options = question.get("options", [])
+    # options may be plain strings or {id, label, description} dicts
+    valid_ids = {opt["id"] if isinstance(opt, dict) else opt for opt in raw_options}
 
     if kind == "choice":
-        if not isinstance(value, str) or value not in options:
+        if not isinstance(value, str) or value not in valid_ids:
             raise LifecycleCommandError(
                 "contract_input_failure",
                 f"Invalid answer for {question['id']}.",
                 4,
-                {"questionId": question["id"], "expected": options, "received": value},
+                {"questionId": question["id"], "expected": sorted(valid_ids), "received": value},
             )
         return
 
@@ -227,14 +164,14 @@ def validate_answer_value(question: dict, value: object) -> None:
                 "contract_input_failure",
                 f"Invalid answer for {question['id']}.",
                 4,
-                {"questionId": question["id"], "expected": options, "received": value},
+                {"questionId": question["id"], "expected": sorted(valid_ids), "received": value},
             )
-        if any(item not in options for item in value):
+        if any(item not in valid_ids for item in value):
             raise LifecycleCommandError(
                 "contract_input_failure",
                 f"Invalid answer for {question['id']}.",
                 4,
-                {"questionId": question["id"], "expected": options, "received": value},
+                {"questionId": question["id"], "expected": sorted(valid_ids), "received": value},
             )
         return
 
