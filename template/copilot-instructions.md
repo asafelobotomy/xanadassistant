@@ -54,6 +54,7 @@ Route specialist work to the matching agent before acting directly. If a task ha
 ## Coding Conventions
 
 - Language: **{{PRIMARY_LANGUAGE}}** · Package manager: **{{PACKAGE_MANAGER}}**
+- **Testing**: {{TESTING_PHILOSOPHY}}
 - Read before modifying — never edit a file not opened this session
 - No silent error swallowing
 
@@ -69,6 +70,7 @@ Plan → Do → Check → Act on every non-trivial change.
 **Implement** (default): plan → implement → test.
 **Review**: read-only; state findings before proposing fixes.
 **Refactor**: no behaviour changes; tests pass before and after.
+**Response style**: {{RESPONSE_STYLE}} · **Ambiguity**: {{AUTONOMY_LEVEL}} · **Tone**: {{AGENT_PERSONA}}
 
 ## Memory
 

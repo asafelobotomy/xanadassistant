@@ -163,10 +163,17 @@
       "strategy": "preserve-marked-markdown-blocks",
       "requiredWhen": [],
       "tokens": [
+        "{{AGENT_PERSONA}}",
+        "{{AUTONOMY_LEVEL}}",
+        "{{PACKAGE_MANAGER}}",
+        "{{PRIMARY_LANGUAGE}}",
+        "{{RESPONSE_STYLE}}",
+        "{{TESTING_PHILOSOPHY}}",
+        "{{TEST_COMMAND}}",
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:327265c560783816957a0e3af31f76d106d7e782393c7ac2f2d4fd68bbf8216a"
+      "hash": "sha256:e0221d313543fb1f3b656eff7ea2c08c3891028c3bcd22520a96845098d93578"
     },
     {
       "id": "hook-scripts.mcp-sequential-thinking-server.py",

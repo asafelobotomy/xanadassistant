@@ -86,6 +86,22 @@ class XanadTestBase(unittest.TestCase):
             .replace("{{XANAD_PROFILE}}", profile)
         )
 
+    def render_copilot_instructions(self, repo_root: Path, workspace: Path) -> str:
+        """Render copilot-instructions.md with default token values for an empty workspace.
+
+        Workspace-scanned tokens (PRIMARY_LANGUAGE, PACKAGE_MANAGER, TEST_COMMAND) are left
+        unreplaced since an empty temp workspace has no project files.
+        """
+        return (
+            (repo_root / "template" / "copilot-instructions.md")
+            .read_text(encoding="utf-8")
+            .replace("{{WORKSPACE_NAME}}", workspace.name)
+            .replace("{{RESPONSE_STYLE}}", "Balanced — code with brief explanation.")
+            .replace("{{AUTONOMY_LEVEL}}", "Ask first — always confirm before acting on ambiguity.")
+            .replace("{{AGENT_PERSONA}}", "Professional — concise, neutral, precise.")
+            .replace("{{TESTING_PHILOSOPHY}}", "Always — write tests alongside every code change.")
+        )
+
     def _run(self, command: str, *extra_args: str, workspace: Path | None = None) -> subprocess.CompletedProcess[str]:
         return run_lifecycle_subprocess(command, *extra_args, workspace=workspace, repo_root=self.REPO_ROOT)
 

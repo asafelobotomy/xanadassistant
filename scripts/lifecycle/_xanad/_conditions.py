@@ -2,6 +2,35 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scripts.lifecycle._xanad._workspace_scan import scan_workspace_stack
+
+_RESPONSE_STYLE_LABELS: dict[str, str] = {
+    "concise": "Concise — code with minimal prose.",
+    "balanced": "Balanced — code with brief explanation.",
+    "verbose": "Verbose — code with full step-by-step explanation.",
+}
+
+_AUTONOMY_LEVEL_LABELS: dict[str, str] = {
+    "ask-first": "Ask first — always confirm before acting on ambiguity.",
+    "act-then-tell": "Act then tell — make a reasonable choice and explain it.",
+    "best-judgement": "Best judgement — act silently on low-risk choices.",
+}
+
+_AGENT_PERSONA_LABELS: dict[str, str] = {
+    "professional": "Professional — concise, neutral, precise.",
+    "mentor": "Mentor — patient, explanatory, teaching-focused.",
+    "pair-programmer": "Pair programmer — collaborative, iterative, direct.",
+    "direct": "Direct — minimal chat, maximum output.",
+}
+
+_TESTING_PHILOSOPHY_LABELS: dict[str, str] = {
+    "always": "Always — write tests alongside every code change.",
+    "suggest": "Suggest — propose tests but do not block on them.",
+    "skip": "Skip — do not write or suggest tests unless asked.",
+}
+
+_SCAN_TOKENS: frozenset[str] = frozenset({"{{PRIMARY_LANGUAGE}}", "{{PACKAGE_MANAGER}}", "{{TEST_COMMAND}}"})
+
 
 def parse_condition_literal(value: str) -> object:
     normalized = value.strip()
@@ -40,6 +69,12 @@ def normalize_plan_answers(policy: dict, resolved_answers: dict) -> dict:
 
 def resolve_token_values(policy: dict, workspace: Path, resolved_answers: dict) -> dict[str, str]:
     token_values: dict[str, str] = {}
+
+    # Run workspace scanner once if any scan tokens are registered in the policy.
+    policy_tokens = {rule["token"] for rule in policy.get("tokenRules", [])}
+    if _SCAN_TOKENS & policy_tokens:
+        token_values.update(scan_workspace_stack(workspace))
+
     for token_rule in policy.get("tokenRules", []):
         token = token_rule["token"]
         if token == "{{WORKSPACE_NAME}}":
@@ -48,6 +83,22 @@ def resolve_token_values(policy: dict, workspace: Path, resolved_answers: dict) 
             profile = resolved_answers.get("profile.selected")
             if isinstance(profile, str) and profile:
                 token_values[token] = profile
+        elif token == "{{RESPONSE_STYLE}}":
+            style = resolved_answers.get("response.style")
+            if isinstance(style, str) and style:
+                token_values[token] = _RESPONSE_STYLE_LABELS.get(style, style)
+        elif token == "{{AUTONOMY_LEVEL}}":
+            level = resolved_answers.get("autonomy.level")
+            if isinstance(level, str) and level:
+                token_values[token] = _AUTONOMY_LEVEL_LABELS.get(level, level)
+        elif token == "{{AGENT_PERSONA}}":
+            persona = resolved_answers.get("agent.persona")
+            if isinstance(persona, str) and persona:
+                token_values[token] = _AGENT_PERSONA_LABELS.get(persona, persona)
+        elif token == "{{TESTING_PHILOSOPHY}}":
+            philosophy = resolved_answers.get("testing.philosophy")
+            if isinstance(philosophy, str) and philosophy:
+                token_values[token] = _TESTING_PHILOSOPHY_LABELS.get(philosophy, philosophy)
     return token_values
 
 

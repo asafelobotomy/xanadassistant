@@ -21,6 +21,10 @@ class PlanSetupTests(XanadTestBase):
         self.assertIn("packs.selected", question_ids)
         self.assertIn("ownership.agents", question_ids)
         self.assertIn("ownership.skills", question_ids)
+        self.assertIn("response.style", question_ids)
+        self.assertIn("autonomy.level", question_ids)
+        self.assertIn("agent.persona", question_ids)
+        self.assertIn("testing.philosophy", question_ids)
         self.assertIn("mcp.enabled", question_ids)
         mcp_question = next(question for question in payload["result"]["questions"] if question["id"] == "mcp.enabled")
         self.assertTrue(mcp_question["default"])
@@ -77,6 +81,48 @@ class PlanSetupTests(XanadTestBase):
         )
         self.assertEqual(
             [
+                {
+                    "token": "{{AGENT_PERSONA}}",
+                    "value": "Professional — concise, neutral, precise.",
+                    "required": False,
+                    "targets": [".github/copilot-instructions.md"],
+                },
+                {
+                    "token": "{{AUTONOMY_LEVEL}}",
+                    "value": "Ask first — always confirm before acting on ambiguity.",
+                    "required": False,
+                    "targets": [".github/copilot-instructions.md"],
+                },
+                {
+                    "token": "{{PACKAGE_MANAGER}}",
+                    "value": None,
+                    "required": False,
+                    "targets": [".github/copilot-instructions.md"],
+                },
+                {
+                    "token": "{{PRIMARY_LANGUAGE}}",
+                    "value": None,
+                    "required": False,
+                    "targets": [".github/copilot-instructions.md"],
+                },
+                {
+                    "token": "{{RESPONSE_STYLE}}",
+                    "value": "Balanced — code with brief explanation.",
+                    "required": False,
+                    "targets": [".github/copilot-instructions.md"],
+                },
+                {
+                    "token": "{{TESTING_PHILOSOPHY}}",
+                    "value": "Always — write tests alongside every code change.",
+                    "required": False,
+                    "targets": [".github/copilot-instructions.md"],
+                },
+                {
+                    "token": "{{TEST_COMMAND}}",
+                    "value": None,
+                    "required": False,
+                    "targets": [".github/copilot-instructions.md"],
+                },
                 {
                     "token": "{{WORKSPACE_NAME}}",
                     "value": Path(payload["workspace"]).name,

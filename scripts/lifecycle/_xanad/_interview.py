@@ -57,6 +57,59 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
 
     if "mcp-config" in policy.get("canonicalSurfaces", []):
         questions.append({
+            "id": "response.style",
+            "kind": "choice",
+            "prompt": "What response style do you prefer?",
+            "required": False,
+            "default": "balanced",
+            "recommended": "balanced",
+            "options": [
+                {"id": "concise", "label": "Concise", "description": "Code with minimal prose"},
+                {"id": "balanced", "label": "Balanced", "description": "Code with brief explanation"},
+                {"id": "verbose", "label": "Verbose", "description": "Code with full step-by-step explanation"},
+            ],
+        })
+        questions.append({
+            "id": "autonomy.level",
+            "kind": "choice",
+            "prompt": "How should the assistant handle ambiguity?",
+            "required": False,
+            "default": "ask-first",
+            "recommended": "ask-first",
+            "options": [
+                {"id": "ask-first", "label": "Ask first", "description": "Always confirm before acting"},
+                {"id": "act-then-tell", "label": "Act then tell", "description": "Make a reasonable choice and explain it"},
+                {"id": "best-judgement", "label": "Best judgement", "description": "Act silently on low-risk choices"},
+            ],
+        })
+        questions.append({
+            "id": "agent.persona",
+            "kind": "choice",
+            "prompt": "What tone should the assistant use?",
+            "required": False,
+            "default": "professional",
+            "recommended": "professional",
+            "options": [
+                {"id": "professional", "label": "Professional", "description": "Concise, neutral, precise"},
+                {"id": "mentor", "label": "Mentor", "description": "Patient, explanatory, teaching-focused"},
+                {"id": "pair-programmer", "label": "Pair programmer", "description": "Collaborative, iterative, direct"},
+                {"id": "direct", "label": "Direct", "description": "Minimal chat, maximum output"},
+            ],
+        })
+        questions.append({
+            "id": "testing.philosophy",
+            "kind": "choice",
+            "prompt": "What is your testing philosophy?",
+            "required": False,
+            "default": "always",
+            "recommended": "always",
+            "options": [
+                {"id": "always", "label": "Always", "description": "Write tests alongside every code change"},
+                {"id": "suggest", "label": "Suggest", "description": "Propose tests but do not block on them"},
+                {"id": "skip", "label": "Skip", "description": "Do not write or suggest tests unless asked"},
+            ],
+        })
+        questions.append({
             "id": "mcp.enabled",
             "kind": "confirm",
             "prompt": "Enable MCP configuration for this workspace?",

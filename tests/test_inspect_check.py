@@ -89,8 +89,7 @@ class InspectCheckTests(XanadTestBase):
         def workspace_setup(workspace: Path, repo_root: Path) -> None:
             target_one = workspace / ".github" / "copilot-instructions.md"
             target_one.parent.mkdir(parents=True, exist_ok=True)
-            raw = (repo_root / "template" / "copilot-instructions.md").read_text(encoding="utf-8")
-            target_one.write_text(raw.replace("{{WORKSPACE_NAME}}", workspace.name), encoding="utf-8")
+            target_one.write_text(self.render_copilot_instructions(repo_root, workspace), encoding="utf-8")
 
             target_two = workspace / ".github" / "prompts" / "setup.md"
             target_two.parent.mkdir(parents=True, exist_ok=True)
@@ -111,8 +110,7 @@ class InspectCheckTests(XanadTestBase):
         def workspace_setup(workspace: Path, repo_root: Path) -> None:
             target_one = workspace / ".github" / "copilot-instructions.md"
             target_one.parent.mkdir(parents=True, exist_ok=True)
-            raw = (repo_root / "template" / "copilot-instructions.md").read_text(encoding="utf-8")
-            target_one.write_text(raw.replace("{{WORKSPACE_NAME}}", workspace.name), encoding="utf-8")
+            target_one.write_text(self.render_copilot_instructions(repo_root, workspace), encoding="utf-8")
 
             target_two = workspace / ".github" / "prompts" / "setup.md"
             target_two.parent.mkdir(parents=True, exist_ok=True)

@@ -145,6 +145,41 @@
       "token": "{{XANAD_PROFILE}}",
       "description": "Selected behavior profile.",
       "required": false
+    },
+    {
+      "token": "{{PRIMARY_LANGUAGE}}",
+      "description": "Primary programming language detected or configured for this workspace.",
+      "required": false
+    },
+    {
+      "token": "{{PACKAGE_MANAGER}}",
+      "description": "Package manager detected or configured for this workspace.",
+      "required": false
+    },
+    {
+      "token": "{{TEST_COMMAND}}",
+      "description": "Command used to run the test suite in this workspace.",
+      "required": false
+    },
+    {
+      "token": "{{RESPONSE_STYLE}}",
+      "description": "Preferred response verbosity style.",
+      "required": false
+    },
+    {
+      "token": "{{AUTONOMY_LEVEL}}",
+      "description": "How the assistant handles ambiguity.",
+      "required": false
+    },
+    {
+      "token": "{{AGENT_PERSONA}}",
+      "description": "Tone and persona style for the assistant.",
+      "required": false
+    },
+    {
+      "token": "{{TESTING_PHILOSOPHY}}",
+      "description": "Testing philosophy for this workspace.",
+      "required": false
     }
   ],
   "chmodRules": {
