@@ -113,12 +113,12 @@ class XanadAssistantPhase6Tests(XanadTestBase):
     # ------------------------------------------------------------------
 
     def test_agent_file_has_lifecycle_commands(self) -> None:
-        agent_text = (self.REPO_ROOT / "agents" / "xanad-lifecycle.agent.md").read_text(encoding="utf-8")
+        agent_text = (self.REPO_ROOT / "agents" / "xanadLifecycle.agent.md").read_text(encoding="utf-8")
         for term in ("inspect", "apply", "update", "repair", "factory-restore"):
             self.assertIn(term, agent_text, f"Agent file missing lifecycle command: {term}")
 
     def test_agent_file_has_trigger_phrases(self) -> None:
-        agent_text = (self.REPO_ROOT / "agents" / "xanad-lifecycle.agent.md").read_text(encoding="utf-8")
+        agent_text = (self.REPO_ROOT / "agents" / "xanadLifecycle.agent.md").read_text(encoding="utf-8")
         self.assertIn("Trigger phrases", agent_text)
 
     def test_setup_prompt_has_workflow_steps(self) -> None:
@@ -142,12 +142,12 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         self.assertIn("lifecycle_plan_setup", prompt_text)
 
     def test_lifecycle_agent_references_mcp_lifecycle_tools(self) -> None:
-        agent_text = (self.REPO_ROOT / "agents" / "xanad-lifecycle.agent.md").read_text(encoding="utf-8")
+        agent_text = (self.REPO_ROOT / "agents" / "xanadLifecycle.agent.md").read_text(encoding="utf-8")
         self.assertIn("lifecycle_inspect", agent_text)
         self.assertIn("xanadTools", agent_text)
 
     def test_lifecycle_agent_frontmatter_enables_delegation(self) -> None:
-        agent_text = (self.REPO_ROOT / "agents" / "xanad-lifecycle.agent.md").read_text(encoding="utf-8")
+        agent_text = (self.REPO_ROOT / "agents" / "xanadLifecycle.agent.md").read_text(encoding="utf-8")
         self.assertIn("tools: [agent, codebase, search, runCommands, askQuestions]", agent_text)
         self.assertIn("agents: [Explore, Debugger, Planner]", agent_text)
         self.assertIn("model:", agent_text)
@@ -176,7 +176,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
 
     def test_template_uses_canonical_lifecycle_agent_name(self) -> None:
         instructions_text = (self.REPO_ROOT / "template" / "copilot-instructions.md").read_text(encoding="utf-8")
-        self.assertIn("xanad-lifecycle", instructions_text)
+        self.assertIn("xanadLifecycle", instructions_text)
         self.assertNotIn("`lifecycle-planning` agent", instructions_text)
 
     def test_instructions_route_debugging_planning_research_and_docs_to_specialists(self) -> None:

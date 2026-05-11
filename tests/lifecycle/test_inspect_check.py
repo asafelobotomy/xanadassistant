@@ -170,40 +170,40 @@ class InspectCheckTests(XanadTestBase):
 
             hooks_dir = workspace / ".github" / "hooks" / "scripts"
             hooks_dir.mkdir(parents=True, exist_ok=True)
-            (hooks_dir / "xanad-workspace-mcp.py").write_text(
-                (repo_root / "hooks" / "scripts" / "xanad-workspace-mcp.py").read_text(encoding="utf-8"),
+            (hooks_dir / "xanadWorkspaceMcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "xanadWorkspaceMcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
-            (hooks_dir / "mcp-sequential-thinking-server.py").write_text(
-                (repo_root / "hooks" / "scripts" / "mcp-sequential-thinking-server.py").read_text(encoding="utf-8"),
+            (hooks_dir / "mcpSequentialThinkingServer.py").write_text(
+                (repo_root / "hooks" / "scripts" / "mcpSequentialThinkingServer.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             (hooks_dir / "_xanad_mcp_source.py").write_text(
                 (repo_root / "hooks" / "scripts" / "_xanad_mcp_source.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
-            (hooks_dir / "git-mcp.py").write_text(
-                (repo_root / "hooks" / "scripts" / "git-mcp.py").read_text(encoding="utf-8"),
+            (hooks_dir / "gitMcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "gitMcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
-            (hooks_dir / "web-mcp.py").write_text(
-                (repo_root / "hooks" / "scripts" / "web-mcp.py").read_text(encoding="utf-8"),
+            (hooks_dir / "webMcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "webMcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
-            (hooks_dir / "time-mcp.py").write_text(
-                (repo_root / "hooks" / "scripts" / "time-mcp.py").read_text(encoding="utf-8"),
+            (hooks_dir / "timeMcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "timeMcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
-            (hooks_dir / "security-mcp.py").write_text(
-                (repo_root / "hooks" / "scripts" / "security-mcp.py").read_text(encoding="utf-8"),
+            (hooks_dir / "securityMcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "securityMcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
-            (hooks_dir / "github-mcp.py").write_text(
-                (repo_root / "hooks" / "scripts" / "github-mcp.py").read_text(encoding="utf-8"),
+            (hooks_dir / "githubMcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "githubMcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
-            (hooks_dir / "sqlite-mcp.py").write_text(
-                (repo_root / "hooks" / "scripts" / "sqlite-mcp.py").read_text(encoding="utf-8"),
+            (hooks_dir / "sqliteMcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "sqliteMcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
 

@@ -40,13 +40,13 @@ def _load_hyphen(filename: str):
 
 
 # ---------------------------------------------------------------------------
-# time-mcp.py
+# timeMcp.py
 # ---------------------------------------------------------------------------
 
 class TimeMcpImportTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.mod = _load_hyphen("time-mcp.py")
+        cls.mod = _load_hyphen("timeMcp.py")
 
     def test_module_has_mcp(self):
         self.assertTrue(hasattr(self.mod, "mcp"))
@@ -126,13 +126,13 @@ class TimeMcpImportTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# sqlite-mcp.py
+# sqliteMcp.py
 # ---------------------------------------------------------------------------
 
 class SqliteMcpTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.mod = _load("sqlite-mcp")
+        cls.mod = _load("sqliteMcp")
         cls.tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         cls.db_path = cls.tmp.name
         cls.tmp.close()
@@ -227,13 +227,13 @@ class SqliteMcpTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# mcp-sequential-thinking-server.py
+# mcpSequentialThinkingServer.py
 # ---------------------------------------------------------------------------
 
 class SequentialThinkingMcpTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.mod = _load_hyphen("mcp-sequential-thinking-server.py")
+        cls.mod = _load_hyphen("mcpSequentialThinkingServer.py")
 
     def setUp(self):
         # Reset session before each test
@@ -409,7 +409,7 @@ class SequentialThinkingMcpTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# git-mcp.py  (local operations only)
+# gitMcp.py  (local operations only)
 # ---------------------------------------------------------------------------
 
 REPO_PATH = str(REPO_ROOT)
@@ -418,7 +418,7 @@ REPO_PATH = str(REPO_ROOT)
 class GitMcpLocalTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.mod = _load("git-mcp")
+        cls.mod = _load("gitMcp")
 
     def test_module_has_mcp(self):
         self.assertTrue(hasattr(self.mod, "mcp"))
@@ -506,7 +506,7 @@ class GitMcpMutationTests(unittest.TestCase):
     def setUpClass(cls):
         import subprocess as _sp
         import tempfile as _tf
-        cls.mod = _load("git-mcp")
+        cls.mod = _load("gitMcp")
         cls._tmpdir = _tf.TemporaryDirectory()
         cls.repo = cls._tmpdir.name
         _sp.run(["git", "init", cls.repo], check=True, capture_output=True)
@@ -591,13 +591,13 @@ class GitMcpMutationTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# security-mcp.py  (import + module-level only)
+# securityMcp.py  (import + module-level only)
 # ---------------------------------------------------------------------------
 
 class SecurityMcpImportTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.mod = _load("security-mcp")
+        cls.mod = _load("securityMcp")
 
     def test_module_has_mcp(self):
         self.assertTrue(hasattr(self.mod, "mcp"))
@@ -610,13 +610,13 @@ class SecurityMcpImportTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# web-mcp.py  (_guard_ssrf, _ssrf_redirect_hook, _RateLimiter, _to_markdown)
+# webMcp.py  (_guard_ssrf, _ssrf_redirect_hook, _RateLimiter, _to_markdown)
 # ---------------------------------------------------------------------------
 
 class WebMcpSsrfTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.mod = _load("web-mcp")
+        cls.mod = _load("webMcp")
 
     def test_guard_ssrf_loopback_blocked(self):
         with self.assertRaises(ValueError) as ctx:
@@ -685,13 +685,13 @@ class WebMcpSsrfTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# github-mcp.py  (_token() only — everything else is network-only)
+# githubMcp.py  (_token() only — everything else is network-only)
 # ---------------------------------------------------------------------------
 
 class GitHubMcpTokenTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.mod = _load("github-mcp")
+        cls.mod = _load("githubMcp")
 
     def test_module_has_mcp(self):
         self.assertTrue(hasattr(self.mod, "mcp"))
@@ -719,7 +719,7 @@ class GitHubMcpTokenTests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# xanad-workspace-mcp.py  (utility functions and handle_request)
+# xanadWorkspaceMcp.py  (utility functions and handle_request)
 # ---------------------------------------------------------------------------
 
 class XanadWorkspaceMcpTests(unittest.TestCase):
@@ -728,7 +728,7 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
         # Need to add hooks/scripts to sys.path so the module can import _xanad_mcp_source
         if str(HOOKS_DIR) not in sys.path:
             sys.path.insert(0, str(HOOKS_DIR))
-        cls.mod = _load_hyphen("xanad-workspace-mcp.py")
+        cls.mod = _load_hyphen("xanadWorkspaceMcp.py")
 
     def test_reject_shell_metacharacters_clean(self):
         result = self.mod.reject_shell_metacharacters("python3 -m unittest")
@@ -1017,7 +1017,7 @@ class XanadWorkspaceMcpToolTests(unittest.TestCase):
     def setUpClass(cls):
         if str(HOOKS_DIR) not in sys.path:
             sys.path.insert(0, str(HOOKS_DIR))
-        cls.mod = _load_hyphen("xanad-workspace-mcp.py")
+        cls.mod = _load_hyphen("xanadWorkspaceMcp.py")
         # Point workspace at REPO_ROOT (has .github, copilot-instructions.md, etc.)
         cls.orig_root = cls.mod.WORKSPACE_ROOT
         cls.orig_instructions = cls.mod.WORKSPACE_INSTRUCTIONS_PATH
@@ -1106,13 +1106,13 @@ class XanadWorkspaceMcpToolTests(unittest.TestCase):
 
 
 class XanadWorkspaceMcpCoverageTests(unittest.TestCase):
-    """Coverage-targeted tests for uncovered paths in xanad-workspace-mcp.py."""
+    """Coverage-targeted tests for uncovered paths in xanadWorkspaceMcp.py."""
 
     @classmethod
     def setUpClass(cls):
         if str(HOOKS_DIR) not in sys.path:
             sys.path.insert(0, str(HOOKS_DIR))
-        cls.mod = _load_hyphen("xanad-workspace-mcp.py")
+        cls.mod = _load_hyphen("xanadWorkspaceMcp.py")
 
     def _with_workspace(self, instructions_content: str | None = None):
         """Context manager: returns a TemporaryDirectory with .github created."""

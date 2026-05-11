@@ -1,5 +1,5 @@
 ---
-name: lifecycle-audit
+name: lifecycleAudit
 description: Audit xanadAssistant workspace lifecycle state — inspect install status, surface repair reasons, and validate the lockfile before proposing install, update, repair, or restore operations
 ---
 

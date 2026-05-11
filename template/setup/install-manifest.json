@@ -136,11 +136,11 @@
       "hash": "sha256:5b79a4892eaa73287bef024d78b090b17959f8002fb18cff1f3a6e54bf316d4a"
     },
     {
-      "id": "agents.xanad-lifecycle.agent.md",
+      "id": "agents.xanadLifecycle.agent.md",
       "surface": "agents",
       "layer": "pack",
-      "source": "agents/xanad-lifecycle.agent.md",
-      "target": ".github/agents/xanad-lifecycle.agent.md",
+      "source": "agents/xanadLifecycle.agent.md",
+      "target": ".github/agents/xanadLifecycle.agent.md",
       "ownership": [
         "local",
         "plugin-backed-copilot-format"
@@ -149,7 +149,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:df9707534336c76d471bc996d3941a4774fab5faff591a7133b773141f4c9d79"
+      "hash": "sha256:d9575da971c74c2f25d78855047d260f4743dfbb4bf6ca704ed9cbb4137e8c85"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -173,8 +173,8 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:c5ef7f3476bd16e1ee823f24b340e67c407fce5de5e48d96464d52d12b19b849"
- 8f6b648 (refactor: standardize product name to xanadAssistant)
+      "hash": "sha256:1219c3e438bd088768eab511fa72cb56035f87d279ac0beb972eea4e5c0b5c41"
+ dbecf3e (refactor: standardize consumer-facing names to camelCase)
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -191,14 +191,14 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:026e4520f87c476760befe39a3a4fd0345ae2b8409a0d29f94a175d228e9211e"
+      "hash": "sha256:15a29220113857c93e3f54dbd12e4bf02ed39c644bcd3f15a6e0b4ce5074b879"
     },
     {
-      "id": "hook-scripts.git-mcp.py",
+      "id": "hook-scripts.gitMcp.py",
       "surface": "hooks",
       "layer": "core",
-      "source": "hooks/scripts/git-mcp.py",
-      "target": ".github/hooks/scripts/git-mcp.py",
+      "source": "hooks/scripts/gitMcp.py",
+      "target": ".github/hooks/scripts/gitMcp.py",
       "ownership": [
         "local"
       ],
@@ -211,11 +211,11 @@
       "hash": "sha256:35b9cc9e307c3a861b29d7fba0a9fd7491a1ae6e31affc9690ae89df37aad7ea"
     },
     {
-      "id": "hook-scripts.github-mcp.py",
+      "id": "hook-scripts.githubMcp.py",
       "surface": "hooks",
       "layer": "core",
-      "source": "hooks/scripts/github-mcp.py",
-      "target": ".github/hooks/scripts/github-mcp.py",
+      "source": "hooks/scripts/githubMcp.py",
+      "target": ".github/hooks/scripts/githubMcp.py",
       "ownership": [
         "local"
       ],
@@ -228,11 +228,11 @@
       "hash": "sha256:64bc6fb71c7bcb4dec2f4e994268b4df28b5fbe508b99f5a5a6ebcb005fc8b55"
     },
     {
-      "id": "hook-scripts.mcp-sequential-thinking-server.py",
+      "id": "hook-scripts.mcpSequentialThinkingServer.py",
       "surface": "hooks",
       "layer": "core",
-      "source": "hooks/scripts/mcp-sequential-thinking-server.py",
-      "target": ".github/hooks/scripts/mcp-sequential-thinking-server.py",
+      "source": "hooks/scripts/mcpSequentialThinkingServer.py",
+      "target": ".github/hooks/scripts/mcpSequentialThinkingServer.py",
       "ownership": [
         "local"
       ],
@@ -245,11 +245,11 @@
       "hash": "sha256:c86580e46c4d0a2867c5870f8e67bac978949bb388a30107c3e5a9ad9f883748"
     },
     {
-      "id": "hook-scripts.security-mcp.py",
+      "id": "hook-scripts.securityMcp.py",
       "surface": "hooks",
       "layer": "core",
-      "source": "hooks/scripts/security-mcp.py",
-      "target": ".github/hooks/scripts/security-mcp.py",
+      "source": "hooks/scripts/securityMcp.py",
+      "target": ".github/hooks/scripts/securityMcp.py",
       "ownership": [
         "local"
       ],
@@ -262,11 +262,11 @@
       "hash": "sha256:93ab2c2992a0e1bb144fc392307fb7baf7c66a761476631a49ce9a57c789b1fe"
     },
     {
-      "id": "hook-scripts.sqlite-mcp.py",
+      "id": "hook-scripts.sqliteMcp.py",
       "surface": "hooks",
       "layer": "core",
-      "source": "hooks/scripts/sqlite-mcp.py",
-      "target": ".github/hooks/scripts/sqlite-mcp.py",
+      "source": "hooks/scripts/sqliteMcp.py",
+      "target": ".github/hooks/scripts/sqliteMcp.py",
       "ownership": [
         "local"
       ],
@@ -279,11 +279,11 @@
       "hash": "sha256:f43fdec3a7b4b25722cada6760a7f8c7677fe5e2752d658a99974225678b1ea8"
     },
     {
-      "id": "hook-scripts.time-mcp.py",
+      "id": "hook-scripts.timeMcp.py",
       "surface": "hooks",
       "layer": "core",
-      "source": "hooks/scripts/time-mcp.py",
-      "target": ".github/hooks/scripts/time-mcp.py",
+      "source": "hooks/scripts/timeMcp.py",
+      "target": ".github/hooks/scripts/timeMcp.py",
       "ownership": [
         "local"
       ],
@@ -296,11 +296,11 @@
       "hash": "sha256:9dfcdc24060ce78074943d6b85208950ba8ee5e6e533a28b748de5c999bb850b"
     },
     {
-      "id": "hook-scripts.web-mcp.py",
+      "id": "hook-scripts.webMcp.py",
       "surface": "hooks",
       "layer": "core",
-      "source": "hooks/scripts/web-mcp.py",
-      "target": ".github/hooks/scripts/web-mcp.py",
+      "source": "hooks/scripts/webMcp.py",
+      "target": ".github/hooks/scripts/webMcp.py",
       "ownership": [
         "local"
       ],
@@ -313,11 +313,11 @@
       "hash": "sha256:5700cc8fc356fcfc6702710041b6e47dd88b8f9ec787987487aaa4cf1b507d65"
     },
     {
-      "id": "hook-scripts.xanad-workspace-mcp.py",
+      "id": "hook-scripts.xanadWorkspaceMcp.py",
       "surface": "hooks",
       "layer": "core",
-      "source": "hooks/scripts/xanad-workspace-mcp.py",
-      "target": ".github/hooks/scripts/xanad-workspace-mcp.py",
+      "source": "hooks/scripts/xanadWorkspaceMcp.py",
+      "target": ".github/hooks/scripts/xanadWorkspaceMcp.py",
       "ownership": [
         "local"
       ],
@@ -382,8 +382,8 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:6cf7b037236f2f0e6606596fa32164fa061ebfe7c1e38e9ed3e96dfe8781a2c4"
- 8f6b648 (refactor: standardize product name to xanadAssistant)
+      "hash": "sha256:de95dd9a8141879cd7a0b8d651fd54248df9593587e6e5615fcaec7958b67895"
+ dbecf3e (refactor: standardize consumer-facing names to camelCase)
     },
     {
       "id": "lean-skills.lean-output.SKILL.md",
@@ -404,11 +404,11 @@
       "hash": "sha256:6189ba81cb8cffa1b36f49968c907448ab48ca0d999a25c422401a42c9e43843"
     },
     {
-      "id": "skills.lifecycle-audit.SKILL.md",
+      "id": "skills.lifecycleAudit.SKILL.md",
       "surface": "skills",
       "layer": "pack",
-      "source": "skills/lifecycle-audit/SKILL.md",
-      "target": ".github/skills/lifecycle-audit/SKILL.md",
+      "source": "skills/lifecycleAudit/SKILL.md",
+      "target": ".github/skills/lifecycleAudit/SKILL.md",
       "ownership": [
         "local",
         "plugin-backed-copilot-format"
@@ -417,7 +417,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:3958bfacd70800a13308437ff3b707097bde196b6c431a408977f00eeea5d47d"
+      "hash": "sha256:9f3bb8b8751845b86dae879b938a8e3d89c18e3e76152638e4d1d68460bf0c24"
     },
     {
       "id": "mcp-config.mcp.json",
@@ -434,7 +434,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:905ebcdee22129e1fb97ec5816b5f524a6c493c083da98325d2b26238a29d1f5"
+      "hash": "sha256:577e66152903d3c839e564deb434f3e61aa75c8c2adf9f6a5c6b47d0cbf8d60a"
     }
   ],
   "retiredFiles": [
@@ -443,14 +443,84 @@
       "target": ".github/agents/lifecycle-planning.agent.md",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/agents/xanad-lifecycle.agent.md to match the canonical agent name."
+      "notes": "Renamed to .github/agents/xanadLifecycle.agent.md to match the canonical agent name."
     },
     {
       "id": "retired.agents.xanad-lifecycle-planning.agent.md",
       "target": ".github/agents/xanad-lifecycle-planning.agent.md",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/agents/xanad-lifecycle.agent.md \u2014 'planning' was a misnomer; this agent coordinates the full lifecycle."
+      "notes": "Renamed to .github/agents/xanadLifecycle.agent.md \u2014 'planning' was a misnomer; this agent coordinates the full lifecycle."
+    },
+    {
+      "id": "retired.agents.xanad-lifecycle.agent.md",
+      "target": ".github/agents/xanad-lifecycle.agent.md",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/agents/xanadLifecycle.agent.md \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.skills.lifecycle-audit.SKILL.md",
+      "target": ".github/skills/lifecycle-audit/SKILL.md",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/skills/lifecycleAudit/SKILL.md \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.xanad-workspace-mcp.py",
+      "target": ".github/hooks/scripts/xanad-workspace-mcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/hooks/scripts/xanadWorkspaceMcp.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.git-mcp.py",
+      "target": ".github/hooks/scripts/git-mcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/hooks/scripts/gitMcp.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.github-mcp.py",
+      "target": ".github/hooks/scripts/github-mcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/hooks/scripts/githubMcp.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.mcp-sequential-thinking-server.py",
+      "target": ".github/hooks/scripts/mcp-sequential-thinking-server.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/hooks/scripts/mcpSequentialThinkingServer.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.security-mcp.py",
+      "target": ".github/hooks/scripts/security-mcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/hooks/scripts/securityMcp.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.sqlite-mcp.py",
+      "target": ".github/hooks/scripts/sqlite-mcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/hooks/scripts/sqliteMcp.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.time-mcp.py",
+      "target": ".github/hooks/scripts/time-mcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/hooks/scripts/timeMcp.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.web-mcp.py",
+      "target": ".github/hooks/scripts/web-mcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/hooks/scripts/webMcp.py \u2014 standardized to camelCase naming."
     }
   ]
 }

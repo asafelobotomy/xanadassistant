@@ -86,14 +86,14 @@ Use memory as optional recall, not as lifecycle authority.
 
 ## Skills and Agents
 
-- `lifecycle-audit` skill — use before any lifecycle operation on this workspace
-- `commit-preflight` skill — repo-local git preflight for this workspace
-- `tech-debt-audit` skill — repo-local maintainability audit for this workspace
+- `lifecycleAudit` skill — use before any lifecycle operation on this workspace
+- `commitPreflight` skill — repo-local git preflight for this workspace
+- `techDebtAudit` skill — repo-local maintainability audit for this workspace
 - `Debugger` agent — diagnose failures and isolate root causes before implementation
 - `Planner` agent — produce scoped execution plans for multi-step work before implementation
 - `Researcher` agent — gather source-backed external constraints before implementation or review
 - `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
-- `xanad-lifecycle` agent — delegate all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
+- `xanadLifecycle` agent — delegate all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
 - `AGENTS.md` — canonical repo-local routing table for agent selection, handoffs, and lifecycle trigger phrases
 - Trigger phrases: `"inspect workspace"`, `"run lifecycle check"`, `"repair install"`, `"update xanadAssistant"`, `"factory restore"`
 - If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`, treat the workspace as a predecessor `copilot-instructions-template` migration and route it through `repair` or `update` rather than ad hoc cleanup.
@@ -111,4 +111,4 @@ Route specialist work to the matching agent before acting directly. If a task ha
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle` |
+| xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanadLifecycle` |

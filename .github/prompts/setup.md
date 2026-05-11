@@ -37,7 +37,7 @@ Review `installState`, `manifestSummary`, and any warnings. Ask the user to
 confirm the target workspace path if it is not clear from context.
 
 When `mcp.enabled` is true, the plan should also install the local hook script.
-Expect both `.github/hooks/scripts/xanad-workspace-mcp.py` and `.vscode/mcp.json`
+Expect both `.github/hooks/scripts/xanadWorkspaceMcp.py` and `.vscode/mcp.json`
 to appear in the planned writes.
 
 If the warnings include `package_name_mismatch` or `successor_cleanup_required`,

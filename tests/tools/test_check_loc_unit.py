@@ -51,7 +51,7 @@ class CheckLocWarningLimitTests(unittest.TestCase):
         original_cwd = os.getcwd()
         try:
             os.chdir(str(REPO_ROOT))
-            path = Path("hooks/scripts/xanad-workspace-mcp.py")
+            path = Path("hooks/scripts/xanadWorkspaceMcp.py")
             limit = check_loc.warning_limit_for(path)
             self.assertEqual(380, limit)
         finally:
@@ -62,7 +62,7 @@ class CheckLocWarningLimitTests(unittest.TestCase):
         original_cwd = os.getcwd()
         try:
             os.chdir(str(REPO_ROOT))
-            path = Path("hooks/scripts/mcp-sequential-thinking-server.py")
+            path = Path("hooks/scripts/mcpSequentialThinkingServer.py")
             limit = check_loc.warning_limit_for(path)
             self.assertEqual(380, limit)
         finally:
@@ -73,7 +73,7 @@ class CheckLocWarningLimitTests(unittest.TestCase):
         original_cwd = os.getcwd()
         try:
             os.chdir(str(REPO_ROOT))
-            path = Path("hooks/scripts/git-mcp.py")
+            path = Path("hooks/scripts/gitMcp.py")
             limit = check_loc.warning_limit_for(path)
             self.assertEqual(380, limit)
         finally:

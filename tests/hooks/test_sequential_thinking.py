@@ -1,4 +1,4 @@
-"""Behavioral tests for hooks/scripts/mcp-sequential-thinking-server.py.
+"""Behavioral tests for hooks/scripts/mcpSequentialThinkingServer.py.
 
 Tests are skipped unless the 'mcp' package is importable. Install it with:
     pip install 'mcp[cli]'
@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SERVER_PATH = REPO_ROOT / "hooks" / "scripts" / "mcp-sequential-thinking-server.py"
+SERVER_PATH = REPO_ROOT / "hooks" / "scripts" / "mcpSequentialThinkingServer.py"
 
 _MCP_AVAILABLE = importlib.util.find_spec("mcp") is not None
 

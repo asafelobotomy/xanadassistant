@@ -1,5 +1,5 @@
 ---
-name: xanad-lifecycle
+name: xanadLifecycle
 description: "Use when: set up xanadAssistant, inspect workspace, run lifecycle check, interview, plan setup, apply setup, update xanadAssistant, repair install, factory restore, or coordinate any lifecycle command in a consumer workspace."
 argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, apply, update, repair, or factory restore."
 model:

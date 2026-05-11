@@ -1,6 +1,6 @@
-"""GitHub source resolution helpers for xanad-workspace-mcp.py.
+"""GitHub source resolution helpers for xanadWorkspaceMcp.py.
 
-Installed alongside xanad-workspace-mcp.py in .github/hooks/scripts/.
+Installed alongside xanadWorkspaceMcp.py in .github/hooks/scripts/.
 """
 from __future__ import annotations
 import re

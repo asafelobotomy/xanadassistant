@@ -45,9 +45,9 @@
   ],
   "skippedManagedFiles": [
     ".github/agents/lifecycle-planning.agent.md",
-    ".github/hooks/scripts/xanad-workspace-mcp.py",
+    ".github/hooks/scripts/xanadWorkspaceMcp.py",
     ".github/skills/lean-output/SKILL.md",
-    ".github/skills/lifecycle-audit/SKILL.md",
+    ".github/skills/lifecycleAudit/SKILL.md",
     ".vscode/mcp.json"
   ],
   "retiredManagedFiles": [],

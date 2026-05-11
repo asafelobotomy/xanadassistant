@@ -1,5 +1,5 @@
 ---
-name: tech-debt-audit
+name: techDebtAudit
 description: "Use when: auditing xanadAssistant for maintainability debt such as oversized files, generated-artifact drift, manifest coverage gaps, brittle tests, stale debt markers, or lifecycle-engine complexity hotspots, and you need prioritized follow-up actions."
 compatibility: ">=1.4"
 ---

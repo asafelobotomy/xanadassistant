@@ -2,7 +2,7 @@
   "servers": {
     "xanadTools": {
       "type": "stdio",
-      "command": "${workspaceFolder}/hooks/scripts/xanad-workspace-mcp.py",
+      "command": "${workspaceFolder}/hooks/scripts/xanadWorkspaceMcp.py",
       "args": []
     },
     "git": {
@@ -17,7 +17,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/hooks/scripts/git-mcp.py"
+        "${workspaceFolder}/hooks/scripts/gitMcp.py"
       ]
     },
     "web": {
@@ -35,7 +35,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/hooks/scripts/web-mcp.py"
+        "${workspaceFolder}/hooks/scripts/webMcp.py"
       ]
     },
     "time": {
@@ -50,7 +50,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/hooks/scripts/time-mcp.py"
+        "${workspaceFolder}/hooks/scripts/timeMcp.py"
       ]
     },
     "security": {
@@ -65,7 +65,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/hooks/scripts/security-mcp.py"
+        "${workspaceFolder}/hooks/scripts/securityMcp.py"
       ]
     },
     "github": {
@@ -80,7 +80,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/hooks/scripts/github-mcp.py"
+        "${workspaceFolder}/hooks/scripts/githubMcp.py"
       ],
       "disabled": true
     },
@@ -96,7 +96,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/hooks/scripts/sqlite-mcp.py"
+        "${workspaceFolder}/hooks/scripts/sqliteMcp.py"
       ],
       "disabled": true
     },
@@ -112,7 +112,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/hooks/scripts/mcp-sequential-thinking-server.py"
+        "${workspaceFolder}/hooks/scripts/mcpSequentialThinkingServer.py"
       ]
     }
   }

@@ -1,7 +1,7 @@
 # {{WORKSPACE_NAME}} — Copilot Instructions
 
 > This project uses **xanadAssistant** to manage its Copilot surface files (agents, skills, hooks, prompts).
-> Lifecycle authority: `xanadAssistant.py` — use the `xanad-lifecycle` agent for all xanadAssistant operations.
+> Lifecycle authority: `xanadAssistant.py` — use the `xanadLifecycle` agent for all xanadAssistant operations.
 
 ## My Role
 
@@ -17,7 +17,7 @@ I work **in** {{WORKSPACE_NAME}} — implementing features, reviewing code, runn
 
 ## Lifecycle Operations
 
-Use the **xanad-lifecycle** agent for all xanadAssistant operations. Trigger phrases:
+Use the **xanadLifecycle** agent for all xanadAssistant operations. Trigger phrases:
 
 | Trigger phrase | Operation |
 |---|---|
@@ -27,8 +27,8 @@ Use the **xanad-lifecycle** agent for all xanadAssistant operations. Trigger phr
 | `"repair install"` | Fix stale or broken managed files |
 | `"factory restore"` | Reset to clean managed state |
 
-Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanadAssistant. Use the `lifecycle-audit` skill to review state before proposing any lifecycle operation.
- 8f6b648 (refactor: standardize product name to xanadAssistant)
+Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanadAssistant. Use the `lifecycleAudit` skill to review state before proposing any lifecycle operation.
+ dbecf3e (refactor: standardize consumer-facing names to camelCase)
 When the workspace-local `xanadTools` MCP server is available and can resolve a
 local xanadAssistant package root or a supported remote source, setup-oriented
 lifecycle operations may use its `lifecycle.*` tools instead of shelling out directly.
@@ -52,7 +52,7 @@ Route specialist work to the matching agent before acting directly. If a task ha
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle` |
+| xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanadLifecycle` |
 
 ## Coding Conventions
 
@@ -87,8 +87,10 @@ Use memory as optional recall, not as lifecycle authority.
 
 ## Skills and Agents
 
+- `lifecycleAudit` skill — loaded on demand; run before any lifecycle operation
+ dbecf3e (refactor: standardize consumer-facing names to camelCase)
 - `Debugger` agent — diagnose failures and isolate root causes before implementation
 - `Planner` agent — produce scoped execution plans for multi-step work before implementation
 - `Researcher` agent — gather source-backed external constraints before implementation or review
 - `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
-- `xanad-lifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
+- `xanadLifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests

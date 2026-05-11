@@ -37,11 +37,11 @@ class CheckLocTests(unittest.TestCase):
     def test_does_not_warn_for_mcp_hook_override_below_override_limit(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir)
-            target = repo_root / "hooks" / "scripts" / "xanad-workspace-mcp.py"
+            target = repo_root / "hooks" / "scripts" / "xanadWorkspaceMcp.py"
             _write_lines(target, 370)
 
             result = subprocess.run(
-                ["python3", str(SCRIPT_PATH), "hooks/scripts/xanad-workspace-mcp.py"],
+                ["python3", str(SCRIPT_PATH), "hooks/scripts/xanadWorkspaceMcp.py"],
                 cwd=repo_root,
                 capture_output=True,
                 text=True,
@@ -54,11 +54,11 @@ class CheckLocTests(unittest.TestCase):
     def test_mcp_hook_override_still_fails_at_hard_limit(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir)
-            target = repo_root / "hooks" / "scripts" / "xanad-workspace-mcp.py"
+            target = repo_root / "hooks" / "scripts" / "xanadWorkspaceMcp.py"
             _write_lines(target, 401)
 
             result = subprocess.run(
-                ["python3", str(SCRIPT_PATH), "hooks/scripts/xanad-workspace-mcp.py"],
+                ["python3", str(SCRIPT_PATH), "hooks/scripts/xanadWorkspaceMcp.py"],
                 cwd=repo_root,
                 capture_output=True,
                 text=True,

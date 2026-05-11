@@ -1,5 +1,5 @@
 ---
-name: commit-preflight
+name: commitPreflight
 description: "Use when: preparing to commit or push changes in the xanadAssistant repository and you need local preflight checks for unit tests, manifest freshness, LOC limits, generated artifacts, or template-safety rules."
 compatibility: ">=1.4"
 ---

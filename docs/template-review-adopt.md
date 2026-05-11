@@ -12,8 +12,8 @@ skill, workflow, instruction, and contract files.
 |---|---|---|---|
 | A1 | Attention-budget gate adopted | `scripts/check_attention_budget.py`, `.github/workflows/ci.yml` | Enforced as a repo-local budget check rather than a one-off shell snippet. |
 | A6 | Durable memory routing adopted | `docs/memory.md`, `.github/copilot-instructions.md`, `template/copilot-instructions.md` | Durable repo facts promote into `docs/memory.md`; `/memories/repo/` remains the in-flight inbox. |
-| A8 | `commit-preflight` adopted as repo-local maintainer skill | `.github/skills/commit-preflight/SKILL.md` | Adapted for repo-specific commands and generated-artifact checks; not consumer-delivered. |
-| A9 | `tech-debt-audit` adopted as repo-local maintainer skill | `.github/skills/tech-debt-audit/SKILL.md` | Narrowed to repo-native signals such as LOC, regression, freshness, and debt markers. |
+| A8 | `commitPreflight` adopted as repo-local maintainer skill | `.github/skills/commitPreflight/SKILL.md` | Adapted for repo-specific commands and generated-artifact checks; not consumer-delivered. |
+| A9 | `techDebtAudit` adopted as repo-local maintainer skill | `.github/skills/techDebtAudit/SKILL.md` | Narrowed to repo-native signals such as LOC, regression, freshness, and debt markers. |
 
 ## Deferred
 
@@ -38,7 +38,7 @@ skill, workflow, instruction, and contract files.
 | 6 | `Code` | Reject as duplicate | Duplicates the default coding agent without adding distinct value. |
 | 7 | `Setup` | Reject for this architecture | Assumes plugin-style delivery rather than xanadassistant's CLI- and manifest-driven model. |
 
-Current recommendation: adopt `Audit` only if the existing `lifecycle-audit` skill needs to expand into a broader repository health review surface.
+Current recommendation: adopt `Audit` only if the existing `lifecycleAudit` skill needs to expand into a broader repository health review surface.
 
 ## Standing Rule
 

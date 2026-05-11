@@ -194,14 +194,84 @@
         "target": ".github/agents/lifecycle-planning.agent.md",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/agents/xanad-lifecycle.agent.md to match the canonical agent name."
+        "notes": "Renamed to .github/agents/xanadLifecycle.agent.md to match the canonical agent name."
       },
       {
         "id": "retired.agents.xanad-lifecycle-planning.agent.md",
         "target": ".github/agents/xanad-lifecycle-planning.agent.md",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/agents/xanad-lifecycle.agent.md — 'planning' was a misnomer; this agent coordinates the full lifecycle."
+        "notes": "Renamed to .github/agents/xanadLifecycle.agent.md — 'planning' was a misnomer; this agent coordinates the full lifecycle."
+      },
+      {
+        "id": "retired.agents.xanad-lifecycle.agent.md",
+        "target": ".github/agents/xanad-lifecycle.agent.md",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/agents/xanadLifecycle.agent.md — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.skills.lifecycle-audit.SKILL.md",
+        "target": ".github/skills/lifecycle-audit/SKILL.md",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/skills/lifecycleAudit/SKILL.md — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.xanad-workspace-mcp.py",
+        "target": ".github/hooks/scripts/xanad-workspace-mcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/hooks/scripts/xanadWorkspaceMcp.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.git-mcp.py",
+        "target": ".github/hooks/scripts/git-mcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/hooks/scripts/gitMcp.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.github-mcp.py",
+        "target": ".github/hooks/scripts/github-mcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/hooks/scripts/githubMcp.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.mcp-sequential-thinking-server.py",
+        "target": ".github/hooks/scripts/mcp-sequential-thinking-server.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/hooks/scripts/mcpSequentialThinkingServer.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.security-mcp.py",
+        "target": ".github/hooks/scripts/security-mcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/hooks/scripts/securityMcp.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.sqlite-mcp.py",
+        "target": ".github/hooks/scripts/sqlite-mcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/hooks/scripts/sqliteMcp.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.time-mcp.py",
+        "target": ".github/hooks/scripts/time-mcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/hooks/scripts/timeMcp.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.web-mcp.py",
+        "target": ".github/hooks/scripts/web-mcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/hooks/scripts/webMcp.py — standardized to camelCase naming."
       }
     ]
   },

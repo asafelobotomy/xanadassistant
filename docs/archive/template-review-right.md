@@ -170,7 +170,7 @@ CI checks from `ci.yml`:
   # advisory: body-level metadata note present (non-blocking)
 ```
 
-**Xanadassistant status**: `skills/lifecycle-audit/SKILL.md` (7 lines) has no YAML
+**Xanadassistant status**: `skills/lifecycleAudit/SKILL.md` (7 lines) has no YAML
 frontmatter, no `name:` field, no structured body sections. It will not be discoverable
 by the VS Code skill protocol. The CI `Skills have valid SKILL.md` check from the
 template would fail for it.
@@ -238,12 +238,12 @@ commands." The instruction can be ignored under context pressure; the hook canno
 - `.github/hooks/copilot-hooks.json` — developer workspace (all-local mode)
 - `hooks/hooks.json` — plugin component (delivered to consumers via plugin install)
 
-The template wires all eight VS Code lifecycle events. The `xanad-workspace-mcp.py` stub
+The template wires all eight VS Code lifecycle events. The `xanadWorkspaceMcp.py` stub
 in xanadassistant's `hooks/scripts/` is a single Python file that exists but is not
 wired to any lifecycle event and has no corresponding `copilot-hooks.json`.
 
 **Xanadassistant status**: `.github/workflows/ci.yml` exists as a passive CI gate.
-No active VS Code lifecycle hooks are wired. The `hooks/scripts/xanad-workspace-mcp.py`
+No active VS Code lifecycle hooks are wired. The `hooks/scripts/xanadWorkspaceMcp.py`
 stub exists but is unused.
 
 ---

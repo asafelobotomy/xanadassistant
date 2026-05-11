@@ -87,7 +87,7 @@ python3 xanadAssistant.py plan setup --workspace <path> --package-root <path> --
 python3 xanadAssistant.py apply --workspace <path> --package-root <path> --plan <plan-file>
 ```
 
-> The `xanad-lifecycle` Copilot agent can guide you through setup interactively.
+> The `xanadLifecycle` Copilot agent can guide you through setup interactively.
 
 ---
 
@@ -197,14 +197,14 @@ When hooks are enabled, the following MCP servers are installed into `.github/ho
 
 | Server | Enabled by default | Description |
 |---|---|---|
-| `xanad-workspace-mcp.py` | yes | xanadAssistant lifecycle tools (`lifecycle.*`) |
-| `git-mcp.py` | yes | Full local + remote git workflow (22 tools) |
-| `web-mcp.py` | yes | DuckDuckGo search and URL fetch |
-| `time-mcp.py` | yes | Current time, elapsed duration, timezone conversion |
-| `security-mcp.py` | yes | OSV vulnerability lookup and deps.dev health check |
-| `mcp-sequential-thinking-server.py` | yes | Sequential reasoning bridge |
-| `github-mcp.py` | no | GitHub REST API (repos, issues, PRs, Actions, code search) |
-| `sqlite-mcp.py` | no | Query and inspect local SQLite databases |
+| `xanadWorkspaceMcp.py` | yes | xanadAssistant lifecycle tools (`lifecycle.*`) |
+| `gitMcp.py` | yes | Full local + remote git workflow (22 tools) |
+| `webMcp.py` | yes | DuckDuckGo search and URL fetch |
+| `timeMcp.py` | yes | Current time, elapsed duration, timezone conversion |
+| `securityMcp.py` | yes | OSV vulnerability lookup and deps.dev health check |
+| `mcpSequentialThinkingServer.py` | yes | Sequential reasoning bridge |
+| `githubMcp.py` | no | GitHub REST API (repos, issues, PRs, Actions, code search) |
+| `sqliteMcp.py` | no | Query and inspect local SQLite databases |
 
 ## Lockfile
 

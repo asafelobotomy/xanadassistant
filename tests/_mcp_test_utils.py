@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_SERVER = REPO_ROOT / "hooks" / "scripts" / "xanad-workspace-mcp.py"
+SOURCE_SERVER = REPO_ROOT / "hooks" / "scripts" / "xanadWorkspaceMcp.py"
 
 
 def encode_message(payload: dict) -> bytes:
@@ -46,7 +46,7 @@ def start_server(
     workspace: Path,
     env_overrides: dict[str, str] | None = None,
 ) -> subprocess.Popen[bytes]:
-    server_path = workspace / ".github" / "hooks" / "scripts" / "xanad-workspace-mcp.py"
+    server_path = workspace / ".github" / "hooks" / "scripts" / "xanadWorkspaceMcp.py"
     env = dict(os.environ)
     if env_overrides is not None:
         env.update(env_overrides)

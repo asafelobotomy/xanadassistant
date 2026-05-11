@@ -76,8 +76,8 @@ class GitHubSourceResolutionNetworkTests(unittest.TestCase):
         self.CACHE_ROOT.mkdir(parents=True, exist_ok=True)
 
     def start_mcp_server(self, workspace: Path) -> subprocess.Popen[bytes]:
-        source_server = REPO_ROOT / "hooks" / "scripts" / "xanad-workspace-mcp.py"
-        server_path = workspace / ".github" / "hooks" / "scripts" / "xanad-workspace-mcp.py"
+        source_server = REPO_ROOT / "hooks" / "scripts" / "xanadWorkspaceMcp.py"
+        server_path = workspace / ".github" / "hooks" / "scripts" / "xanadWorkspaceMcp.py"
         server_path.parent.mkdir(parents=True, exist_ok=True)
         server_path.write_text(source_server.read_text(encoding="utf-8"), encoding="utf-8")
         process = subprocess.Popen(

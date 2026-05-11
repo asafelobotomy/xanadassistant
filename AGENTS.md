@@ -10,7 +10,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `Commit` | yes | Git status, staging, commit messages, commits, pushes, pulls, rebases, branches, tags, releases, and PR work |
 | `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, and architecture lookup |
 | `Review` | yes | Code review, architecture review, security review, maintainability review, and regression-risk review |
-| `xanad-lifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, and `factory-restore` for xanadAssistant-managed surfaces |
+| `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, and `factory-restore` for xanadAssistant-managed surfaces |
 | `Debugger` | no | Root-cause diagnosis, failing tests, broken commands, unclear behavior reproduction, and minimal fix-path isolation |
 | `Planner` | no | Complex multi-step planning, phased rollout, migration planning, and scoped execution plans before implementation |
 | `Researcher` | no | External documentation, upstream behavior, GitHub-source research, and source-backed comparisons before implementation |
@@ -27,11 +27,11 @@ Use it to decide which specialist agent should own a task before widening scope.
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle` |
+| xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanadLifecycle` |
 
 ## Handoff Rules
 
-- `xanad-lifecycle` may delegate to `Explore` for repo inventory, `Debugger` for failing lifecycle behavior, and `Planner` for phased remediation.
+- `xanadLifecycle` may delegate to `Explore` for repo inventory, `Debugger` for failing lifecycle behavior, and `Planner` for phased remediation.
 - `Review` may delegate to `Explore` for inventory, `Debugger` for concrete reproduction, `Planner` for remediation planning, and `Researcher` for current external constraints.
 - `Debugger` stays read-only and returns diagnosis, evidence, and the minimal next fix step.
 - `Planner` stays read-only and returns an executable plan with file list, risks, and verification.
@@ -55,18 +55,18 @@ Use these patterns when a task crosses specialist boundaries but should still st
 | `Researcher` | `Docs` | Source-backed findings should become maintained repo documentation instead of remaining a one-off summary |
 | `Docs` | `Researcher` | Documentation accuracy depends on current external references or upstream behavior |
 | `Docs` | `Review` | The document needs a final correctness and coverage pass before it is considered complete |
-| `xanad-lifecycle` | `Debugger` | `inspect`, `check`, `plan`, `apply`, `update`, or `repair` results are surprising or failing and the control path is unclear |
-| `xanad-lifecycle` | `Planner` | Repair, update, migration, or factory-restore work needs phased remediation before execution |
+| `xanadLifecycle` | `Debugger` | `inspect`, `check`, `plan`, `apply`, `update`, or `repair` results are surprising or failing and the control path is unclear |
+| `xanadLifecycle` | `Planner` | Repair, update, migration, or factory-restore work needs phased remediation before execution |
 
 ## Lifecycle Trigger Phrases
 
 | Trigger phrase | Route |
 |---|---|
-| `inspect workspace` | `xanad-lifecycle` |
-| `run lifecycle check` | `xanad-lifecycle` |
-| `repair install` | `xanad-lifecycle` |
-| `update xanadAssistant` | `xanad-lifecycle` |
-| `factory restore` | `xanad-lifecycle` |
+| `inspect workspace` | `xanadLifecycle` |
+| `run lifecycle check` | `xanadLifecycle` |
+| `repair install` | `xanadLifecycle` |
+| `update xanadAssistant` | `xanadLifecycle` |
+| `factory restore` | `xanadLifecycle` |
 
 Natural-language requests to add a convention or preference to instructions, such as `Remember this for next time` or `Add this to your instructions`, are not lifecycle operations.
 

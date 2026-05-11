@@ -109,11 +109,11 @@ def mcp_question() -> dict:
         "recommended": True,
         "reason": (
             "Enabling MCP installs all hook scripts and .vscode/mcp.json atomically. "
-            "Always-on servers: xanad-workspace-mcp.py (lifecycle), git-mcp.py (git), "
-            "web-mcp.py (search + fetch), time-mcp.py (time/duration), "
-            "security-mcp.py (OSV + deps.dev), mcp-sequential-thinking-server.py (reasoning). "
-            "Optional servers (disabled by default): github-mcp.py (GitHub REST API, requires GITHUB_TOKEN), "
-            "sqlite-mcp.py (local SQLite databases). "
+            "Always-on servers: xanadWorkspaceMcp.py (lifecycle), gitMcp.py (git), "
+            "webMcp.py (search + fetch), timeMcp.py (time/duration), "
+            "securityMcp.py (OSV + deps.dev), mcpSequentialThinkingServer.py (reasoning). "
+            "Optional servers (disabled by default): githubMcp.py (GitHub REST API, requires GITHUB_TOKEN), "
+            "sqliteMcp.py (local SQLite databases). "
             "Outbound access is governed by each server at call time."
         ),
         "requiredFor": ["mcp-config"],
