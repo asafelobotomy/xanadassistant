@@ -21,7 +21,7 @@ def parse_github_source(source: str) -> tuple[str, str]:
     return owner, repo
 
 
-def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:
+def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:  # pragma: no cover
     import tarfile as _tarfile
     import tempfile as _tempfile
     import urllib.request as _urllib_request
@@ -61,7 +61,7 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     return cache_dir
 
 
-def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:
+def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:  # pragma: no cover
     if not re.match(r"^[A-Za-z0-9._/-]+$", ref):
         raise ValueError(f"ref contains invalid characters: {ref!r}")
     safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)

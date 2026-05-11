@@ -3,8 +3,7 @@
 Tests are skipped unless the 'mcp' package is importable. Install it with:
     pip install 'mcp[cli]'
 
-The server uses FastMCP's stdio transport which follows the MCP protocol's
-Content-Length framing (same as LSP).
+FastMCP 1.x uses newline-delimited JSON for stdio transport.
 """
 from __future__ import annotations
 
@@ -22,30 +21,33 @@ _MCP_AVAILABLE = importlib.util.find_spec("mcp") is not None
 
 
 def _encode(payload: dict) -> bytes:
-    body = json.dumps(payload).encode("utf-8")
-    return f"Content-Length: {len(body)}\r\n\r\n".encode("utf-8") + body
+    return json.dumps(payload, separators=(",", ":")).encode("utf-8") + b"\n"
 
 
-def _decode(stream) -> dict:
-    headers: dict[str, str] = {}
+def _decode_next(stream) -> dict:
+    """Read the next JSON line from stream, skipping blank lines."""
     while True:
-        line = stream.readline().decode("utf-8")
-        if line == "\r\n":
-            break
-        if ":" in line:
-            key, _, value = line.partition(":")
-            headers[key.strip().lower()] = value.strip()
-    length = int(headers.get("content-length", 0))
-    body = stream.read(length)
-    return json.loads(body.decode("utf-8"))
+        line = stream.readline()
+        if not line:
+            raise EOFError("Server closed stdout")
+        line = line.strip()
+        if not line:
+            continue
+        return json.loads(line.decode("utf-8"))
 
 
 def _rpc(process: subprocess.Popen, payload: dict) -> dict:
+    """Send a JSON-RPC request and return the response (skip notifications)."""
     assert process.stdin is not None
     assert process.stdout is not None
+    request_id = payload.get("id")
     process.stdin.write(_encode(payload))
     process.stdin.flush()
-    return _decode(process.stdout)
+    for _ in range(20):
+        msg = _decode_next(process.stdout)
+        if msg.get("id") == request_id:
+            return msg
+    raise RuntimeError("No response with matching id received")
 
 
 def _start_server(test_case: unittest.TestCase) -> subprocess.Popen:
@@ -73,7 +75,7 @@ def _stop_server(process: subprocess.Popen) -> None:
 
 def _initialize(process: subprocess.Popen) -> None:
     _rpc(process, {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
-        "protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "test", "version": "1.0"},
+        "protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "test", "version": "1.0"},
     }})
     assert process.stdin is not None
     process.stdin.write(_encode({"jsonrpc": "2.0", "method": "notifications/initialized"}))
@@ -100,8 +102,7 @@ class SequentialThinkingBehavioralTests(unittest.TestCase):
         process = _start_server(self)
         _initialize(process)
         response = _think(process, 2, thought="step one", thought_number=1, total_thoughts=3, next_thought_needed=True)
-        result = response["result"]["structuredContent"]
-        self.assertFalse(result.get("isError"))
+        self.assertFalse(response["result"].get("isError"))
         content = json.loads(response["result"]["content"][0]["text"])
         self.assertEqual(1, content["thought_number"])
         self.assertEqual(3, content["total_thoughts"])

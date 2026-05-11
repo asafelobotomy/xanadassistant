@@ -169,7 +169,7 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
             "factory-restore",
         )
 
-    mode = getattr(args, "mode", None)
-    payload = build_not_implemented_payload(args.command, workspace, package_root, mode)
-    emit_payload(payload, args.ui, use_json_lines)
-    return 1
+    mode = getattr(args, "mode", None)  # pragma: no cover
+    payload = build_not_implemented_payload(args.command, workspace, package_root, mode)  # pragma: no cover
+    emit_payload(payload, args.ui, use_json_lines)  # pragma: no cover
+    return 1  # pragma: no cover

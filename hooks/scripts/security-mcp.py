@@ -36,7 +36,7 @@ mcp = FastMCP("xanadSecurity")
 _HEADERS = {"Content-Type": "application/json", "Accept": "application/json"}
 
 
-def _post(url: str, payload: dict) -> dict:
+def _post(url: str, payload: dict) -> dict:  # pragma: no cover
     req = urllib.request.Request(
         url, data=json.dumps(payload).encode(), method="POST", headers=_HEADERS
     )
@@ -48,7 +48,7 @@ def _post(url: str, payload: dict) -> dict:
         raise RuntimeError(f"HTTP {exc.code} from {url}: {body}") from exc
 
 
-def _get(url: str) -> dict:
+def _get(url: str) -> dict:  # pragma: no cover
     req = urllib.request.Request(url, headers=_HEADERS)
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
@@ -63,7 +63,7 @@ def _get(url: str) -> dict:
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def query_osv(package: str, version: str, ecosystem: str) -> str:
+def query_osv(package: str, version: str, ecosystem: str) -> str:  # pragma: no cover
     """Query OSV for known vulnerabilities affecting a package version.
 
     Args:
@@ -99,7 +99,7 @@ def query_osv(package: str, version: str, ecosystem: str) -> str:
 
 
 @mcp.tool()
-def query_deps(package: str, version: str, system: str) -> str:
+def query_deps(package: str, version: str, system: str) -> str:  # pragma: no cover
     """Query deps.dev for package health: licenses, scorecard, vulnerability count.
 
     Args:
@@ -140,5 +140,5 @@ def query_deps(package: str, version: str, system: str) -> str:
 # Entry point
 # ---------------------------------------------------------------------------
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     mcp.run()

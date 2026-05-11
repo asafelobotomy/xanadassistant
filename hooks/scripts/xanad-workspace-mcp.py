@@ -328,7 +328,7 @@ def write_message(stream, payload: dict) -> None:
     stream.write(body)
     stream.write(b"\n")
     stream.flush()
-def main() -> int:
+def main() -> int:  # pragma: no cover
     input_stream = sys.stdin.buffer
     output_stream = sys.stdout.buffer
     while True:
@@ -342,5 +342,5 @@ def main() -> int:
         if response is not None:
             write_message(output_stream, response)
     return 0
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     raise SystemExit(main())

@@ -22,12 +22,7 @@ Every entry should stay short and include a concrete source.
 | Date | Decision | Rationale | Source |
 |------|----------|-----------|--------|
 
-## Known Gotchas
-
-| Date | Pattern | Context | Source |
-|------|---------|---------|--------|
-
 ## Conventions
 
 | Date | Convention | Applies To | Source |
-|------|-----------|------------|--------|
+|------|------------|------------|--------|

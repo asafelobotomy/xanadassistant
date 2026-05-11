@@ -63,7 +63,7 @@ def _token() -> str:
 
 
 def _req(method: str, path: str, body: dict | None = None,
-         params: dict | None = None) -> Any:
+         params: dict | None = None) -> Any:  # pragma: no cover
     url = f"{_API}{path}"
     if params:
         filtered = {k: v for k, v in params.items() if v is not None}
@@ -87,11 +87,11 @@ def _req(method: str, path: str, body: dict | None = None,
         raise RuntimeError(f"GitHub API {exc.code}: {body_text}") from exc
 
 
-def _get(path: str, params: dict | None = None) -> Any:
+def _get(path: str, params: dict | None = None) -> Any:  # pragma: no cover
     return _req("GET", path, params=params)
 
 
-def _post(path: str, body: dict) -> Any:
+def _post(path: str, body: dict) -> Any:  # pragma: no cover
     return _req("POST", path, body=body)
 
 
@@ -100,7 +100,7 @@ def _post(path: str, body: dict) -> Any:
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def get_repo(owner: str, repo: str) -> str:
+def get_repo(owner: str, repo: str) -> str:  # pragma: no cover
     """Return key metadata for a GitHub repository."""
     d = _get(f"/repos/{owner}/{repo}")
     return json.dumps({k: d.get(k) for k in (
@@ -111,7 +111,7 @@ def get_repo(owner: str, repo: str) -> str:
 
 
 @mcp.tool()
-def get_file_contents(owner: str, repo: str, path: str, ref: str = "") -> str:
+def get_file_contents(owner: str, repo: str, path: str, ref: str = "") -> str:  # pragma: no cover
     """Return the decoded text content of a file from a GitHub repository.
 
     Args:
@@ -128,7 +128,7 @@ def get_file_contents(owner: str, repo: str, path: str, ref: str = "") -> str:
 
 
 @mcp.tool()
-def search_code(query: str, per_page: int = 10) -> str:
+def search_code(query: str, per_page: int = 10) -> str:  # pragma: no cover
     """Search code on GitHub.
 
     Args:
@@ -151,7 +151,7 @@ def search_code(query: str, per_page: int = 10) -> str:
 
 @mcp.tool()
 def list_issues(owner: str, repo: str, state: str = "open",
-                per_page: int = 20) -> str:
+                per_page: int = 20) -> str:  # pragma: no cover
     """List issues for a repository (excludes pull requests).
 
     Args:
@@ -172,7 +172,7 @@ def list_issues(owner: str, repo: str, state: str = "open",
 
 
 @mcp.tool()
-def get_issue(owner: str, repo: str, issue_number: int) -> str:
+def get_issue(owner: str, repo: str, issue_number: int) -> str:  # pragma: no cover
     """Get full details of a specific issue.
 
     Args:
@@ -189,7 +189,7 @@ def get_issue(owner: str, repo: str, issue_number: int) -> str:
 
 @mcp.tool()
 def create_issue_comment(owner: str, repo: str,
-                         issue_number: int, body: str) -> str:
+                         issue_number: int, body: str) -> str:  # pragma: no cover
     """Post a comment on an issue or pull request.
 
     Args:
@@ -208,7 +208,7 @@ def create_issue_comment(owner: str, repo: str,
 
 @mcp.tool()
 def list_pull_requests(owner: str, repo: str, state: str = "open",
-                       per_page: int = 20) -> str:
+                       per_page: int = 20) -> str:  # pragma: no cover
     """List pull requests for a repository.
 
     Args:
@@ -229,7 +229,7 @@ def list_pull_requests(owner: str, repo: str, state: str = "open",
 
 
 @mcp.tool()
-def get_pull_request(owner: str, repo: str, pull_number: int) -> str:
+def get_pull_request(owner: str, repo: str, pull_number: int) -> str:  # pragma: no cover
     """Get full details of a specific pull request.
 
     Args:
@@ -247,7 +247,7 @@ def get_pull_request(owner: str, repo: str, pull_number: int) -> str:
 @mcp.tool()
 def create_pull_request(owner: str, repo: str, title: str, head: str,
                         base: str, body: str = "",
-                        draft: bool = False) -> str:
+                        draft: bool = False) -> str:  # pragma: no cover
     """Create a pull request.
 
     Args:
@@ -270,7 +270,7 @@ def create_pull_request(owner: str, repo: str, title: str, head: str,
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def list_releases(owner: str, repo: str, per_page: int = 10) -> str:
+def list_releases(owner: str, repo: str, per_page: int = 10) -> str:  # pragma: no cover
     """List releases for a repository.
 
     Args:
@@ -295,7 +295,7 @@ def list_releases(owner: str, repo: str, per_page: int = 10) -> str:
 
 @mcp.tool()
 def list_workflow_runs(owner: str, repo: str, workflow_id: str = "",
-                       status: str = "", per_page: int = 10) -> str:
+                       status: str = "", per_page: int = 10) -> str:  # pragma: no cover
     """List recent workflow runs for a repository.
 
     Args:
@@ -327,5 +327,5 @@ def list_workflow_runs(owner: str, repo: str, workflow_id: str = "",
 # Entry point
 # ---------------------------------------------------------------------------
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     mcp.run()

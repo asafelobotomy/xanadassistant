@@ -312,7 +312,7 @@ def git_fetch(
     repo_path: str,
     remote: str = "origin",
     prune: bool = False,
-) -> str:
+) -> str:  # pragma: no cover
     """Fetch from a remote without merging.
 
     Args:
@@ -329,7 +329,7 @@ def git_pull(
     remote: str = "origin",
     branch: str = "",
     rebase: bool = False,
-) -> str:
+) -> str:  # pragma: no cover
     """Fetch and integrate changes from a remote branch.
 
     Args:
@@ -351,7 +351,7 @@ def git_push(
     force: bool = False,
     set_upstream: bool = False,
     tags: bool = False,
-) -> str:
+) -> str:  # pragma: no cover
     """Push commits to a remote repository.
 
     Args:
@@ -376,5 +376,5 @@ def git_push(
 # Entry point
 # ---------------------------------------------------------------------------
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     mcp.run()

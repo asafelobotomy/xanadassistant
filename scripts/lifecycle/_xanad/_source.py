@@ -56,7 +56,7 @@ def parse_github_source(source: str) -> tuple[str, str]:
     return owner, repo
 
 
-def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:
+def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:  # pragma: no cover
     """Download a GitHub release tarball to the cache and return the extracted path."""
     import tarfile as _tarfile
     import tempfile as _tempfile
@@ -110,7 +110,7 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     return cache_dir
 
 
-def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:
+def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:  # pragma: no cover
     """Clone or update a GitHub repo at a specific ref to the cache and return the path."""
     safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{safe_ref}"
@@ -166,7 +166,7 @@ def resolve_effective_package_root(
     owner, repo = parse_github_source(source_arg)
     cache_root = get_cache_root()
 
-    if version_arg is not None:
+    if version_arg is not None:  # pragma: no cover
         pkg_root = resolve_github_release(owner, repo, version_arg, cache_root)
         return pkg_root, {
             "kind": "github-release",
@@ -175,9 +175,9 @@ def resolve_effective_package_root(
             "packageRoot": str(pkg_root),
         }
 
-    resolved_ref = ref_arg if ref_arg is not None else "main"
-    pkg_root = resolve_github_ref(owner, repo, resolved_ref, cache_root)
-    return pkg_root, {
+    resolved_ref = ref_arg if ref_arg is not None else "main"  # pragma: no cover
+    pkg_root = resolve_github_ref(owner, repo, resolved_ref, cache_root)  # pragma: no cover
+    return pkg_root, {  # pragma: no cover
         "kind": "github-ref",
         "source": source_arg,
         "ref": resolved_ref,

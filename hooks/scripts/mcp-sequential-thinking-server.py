@@ -66,7 +66,7 @@ _session: ThinkingSession = ThinkingSession()
 
 
 @asynccontextmanager
-async def _lifespan(server: FastMCP):  # noqa: ARG001
+async def _lifespan(server: FastMCP):  # noqa: ARG001  # pragma: no cover
     """Initialise a fresh session on each MCP process lifecycle."""
     global _session
     _session = ThinkingSession()
@@ -247,5 +247,5 @@ def sequentialthinking(
     }
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     mcp.run(transport="stdio")

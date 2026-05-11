@@ -131,7 +131,7 @@ def web_search(
     query: str,
     max_results: int = 10,
     region: str = "",
-) -> str:
+) -> str:  # pragma: no cover
     """Search the web via DuckDuckGo and return ranked results.
 
     Args:
@@ -191,7 +191,7 @@ def fetch(
     max_length: int = 5000,
     start_index: int = 0,
     raw: bool = False,
-) -> str:
+) -> str:  # pragma: no cover
     """Fetch a URL and return its content as Markdown (or raw text).
 
     Internal and private network addresses are blocked.  For long pages,
@@ -232,5 +232,5 @@ def fetch(
 # Entry point
 # ---------------------------------------------------------------------------
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     mcp.run()

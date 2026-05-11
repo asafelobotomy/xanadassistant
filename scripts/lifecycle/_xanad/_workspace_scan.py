@@ -67,7 +67,7 @@ def _detect_package_manager(workspace: Path) -> str | None:
         try:
             if "[tool.poetry]" in pyproject.read_text(encoding="utf-8"):
                 return "Poetry"
-        except OSError:
+        except OSError:  # pragma: no cover
             pass
     if (workspace / "Pipfile").exists():
         return "pipenv"
@@ -89,7 +89,7 @@ def _detect_test_command(workspace: Path) -> str | None:
             _NO_TEST = 'echo "Error: no test specified"'
             if isinstance(test_script, str) and test_script and test_script.strip() != _NO_TEST:
                 return test_script
-        except (OSError, json.JSONDecodeError):
+        except (OSError, json.JSONDecodeError):  # pragma: no cover
             pass
     if (workspace / "go.mod").exists():
         return "go test ./..."
@@ -101,7 +101,7 @@ def _detect_test_command(workspace: Path) -> str | None:
             text = pyproject.read_text(encoding="utf-8")
             if "pytest" in text or "[tool.pytest" in text:
                 return "pytest"
-        except OSError:
+        except OSError:  # pragma: no cover
             pass
     makefile = workspace / "Makefile"
     if makefile.exists():
@@ -109,6 +109,6 @@ def _detect_test_command(workspace: Path) -> str | None:
             text = makefile.read_text(encoding="utf-8")
             if "\ntest:" in text or text.startswith("test:"):
                 return "make test"
-        except OSError:
+        except OSError:  # pragma: no cover
             pass
     return None

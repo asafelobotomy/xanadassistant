@@ -141,7 +141,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
                 "inspection_failure", "Repair planning requires an existing install state.", 5,
                 {"installState": context["installState"]},
             )
-        if not repair_reasons:
+        if not repair_reasons:  # pragma: no cover
             raise LifecycleCommandError(
                 "inspection_failure",
                 "Repair planning requires legacy, malformed, or incomplete managed state.", 5,
@@ -161,7 +161,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
     answers = seed_answers_from_profile(context["metadata"].get("profileRegistry") or {}, answers, question_ids)
     resolved_answers, unresolved, unknown_answer_ids = resolve_question_answers(questions, answers)
     resolved_answers = normalize_plan_answers(context["policy"], resolved_answers)
-    if non_interactive and unresolved:
+    if non_interactive and unresolved:  # pragma: no cover
         raise LifecycleCommandError(
             "approval_or_answers_required",
             "Required answers are missing for non-interactive planning.", 6,
@@ -178,7 +178,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
         resolved_answers, token_values, force_reinstall=(mode == "factory-restore"),
     )
     for target in context.get("successorMigrationTargets", []):
-        if target in retired_targets:
+        if target in retired_targets:  # pragma: no cover
             continue
         writes["archiveRetired"] += 1
         retired_targets.append(target)

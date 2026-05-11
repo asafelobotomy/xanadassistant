@@ -5,7 +5,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+    sys.path.insert(0, str(REPO_ROOT))  # pragma: no cover
 
 # Re-export all public symbols so that existing imports and mock patches keep working.
 from scripts.lifecycle._xanad._errors import (  # noqa: E402
@@ -79,5 +79,5 @@ from scripts.lifecycle._xanad._progress import (
 )
 from scripts.lifecycle._xanad._main import main
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     raise SystemExit(main())

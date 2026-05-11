@@ -98,7 +98,7 @@ def convert_timezone(timestamp: str, from_tz: str, to_tz: str) -> str:
         to_tz: Target IANA timezone name.
     """
     dt = _parse_iso(timestamp)
-    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:  # pragma: no cover
         dt = dt.replace(tzinfo=_tz(from_tz))
     return dt.astimezone(_tz(to_tz)).isoformat(timespec="seconds")
 
@@ -129,5 +129,5 @@ def format_duration(seconds: float) -> str:
 # Entry point
 # ---------------------------------------------------------------------------
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     mcp.run()

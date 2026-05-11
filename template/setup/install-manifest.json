@@ -190,7 +190,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:ecda12742b6f1578c28e101d07c211260916231bb48ecbae13f1e693bc768378"
+      "hash": "sha256:3444346f1685eaaf667182edcac4e5252010123cc489715d6137c2121b15be4c"
     },
     {
       "id": "hook-scripts.git-mcp.py",
@@ -207,7 +207,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:74d1287a0ecc1ce471557a1490151cfeead8b769c9aa67a7068ec480ed1a8725"
+      "hash": "sha256:35b9cc9e307c3a861b29d7fba0a9fd7491a1ae6e31affc9690ae89df37aad7ea"
     },
     {
       "id": "hook-scripts.github-mcp.py",
@@ -224,7 +224,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:de5574ebddbb5caa3649af109b70c7174dc49b03ece72fc320fa49a1aeda991a"
+      "hash": "sha256:64bc6fb71c7bcb4dec2f4e994268b4df28b5fbe508b99f5a5a6ebcb005fc8b55"
     },
     {
       "id": "hook-scripts.mcp-sequential-thinking-server.py",
@@ -241,7 +241,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:2681e2fa1ecce85f6cb265f0fcdc6e52d484b18e692ffebf747b49256781e2e7"
+      "hash": "sha256:c86580e46c4d0a2867c5870f8e67bac978949bb388a30107c3e5a9ad9f883748"
     },
     {
       "id": "hook-scripts.security-mcp.py",
@@ -258,7 +258,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:7629e5231c7b39e9a5cda3adbe6931b68334643b90949413928ab9577c499a3b"
+      "hash": "sha256:93ab2c2992a0e1bb144fc392307fb7baf7c66a761476631a49ce9a57c789b1fe"
     },
     {
       "id": "hook-scripts.sqlite-mcp.py",
@@ -275,7 +275,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:be5ab88dc75f406802a00df7e1a492f03f84e9ab0d7234f55dc0e11e0804acaf"
+      "hash": "sha256:f43fdec3a7b4b25722cada6760a7f8c7677fe5e2752d658a99974225678b1ea8"
     },
     {
       "id": "hook-scripts.time-mcp.py",
@@ -292,7 +292,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:284d727aa3da9831d0f3e0cf5690bd8bc84e9ebc86e7c3556262ebf33cb6efdb"
+      "hash": "sha256:9dfcdc24060ce78074943d6b85208950ba8ee5e6e533a28b748de5c999bb850b"
     },
     {
       "id": "hook-scripts.web-mcp.py",
@@ -309,7 +309,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:ee038df762adc70b442f0bffc0d8998c68ce14ac8463d2cfab67f684fb54e262"
+      "hash": "sha256:5700cc8fc356fcfc6702710041b6e47dd88b8f9ec787987487aaa4cf1b507d65"
     },
     {
       "id": "hook-scripts.xanad-workspace-mcp.py",
@@ -326,7 +326,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:a306bce99c4f24e03f28b28cc2a99a75e6dd9a25257984356c591e75a3f6cc7e"
+      "hash": "sha256:51b405194322fc780eaa5a97b2c3aa170a3d6c37b5eb2f51cfa4b1e6d6b92c37"
     },
     {
       "id": "instructions.scripts.instructions.md",
