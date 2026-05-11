@@ -10,6 +10,9 @@ describe_table : Return the CREATE statement for a table or view.
 
 Security
 --------
+- ``db_path`` is unrestricted: any readable filesystem path is accepted; trust
+  is placed in the agent to supply a safe path. No additional path sandboxing
+  is performed by this server.
 - Read-only connections use SQLite's URI mode (mode=ro) enforced at the driver
   level — no write operation can succeed regardless of the SQL sent.
 - User-supplied values should be passed via the params list (? placeholders)
