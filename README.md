@@ -71,6 +71,73 @@ python3 xanad-assistant.py check --workspace . --package-root . --json
 python3 xanad-assistant.py plan setup --workspace <path> --package-root . --json --non-interactive
 ```
 
+## Lifecycle processes
+
+### Setup
+
+First-time install of all managed surfaces into a workspace that has no existing xanad-assistant install.
+
+1. Run `inspect` — confirms the workspace is in `not-installed` state.
+2. Run `interview` — collects your choices: profile, optional packs, personalisation tokens (response style, autonomy level, agent persona, testing philosophy), and whether to enable MCP hooks.
+3. Run `plan setup` — computes the full write set; no files are written yet; conflicts and backup needs are flagged.
+4. Run `apply` — backs up any pre-existing content, writes all managed files with token substitution, and writes the lockfile recording your answers, hashes, profile, packs, and MCP state.
+
+```sh
+python3 xanad-assistant.py plan setup --workspace <path> --package-root <path> --json
+python3 xanad-assistant.py apply --workspace <path> --package-root <path> --plan <plan-file>
+```
+
+> The `xanad-lifecycle` Copilot agent can guide you through setup interactively.
+
+---
+
+### Update
+
+Refresh stale or missing managed files in a workspace that is already installed. Re-reads your existing lockfile so no re-interview is needed.
+
+1. Run `inspect` — confirms install state is `installed` and identifies stale or missing files.
+2. Reads all previous answers (profile, packs, personalisation, MCP state) from the lockfile.
+3. Run `plan update` — hashes each managed file; only stale and missing files appear in the write set.
+4. Run `apply` — backs up changed files, writes only the stale/missing entries, and updates the lockfile with new hashes.
+
+```sh
+# One-step shorthand
+python3 xanad-assistant.py update --workspace <path> --package-root <path> --json
+```
+
+---
+
+### Factory restore
+
+Full reset of a workspace that already has xanad-assistant installed. Use this when you want a clean slate while keeping your existing profile and pack choices.
+
+1. Requires an existing install (use **setup** for first-time installs).
+2. Backs up all currently installed managed files.
+3. Purges all managed content from the workspace.
+4. Reinstalls from policy from scratch, reusing your lockfile answers for profile, packs, and personalisation.
+5. Rewrites the lockfile with updated hashes.
+
+```sh
+# One-step shorthand
+python3 xanad-assistant.py factory-restore --workspace <path> --package-root <path> --json
+```
+
+---
+
+### Migrate
+
+Migration from a predecessor package (`copilot-instructions-template`) to xanad-assistant. Handled automatically via `repair` or `update` — no separate command needed.
+
+- Run `inspect` — reports `package_name_mismatch` or `successor_cleanup_required` in its findings, signalling a predecessor workspace.
+- Run `repair` (or `update`) — re-identifies the workspace as `xanad-assistant`, migrates the lockfile schema, and removes retired predecessor-era files (e.g. old agent files in `.github/agents/`).
+- The legacy `.github/copilot-version.md` file is preserved for reference during migration.
+- After repair/update completes, `inspect` reports clean with no repair reasons.
+
+```sh
+python3 xanad-assistant.py inspect --workspace <path> --package-root <path> --json
+python3 xanad-assistant.py repair --workspace <path> --package-root <path> --json
+```
+
 ## Architecture
 
 ```

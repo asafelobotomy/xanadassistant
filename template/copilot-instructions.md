@@ -1,7 +1,7 @@
 # {{WORKSPACE_NAME}} — Copilot Instructions
 
 > This project uses **xanad-assistant** to manage its Copilot surface files (agents, skills, hooks, prompts).
-> Lifecycle authority: `xanad-assistant.py` — use the `xanad-lifecycle-planning` agent for all xanad-assistant operations.
+> Lifecycle authority: `xanad-assistant.py` — use the `xanad-lifecycle` agent for all xanad-assistant operations.
 
 ## My Role
 
@@ -17,7 +17,7 @@ I work **in** {{WORKSPACE_NAME}} — implementing features, reviewing code, runn
 
 ## Lifecycle Operations
 
-Use the **xanad-lifecycle-planning** agent for all xanad-assistant operations. Trigger phrases:
+Use the **xanad-lifecycle** agent for all xanad-assistant operations. Trigger phrases:
 
 | Trigger phrase | Operation |
 |---|---|
@@ -50,7 +50,7 @@ Route specialist work to the matching agent before acting directly. If a task ha
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanad-assistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle-planning` |
+| xanad-assistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle` |
 
 ## Coding Conventions
 
@@ -89,4 +89,4 @@ Use memory as optional recall, not as lifecycle authority.
 - `Planner` agent — produce scoped execution plans for multi-step work before implementation
 - `Researcher` agent — gather source-backed external constraints before implementation or review
 - `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
-- `xanad-lifecycle-planning` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
+- `xanad-lifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests

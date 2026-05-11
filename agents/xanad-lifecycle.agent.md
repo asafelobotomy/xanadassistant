@@ -1,11 +1,11 @@
 ---
-name: xanad-lifecycle-planning
-description: "Use when: set up xanad-assistant, inspect workspace, run lifecycle check, plan setup, apply setup, update xanad-assistant, repair install, factory restore, or coordinate lifecycle commands in a consumer workspace."
-argument-hint: "Describe the lifecycle task: inspect, check, plan setup, apply, update, repair, or factory restore."
+name: xanad-lifecycle
+description: "Use when: set up xanad-assistant, inspect workspace, run lifecycle check, interview, plan setup, apply setup, update xanad-assistant, repair install, factory restore, or coordinate any lifecycle command in a consumer workspace."
+argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, apply, update, repair, or factory restore."
 model:
   - Claude Sonnet 4.6
   - GPT-5
-tools: [agent, runCommands, askQuestions]
+tools: [agent, codebase, search, runCommands, askQuestions]
 agents: [Explore, Debugger, Planner]
 user-invocable: true
 ---
@@ -16,10 +16,11 @@ Use `xanad-assistant.py` as the single lifecycle entrypoint. Do not edit managed
 files directly when the lifecycle engine can express the same change.
 
 When the workspace `xanadTools` MCP server is connected and can resolve a local
-package root or a supported remote source, prefer its `lifecycle_inspect`, `lifecycle_interview`,
-`lifecycle_plan_setup`, `lifecycle_apply`, and `lifecycle_check` tools for setup
-mode. Fall back to direct CLI invocation when MCP is unavailable or package
-source resolution is missing.
+package root or a supported remote source, prefer its `lifecycle_inspect`,
+`lifecycle_interview`, `lifecycle_plan_setup`, `lifecycle_apply`, `lifecycle_check`,
+`lifecycle_update`, `lifecycle_repair`, and `lifecycle_factory_restore` tools.
+Fall back to direct CLI invocation when MCP is unavailable or package source
+resolution is missing.
 
 ## Trigger phrases
 
@@ -55,13 +56,25 @@ python3 xanad-assistant.py inspect \
 python3 xanad-assistant.py check \
   --workspace <consumer-repo-path> \
   --package-root <xanad-assistant-checkout> \
-  --json-lines
+  --ui agent --json-lines
+
+# Emit structured setup questions
+python3 xanad-assistant.py interview \
+  --workspace <consumer-repo-path> \
+  --package-root <xanad-assistant-checkout> \
+  --mode setup --json-lines
 
 # Generate a setup plan (no writes)
 python3 xanad-assistant.py plan setup \
   --workspace <consumer-repo-path> \
   --package-root <xanad-assistant-checkout> \
-  --non-interactive --json-lines
+  --non-interactive --ui agent --json-lines
+
+# Generate a factory-restore plan (no writes)
+python3 xanad-assistant.py plan factory-restore \
+  --workspace <consumer-repo-path> \
+  --package-root <xanad-assistant-checkout> \
+  --non-interactive --ui agent --json-lines
 
 # Apply the setup plan
 python3 xanad-assistant.py apply \
@@ -77,6 +90,12 @@ python3 xanad-assistant.py update \
 
 # Repair a damaged or incomplete install
 python3 xanad-assistant.py repair \
+  --workspace <consumer-repo-path> \
+  --package-root <xanad-assistant-checkout> \
+  --non-interactive --ui agent --json-lines
+
+# Factory restore to clean package state
+python3 xanad-assistant.py factory-restore \
   --workspace <consumer-repo-path> \
   --package-root <xanad-assistant-checkout> \
   --non-interactive --ui agent --json-lines

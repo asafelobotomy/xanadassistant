@@ -64,7 +64,7 @@ class PlanSetupTests(XanadTestBase):
                 ".github/agents/planner.agent.md",
                 ".github/agents/researcher.agent.md",
                 ".github/agents/review.agent.md",
-                ".github/agents/xanad-lifecycle-planning.agent.md",
+                ".github/agents/xanad-lifecycle.agent.md",
                 ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
             ],
@@ -222,7 +222,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertIn(".vscode/mcp.json", action_targets)
 
         skipped = {entry["target"]: entry["reason"] for entry in payload["result"]["skippedActions"]}
-        self.assertEqual("plugin-backed-ownership", skipped[".github/agents/xanad-lifecycle-planning.agent.md"])
+        self.assertEqual("plugin-backed-ownership", skipped[".github/agents/xanad-lifecycle.agent.md"])
         self.assertEqual("plugin-backed-ownership", skipped[".github/skills/lifecycle-audit/SKILL.md"])
 
     def test_plan_setup_ignores_unknown_answer_ids_with_warning(self) -> None:

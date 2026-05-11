@@ -136,11 +136,11 @@
       "hash": "sha256:5b79a4892eaa73287bef024d78b090b17959f8002fb18cff1f3a6e54bf316d4a"
     },
     {
-      "id": "agents.xanad-lifecycle-planning.agent.md",
+      "id": "agents.xanad-lifecycle.agent.md",
       "surface": "agents",
       "layer": "pack",
-      "source": "agents/xanad-lifecycle-planning.agent.md",
-      "target": ".github/agents/xanad-lifecycle-planning.agent.md",
+      "source": "agents/xanad-lifecycle.agent.md",
+      "target": ".github/agents/xanad-lifecycle.agent.md",
       "ownership": [
         "local",
         "plugin-backed-copilot-format"
@@ -149,7 +149,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:defdf6436d6f04b86f5196c67a693adf3e726dd0ea84ca4640f40a822db392f9"
+      "hash": "sha256:b030228be9685d2f166d191b24d690c33f0075f9370c2df92787119c57beaaef"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -173,7 +173,8 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:36ad66de0f65ffdb0ad1bcfd676a37df163f19b71c7ff96161af4732230d7fe4"
+      "hash": "sha256:38b71f789247b4bbe010a9908f2f8cad881d80802a95702e517f48034b22fc16"
+ (refactor: rename xanad-lifecycle-planning agent to xanad-lifecycle; audit fixes)
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -441,7 +442,14 @@
       "target": ".github/agents/lifecycle-planning.agent.md",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/agents/xanad-lifecycle-planning.agent.md to match the canonical agent name."
+      "notes": "Renamed to .github/agents/xanad-lifecycle.agent.md to match the canonical agent name."
+    },
+    {
+      "id": "retired.agents.xanad-lifecycle-planning.agent.md",
+      "target": ".github/agents/xanad-lifecycle-planning.agent.md",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/agents/xanad-lifecycle.agent.md \u2014 'planning' was a misnomer; this agent coordinates the full lifecycle."
     }
   ]
 }

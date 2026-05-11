@@ -53,7 +53,7 @@ class PlanLifecycleTests(XanadTestBase):
                 ".github/agents/planner.agent.md",
                 ".github/agents/researcher.agent.md",
                 ".github/agents/review.agent.md",
-                ".github/agents/xanad-lifecycle-planning.agent.md",
+                ".github/agents/xanad-lifecycle.agent.md",
                 ".github/skills/lean-output/SKILL.md",
                 ".github/skills/lifecycle-audit/SKILL.md",
             ],
