@@ -27,12 +27,13 @@ Use the **xanad-lifecycle-planning** agent for all xanad-assistant operations. T
 | `"repair install"` | Fix stale or broken managed files |
 | `"factory restore"` | Reset to clean managed state |
 
-Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanad-assistant. Use the `lifecycle-audit` skill to review state before proposing any lifecycle operation.
+Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanad-assistant. Review state with the workspace-local `xanadTools` lifecycle tools (`lifecycle_inspect`, `lifecycle_check`) before proposing any lifecycle operation.
 When the workspace-local `xanadTools` MCP server is available and can resolve a
 local xanad-assistant package root or a supported remote source, setup-oriented
 lifecycle operations may use its `lifecycle.*` tools instead of shelling out directly.
+This repository's lockfile should include a GitHub `source` plus `ref` fallback so lifecycle tools still work when a sibling xanad-assistant checkout is unavailable.
 If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`,
-the workspace is being migrated from `copilot-instructions-template`; use `repair`
+the workspace still has predecessor-managed Copilot surfaces; use `repair`
 or `update` so xanad-assistant can archive predecessor-owned files and install the
 current bundle atomically.
 
@@ -84,7 +85,6 @@ Use memory as optional recall, not as lifecycle authority.
 
 ## Skills and Agents
 
-- `lifecycle-audit` skill — loaded on demand; run before any lifecycle operation
 - `Debugger` agent — diagnose failures and isolate root causes before implementation
 - `Planner` agent — produce scoped execution plans for multi-step work before implementation
 - `Researcher` agent — gather source-backed external constraints before implementation or review

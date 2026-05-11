@@ -56,6 +56,58 @@ def parse_github_source(source: str) -> tuple[str, str]:
     return owner, repo
 
 
+def _parse_github_remote_url(remote_url: str) -> str | None:
+    remote_url = remote_url.strip()
+    patterns = (
+        r"^https://github\.com/(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$",
+        r"^ssh://git@github\.com/(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$",
+        r"^git@github\.com:(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?$",
+    )
+    for pattern in patterns:
+        match = re.match(pattern, remote_url)
+        if match is None:
+            continue
+        owner = match.group("owner")
+        repo = match.group("repo")
+        return f"github:{owner}/{repo}"
+    return None
+
+
+def _detect_git_source_info(package_root: Path) -> dict[str, str]:
+    info: dict[str, str] = {}
+    try:
+        remote_result = subprocess.run(
+            ["git", "-C", str(package_root), "remote", "get-url", "origin"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return info
+
+    if remote_result.returncode != 0:
+        return info
+
+    source = _parse_github_remote_url(remote_result.stdout)
+    if source is None:
+        return info
+    info["source"] = source
+
+    try:
+        branch_result = subprocess.run(
+            ["git", "-C", str(package_root), "symbolic-ref", "--quiet", "--short", "HEAD"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return info
+
+    if branch_result.returncode == 0 and branch_result.stdout.strip():
+        info["ref"] = branch_result.stdout.strip()
+    return info
+
+
 def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:  # pragma: no cover
     """Download a GitHub release tarball to the cache and return the extracted path."""
     import tarfile as _tarfile
@@ -154,7 +206,20 @@ def resolve_effective_package_root(
     """Resolve the effective package root from CLI args, returning (path, source_info)."""
     if package_root_arg is not None:
         pkg_root = resolve_package_root(package_root_arg)
-        return pkg_root, {"kind": "package-root", "packageRoot": str(pkg_root)}
+        source_info = {"kind": "package-root", "packageRoot": str(pkg_root)}
+        inferred_source_info = _detect_git_source_info(pkg_root)
+        effective_source = source_arg or inferred_source_info.get("source")
+        if effective_source is not None:
+            parse_github_source(effective_source)
+            source_info["source"] = effective_source
+        if version_arg is not None:
+            source_info["version"] = version_arg
+        effective_ref = ref_arg
+        if effective_ref is None and version_arg is None:
+            effective_ref = inferred_source_info.get("ref")
+        if effective_ref is not None and "source" in source_info:
+            source_info["ref"] = effective_ref
+        return pkg_root, source_info
 
     if source_arg is None:
         raise LifecycleCommandError(

@@ -173,7 +173,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:e0221d313543fb1f3b656eff7ea2c08c3891028c3bcd22520a96845098d93578"
+      "hash": "sha256:36ad66de0f65ffdb0ad1bcfd676a37df163f19b71c7ff96161af4732230d7fe4"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -381,7 +381,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:75c5258fc6b82f1d66231ea04c6f06dc61c800691b8ac6f6cf101def06d32a9e"
+      "hash": "sha256:690a5aee8811180cf691f626e2dcbbb5b5febc712ed3c384b6e7df54d208eae0"
     },
     {
       "id": "lean-skills.lean-output.SKILL.md",

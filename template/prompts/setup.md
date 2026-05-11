@@ -42,7 +42,7 @@ Expect `.github/hooks/scripts/xanad-workspace-mcp.py`,
 to appear in the planned writes.
 
 If the warnings include `package_name_mismatch` or `successor_cleanup_required`,
-treat the workspace as a predecessor `copilot-instructions-template` install.
+treat the workspace as a predecessor-managed install.
 Use `plan repair` plus `repair` so xanad-assistant can archive predecessor-owned
 files and adopt the workspace cleanly.
 
@@ -70,7 +70,7 @@ python3 xanad-assistant.py plan setup \
   --non-interactive --json-lines
 ```
 
-For predecessor `copilot-instructions-template` installs, replace `plan setup`
+For predecessor-managed installs, replace `plan setup`
 with `plan repair`.
 
 If `approvalRequired` is true in the plan payload, summarise the planned writes
@@ -90,7 +90,7 @@ python3 xanad-assistant.py apply \
   --non-interactive --ui agent --json-lines
 ```
 
-For predecessor `copilot-instructions-template` installs, replace `apply` with
+For predecessor-managed installs, replace `apply` with
 `repair`.
 
 Check the `validation.status` in the apply result. If it is not `passed`,

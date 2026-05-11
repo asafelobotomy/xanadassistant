@@ -95,10 +95,25 @@ def collect_unmanaged_files(workspace: Path, manifest: dict | None, managed_targ
 
     retired_targets = {entry.get("target") for entry in manifest.get("retiredFiles", [])}
     candidate_dirs = {str(Path(target).parent) for target in managed_targets}
+    managed_targets_by_dir: dict[str, list[Path]] = {}
+    for target in managed_targets:
+        target_path = Path(target)
+        managed_targets_by_dir.setdefault(str(target_path.parent), []).append(target_path)
     unmanaged: set[str] = set()
 
     for candidate in sorted(candidate_dirs):
         if candidate in {"", "."}:
+            continue
+        candidate_path = Path(candidate)
+        managed_in_dir = managed_targets_by_dir.get(candidate, [])
+        # Root container directories like .github and .vscode often hold unrelated
+        # repository metadata. Only scan dedicated managed subtrees for lookalikes.
+        if (
+            len(candidate_path.parts) == 1
+            and candidate_path.name.startswith(".")
+            and managed_in_dir
+            and all(len(path.parts) == len(candidate_path.parts) + 1 for path in managed_in_dir)
+        ):
             continue
         base_dir = workspace / candidate
         if not base_dir.exists() or not base_dir.is_dir():

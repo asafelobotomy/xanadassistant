@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from scripts.lifecycle._xanad._errors import LifecycleCommandError, _State
@@ -135,6 +137,31 @@ class ResolveEffectivePackageRootTests(unittest.TestCase):
             pkg_root, source_info = resolve_effective_package_root(tmp, None, None, None)
             self.assertEqual(Path(tmp).resolve(), pkg_root)
             self.assertEqual("package-root", source_info["kind"])
+
+    @mock.patch("scripts.lifecycle._xanad._source.subprocess.run")
+    def test_resolves_local_package_root_infers_github_source_and_ref(self, mock_run) -> None:
+        mock_run.side_effect = [
+            subprocess.CompletedProcess(
+                args=["git", "remote", "get-url", "origin"],
+                returncode=0,
+                stdout="https://github.com/asafelobotomy/xanadassistant.git\n",
+                stderr="",
+            ),
+            subprocess.CompletedProcess(
+                args=["git", "symbolic-ref", "--quiet", "--short", "HEAD"],
+                returncode=0,
+                stdout="main\n",
+                stderr="",
+            ),
+        ]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            pkg_root, source_info = resolve_effective_package_root(tmp, None, None, None)
+
+        self.assertEqual(Path(tmp).resolve(), pkg_root)
+        self.assertEqual("package-root", source_info["kind"])
+        self.assertEqual("github:asafelobotomy/xanadassistant", source_info["source"])
+        self.assertEqual("main", source_info["ref"])
 
     def test_raises_when_no_package_root_and_no_source(self) -> None:
         with self.assertRaises(LifecycleCommandError) as ctx:

@@ -106,6 +106,47 @@ class InspectCheckTests(XanadTestBase):
         self.assertEqual(1, payload["result"]["summary"]["unmanaged"])
         self.assertIn(".github/prompts/custom.md", payload["result"]["unmanagedFiles"])
 
+    def test_check_ignores_repo_owned_files_in_root_container_dirs(self) -> None:
+        def workspace_setup(workspace: Path, repo_root: Path) -> None:
+            target_one = workspace / ".github" / "copilot-instructions.md"
+            target_one.parent.mkdir(parents=True, exist_ok=True)
+            target_one.write_text(self.render_copilot_instructions(repo_root, workspace), encoding="utf-8")
+
+            prompt = workspace / ".github" / "prompts" / "setup.md"
+            prompt.parent.mkdir(parents=True, exist_ok=True)
+            prompt.write_text(self.render_setup_prompt(repo_root, workspace), encoding="utf-8")
+
+            vscode_dir = workspace / ".vscode"
+            vscode_dir.mkdir(parents=True, exist_ok=True)
+            (vscode_dir / "mcp.json").write_text(
+                json.dumps(
+                    json.loads((repo_root / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8")),
+                    indent=2,
+                ) + "\n",
+                encoding="utf-8",
+            )
+
+            workflows = workspace / ".github" / "workflows"
+            workflows.mkdir(parents=True, exist_ok=True)
+            (workflows / "validate.yml").write_text("name: Validate\n", encoding="utf-8")
+
+            starter_kit = workspace / ".github" / "starter-kits" / "cpp"
+            starter_kit.mkdir(parents=True, exist_ok=True)
+            (starter_kit / "plugin.json").write_text("{}\n", encoding="utf-8")
+
+            (vscode_dir / "settings.json").write_text("{}\n", encoding="utf-8")
+            (vscode_dir / "extensions.json").write_text("{}\n", encoding="utf-8")
+
+        result = self.run_command("check", "--json", workspace_setup=workspace_setup)
+
+        self.assertEqual(7, result.returncode)
+        payload = json.loads(result.stdout)
+        self.assertEqual(0, payload["result"]["summary"]["unmanaged"])
+        self.assertNotIn(".github/workflows/validate.yml", payload["result"]["unmanagedFiles"])
+        self.assertNotIn(".github/starter-kits/cpp/plugin.json", payload["result"]["unmanagedFiles"])
+        self.assertNotIn(".vscode/settings.json", payload["result"]["unmanagedFiles"])
+        self.assertNotIn(".vscode/extensions.json", payload["result"]["unmanagedFiles"])
+
     def test_check_reports_clean_when_all_targets_match(self) -> None:
         def workspace_setup(workspace: Path, repo_root: Path) -> None:
             target_one = workspace / ".github" / "copilot-instructions.md"

@@ -195,6 +195,14 @@ class DetectTestCommandTests(unittest.TestCase):
             (ws / "Makefile").write_text("test:\n\techo run\n", encoding="utf-8")
             self.assertEqual("make test", _detect_test_command(ws))
 
+    def test_detects_repo_run_tests_wrapper(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            script_path = ws / "scripts" / "run-tests.sh"
+            script_path.parent.mkdir(parents=True, exist_ok=True)
+            script_path.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+            self.assertEqual("scripts/run-tests.sh", _detect_test_command(ws))
+
     def test_returns_none_for_empty_workspace(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             self.assertIsNone(_detect_test_command(Path(tmp)))

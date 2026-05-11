@@ -91,6 +91,9 @@ def _detect_test_command(workspace: Path) -> str | None:
                 return test_script
         except (OSError, json.JSONDecodeError):  # pragma: no cover
             pass
+    run_tests_script = workspace / "scripts" / "run-tests.sh"
+    if run_tests_script.exists():
+        return "scripts/run-tests.sh"
     if (workspace / "go.mod").exists():
         return "go test ./..."
     if (workspace / "Cargo.toml").exists():
