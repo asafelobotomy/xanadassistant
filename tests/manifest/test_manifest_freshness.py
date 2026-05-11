@@ -11,7 +11,7 @@ from scripts.lifecycle.generate_manifest import generate_catalog, generate_manif
 
 class ManifestFreshnessTests(unittest.TestCase):
     def test_repo_manifest_is_fresh(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         is_fresh, _current, _generated = compare_manifest_to_generated(
             repo_root,
             "template/setup/install-policy.json",
@@ -101,7 +101,7 @@ class ManifestFreshnessTests(unittest.TestCase):
 
 class CatalogFreshnessTests(unittest.TestCase):
     def test_repo_catalog_is_fresh(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         is_fresh, _current, _generated = compare_catalog_to_generated(
             repo_root,
             "template/setup/install-policy.json",
@@ -111,7 +111,7 @@ class CatalogFreshnessTests(unittest.TestCase):
         self.assertTrue(is_fresh)
 
     def test_catalog_freshness_detects_drift(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         policy_rel = "template/setup/install-policy.json"
 
         # Load genuinely-generated catalog, then tamper one field

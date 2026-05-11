@@ -21,7 +21,7 @@ from scripts.lifecycle.generate_manifest import (
 from scripts.lifecycle._manifest_utils import OWNERSHIP_MODES
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _minimal_policy(package_root: Path) -> dict:

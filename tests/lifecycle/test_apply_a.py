@@ -13,7 +13,7 @@ class ApplyTests(XanadTestBase):
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
             report_out_path = workspace / "apply-report.json"
-            repo_root = Path(__file__).resolve().parents[1]
+            repo_root = Path(__file__).resolve().parents[2]
 
             result = self.run_command_in_workspace(
                 workspace,
@@ -124,7 +124,7 @@ class ApplyTests(XanadTestBase):
         import tempfile
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
-            repo_root = Path(__file__).resolve().parents[1]
+            repo_root = Path(__file__).resolve().parents[2]
 
             instructions_path = workspace / ".github" / "copilot-instructions.md"
             instructions_path.parent.mkdir(parents=True, exist_ok=True)

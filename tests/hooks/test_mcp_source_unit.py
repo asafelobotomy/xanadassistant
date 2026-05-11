@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 
 # The hook scripts are not on the standard module path; add the hooks dir temporarily.
-_HOOKS_DIR = Path(__file__).resolve().parents[1] / "hooks" / "scripts"
+_HOOKS_DIR = Path(__file__).resolve().parents[2] / "hooks" / "scripts"
 
 
 def _import_mcp_source():

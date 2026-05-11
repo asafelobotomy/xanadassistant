@@ -24,7 +24,7 @@ def _parse_agent_frontmatter(path: Path) -> dict[str, str]:
 
 class MetadataContractTests(unittest.TestCase):
     def test_pack_profile_and_catalog_metadata_match_schemas(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
 
         pack_schema = load_json(repo_root / "template/setup/pack-registry.schema.json")
         pack_registry = load_json(repo_root / "template/setup/pack-registry.json")
@@ -51,7 +51,7 @@ class MetadataContractTests(unittest.TestCase):
         self.assertEqual("core", catalog["surfaceLayers"]["prompts"])
 
     def test_agent_routing_frontmatter_is_explicit(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         expected_keywords = {
             "commit.agent.md": ["Use when", "commit", "push", "preflight", "pull requests", "PR bodies"],
             "debugger.agent.md": ["Use when", "diagnosing failures", "root causes", "regressions"],
@@ -83,7 +83,7 @@ class MetadataContractTests(unittest.TestCase):
                     self.assertIn("agent", frontmatter["tools"])
 
     def test_instructions_define_agent_routing_table(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         for path in [repo_root / "template" / "copilot-instructions.md", repo_root / ".github" / "copilot-instructions.md"]:
             with self.subTest(path=path):
                 text = path.read_text(encoding="utf-8")
@@ -104,7 +104,7 @@ class MetadataContractTests(unittest.TestCase):
                 self.assertIn("xanad-lifecycle-planning", text)
 
     def test_instructions_define_memory_routing(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         for path in [repo_root / "template" / "copilot-instructions.md", repo_root / ".github" / "copilot-instructions.md"]:
             with self.subTest(path=path):
                 text = path.read_text(encoding="utf-8")
@@ -115,7 +115,7 @@ class MetadataContractTests(unittest.TestCase):
                 self.assertIn("not as lifecycle authority", text)
 
     def test_root_agents_document_captures_specialist_routing(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         text = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
 
         self.assertIn("# Agent Routing", text)

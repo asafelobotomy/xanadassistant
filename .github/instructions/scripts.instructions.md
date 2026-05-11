@@ -16,5 +16,6 @@ description: "Conventions for the lifecycle engine — public entrypoints, inter
 - Exit codes are frozen — see `docs/contracts/exit-codes.md`. Do not add new exit codes without updating the contract.
 - No third-party runtime dependencies — stdlib only.
 - No silent error swallowing: raise or emit a structured `error` event.
+- Naming convention: **hyphens** for consumer-facing names (MCP server scripts like `git-mcp.py`, agent/skill directory names like `lifecycle-audit/`); **underscores** for Python-importable modules (lifecycle engine submodules like `_plan_a.py`, MCP helpers like `_xanad_mcp_source.py`).
 - Lockfile reads go through `parse_lockfile_state()` and planned lockfile contents go through `build_planned_lockfile()` — never open `.github/xanad-assistant-lock.json` directly in new code paths.
 - Schema validation happens at system boundaries (lockfile load, manifest load). Do not re-validate mid-pipeline.

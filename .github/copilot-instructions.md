@@ -57,7 +57,7 @@ Plan → Do → Check → Act on every non-trivial change.
 | `AffectedSuite` | Shared helpers, schema changes, contract surfaces |
 | `FullSuite` | Task completion, multi-module changes, before push |
 
-Targeted example: `python3 -m unittest tests.test_xanad_assistant_inspect`
+Targeted example: `python3 -m unittest tests.lifecycle.test_inspect_check`
 
 ## Critical Rules
 

@@ -9,7 +9,7 @@ from pathlib import Path
 import scripts.check_loc as check_loc
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _write_lines(path: Path, count: int) -> None:
@@ -117,7 +117,7 @@ class CheckLocCollectFilesTests(unittest.TestCase):
         orig_cwd = os.getcwd()
         try:
             import subprocess
-            repo_root = Path(__file__).resolve().parents[1]
+            repo_root = Path(__file__).resolve().parents[2]
             os.chdir(repo_root)
             result = check_loc.collect_files([])
             self.assertIsInstance(result, list)

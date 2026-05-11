@@ -124,6 +124,6 @@ class AttentionBudgetMainTests(unittest.TestCase):
             self.assertEqual(1, result)
 
     def test_main_uses_default_budgets_when_none_specified(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         result = cab.main(["--repo-root", str(repo_root)])
         self.assertIn(result, (0, 1))  # Either pass or fail, but must not crash

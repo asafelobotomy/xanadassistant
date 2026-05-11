@@ -78,7 +78,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
         }
 
     def test_lockfile_written_by_apply_validates_against_schema(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         lock_schema = json.loads(
             (repo_root / "template/setup/xanad-assistant-lock.schema.json").read_text(encoding="utf-8")
         )
@@ -110,7 +110,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
             validate_instance(lockfile_data, lock_schema, lock_schema)
 
     def test_repair_with_malformed_lockfile_backs_up_and_rewrites(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         original_lockfile_content = "NOT VALID JSON {{{"
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -168,7 +168,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
             LifecycleCommandError,
         )
 
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         raised_error = None
 
         with tempfile.TemporaryDirectory() as temp_dir:

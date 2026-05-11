@@ -14,7 +14,7 @@ import sys
 import unittest
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 SERVER_PATH = REPO_ROOT / "hooks" / "scripts" / "mcp-sequential-thinking-server.py"
 
 _MCP_AVAILABLE = importlib.util.find_spec("mcp") is not None

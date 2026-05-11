@@ -16,8 +16,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-HOOKS_DIR = Path(__file__).resolve().parents[1] / "hooks" / "scripts"
-REPO_ROOT = Path(__file__).resolve().parents[1]
+HOOKS_DIR = Path(__file__).resolve().parents[2] / "hooks" / "scripts"
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _load(name: str):

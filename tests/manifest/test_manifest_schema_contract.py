@@ -9,7 +9,7 @@ from tests.schema_validation import validate_instance
 
 class GeneratedManifestSchemaTests(unittest.TestCase):
     def test_generated_manifest_matches_schema_and_repo_output(self) -> None:
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         policy = load_json(repo_root / "template/setup/install-policy.json")
         generated = generate_manifest(repo_root, policy)
         schema = load_json(repo_root / "template/setup/install-manifest.schema.json")

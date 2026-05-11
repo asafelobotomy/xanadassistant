@@ -24,7 +24,7 @@ from scripts.lifecycle._xanad._state import (
 )
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class DetectGitStateTests(unittest.TestCase):

@@ -80,7 +80,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
     def test_copy_if_missing_plan_skips_file_when_present(self) -> None:
         from scripts.lifecycle.xanad_assistant import build_setup_plan_actions
 
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
             target = ".github/prompts/custom.md"
@@ -102,7 +102,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
     def test_copy_if_missing_plan_adds_file_when_absent(self) -> None:
         from scripts.lifecycle.xanad_assistant import build_setup_plan_actions
 
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
             target = ".github/prompts/custom.md"
@@ -121,7 +121,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
     def test_copy_if_missing_plan_skips_file_even_during_factory_restore(self) -> None:
         from scripts.lifecycle.xanad_assistant import build_setup_plan_actions
 
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
             target = ".github/prompts/custom.md"
@@ -143,7 +143,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
         from unittest.mock import patch
         from scripts.lifecycle.xanad_assistant import execute_apply_plan
 
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         retired_target = ".github/old-file.md"
         archive_path = f".xanad-assistant/archive/{retired_target}"
 
@@ -172,7 +172,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
         from unittest.mock import patch
         from scripts.lifecycle.xanad_assistant import execute_apply_plan
 
-        repo_root = Path(__file__).resolve().parents[1]
+        repo_root = Path(__file__).resolve().parents[2]
         retired_target = ".github/old-file.md"
 
         with tempfile.TemporaryDirectory() as temp_dir:
