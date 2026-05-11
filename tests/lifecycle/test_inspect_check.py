@@ -160,11 +160,11 @@ class InspectCheckTests(XanadTestBase):
             instructions_dir = workspace / ".github" / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "tests.instructions.md").write_text(
-                (repo_root / "template" / "instructions" / "tests.instructions.md").read_text(encoding="utf-8"),
+                self.render_instructions_file(repo_root / "template" / "instructions" / "tests.instructions.md"),
                 encoding="utf-8",
             )
             (instructions_dir / "scripts.instructions.md").write_text(
-                (repo_root / "template" / "instructions" / "scripts.instructions.md").read_text(encoding="utf-8"),
+                self.render_instructions_file(repo_root / "template" / "instructions" / "scripts.instructions.md"),
                 encoding="utf-8",
             )
 

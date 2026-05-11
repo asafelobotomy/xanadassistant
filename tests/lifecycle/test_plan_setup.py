@@ -100,10 +100,10 @@ class PlanSetupTests(XanadTestBase):
         self.assertIn("Ask first", token_subs["{{AUTONOMY_LEVEL}}"]["value"])
         self.assertIn("Professional", token_subs["{{AGENT_PERSONA}}"]["value"])
         self.assertIn("Always", token_subs["{{TESTING_PHILOSOPHY}}"]["value"])
-        # Scanned tokens are None for an empty workspace (no project files)
-        self.assertIsNone(token_subs["{{PRIMARY_LANGUAGE}}"]["value"])
-        self.assertIsNone(token_subs["{{PACKAGE_MANAGER}}"]["value"])
-        self.assertIsNone(token_subs["{{TEST_COMMAND}}"]["value"])
+        # Scanned tokens get fallback value for an empty workspace (no project files)
+        self.assertEqual("(not detected)", token_subs["{{PRIMARY_LANGUAGE}}"]["value"])
+        self.assertEqual("(not detected)", token_subs["{{PACKAGE_MANAGER}}"]["value"])
+        self.assertEqual("(not detected)", token_subs["{{TEST_COMMAND}}"]["value"])
         self.assertEqual(
             {
                 "instructions": "local",

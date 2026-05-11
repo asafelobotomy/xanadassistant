@@ -116,7 +116,7 @@
   },
   "strategyDefaults": {
     "core-instructions": "preserve-marked-markdown-blocks",
-    "instructions": "replace-verbatim",
+    "instructions": "token-replace",
     "prompts": "token-replace",
     "agents": "replace-verbatim",
     "skills": "replace-verbatim",

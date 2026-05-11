@@ -87,11 +87,7 @@ class XanadTestBase(unittest.TestCase):
         )
 
     def render_copilot_instructions(self, repo_root: Path, workspace: Path) -> str:
-        """Render copilot-instructions.md with default token values for an empty workspace.
-
-        Workspace-scanned tokens (PRIMARY_LANGUAGE, PACKAGE_MANAGER, TEST_COMMAND) are left
-        unreplaced since an empty temp workspace has no project files.
-        """
+        """Render copilot-instructions.md with default token values for an empty workspace."""
         return (
             (repo_root / "template" / "copilot-instructions.md")
             .read_text(encoding="utf-8")
@@ -100,6 +96,19 @@ class XanadTestBase(unittest.TestCase):
             .replace("{{AUTONOMY_LEVEL}}", "Ask first — always confirm before acting on ambiguity.")
             .replace("{{AGENT_PERSONA}}", "Professional — concise, neutral, precise.")
             .replace("{{TESTING_PHILOSOPHY}}", "Always — write tests alongside every code change.")
+            .replace("{{PRIMARY_LANGUAGE}}", "(not detected)")
+            .replace("{{PACKAGE_MANAGER}}", "(not detected)")
+            .replace("{{TEST_COMMAND}}", "(not detected)")
+        )
+
+    def render_instructions_file(self, template_path: Path) -> str:
+        """Render an instructions template file with default token values for an empty workspace."""
+        return (
+            template_path.read_text(encoding="utf-8")
+            .replace("{{PRIMARY_LANGUAGE}}", "(not detected)")
+            .replace("{{PACKAGE_MANAGER}}", "(not detected)")
+            .replace("{{TEST_COMMAND}}", "(not detected)")
+            .replace("{{TESTING_PHILOSOPHY}}", "Always \u2014 write tests alongside every code change.")
         )
 
     def _run(self, command: str, *extra_args: str, workspace: Path | None = None) -> subprocess.CompletedProcess[str]:

@@ -74,6 +74,11 @@ def resolve_token_values(policy: dict, workspace: Path, resolved_answers: dict) 
     policy_tokens = {rule["token"] for rule in policy.get("tokenRules", [])}
     if _SCAN_TOKENS & policy_tokens:
         token_values.update(scan_workspace_stack(workspace))
+        # Provide a readable fallback for any scan token the scanner could not detect,
+        # so installed files never contain raw {{...}} placeholders.
+        for token in _SCAN_TOKENS & policy_tokens:
+            if token not in token_values:
+                token_values[token] = "(not detected)"
 
     for token_rule in policy.get("tokenRules", []):
         token = token_rule["token"]

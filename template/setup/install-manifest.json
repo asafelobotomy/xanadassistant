@@ -337,7 +337,7 @@
       "ownership": [
         "local"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
       "tokens": [
         "{{PACKAGE_MANAGER}}",
@@ -355,7 +355,7 @@
       "ownership": [
         "local"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
       "tokens": [
         "{{PRIMARY_LANGUAGE}}",
