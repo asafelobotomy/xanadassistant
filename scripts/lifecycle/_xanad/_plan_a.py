@@ -113,12 +113,17 @@ def build_setup_plan_actions(
                 action = "merge" if entry["strategy"] in merge_strategies else "replace"
 
         writes[action] += 1
-        actions.append({
+        resolved_token_values = {token: token_values[token] for token in entry.get("tokens", []) if token in token_values}
+        missing_token_values = [token for token in entry.get("tokens", []) if token not in token_values]
+        action_entry = {
             "id": entry["id"], "surface": entry["surface"], "target": target,
             "action": action, "ownershipMode": ownership_mode,
             "strategy": entry["strategy"], "tokens": entry.get("tokens", []),
-            "tokenValues": {token: token_values[token] for token in entry.get("tokens", []) if token in token_values},
-        })
+            "tokenValues": resolved_token_values,
+        }
+        if missing_token_values:
+            action_entry["missingTokenValues"] = missing_token_values
+        actions.append(action_entry)
 
     for retired_entry in manifest.get("retiredFiles", []):
         retired_target = retired_entry.get("target")

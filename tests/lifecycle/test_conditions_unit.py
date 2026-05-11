@@ -142,3 +142,48 @@ class EntryRequiredForPlanTests(unittest.TestCase):
         entry = {"requiredWhen": "hooks.enabled"}
         self.assertTrue(entry_required_for_plan(entry, {"hooks.enabled": True}))
         self.assertFalse(entry_required_for_plan(entry, {}))
+
+
+class AnswerBackedTokenFallbackTests(unittest.TestCase):
+    """Verify that answer-backed tokens get '(not configured)' when the answer is missing (Bug 3)."""
+
+    def _resolve(self, token: str, resolved_answers: dict) -> str:
+        from scripts.lifecycle._xanad._conditions import resolve_token_values
+        from scripts.lifecycle._xanad._loader import load_json
+        REPO_ROOT = Path(__file__).resolve().parents[2]
+        policy = load_json(REPO_ROOT / "template/setup/install-policy.json")
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            values = resolve_token_values(policy, Path(tmp), resolved_answers)
+        return values.get(token, "<MISSING>")
+
+    def test_xanad_profile_fallback_when_no_answer(self) -> None:
+        self.assertEqual("(not configured)", self._resolve("{{XANAD_PROFILE}}", {}))
+
+    def test_xanad_profile_resolved_from_answer(self) -> None:
+        result = self._resolve("{{XANAD_PROFILE}}", {"profile.selected": "developer"})
+        self.assertEqual("developer", result)
+
+    def test_response_style_fallback_when_no_answer(self) -> None:
+        self.assertEqual("(not configured)", self._resolve("{{RESPONSE_STYLE}}", {}))
+
+    def test_response_style_resolved_from_answer(self) -> None:
+        result = self._resolve("{{RESPONSE_STYLE}}", {"response.style": "balanced"})
+        self.assertIn("Balanced", result)
+
+    def test_autonomy_level_fallback_when_no_answer(self) -> None:
+        self.assertEqual("(not configured)", self._resolve("{{AUTONOMY_LEVEL}}", {}))
+
+    def test_autonomy_level_resolved_from_answer(self) -> None:
+        result = self._resolve("{{AUTONOMY_LEVEL}}", {"autonomy.level": "ask-first"})
+        self.assertIn("Ask first", result)
+
+    def test_agent_persona_fallback_when_no_answer(self) -> None:
+        self.assertEqual("(not configured)", self._resolve("{{AGENT_PERSONA}}", {}))
+
+    def test_testing_philosophy_fallback_when_no_answer(self) -> None:
+        self.assertEqual("(not configured)", self._resolve("{{TESTING_PHILOSOPHY}}", {}))
+
+    def test_testing_philosophy_resolved_from_answer(self) -> None:
+        result = self._resolve("{{TESTING_PHILOSOPHY}}", {"testing.philosophy": "always"})
+        self.assertIn("Always", result)

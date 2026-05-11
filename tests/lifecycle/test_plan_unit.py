@@ -1111,5 +1111,143 @@ class PlanBSuccessorTests(unittest.TestCase):
         self.assertTrue(len(retired) > 0)
 
 
+class SeedAnswersFromInstallStateTests(unittest.TestCase):
+    """Tests for the personalisation and mcp.enabled re-seeding from lockfile (Bug 1+2)."""
+
+    def _make_questions(self, *ids: str) -> list:
+        q = []
+        for qid in ids:
+            entry: dict = {"id": qid, "type": "choice"}
+            if qid == "profile.selected":
+                entry["options"] = ["developer", "researcher"]
+            elif qid == "packs.selected":
+                entry["options"] = ["lean"]
+            elif qid == "mcp.enabled":
+                entry["type"] = "boolean"
+            q.append(entry)
+        return q
+
+    def _minimal_lockfile_state(self, **overrides) -> dict:
+        base = {
+            "present": True, "malformed": False, "profile": None,
+            "selectedPacks": [], "setupAnswers": {}, "mcpEnabled": None,
+        }
+        base.update(overrides)
+        return base
+
+    def test_noop_for_setup_mode(self) -> None:
+        from scripts.lifecycle._xanad._plan_c import seed_answers_from_install_state
+        lockfile = self._minimal_lockfile_state(setupAnswers={"response.style": "verbose"})
+        result = seed_answers_from_install_state("setup", self._make_questions("response.style"), lockfile, {})
+        self.assertEqual({}, result)
+
+    def test_reseeds_personalisation_answers_for_update_mode(self) -> None:
+        from scripts.lifecycle._xanad._plan_c import seed_answers_from_install_state
+        lockfile = self._minimal_lockfile_state(
+            setupAnswers={"response.style": "verbose", "autonomy.level": "act-then-tell"}
+        )
+        questions = self._make_questions("response.style", "autonomy.level")
+        result = seed_answers_from_install_state("update", questions, lockfile, {})
+        self.assertEqual("verbose", result.get("response.style"))
+        self.assertEqual("act-then-tell", result.get("autonomy.level"))
+
+    def test_does_not_overwrite_caller_supplied_answers(self) -> None:
+        from scripts.lifecycle._xanad._plan_c import seed_answers_from_install_state
+        lockfile = self._minimal_lockfile_state(setupAnswers={"response.style": "verbose"})
+        questions = self._make_questions("response.style")
+        result = seed_answers_from_install_state("update", questions, lockfile, {"response.style": "concise"})
+        self.assertEqual("concise", result.get("response.style"))
+
+    def test_reseeds_mcp_enabled_for_repair_mode(self) -> None:
+        from scripts.lifecycle._xanad._plan_c import seed_answers_from_install_state
+        lockfile = self._minimal_lockfile_state(mcpEnabled=False)
+        questions = self._make_questions("mcp.enabled")
+        result = seed_answers_from_install_state("repair", questions, lockfile, {})
+        self.assertIs(False, result.get("mcp.enabled"))
+
+    def test_skips_answer_id_not_in_questions(self) -> None:
+        from scripts.lifecycle._xanad._plan_c import seed_answers_from_install_state
+        lockfile = self._minimal_lockfile_state(setupAnswers={"unknown.key": "x"})
+        result = seed_answers_from_install_state("update", self._make_questions("response.style"), lockfile, {})
+        self.assertNotIn("unknown.key", result)
+
+    def test_mcp_not_reseeded_when_none_in_lockfile(self) -> None:
+        from scripts.lifecycle._xanad._plan_c import seed_answers_from_install_state
+        lockfile = self._minimal_lockfile_state(mcpEnabled=None)
+        questions = self._make_questions("mcp.enabled")
+        result = seed_answers_from_install_state("update", questions, lockfile, {})
+        self.assertNotIn("mcp.enabled", result)
+
+
+class BuildSetupPlanActionsMissingTokenTests(unittest.TestCase):
+    """Verify that actions with unresolved tokens report missingTokenValues (Bug 4)."""
+
+    def test_missing_token_recorded_in_action(self) -> None:
+        import tempfile, json as _json
+        from pathlib import Path as _Path
+        from scripts.lifecycle._xanad._plan_a import build_setup_plan_actions
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = _Path(tmp)
+            # Minimal manifest with one entry that has a token not in token_values
+            manifest = {
+                "managedFiles": [{
+                    "id": "test.file",
+                    "surface": "instructions",
+                    "target": ".github/test.md",
+                    "strategy": "token-replace",
+                    "tokens": ["{{MISSING_TOKEN}}"],
+                    "ownership": ["local"],
+                    "requiredWhen": [],
+                }],
+                "retiredFiles": [],
+            }
+            ownership = {"instructions": "local"}
+            resolved_answers: dict = {}
+            token_values: dict = {}  # deliberately empty — token has no value
+
+            _writes, actions, _skipped, _retired = build_setup_plan_actions(
+                ws, REPO_ROOT, manifest, ownership, resolved_answers, token_values
+            )
+
+        add_actions = [a for a in actions if a["action"] == "add"]
+        self.assertEqual(1, len(add_actions))
+        action = add_actions[0]
+        self.assertIn("missingTokenValues", action)
+        self.assertEqual(["{{MISSING_TOKEN}}"], action["missingTokenValues"])
+        self.assertEqual({}, action["tokenValues"])
+
+    def test_no_missing_token_key_when_all_tokens_present(self) -> None:
+        import tempfile
+        from pathlib import Path as _Path
+        from scripts.lifecycle._xanad._plan_a import build_setup_plan_actions
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = _Path(tmp)
+            manifest = {
+                "managedFiles": [{
+                    "id": "test.file",
+                    "surface": "instructions",
+                    "target": ".github/test.md",
+                    "strategy": "token-replace",
+                    "tokens": ["{{MY_TOKEN}}"],
+                    "ownership": ["local"],
+                    "requiredWhen": [],
+                }],
+                "retiredFiles": [],
+            }
+            ownership = {"instructions": "local"}
+            token_values = {"{{MY_TOKEN}}": "hello"}
+
+            _writes, actions, _skipped, _retired = build_setup_plan_actions(
+                ws, REPO_ROOT, manifest, ownership, {}, token_values
+            )
+
+        add_actions = [a for a in actions if a["action"] == "add"]
+        self.assertEqual(1, len(add_actions))
+        self.assertNotIn("missingTokenValues", add_actions[0])
+        self.assertEqual({"{{MY_TOKEN}}": "hello"}, add_actions[0]["tokenValues"])
+
+
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

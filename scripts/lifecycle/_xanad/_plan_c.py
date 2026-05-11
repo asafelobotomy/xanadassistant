@@ -20,6 +20,21 @@ def seed_answers_from_install_state(mode: str, questions: list[dict], lockfile_s
         valid_packs = [pack_id for pack_id in installed_packs if pack_id in packs_question.get("options", [])]
         seeded_answers["packs.selected"] = valid_packs
 
+    # Re-seed all personalisation answers that were recorded at apply time.
+    # This ensures check/update/repair re-derives the same token values as the
+    # original apply, preventing false-stale reports after non-default answers.
+    installed_setup_answers = lockfile_state.get("setupAnswers", {})
+    if isinstance(installed_setup_answers, dict):
+        for answer_id, value in installed_setup_answers.items():
+            if answer_id not in seeded_answers and answer_id in question_map:
+                seeded_answers[answer_id] = value
+
+    # Re-seed mcp.enabled from lockfile installMetadata so that hook/mcp entries
+    # that were skipped at apply time are not re-classified as missing by check.
+    mcp_enabled = lockfile_state.get("mcpEnabled")
+    if mcp_enabled is not None and "mcp.enabled" not in seeded_answers:
+        seeded_answers["mcp.enabled"] = mcp_enabled
+
     return seeded_answers
 
 

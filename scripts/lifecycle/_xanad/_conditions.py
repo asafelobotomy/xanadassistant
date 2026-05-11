@@ -88,22 +88,32 @@ def resolve_token_values(policy: dict, workspace: Path, resolved_answers: dict) 
             profile = resolved_answers.get("profile.selected")
             if isinstance(profile, str) and profile:
                 token_values[token] = profile
+            else:
+                token_values[token] = "(not configured)"
         elif token == "{{RESPONSE_STYLE}}":
             style = resolved_answers.get("response.style")
             if isinstance(style, str) and style:
                 token_values[token] = _RESPONSE_STYLE_LABELS.get(style, style)
+            else:
+                token_values[token] = "(not configured)"
         elif token == "{{AUTONOMY_LEVEL}}":
             level = resolved_answers.get("autonomy.level")
             if isinstance(level, str) and level:
                 token_values[token] = _AUTONOMY_LEVEL_LABELS.get(level, level)
+            else:
+                token_values[token] = "(not configured)"
         elif token == "{{AGENT_PERSONA}}":
             persona = resolved_answers.get("agent.persona")
             if isinstance(persona, str) and persona:
                 token_values[token] = _AGENT_PERSONA_LABELS.get(persona, persona)
+            else:
+                token_values[token] = "(not configured)"
         elif token == "{{TESTING_PHILOSOPHY}}":
             philosophy = resolved_answers.get("testing.philosophy")
             if isinstance(philosophy, str) and philosophy:
                 token_values[token] = _TESTING_PHILOSOPHY_LABELS.get(philosophy, philosophy)
+            else:
+                token_values[token] = "(not configured)"
     return token_values
 
 

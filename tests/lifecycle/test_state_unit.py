@@ -371,3 +371,70 @@ class SummarizeManifestTargetsTests(unittest.TestCase):
             }
             result = summarize_manifest_targets(ws, manifest)
             self.assertEqual(1, result["skipped"])
+
+
+class ParseLockfileStateSetupAnswersTests(unittest.TestCase):
+    """Verify that setupAnswers and mcpEnabled are surfaced from lockfile state (Bug 1+2)."""
+
+    def _write_lockfile(self, ws: Path, data: dict) -> None:
+        lockfile = ws / ".github" / "xanad-assistant-lock.json"
+        lockfile.parent.mkdir(parents=True, exist_ok=True)
+        lockfile.write_text(json.dumps(data), encoding="utf-8")
+
+    def _valid_base(self) -> dict:
+        return {
+            "schemaVersion": "0.1.0",
+            "package": {"name": CURRENT_PACKAGE_NAME},
+            "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
+            "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
+            "selectedPacks": [],
+            "files": [],
+        }
+
+    def test_setup_answers_surfaced_from_valid_lockfile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            data = self._valid_base()
+            data["setupAnswers"] = {"response.style": "verbose", "testing.philosophy": "skip"}
+            self._write_lockfile(ws, data)
+            result = parse_lockfile_state(ws)
+        self.assertEqual({"response.style": "verbose", "testing.philosophy": "skip"}, result["setupAnswers"])
+
+    def test_setup_answers_defaults_to_empty_dict_when_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            self._write_lockfile(ws, self._valid_base())
+            result = parse_lockfile_state(ws)
+        self.assertEqual({}, result["setupAnswers"])
+
+    def test_mcp_enabled_surfaced_from_install_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            data = self._valid_base()
+            data["installMetadata"] = {"mcpAvailable": True, "mcpEnabled": False}
+            self._write_lockfile(ws, data)
+            result = parse_lockfile_state(ws)
+        self.assertIs(False, result["mcpEnabled"])
+
+    def test_mcp_enabled_is_none_when_install_metadata_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            self._write_lockfile(ws, self._valid_base())
+            result = parse_lockfile_state(ws)
+        self.assertIsNone(result["mcpEnabled"])
+
+    def test_not_present_lockfile_has_empty_setup_answers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            result = parse_lockfile_state(Path(tmp))
+        self.assertEqual({}, result["setupAnswers"])
+        self.assertIsNone(result["mcpEnabled"])
+
+    def test_malformed_lockfile_has_empty_setup_answers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            lockfile = ws / ".github" / "xanad-assistant-lock.json"
+            lockfile.parent.mkdir()
+            lockfile.write_text("{ invalid", encoding="utf-8")
+            result = parse_lockfile_state(ws)
+        self.assertEqual({}, result["setupAnswers"])
+        self.assertIsNone(result["mcpEnabled"])
