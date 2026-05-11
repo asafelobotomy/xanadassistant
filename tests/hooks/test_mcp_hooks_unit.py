@@ -500,7 +500,7 @@ class GitMcpLocalTests(unittest.TestCase):
 
 
 class GitMcpMutationTests(unittest.TestCase):
-    """Tests for git-mcp functions that mutate repo state (uses a temp git repo)."""
+    """Tests for gitMcp functions that mutate repo state (uses a temp git repo)."""
 
     @classmethod
     def setUpClass(cls):

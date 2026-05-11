@@ -54,7 +54,7 @@ class PlanLifecycleTests(XanadTestBase):
                 ".github/agents/researcher.agent.md",
                 ".github/agents/review.agent.md",
                 ".github/agents/xanadLifecycle.agent.md",
-                ".github/skills/lean-output/SKILL.md",
+                ".github/skills/leanOutput/SKILL.md",
                 ".github/skills/lifecycleAudit/SKILL.md",
             ],
             payload["result"]["plannedLockfile"]["contents"]["skippedManagedFiles"],

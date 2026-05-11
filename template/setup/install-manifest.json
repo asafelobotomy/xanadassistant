@@ -327,7 +327,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:396c6ac38c468b4c925ab08d5773aa38504f6c5533b59f5a7a27fb963c6dc6c7"
+      "hash": "sha256:2b092494357e0970332dbaf21b3683686e65fc7b7b0da854b64d96f95d9f26b0"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -386,11 +386,11 @@
  dbecf3e (refactor: standardize consumer-facing names to camelCase)
     },
     {
-      "id": "lean-skills.lean-output.SKILL.md",
+      "id": "lean-skills.leanOutput.SKILL.md",
       "surface": "skills",
       "layer": "pack",
-      "source": "packs/lean/skills/lean-output/SKILL.md",
-      "target": ".github/skills/lean-output/SKILL.md",
+      "source": "packs/lean/skills/leanOutput/SKILL.md",
+      "target": ".github/skills/leanOutput/SKILL.md",
       "ownership": [
         "local",
         "plugin-backed-copilot-format"
@@ -521,6 +521,13 @@
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
       "notes": "Renamed to .github/hooks/scripts/webMcp.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.skills.lean-output.SKILL.md",
+      "target": ".github/skills/lean-output/SKILL.md",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.0",
+      "notes": "Renamed to .github/skills/leanOutput/SKILL.md \u2014 standardized to camelCase naming."
     }
   ]
 }

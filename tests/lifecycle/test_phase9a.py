@@ -49,7 +49,7 @@ class XanadAssistantPhase9Tests(XanadTestBase):
             self.assertEqual(0, result.returncode, result.stderr)
             payload = json.loads(result.stdout)
             skipped = {entry["target"] for entry in payload["result"]["skippedActions"]}
-            self.assertIn(".github/skills/lean-output/SKILL.md", skipped)
+            self.assertIn(".github/skills/leanOutput/SKILL.md", skipped)
 
     def test_lean_skill_included_when_pack_selected(self) -> None:
         import tempfile
@@ -69,7 +69,7 @@ class XanadAssistantPhase9Tests(XanadTestBase):
             self.assertEqual(0, result.returncode, result.stderr)
             payload = json.loads(result.stdout)
             action_targets = {action["target"] for action in payload["result"]["actions"]}
-            self.assertIn(".github/skills/lean-output/SKILL.md", action_targets)
+            self.assertIn(".github/skills/leanOutput/SKILL.md", action_targets)
 
     # ------------------------------------------------------------------
     # lean pack – apply writes lean skill when pack selected
@@ -91,8 +91,8 @@ class XanadAssistantPhase9Tests(XanadTestBase):
                 workspace=workspace,
             )
             self.assertEqual(0, result.returncode, result.stderr)
-            lean_skill_path = workspace / ".github" / "skills" / "lean-output" / "SKILL.md"
-            self.assertTrue(lean_skill_path.exists(), "lean-output/SKILL.md should be written when lean pack selected")
+            lean_skill_path = workspace / ".github" / "skills" / "leanOutput" / "SKILL.md"
+            self.assertTrue(lean_skill_path.exists(), "leanOutput/SKILL.md should be written when lean pack selected")
 
     def test_lean_skill_not_written_on_apply_when_pack_not_selected(self) -> None:
         import tempfile
@@ -110,8 +110,8 @@ class XanadAssistantPhase9Tests(XanadTestBase):
                 workspace=workspace,
             )
             self.assertEqual(0, result.returncode, result.stderr)
-            lean_skill_path = workspace / ".github" / "skills" / "lean-output" / "SKILL.md"
-            self.assertFalse(lean_skill_path.exists(), "lean-output/SKILL.md should not be written when lean pack not selected")
+            lean_skill_path = workspace / ".github" / "skills" / "leanOutput" / "SKILL.md"
+            self.assertFalse(lean_skill_path.exists(), "leanOutput/SKILL.md should not be written when lean pack not selected")
 
     # ------------------------------------------------------------------
     # lean pack – lockfile records selectedPacks

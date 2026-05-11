@@ -17,7 +17,7 @@ WORKSPACE_ROOT_UNAVAILABLE = "The MCP server is not installed in a workspace roo
 WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
 WORKSPACE_INSTRUCTIONS_PATH = WORKSPACE_ROOT / ".github" / "copilot-instructions.md"
 _NEW_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanadAssistant-lock.json"
-_LEGACY_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanadAssistant-lock.json"
+_LEGACY_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanad-assistant-lock.json"
 WORKSPACE_LOCKFILE_PATH = _NEW_LOCKFILE if _NEW_LOCKFILE.exists() else _LEGACY_LOCKFILE
 SHELL_METACHARACTERS = ["|", "&", ";", ">", "<", "\n", "\r", "`", "$((", "$("]
 def workspace_root_valid() -> bool: return (WORKSPACE_ROOT / ".github").is_dir()

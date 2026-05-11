@@ -272,6 +272,13 @@
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
         "notes": "Renamed to .github/hooks/scripts/webMcp.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.skills.lean-output.SKILL.md",
+        "target": ".github/skills/lean-output/SKILL.md",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.0",
+        "notes": "Renamed to .github/skills/leanOutput/SKILL.md — standardized to camelCase naming."
       }
     ]
   },

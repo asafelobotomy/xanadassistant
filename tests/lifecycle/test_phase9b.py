@@ -48,7 +48,7 @@ class XanadAssistantPhase9Tests(XanadTestBase):
             self.assertEqual(0, result.returncode, result.stderr)
             payload = json.loads(result.stdout)
             action_targets = {action["target"] for action in payload["result"]["actions"]}
-            self.assertIn(".github/skills/lean-output/SKILL.md", action_targets)
+            self.assertIn(".github/skills/leanOutput/SKILL.md", action_targets)
 
     # ------------------------------------------------------------------
     # catalog generation
