@@ -64,7 +64,15 @@ _BLOCKED: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = [
 
 
 def _guard_ssrf(url: str) -> None:
-    """Raise ValueError if url resolves to a blocked network range."""
+    """Raise ValueError if url resolves to a blocked network range.
+
+    Note: DNS resolution is performed once here as a pre-flight check.  The
+    HTTP client resolves the hostname independently when opening the
+    connection (TOCTOU window).  True DNS rebinding would require an
+    attacker to control the target's DNS TTL, which is outside the threat
+    model for a developer-local MCP server.  The redirect hook
+    (_ssrf_redirect_hook) covers the redirect-based variant.
+    """
     parsed = urlparse(url)
     host = parsed.hostname
     if not host:
@@ -204,6 +212,8 @@ def fetch(
         start_index: Character offset for pagination (default 0).
         raw: When True, skip HTML-to-Markdown conversion (default False).
     """
+    if urlparse(url).scheme not in ("http", "https"):
+        raise ValueError(f"Only http and https URLs are supported; got: {url!r}")
     _guard_ssrf(url)
     max_length = max(1, min(1_000_000, max_length))
 

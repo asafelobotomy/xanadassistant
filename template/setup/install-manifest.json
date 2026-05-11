@@ -225,7 +225,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:64bc6fb71c7bcb4dec2f4e994268b4df28b5fbe508b99f5a5a6ebcb005fc8b55"
+      "hash": "sha256:01bf2f1831b3c881b5b8620516ab3166f749d100890c07da7c0a0f2245e7c756"
     },
     {
       "id": "hook-scripts.mcpSequentialThinkingServer.py",
@@ -259,7 +259,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:93ab2c2992a0e1bb144fc392307fb7baf7c66a761476631a49ce9a57c789b1fe"
+      "hash": "sha256:d316042e23eb4ac028bc06141e1799915eae7bacc97970c7421d1183914f5eb3"
     },
     {
       "id": "hook-scripts.sqliteMcp.py",
@@ -310,7 +310,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:5700cc8fc356fcfc6702710041b6e47dd88b8f9ec787987487aaa4cf1b507d65"
+      "hash": "sha256:a91712c269544b3b20ce19f19eabf686c0a7ba15e6c1a67c63126686cbd41b09"
     },
     {
       "id": "hook-scripts.xanadWorkspaceMcp.py",
@@ -327,7 +327,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:2b092494357e0970332dbaf21b3683686e65fc7b7b0da854b64d96f95d9f26b0"
+      "hash": "sha256:ff5238097fd35f97e3191be1418e7ef28b83fb66fe3aae086613fd05b51c7891"
     },
     {
       "id": "instructions.scripts.instructions.md",

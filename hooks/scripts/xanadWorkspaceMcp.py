@@ -19,7 +19,7 @@ WORKSPACE_INSTRUCTIONS_PATH = WORKSPACE_ROOT / ".github" / "copilot-instructions
 _NEW_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanadAssistant-lock.json"
 _LEGACY_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanad-assistant-lock.json"
 WORKSPACE_LOCKFILE_PATH = _NEW_LOCKFILE if _NEW_LOCKFILE.exists() else _LEGACY_LOCKFILE
-SHELL_METACHARACTERS = ["|", "&", ";", ">", "<", "\n", "\r", "`", "$((", "$("]
+SHELL_METACHARACTERS = ["|", "&", ";", ">", "<", "\n", "\r", "`", "$((", "$(", "${"]
 def workspace_root_valid() -> bool: return (WORKSPACE_ROOT / ".github").is_dir()
 def parse_key_commands(instructions_path: Path) -> list[dict[str, str]]:
     if not instructions_path.exists():
@@ -86,7 +86,7 @@ def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: 
     except (ValueError, OSError, subprocess.CalledProcessError) as exc:
         return None, f"Failed to resolve remote lifecycle source: {exc}"
 def resolve_lifecycle_cli(package_root: Path) -> tuple[list[str] | None, str | None]:
-    for path in (package_root / "xanadAssistant.py", package_root / "xanadAssistant.py", package_root / "scripts" / "lifecycle" / "xanadAssistant.py", package_root / "scripts" / "lifecycle" / "xanadAssistant.py"):
+    for path in (package_root / "xanadAssistant.py", package_root / "scripts" / "lifecycle" / "xanadAssistant.py"):
         if path.exists():
             return [sys.executable, str(path)], None
     return None, f"No xanadAssistant CLI entrypoint was found under {package_root}"

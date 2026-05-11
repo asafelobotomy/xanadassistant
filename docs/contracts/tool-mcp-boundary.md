@@ -20,18 +20,18 @@ The goal is not to collect generic third-party tools. The goal is to expose stab
 
 ## Core Rule
 
-A xanadAssistant MCP must expose semantic workflow tools, not arbitrary shell access.
+The `xanadTools` workspace MCP must expose semantic workflow tools, not arbitrary shell access.
 
-Good MCP tools express a stable repo-owned action such as `lifecycle.inspect` or `quality.check_loc`.
+Good MCP tools for `xanadTools` express a stable repo-owned action such as `lifecycle_inspect` or `workspace_run_check_loc`.
 
-Bad MCP tools simply proxy generic host capabilities such as:
+Bad `xanadTools` tools simply proxy generic host capabilities such as:
 
 - arbitrary shell execution
 - generic file read or file write
 - generic web fetch
 - generic git command passthrough
 
-Those capabilities should remain native agent tools unless a narrower xanadAssistant-owned contract is required.
+Those capabilities should remain native agent tools or domain-specific companion servers (e.g. `xanadWeb`, `xanadGit`) unless a narrower xanadAssistant-owned contract is required. Companion servers (`gitMcp.py`, `webMcp.py`, etc.) are separately scoped and security-reviewed under the tool-mcp-v1 contract — this Core Rule governs the `xanadTools` server only.
 
 ## Scope Rule
 
@@ -39,30 +39,29 @@ The first-party MCP surface should begin with one small local server and only sp
 
 Recommended first domains:
 
-- `lifecycle.*` for lifecycle engine entrypoints
-- `quality.*` for repo-approved validation commands
-- `package.*` for generation and freshness workflows
+- `lifecycle_*` for lifecycle engine entrypoints (implemented: `xanadTools`)
+- `workspace_*` for repo-approved validation commands (implemented: `xanadTools`)
+- `package_*` for generation and freshness workflows (deferred)
 
 ## V1 Server Shape
 
-The initial shape should be one workspace-local stdio MCP server, managed by the lifecycle engine and referenced from `.vscode/mcp.json`.
+The initial shape is one workspace-local stdio MCP server (`xanadTools`), managed by the lifecycle engine and referenced from `.vscode/mcp.json`. Companion servers (`xanadGit`, `xanadWeb`, `xanadTime`, `xanadSecurity`, `xanadSQLite`, `xanadGitHub`, `xanadSequentialThinking`) are shipped alongside it and registered in the same MCP config.
 
-The recommended identity is a first-party name such as `xanad-tools` or `xanad-workspace-tools`.
+The `xanadTools` initial tool set is:
 
-V1 should stay intentionally small. A suitable initial tool set is:
-
-- `lifecycle.inspect`
-- `lifecycle.check`
-- `lifecycle.plan_setup`
-- `lifecycle.apply`
-- `lifecycle.update`
-- `lifecycle.repair`
-- `lifecycle.factory_restore`
-- `quality.run_targeted_tests`
-- `quality.run_full_tests`
-- `quality.check_loc`
-- `package.generate`
-- `package.check_manifest_freshness`
+- `lifecycle_inspect`
+- `lifecycle_check`
+- `lifecycle_interview`
+- `lifecycle_plan_setup`
+- `lifecycle_apply`
+- `lifecycle_update`
+- `lifecycle_repair`
+- `lifecycle_factory_restore`
+- `workspace_run_tests`
+- `workspace_run_check_loc`
+- `workspace_show_key_commands`
+- `workspace_show_install_state`
+- `workspace_validate_lockfile`
 
 ## Input Rule
 

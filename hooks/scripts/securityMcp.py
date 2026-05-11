@@ -35,6 +35,11 @@ mcp = FastMCP("xanadSecurity")
 
 _HEADERS = {"Content-Type": "application/json", "Accept": "application/json"}
 
+_DEPS_DEV_SYSTEMS = frozenset({
+    "pypi", "npm", "cargo", "go", "maven", "nuget", "rubygems",
+    "packagist", "hex", "pub",
+})
+
 
 def _post(url: str, payload: dict) -> dict:  # pragma: no cover
     req = urllib.request.Request(
@@ -107,6 +112,11 @@ def query_deps(package: str, version: str, system: str) -> str:  # pragma: no co
         version: Exact version string (e.g. '2.28.0').
         system: Ecosystem — one of: pypi, npm, cargo, go, maven, nuget.
     """
+    if system.lower() not in _DEPS_DEV_SYSTEMS:
+        raise ValueError(
+            f"Unknown ecosystem {system!r}. "
+            f"Supported: {', '.join(sorted(_DEPS_DEV_SYSTEMS))}"
+        )
     pkg_enc = urllib.parse.quote(package, safe="")
     ver_enc = urllib.parse.quote(version, safe="")
     url = f"https://api.deps.dev/v3alpha/systems/{system}/packages/{pkg_enc}/versions/{ver_enc}"

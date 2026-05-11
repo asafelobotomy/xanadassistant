@@ -26,6 +26,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.parse
@@ -45,6 +46,15 @@ except ImportError as _exc:  # pragma: no cover
 mcp = FastMCP("xanadGitHub")
 
 _API = "https://api.github.com"
+_SAFE_NAME = re.compile(r"^[A-Za-z0-9._-]+$")
+
+
+def _validate_owner_repo(owner: str, repo: str) -> None:
+    """Raise ValueError if owner or repo contain non-safe characters."""
+    if not _SAFE_NAME.match(owner):
+        raise ValueError(f"Invalid owner name: {owner!r}")
+    if not _SAFE_NAME.match(repo):
+        raise ValueError(f"Invalid repo name: {repo!r}")
 
 
 # ---------------------------------------------------------------------------
@@ -102,6 +112,7 @@ def _post(path: str, body: dict) -> Any:  # pragma: no cover
 @mcp.tool()
 def get_repo(owner: str, repo: str) -> str:  # pragma: no cover
     """Return key metadata for a GitHub repository."""
+    _validate_owner_repo(owner, repo)
     d = _get(f"/repos/{owner}/{repo}")
     return json.dumps({k: d.get(k) for k in (
         "full_name", "description", "default_branch", "stargazers_count",
@@ -120,6 +131,10 @@ def get_file_contents(owner: str, repo: str, path: str, ref: str = "") -> str:  
         path: File path within the repository (e.g. 'src/main.py').
         ref: Branch, tag, or commit SHA (defaults to the default branch).
     """
+    _validate_owner_repo(owner, repo)
+    from pathlib import PurePosixPath
+    if ".." in PurePosixPath(path).parts:
+        raise ValueError(f"Path must not contain '..' components: {path!r}")
     params = {"ref": ref} if ref else None
     d = _get(f"/repos/{owner}/{repo}/contents/{path}", params=params)
     if d.get("encoding") == "base64":
@@ -160,6 +175,7 @@ def list_issues(owner: str, repo: str, state: str = "open",
         state: 'open' (default), 'closed', or 'all'.
         per_page: Results per page, 1–50 (default 20).
     """
+    _validate_owner_repo(owner, repo)
     items = _get(f"/repos/{owner}/{repo}/issues",
                  {"state": state, "per_page": min(50, per_page)})
     issues = [i for i in items if "pull_request" not in i]
@@ -180,6 +196,7 @@ def get_issue(owner: str, repo: str, issue_number: int) -> str:  # pragma: no co
         repo: Repository name.
         issue_number: Issue number.
     """
+    _validate_owner_repo(owner, repo)
     i = _get(f"/repos/{owner}/{repo}/issues/{issue_number}")
     return json.dumps({k: i.get(k) for k in (
         "number", "title", "state", "body", "html_url",
@@ -198,6 +215,7 @@ def create_issue_comment(owner: str, repo: str,
         issue_number: Issue or PR number.
         body: Comment text (Markdown supported).
     """
+    _validate_owner_repo(owner, repo)
     r = _post(f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body})
     return f"Comment created: {r.get('html_url')}"
 
@@ -217,6 +235,7 @@ def list_pull_requests(owner: str, repo: str, state: str = "open",
         state: 'open' (default), 'closed', or 'all'.
         per_page: Results per page, 1–50 (default 20).
     """
+    _validate_owner_repo(owner, repo)
     items = _get(f"/repos/{owner}/{repo}/pulls",
                  {"state": state, "per_page": min(50, per_page)})
     if not items:
@@ -237,6 +256,7 @@ def get_pull_request(owner: str, repo: str, pull_number: int) -> str:  # pragma:
         repo: Repository name.
         pull_number: Pull request number.
     """
+    _validate_owner_repo(owner, repo)
     p = _get(f"/repos/{owner}/{repo}/pulls/{pull_number}")
     return json.dumps({k: p.get(k) for k in (
         "number", "title", "state", "body", "html_url", "draft",
@@ -259,6 +279,7 @@ def create_pull_request(owner: str, repo: str, title: str, head: str,
         body: PR description body (Markdown).
         draft: When True, creates as a draft PR.
     """
+    _validate_owner_repo(owner, repo)
     r = _post(f"/repos/{owner}/{repo}/pulls",
               {"title": title, "head": head, "base": base,
                "body": body, "draft": draft})
@@ -278,6 +299,7 @@ def list_releases(owner: str, repo: str, per_page: int = 10) -> str:  # pragma: 
         repo: Repository name.
         per_page: Results per page, 1–30 (default 10).
     """
+    _validate_owner_repo(owner, repo)
     items = _get(f"/repos/{owner}/{repo}/releases", {"per_page": min(30, per_page)})
     if not items:
         return f"No releases found for {owner}/{repo}."
@@ -307,6 +329,7 @@ def list_workflow_runs(owner: str, repo: str, workflow_id: str = "",
                 'requested', or 'pending'. Omit for all statuses.
         per_page: Results per page, 1–50 (default 10).
     """
+    _validate_owner_repo(owner, repo)
     path = f"/repos/{owner}/{repo}/actions"
     path += f"/workflows/{workflow_id}/runs" if workflow_id else "/runs"
     params: dict = {"per_page": min(50, per_page)}

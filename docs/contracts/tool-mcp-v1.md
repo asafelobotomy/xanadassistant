@@ -124,17 +124,35 @@ Run `xanadAssistant.py apply --json` with optional `--answers`, `--non-interacti
 
 Run `xanadAssistant.py check --json`. No additional inputs beyond the shared schema.
 
-## Deferred Tools
+## Extended Tools
 
-These tools are intentionally deferred from V1:
+These tools were originally deferred from the initial V1 slice but are now fully implemented
+in `xanadWorkspaceMcp.py` and registered in the MCP config.
 
-- `lifecycle_update`
-- `lifecycle_repair`
-- `lifecycle_factory_restore`
-- `package_generate`
-- `package_check_manifest_freshness`
+### `lifecycle_update`
 
-Reason: still depend on lifecycle modes or contributor-repo-only assets not guaranteed to exist safely from the workspace-local server slice.
+Run `xanadAssistant.py update --json`. No additional inputs beyond the shared schema.
+
+### `lifecycle_repair`
+
+Run `xanadAssistant.py repair --json`. No additional inputs beyond the shared schema.
+
+### `lifecycle_factory_restore`
+
+Run `xanadAssistant.py factory-restore --json`. No additional inputs beyond the shared schema.
+
+### `workspace_show_install_state`
+
+Return the parsed lockfile contents for the workspace. Input: no arguments beyond optional `packageRoot`.
+
+### `workspace_validate_lockfile`
+
+Validate the xanadAssistant lockfile at `.github/xanadAssistant-lock.json`. Input: no arguments.
+
+The following tools from the original deferred list remain unimplemented:
+
+- `package_generate` — requires contributor-repo assets not available in consumer workspaces
+- `package_check_manifest_freshness` — same constraint as `package_generate`
 
 ## Security Rules
 
