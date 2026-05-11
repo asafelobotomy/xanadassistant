@@ -1,6 +1,6 @@
 # Setup Prompt
 
-Use this prompt when the user asks to install or refresh xanad-assistant in the
+Use this prompt when the user asks to install or refresh xanadAssistant in the
 active repository.
 
 Target workspace: my-project

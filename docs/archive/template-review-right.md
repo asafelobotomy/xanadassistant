@@ -133,7 +133,7 @@ different safety profiles.
 **Xanadassistant status**: no equivalent protocol exists. The `lifecycle-planning.agent.md`
 has a "Trigger phrases" section but it covers lifecycle operations (install, update,
 repair), not instruction file self-editing. There is no canonical phrase that triggers
-the xanad-assistant update flow from within a consumer workspace session.
+the xanadAssistant update flow from within a consumer workspace session.
 
 ---
 

@@ -1,4 +1,4 @@
-# Xanad Assistant CLI Surface
+# xanadAssistant CLI Surface
 
 This document defines the Phase 0 contract for the lifecycle command surface.
 
@@ -9,14 +9,14 @@ Implementation may be stubbed, but later code and schemas should conform to this
 
 ## Execution Entry
 
-The product entry point is `xanad-assistant.py`.
+The product entry point is `xanadAssistant.py`.
 
 During early implementation, the script may live at either of these locations:
 
-- repo root as `xanad-assistant.py`
-- `scripts/lifecycle/xanad_assistant.py`
+- repo root as `xanadAssistant.py`
+- `scripts/lifecycle/xanadAssistant.py`
 
-The external command surface should still be described as `xanad-assistant.py` even if the internal module path changes.
+The external command surface should still be described as `xanadAssistant.py` even if the internal module path changes.
 
 ## Core Command Set
 
@@ -115,7 +115,7 @@ Presentation:
 
 `--source`
 
-- Selects the package source family, such as `github:asafelobotomy/xanad-assistant`.
+- Selects the package source family, such as `github:asafelobotomy/xanadAssistant`.
 
 `--version`
 

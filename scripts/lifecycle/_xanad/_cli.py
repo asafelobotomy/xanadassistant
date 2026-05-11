@@ -5,7 +5,7 @@ import argparse
 
 def add_common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--workspace", required=True, help="Consumer repository to inspect or modify.")
-    parser.add_argument("--package-root", default=None, help="Local xanad-assistant package checkout.")
+    parser.add_argument("--package-root", default=None, help="Local xanadAssistant package checkout.")
     parser.add_argument("--source", help="Package source identifier.")
     parser.add_argument("--version", help="Requested release version.")
     parser.add_argument("--ref", help="Requested source ref.")
@@ -21,7 +21,7 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Xanad Assistant lifecycle tool.")
+    parser = argparse.ArgumentParser(description="xanadAssistant lifecycle tool.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     inspect_parser = subparsers.add_parser("inspect", help="Inspect workspace state.")

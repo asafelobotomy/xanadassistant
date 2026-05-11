@@ -46,8 +46,8 @@ class ApplyTests(XanadTestBase):
             instructions_text = instructions_path.read_text(encoding="utf-8")
             self.assertIn(workspace.name, instructions_text)
             self.assertNotIn("{{WORKSPACE_NAME}}", instructions_text)
-            self.assertTrue((workspace / ".github" / "xanad-assistant-lock.json").exists())
-            lockfile = json.loads((workspace / ".github" / "xanad-assistant-lock.json").read_text(encoding="utf-8"))
+            self.assertTrue((workspace / ".github" / "xanadAssistant-lock.json").exists())
+            lockfile = json.loads((workspace / ".github" / "xanadAssistant-lock.json").read_text(encoding="utf-8"))
             self.assertEqual(str(repo_root), lockfile["package"]["packageRoot"])
             summary_text = (workspace / ".github" / "copilot-version.md").read_text(encoding="utf-8")
             self.assertIn("Version: 0.1.0", summary_text)
@@ -165,7 +165,7 @@ class ApplyTests(XanadTestBase):
             prompt.parent.mkdir(parents=True, exist_ok=True)
             prompt.write_text("modified\n", encoding="utf-8")
 
-            (github_dir / "xanad-assistant-lock.json").write_text(
+            (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
                         selectedPacks=["review"],

@@ -129,7 +129,7 @@ lifecycle logic lives in agent prose that cannot be unit-tested.
 
 ### X2 — Lockfile as authoritative installed state
 
-`xanad-assistant-lock.json` is schema-validated, hash-verified, with migration coverage
+`xanadAssistant-lock.json` is schema-validated, hash-verified, with migration coverage
 for pre-0.1.0 shapes. The template determines installed state by reading and parsing the
 prose instructions file (checking for `{{}}` tokens, version markers in comments).
 That is content heuristics, not structured state — fragile under any edit that changes
@@ -155,7 +155,7 @@ token presence but not semantic artifact freshness.
 
 ### X5 — Schema contracts with test coverage
 
-`xanad-assistant-lock.schema.json`, `install-manifest.schema.json`,
+`xanadAssistant-lock.schema.json`, `install-manifest.schema.json`,
 `install-policy.schema.json` are JSON Schema documents with dedicated validation tests
 (`test_manifest_schema_contract.py`, `test_metadata_contracts.py`). The template has no
 equivalent schema contracts for its JSON artifacts (`workspace-index.json`,

@@ -4,7 +4,7 @@
   "workspace": ".",
   "source": {
     "kind": "package-root",
-    "packageRoot": "/path/to/xanad-assistant"
+    "packageRoot": "/path/to/xanadAssistant"
   },
   "status": "approval-required",
   "warnings": [],

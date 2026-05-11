@@ -25,7 +25,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
             workspace = Path(tmp)
             self._apply(workspace)
 
-            lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+            lockfile_path = workspace / ".github" / "xanadAssistant-lock.json"
             lockfile = json.loads(lockfile_path.read_text(encoding="utf-8"))
             lockfile["manifest"]["hash"] = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
             lockfile_path.write_text(json.dumps(lockfile, indent=2), encoding="utf-8")
@@ -83,7 +83,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
                 "Dry-run should not write managed files",
             )
             self.assertFalse(
-                (workspace / ".github" / "xanad-assistant-lock.json").exists(),
+                (workspace / ".github" / "xanadAssistant-lock.json").exists(),
                 "Dry-run should not write lockfile",
             )
 
@@ -105,8 +105,8 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         with tempfile.TemporaryDirectory() as tmp:
             workspace = Path(tmp)
             self._apply(workspace)
-            lockfile = json.loads((workspace / ".github" / "xanad-assistant-lock.json").read_text())
-            self.assertEqual("xanad-assistant", lockfile["package"]["name"])
+            lockfile = json.loads((workspace / ".github" / "xanadAssistant-lock.json").read_text())
+            self.assertEqual("xanadAssistant", lockfile["package"]["name"])
 
     # ------------------------------------------------------------------
     # Phase 7 – agent and prompt file checks
@@ -233,7 +233,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
             self.assertEqual(0, result.returncode, result.stderr)
             self.assertTrue(log_path.exists(), "Log file should have been created")
             log_text = log_path.read_text(encoding="utf-8")
-            self.assertIn("xanad-assistant", log_text)
+            self.assertIn("xanadAssistant", log_text)
             self.assertIn("Apply", log_text)
             self.assertIn("Receipt", log_text)
 

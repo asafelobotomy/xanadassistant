@@ -19,7 +19,7 @@ class PlanLifecycleTests(XanadTestBase):
             prompt.parent.mkdir(parents=True, exist_ok=True)
             prompt.write_text("modified\n", encoding="utf-8")
 
-            (github_dir / "xanad-assistant-lock.json").write_text(
+            (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
                         selectedPacks=["lean"],
@@ -64,12 +64,12 @@ class PlanLifecycleTests(XanadTestBase):
                 {
                     "target": ".github/copilot-instructions.md",
                     "action": "merge",
-                    "backupPath": ".xanad-assistant/backups/<apply-timestamp>/.github/copilot-instructions.md",
+                    "backupPath": ".xanadAssistant/backups/<apply-timestamp>/.github/copilot-instructions.md",
                 },
                 {
                     "target": ".github/prompts/setup.md",
                     "action": "replace",
-                    "backupPath": ".xanad-assistant/backups/<apply-timestamp>/.github/prompts/setup.md",
+                    "backupPath": ".xanadAssistant/backups/<apply-timestamp>/.github/prompts/setup.md",
                 },
             ],
             payload["result"]["backupPlan"]["targets"],
@@ -86,7 +86,7 @@ class PlanLifecycleTests(XanadTestBase):
             prompt.parent.mkdir(parents=True, exist_ok=True)
             prompt.write_text("modified\n", encoding="utf-8")
 
-            (github_dir / "xanad-assistant-lock.json").write_text(
+            (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
                         selectedPacks=["lean"],
@@ -230,7 +230,7 @@ class PlanLifecycleTests(XanadTestBase):
                 encoding="utf-8",
             )
 
-            (github_dir / "xanad-assistant-lock.json").write_text(
+            (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
                         ownershipBySurface={

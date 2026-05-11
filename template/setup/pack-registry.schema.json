@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Xanad Assistant Pack Registry",
+  "title": "xanadAssistant Pack Registry",
   "type": "object",
   "additionalProperties": false,
   "required": [

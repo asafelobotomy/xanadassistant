@@ -122,7 +122,7 @@ def collect_unmanaged_files(workspace: Path, manifest: dict | None, managed_targ
             relative = file_path.relative_to(workspace).as_posix()
             if relative in managed_targets or relative in retired_targets:
                 continue
-            if relative in {".github/xanad-assistant-lock.json", ".github/copilot-version.md"}:
+            if relative in {".github/xanadAssistant-lock.json", ".github/xanad-assistant-lock.json", ".github/copilot-version.md"}:
                 continue
             unmanaged.add(relative)
 
@@ -149,6 +149,7 @@ def collect_successor_migration_files(
     managed_targets = {entry.get("target") for entry in manifest.get("managedFiles", [])}
     retired_targets = {entry.get("target") for entry in manifest.get("retiredFiles", [])}
     excluded = managed_targets | retired_targets | {
+        ".github/xanadAssistant-lock.json",
         ".github/xanad-assistant-lock.json",
         ".github/copilot-version.md",
     }

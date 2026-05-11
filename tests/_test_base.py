@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 TEST_REPO_ROOT = Path(__file__).resolve().parents[1]
-TEST_SCRIPT_PATH = TEST_REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
+TEST_SCRIPT_PATH = TEST_REPO_ROOT / "scripts" / "lifecycle" / "xanadAssistant.py"
 
 
 def run_lifecycle_subprocess(
@@ -17,7 +17,7 @@ def run_lifecycle_subprocess(
     workspace: Path | None = None,
     repo_root: Path = TEST_REPO_ROOT,
 ) -> subprocess.CompletedProcess[str]:
-    command_args = [sys.executable, str(repo_root / "scripts" / "lifecycle" / "xanad_assistant.py"), command]
+    command_args = [sys.executable, str(repo_root / "scripts" / "lifecycle" / "xanadAssistant.py"), command]
     if command == "plan" and extra_args and not extra_args[0].startswith("-"):
         command_args.append(extra_args[0])
         extra_args = extra_args[1:]
@@ -64,7 +64,7 @@ class XanadTestBase(unittest.TestCase):
     def make_minimal_lockfile(self, *, remove_paths: tuple[str, ...] = (), **overrides: object) -> dict:
         base = {
             "schemaVersion": "0.1.0",
-            "package": {"name": "xanad-assistant"},
+            "package": {"name": "xanadAssistant"},
             "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
             "timestamps": {
                 "appliedAt": "2026-05-07T00:00:00Z",

@@ -1,4 +1,4 @@
-# Xanad Assistant Exit Codes
+# xanadAssistant Exit Codes
 
 This document defines stable exit-code meanings for machine callers.
 

@@ -1,4 +1,4 @@
-# Xanad Assistant — Developer Instructions
+# xanadAssistant — Developer Instructions
 
 > Role: Developer on this repo — lifecycle engine, schema contracts, test suite, and Copilot surface files.
 >
@@ -6,14 +6,14 @@
 
 ## My Role
 
-I work **on** xanadassistant — building and maintaining the lifecycle engine, schemas, and Copilot surface files (agents, skills, hooks, prompts, instructions). The agents, skills, hooks, and prompts in this repo are delivered verbatim to consumer workspaces. There is no developer-only vs consumer-only split for those surfaces — they are the same files. The instructions file uses token substitution: `template/copilot-instructions.md` carries `{{}}` tokens resolved at consumer install time; this file has them resolved to xanadassistant's own values.
+I work **on** xanadAssistant — building and maintaining the lifecycle engine, schemas, and Copilot surface files (agents, skills, hooks, prompts, instructions). The agents, skills, hooks, and prompts in this repo are delivered verbatim to consumer workspaces. There is no developer-only vs consumer-only split for those surfaces — they are the same files. The instructions file uses token substitution: `template/copilot-instructions.md` carries `{{}}` tokens resolved at consumer install time; this file has them resolved to xanadAssistant's own values.
 
 ## Architecture
 
 | Path | Role |
 |------|------|
-| `xanad-assistant.py` | Root entry point (thin wrapper) |
-| `scripts/lifecycle/xanad_assistant.py` | Thin dispatcher; re-exports all public symbols |
+| `xanadAssistant.py` | Root entry point (thin wrapper) |
+| `scripts/lifecycle/xanadAssistant.py` | Thin dispatcher; re-exports all public symbols |
 | `scripts/lifecycle/_xanad/` | Lifecycle engine package (small focused submodules, each ≤250 lines) |
 | `template/setup/install-policy.json` | Source of truth for what gets installed |
 | `template/setup/install-manifest.json` | **Generated** — never edit by hand; run `python3 scripts/generate.py` |
@@ -34,14 +34,14 @@ I work **on** xanadassistant — building and maintaining the lifecycle engine, 
 | LOC gate | `python3 scripts/check_loc.py` |
 | Regenerate manifest + catalog | `python3 scripts/generate.py` |
 | Freshness check | `python3 -m scripts.lifecycle.check_manifest_freshness --package-root . --policy template/setup/install-policy.json --manifest template/setup/install-manifest.json --catalog template/setup/catalog.json` |
-| Inspect (this workspace) | `python3 xanad-assistant.py inspect --workspace . --package-root . --json` |
-| Check (this workspace) | `python3 xanad-assistant.py check --workspace . --package-root . --json` |
-| Plan setup | `python3 xanad-assistant.py plan setup --workspace <path> --package-root . --json --non-interactive` |
+| Inspect (this workspace) | `python3 xanadAssistant.py inspect --workspace . --package-root . --json` |
+| Check (this workspace) | `python3 xanadAssistant.py check --workspace . --package-root . --json` |
+| Plan setup | `python3 xanadAssistant.py plan setup --workspace <path> --package-root . --json --non-interactive` |
 
 ## Coding Conventions
 
 - Language: **Python 3** · stdlib only · no third-party runtime deps
-- Engine: single file `scripts/lifecycle/xanad_assistant.py`
+- Engine: single file `scripts/lifecycle/xanadAssistant.py`
 - Hook scripts: `set -euo pipefail`; JSON in on stdin → JSON on stdout
 - Tests: `unittest`; fixtures inline in test methods; no external test data files
 - No silent error swallowing — raise or emit structured error events
@@ -95,7 +95,7 @@ Use memory as optional recall, not as lifecycle authority.
 - `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
 - `xanad-lifecycle` agent — delegate all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
 - `AGENTS.md` — canonical repo-local routing table for agent selection, handoffs, and lifecycle trigger phrases
-- Trigger phrases: `"inspect workspace"`, `"run lifecycle check"`, `"repair install"`, `"update xanad-assistant"`, `"factory restore"`
+- Trigger phrases: `"inspect workspace"`, `"run lifecycle check"`, `"repair install"`, `"update xanadAssistant"`, `"factory restore"`
 - If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`, treat the workspace as a predecessor `copilot-instructions-template` migration and route it through `repair` or `update` rather than ad hoc cleanup.
 
 ## Agent Routing
@@ -111,4 +111,4 @@ Route specialist work to the matching agent before acting directly. If a task ha
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanad-assistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle` |
+| xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle` |

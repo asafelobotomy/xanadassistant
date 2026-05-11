@@ -12,11 +12,13 @@ from _xanad_mcp_source import parse_github_source, resolve_github_release, resol
 PROTOCOL_VERSION = "2025-11-25"
 SERVER_NAME = "xanadTools"
 SERVER_VERSION = "0.1.0"
-DEFAULT_CACHE_ROOT = Path.home() / ".xanad-assistant" / "pkg-cache"
+DEFAULT_CACHE_ROOT = Path.home() / ".xanadAssistant" / "pkg-cache"
 WORKSPACE_ROOT_UNAVAILABLE = "The MCP server is not installed in a workspace root."
 WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
 WORKSPACE_INSTRUCTIONS_PATH = WORKSPACE_ROOT / ".github" / "copilot-instructions.md"
-WORKSPACE_LOCKFILE_PATH = WORKSPACE_ROOT / ".github" / "xanad-assistant-lock.json"
+_NEW_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanadAssistant-lock.json"
+_LEGACY_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanadAssistant-lock.json"
+WORKSPACE_LOCKFILE_PATH = _NEW_LOCKFILE if _NEW_LOCKFILE.exists() else _LEGACY_LOCKFILE
 SHELL_METACHARACTERS = ["|", "&", ";", ">", "<", "\n", "\r", "`", "$((", "$("]
 def workspace_root_valid() -> bool: return (WORKSPACE_ROOT / ".github").is_dir()
 def parse_key_commands(instructions_path: Path) -> list[dict[str, str]]:
@@ -84,10 +86,10 @@ def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: 
     except (ValueError, OSError, subprocess.CalledProcessError) as exc:
         return None, f"Failed to resolve remote lifecycle source: {exc}"
 def resolve_lifecycle_cli(package_root: Path) -> tuple[list[str] | None, str | None]:
-    for path in (package_root / "xanad-assistant.py", package_root / "scripts" / "lifecycle" / "xanad_assistant.py"):
+    for path in (package_root / "xanadAssistant.py", package_root / "xanadAssistant.py", package_root / "scripts" / "lifecycle" / "xanadAssistant.py", package_root / "scripts" / "lifecycle" / "xanadAssistant.py"):
         if path.exists():
             return [sys.executable, str(path)], None
-    return None, f"No xanad-assistant CLI entrypoint was found under {package_root}"
+    return None, f"No xanadAssistant CLI entrypoint was found under {package_root}"
 def reject_shell_metacharacters(command: str) -> str | None:
     for token in SHELL_METACHARACTERS:
         if token in command:
@@ -232,7 +234,7 @@ def tool_workspace_validate_lockfile(arguments: dict) -> dict:
         return build_unavailable_result(WORKSPACE_ROOT_UNAVAILABLE)
     lockfile = read_lockfile()
     if lockfile is None:
-        return build_unavailable_result("No lockfile found at .github/xanad-assistant-lock.json or it contains invalid JSON.")
+        return build_unavailable_result("No lockfile found at .github/xanadAssistant-lock.json or it contains invalid JSON.")
     required = {"schemaVersion", "package", "manifest", "timestamps", "files"}
     missing = sorted(required - lockfile.keys())
     if missing:
@@ -251,7 +253,7 @@ def tool_workspace_show_install_state(arguments: dict) -> dict:
 LIFECYCLE_TOOL_ENTRIES = {
     f"lifecycle_{name}": _tool_spec(
         title,
-        f"Run xanad-assistant {command_text} for the current workspace using a local package root.",
+        f"Run xanadAssistant {command_text} for the current workspace using a local package root.",
         _lifecycle_input_schema(extra_properties),
         _build_lifecycle_handler(cli_command, **handler_kwargs),
     )
@@ -270,7 +272,7 @@ TOOLS = {
     "workspace_show_key_commands": _tool_spec("Show Key Commands", "Return the commands declared in .github/copilot-instructions.md.", EMPTY_INPUT_SCHEMA, tool_workspace_show_key_commands),
     "workspace_run_tests": _tool_spec("Run Workspace Tests", "Run the workspace test command declared in .github/copilot-instructions.md.", WORKSPACE_RUN_TESTS_INPUT_SCHEMA, tool_workspace_run_tests),
     "workspace_run_check_loc": _tool_spec("Run LOC Gate", "Run the repo-local LOC gate when this workspace defines one.", EMPTY_INPUT_SCHEMA, tool_workspace_run_check_loc),
-    "workspace_validate_lockfile": _tool_spec("Validate Lockfile", "Check that .github/xanad-assistant-lock.json exists and contains the required top-level keys.", EMPTY_INPUT_SCHEMA, tool_workspace_validate_lockfile),
+    "workspace_validate_lockfile": _tool_spec("Validate Lockfile", "Check that .github/xanadAssistant-lock.json exists and contains the required top-level keys.", EMPTY_INPUT_SCHEMA, tool_workspace_validate_lockfile),
     "workspace_show_install_state": _tool_spec("Show Install State", "Return the current installState and drift summary from a lifecycle check without the full check payload.", EMPTY_INPUT_SCHEMA, tool_workspace_show_install_state),
     **LIFECYCLE_TOOL_ENTRIES,
 }

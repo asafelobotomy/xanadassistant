@@ -22,7 +22,7 @@ class PlanLifecycleTests(XanadTestBase):
             unmanaged = github_dir / "prompts" / "custom.md"
             unmanaged.write_text("custom\n", encoding="utf-8")
 
-            (github_dir / "xanad-assistant-lock.json").write_text(
+            (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
                         ownershipBySurface={
@@ -60,7 +60,7 @@ class PlanLifecycleTests(XanadTestBase):
             prompt.parent.mkdir(parents=True, exist_ok=True)
             prompt.write_text("modified\n", encoding="utf-8")
 
-            (github_dir / "xanad-assistant-lock.json").write_text(
+            (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
                         ownershipBySurface={

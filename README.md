@@ -1,8 +1,8 @@
-# xanad-assistant
+# xanadAssistant
 
 A lifecycle manager for GitHub Copilot surface files in VS Code workspaces.
 
-xanad-assistant installs, updates, repairs, and restores a curated set of Copilot surface files — agents, skills, hooks, prompts, and instructions — into any VS Code workspace. It tracks managed state in a lockfile, backs up user content before overwriting it, and exposes a structured JSON CLI for use by Copilot agents and MCP tools.
+xanadAssistant installs, updates, repairs, and restores a curated set of Copilot surface files — agents, skills, hooks, prompts, and instructions — into any VS Code workspace. It tracks managed state in a lockfile, backs up user content before overwriting it, and exposes a structured JSON CLI for use by Copilot agents and MCP tools.
 
 ## What it manages
 
@@ -25,10 +25,10 @@ Optional packs (e.g. `lean`) add further surfaces when selected at setup time.
 
 ## Usage
 
-Point `xanad-assistant.py` at a consumer workspace and at its own repo root:
+Point `xanadAssistant.py` at a consumer workspace and at its own repo root:
 
 ```sh
-python3 xanad-assistant.py <command> --workspace <path> --package-root <path> [--json]
+python3 xanadAssistant.py <command> --workspace <path> --package-root <path> [--json]
 ```
 
 ### Commands
@@ -62,20 +62,20 @@ python3 scripts/check_loc.py
 python3 scripts/generate.py
 
 # Inspect this workspace
-python3 xanad-assistant.py inspect --workspace . --package-root . --json
+python3 xanadAssistant.py inspect --workspace . --package-root . --json
 
 # Check this workspace
-python3 xanad-assistant.py check --workspace . --package-root . --json
+python3 xanadAssistant.py check --workspace . --package-root . --json
 
 # Plan a setup into another workspace
-python3 xanad-assistant.py plan setup --workspace <path> --package-root . --json --non-interactive
+python3 xanadAssistant.py plan setup --workspace <path> --package-root . --json --non-interactive
 ```
 
 ## Lifecycle processes
 
 ### Setup
 
-First-time install of all managed surfaces into a workspace that has no existing xanad-assistant install.
+First-time install of all managed surfaces into a workspace that has no existing xanadAssistant install.
 
 1. Run `inspect` — confirms the workspace is in `not-installed` state.
 2. Run `interview` — collects your choices: profile, optional packs, personalisation tokens (response style, autonomy level, agent persona, testing philosophy), and whether to enable MCP hooks.
@@ -83,8 +83,8 @@ First-time install of all managed surfaces into a workspace that has no existing
 4. Run `apply` — backs up any pre-existing content, writes all managed files with token substitution, and writes the lockfile recording your answers, hashes, profile, packs, and MCP state.
 
 ```sh
-python3 xanad-assistant.py plan setup --workspace <path> --package-root <path> --json
-python3 xanad-assistant.py apply --workspace <path> --package-root <path> --plan <plan-file>
+python3 xanadAssistant.py plan setup --workspace <path> --package-root <path> --json
+python3 xanadAssistant.py apply --workspace <path> --package-root <path> --plan <plan-file>
 ```
 
 > The `xanad-lifecycle` Copilot agent can guide you through setup interactively.
@@ -102,14 +102,14 @@ Refresh stale or missing managed files in a workspace that is already installed.
 
 ```sh
 # One-step shorthand
-python3 xanad-assistant.py update --workspace <path> --package-root <path> --json
+python3 xanadAssistant.py update --workspace <path> --package-root <path> --json
 ```
 
 ---
 
 ### Factory restore
 
-Full reset of a workspace that already has xanad-assistant installed. Use this when you want a clean slate while keeping your existing profile and pack choices.
+Full reset of a workspace that already has xanadAssistant installed. Use this when you want a clean slate while keeping your existing profile and pack choices.
 
 1. Requires an existing install (use **setup** for first-time installs).
 2. Backs up all currently installed managed files.
@@ -119,31 +119,31 @@ Full reset of a workspace that already has xanad-assistant installed. Use this w
 
 ```sh
 # One-step shorthand
-python3 xanad-assistant.py factory-restore --workspace <path> --package-root <path> --json
+python3 xanadAssistant.py factory-restore --workspace <path> --package-root <path> --json
 ```
 
 ---
 
 ### Migrate
 
-Migration from a predecessor package (`copilot-instructions-template`) to xanad-assistant. Handled automatically via `repair` or `update` — no separate command needed.
+Migration from a predecessor package (`copilot-instructions-template`) to xanadAssistant. Handled automatically via `repair` or `update` — no separate command needed.
 
 - Run `inspect` — reports `package_name_mismatch` or `successor_cleanup_required` in its findings, signalling a predecessor workspace.
-- Run `repair` (or `update`) — re-identifies the workspace as `xanad-assistant`, migrates the lockfile schema, and removes retired predecessor-era files (e.g. old agent files in `.github/agents/`).
+- Run `repair` (or `update`) — re-identifies the workspace as `xanadAssistant`, migrates the lockfile schema, and removes retired predecessor-era files (e.g. old agent files in `.github/agents/`).
 - The legacy `.github/copilot-version.md` file is preserved for reference during migration.
 - After repair/update completes, `inspect` reports clean with no repair reasons.
 
 ```sh
-python3 xanad-assistant.py inspect --workspace <path> --package-root <path> --json
-python3 xanad-assistant.py repair --workspace <path> --package-root <path> --json
+python3 xanadAssistant.py inspect --workspace <path> --package-root <path> --json
+python3 xanadAssistant.py repair --workspace <path> --package-root <path> --json
 ```
 
 ## Architecture
 
 ```
-xanad-assistant.py            # thin entry point
+xanadAssistant.py            # thin entry point
 scripts/lifecycle/
-  xanad_assistant.py          # public module and re-export surface
+  xanadAssistant.py          # public module and re-export surface
   _xanad/                     # lifecycle engine (small focused submodules)
 template/
   copilot-instructions.md     # consumer instructions template ({{}} tokens)
@@ -197,7 +197,7 @@ When hooks are enabled, the following MCP servers are installed into `.github/ho
 
 | Server | Enabled by default | Description |
 |---|---|---|
-| `xanad-workspace-mcp.py` | yes | xanad-assistant lifecycle tools (`lifecycle.*`) |
+| `xanad-workspace-mcp.py` | yes | xanadAssistant lifecycle tools (`lifecycle.*`) |
 | `git-mcp.py` | yes | Full local + remote git workflow (22 tools) |
 | `web-mcp.py` | yes | DuckDuckGo search and URL fetch |
 | `time-mcp.py` | yes | Current time, elapsed duration, timezone conversion |
@@ -208,7 +208,7 @@ When hooks are enabled, the following MCP servers are installed into `.github/ho
 
 ## Lockfile
 
-Each managed workspace maintains `.github/xanad-assistant-lock.json` recording the installed package name, version, managed file hashes, selected profile, selected packs, and ownership mode per surface. The engine uses this to detect drift and plan safe updates.
+Each managed workspace maintains `.github/xanadAssistant-lock.json` recording the installed package name, version, managed file hashes, selected profile, selected packs, and ownership mode per surface. The engine uses this to detect drift and plan safe updates.
 
 ## Contributing
 

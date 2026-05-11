@@ -7,7 +7,7 @@ Deliverables:
 - Finalize command names, output modes, exit codes, and JSON Lines event types.
 - Add `template/setup/install-policy.schema.json`.
 - Add `template/setup/install-manifest.schema.json`.
-- Add lockfile schema for `.github/xanad-assistant-lock.json`.
+- Add lockfile schema for `.github/xanadAssistant-lock.json`.
 - Document supported strategies and ownership modes.
 - Decide release-source defaults and branch/local development flags.
 
@@ -32,7 +32,7 @@ Definition of done:
 
 Deliverables:
 
-- Add `xanad-assistant.py` or `scripts/lifecycle/xanad_assistant.py` skeleton.
+- Add `xanadAssistant.py` or `scripts/lifecycle/xanadAssistant.py` skeleton.
 - Implement package resolution for local `--package-root` first.
 - Implement workspace inspector.
 - Implement lockfile parser and legacy version-file reader.
@@ -93,7 +93,7 @@ Deliverables:
 
 - Update the Setup agent to treat the script as the lifecycle authority.
 - Replace prose file-copy instructions with script invocation instructions.
-- Ensure agent descriptions contain trigger phrases for setup, update, repair, factory restore, and xanad-assistant lifecycle operations.
+- Ensure agent descriptions contain trigger phrases for setup, update, repair, factory restore, and xanadAssistant lifecycle operations.
 - Add prompts or skills only where they improve focused workflows; avoid always-loaded instruction sprawl.
 
 Definition of done:
@@ -105,7 +105,7 @@ Definition of done:
 Deliverables:
 
 - Polish `--ui agent` visible progress.
-- Add compact `xanad-assistant` branding.
+- Add compact `xanadAssistant` branding.
 - Add phase summaries: Preflight, Interview, Plan, Apply, Validate, Receipt.
 - Add terminal messages for `Waiting on Copilot`, `Applying approved plan`, and `Validation complete`.
 - Ensure color is optional and disabled automatically when unsupported.
@@ -161,6 +161,6 @@ This proves the contract before writing files.
 
 ## Final North Star
 
-`xanad-assistant` should be a Copilot-operated lifecycle installer for agent customizations, with a human-friendly terminal presence and a deterministic engine underneath.
+`xanadAssistant` should be a Copilot-operated lifecycle installer for agent customizations, with a human-friendly terminal presence and a deterministic engine underneath.
 
 The human-visible terminal is transparency and personality. The machine-readable protocol is the source of truth.

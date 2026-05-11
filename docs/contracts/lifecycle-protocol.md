@@ -1,6 +1,6 @@
-# Xanad Assistant Lifecycle Protocol
+# xanadAssistant Lifecycle Protocol
 
-This document defines the machine-facing protocol contract for `xanad-assistant.py`.
+This document defines the machine-facing protocol contract for `xanadAssistant.py`.
 
 ## Status
 

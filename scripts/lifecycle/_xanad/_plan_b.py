@@ -31,7 +31,7 @@ from scripts.lifecycle._xanad._source import build_source_summary
 def _build_lockfile_package_info() -> dict:
     """Return the lockfile package dict, populated from session source info when available."""
     source_info = _State.session_source_info
-    info: dict = {"name": "xanad-assistant"}
+    info: dict = {"name": "xanadAssistant"}
     if source_info is not None:
         if "packageRoot" in source_info:
             info["packageRoot"] = source_info["packageRoot"]
@@ -121,7 +121,7 @@ def build_planned_lockfile(
     if backup_plan.get("required") and backup_plan.get("root"):
         lockfile_contents["lastBackup"] = {"path": backup_plan["root"]}
 
-    return {"path": ".github/xanad-assistant-lock.json", "contents": lockfile_contents}
+    return {"path": ".github/xanadAssistant-lock.json", "contents": lockfile_contents}
 
 
 def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_path: str | None, non_interactive: bool) -> dict:

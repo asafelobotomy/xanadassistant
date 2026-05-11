@@ -23,7 +23,7 @@ Add packs, profiles, and optional memory behavior only after the lifecycle core 
 - [ ] If memory pack begins implementation, keep it local-first, optional, and verification-aware.
 - [ ] Define the first-party tooling MCP contract and keep its tool surface semantic, narrow, and repo-owned.
 - [ ] Keep lifecycle CLI as the authority even if first-party MCP tools wrap lifecycle workflows.
-- [ ] Define a first executable tooling MCP slice that works in consumer workspaces without assuming a local xanad-assistant package checkout.
+- [ ] Define a first executable tooling MCP slice that works in consumer workspaces without assuming a local xanadAssistant package checkout.
 
 ### Phase 9 Validation Gate
 
@@ -89,7 +89,7 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 - [x] Version metadata is bumped consistently.
 - [x] Manifest regeneration is part of release prep. (`python3 scripts/generate.py`)
 - [x] Stale-consumer fixture upgrade passes before release. (`StaleConsumerFixtureConvergenceTests` in `tests/test_convergence_and_network.py`)
-- [x] Lockfile migration coverage is current. (`LockfileMigrationTests` in `tests/test_xanad_assistant_inspect.py`)
+- [x] Lockfile migration coverage is current. (`LockfileMigrationTests` in `tests/test_xanadAssistant_inspect.py`)
 - [x] Catalog, pack, and profile metadata remain in sync.
 
 ## Suggested Initial Backlog By Slice
@@ -186,7 +186,7 @@ These are not blocking before implementation starts, but should be fetched when 
 - VS Code context engineering guide
 - agentskills.io specification pages used by `context: fork`
 - any official GitHub docs for organization-level custom agents or instructions that affect future distribution
-- current plugin marketplace behavior if `xanad-assistant` will ship through more than one marketplace path
+- current plugin marketplace behavior if `xanadAssistant` will ship through more than one marketplace path
 
 ## Definition Of Ready To Start Coding
 
@@ -204,7 +204,7 @@ The implementation program is complete when:
 
 - [x] setup, update, repair, and factory restore all run through the same lifecycle engine (`build_execution_result` → `build_plan_result` → `execute_apply_plan`; tested in `test_factory_restore_applies_customized_workspace_and_returns_clean_state`)
 - [x] the package manifest is authoritative and generated
-- [x] the installed-state lockfile is structured and validated (`xanad-assistant-lock.schema.json`; validated in `test_lockfile_written_by_apply_validates_against_schema`; migration coverage in `LockfileMigrationTests`)
+- [x] the installed-state lockfile is structured and validated (`xanadAssistant-lock.schema.json`; validated in `test_lockfile_written_by_apply_validates_against_schema`; migration coverage in `LockfileMigrationTests`)
 - [x] Copilot can drive the flow through a machine-readable protocol (`--json` and `--json-lines` flags on all commands; interview/plan/apply separation; machine-readable exit codes)
 - [x] the visible terminal experience is branded but optional and non-blocking (`--ui quiet/agent/tui`; `emit_agent_progress` with ANSI color; suppressed by `NO_COLOR`; non-blocking on missing tty)
 - [x] optional packs and profiles do not bloat the default install

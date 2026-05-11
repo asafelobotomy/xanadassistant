@@ -681,7 +681,7 @@ class ProgressTests(unittest.TestCase):
         buf = io.StringIO()
         with contextlib.redirect_stderr(buf):
             emit_agent_progress(payload)
-        self.assertIn("xanad-assistant", buf.getvalue())
+        self.assertIn("xanadAssistant", buf.getvalue())
 
     def test_emit_payload_calls_emit_json_by_default(self) -> None:
         payload = {
@@ -732,7 +732,7 @@ class ProgressTests(unittest.TestCase):
         out_buf = io.StringIO()
         with contextlib.redirect_stderr(err_buf), contextlib.redirect_stdout(out_buf):
             emit_payload(payload, "agent", False)
-        self.assertIn("xanad-assistant", err_buf.getvalue())
+        self.assertIn("xanadAssistant", err_buf.getvalue())
 
     def test_emit_agent_progress_writes_to_log_file(self) -> None:
         payload = {
@@ -754,7 +754,7 @@ class ProgressTests(unittest.TestCase):
                 _State.log_file.close()
                 _State.log_file = None
                 log_content = log_path.read_text(encoding="utf-8")
-                self.assertIn("xanad-assistant", log_content)
+                self.assertIn("xanadAssistant", log_content)
             finally:
                 if _State.log_file is not None:
                     _State.log_file.close()
@@ -797,7 +797,7 @@ class LifecycleMainCheckDriftTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             github_dir = Path(tmp) / ".github"
             github_dir.mkdir()
-            lockfile = github_dir / "xanad-assistant-lock.json"
+            lockfile = github_dir / "xanadAssistant-lock.json"
             lockfile.write_text("NOT VALID JSON{{{", encoding="utf-8")
             code, payload = self._check_workspace(tmp)
             self.assertEqual(7, code)
@@ -807,7 +807,7 @@ class LifecycleMainCheckDriftTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             github_dir = Path(tmp) / ".github"
             github_dir.mkdir()
-            lockfile = github_dir / "xanad-assistant-lock.json"
+            lockfile = github_dir / "xanadAssistant-lock.json"
             lockfile.write_text(
                 json.dumps({"schemaVersion": "0.1.0", "onlyPartial": True}),
                 encoding="utf-8",

@@ -48,11 +48,11 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual([], payload["result"]["packs"])
         self.assertTrue(payload["result"]["questionsResolved"])
         self.assertEqual(
-            ".github/xanad-assistant-lock.json",
+            ".github/xanadAssistant-lock.json",
             payload["result"]["plannedLockfile"]["path"],
         )
         self.assertEqual(
-            ".xanad-assistant/backups/<apply-timestamp>",
+            ".xanadAssistant/backups/<apply-timestamp>",
             payload["result"]["plannedLockfile"]["contents"]["lastBackup"]["path"],
         )
         self.assertEqual(
@@ -73,9 +73,9 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual(
             {
                 "required": True,
-                "root": ".xanad-assistant/backups/<apply-timestamp>",
+                "root": ".xanadAssistant/backups/<apply-timestamp>",
                 "targets": [],
-                "archiveRoot": ".xanad-assistant/archive",
+                "archiveRoot": ".xanadAssistant/archive",
                 "archiveTargets": [],
             },
             payload["result"]["backupPlan"],

@@ -126,7 +126,7 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     try:
         with _tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
             tmp_path = Path(tmp.name)
-        req = _urllib_request.Request(url, headers={"User-Agent": "xanad-assistant/0.1"})
+        req = _urllib_request.Request(url, headers={"User-Agent": "xanadAssistant/0.1"})
         with _urllib_request.urlopen(req, timeout=60) as response:
             tmp_path.write_bytes(response.read())
         with _tarfile.open(tmp_path, "r:gz") as tar:

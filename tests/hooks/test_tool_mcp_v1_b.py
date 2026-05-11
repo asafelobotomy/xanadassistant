@@ -42,11 +42,11 @@ class ToolMcpV1Tests(unittest.TestCase):
         workspace = make_workspace(self)
         github_dir = workspace / ".github"
         github_dir.mkdir(parents=True, exist_ok=True)
-        (github_dir / "xanad-assistant-lock.json").write_text(
+        (github_dir / "xanadAssistant-lock.json").write_text(
             json.dumps(
                 {
                     "schemaVersion": "0.1.0",
-                    "package": {"name": "xanad-assistant", "packageRoot": str(self.REPO_ROOT)},
+                    "package": {"name": "xanadAssistant", "packageRoot": str(self.REPO_ROOT)},
                     "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
                     "timestamps": {
                         "appliedAt": "2026-05-08T00:00:00Z",
@@ -114,12 +114,12 @@ class ToolMcpV1Tests(unittest.TestCase):
         workspace = make_workspace(self)
         github_dir = workspace / ".github"
         github_dir.mkdir(parents=True, exist_ok=True)
-        (github_dir / "xanad-assistant-lock.json").write_text(
+        (github_dir / "xanadAssistant-lock.json").write_text(
             json.dumps(
                 {
                     "schemaVersion": "0.1.0",
                     "package": {
-                        "name": "xanad-assistant",
+                        "name": "xanadAssistant",
                         "source": "github:testowner/testrepo",
                         "version": "v1.2.3"
                     },
@@ -182,11 +182,11 @@ class ToolMcpV1Tests(unittest.TestCase):
         workspace = make_workspace(self)
         github_dir = workspace / ".github"
         github_dir.mkdir(parents=True, exist_ok=True)
-        (github_dir / "xanad-assistant-lock.json").write_text(
+        (github_dir / "xanadAssistant-lock.json").write_text(
             json.dumps(
                 {
                     "schemaVersion": "0.1.0",
-                    "package": {"name": "xanad-assistant", "packageRoot": "/tmp/fake"},
+                    "package": {"name": "xanadAssistant", "packageRoot": "/tmp/fake"},
                     "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
                     "timestamps": {"appliedAt": "2026-05-10T00:00:00Z", "updatedAt": "2026-05-10T00:00:00Z"},
                     "selectedPacks": [],
@@ -207,11 +207,11 @@ class ToolMcpV1Tests(unittest.TestCase):
         workspace = make_workspace(self)
         github_dir = workspace / ".github"
         github_dir.mkdir(parents=True, exist_ok=True)
-        (github_dir / "xanad-assistant-lock.json").write_text(
+        (github_dir / "xanadAssistant-lock.json").write_text(
             json.dumps(
                 {
                     "schemaVersion": "0.1.0",
-                    "package": {"name": "xanad-assistant", "packageRoot": str(self.REPO_ROOT)},
+                    "package": {"name": "xanadAssistant", "packageRoot": str(self.REPO_ROOT)},
                     "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:test"},
                     "timestamps": {"appliedAt": "2026-05-10T00:00:00Z", "updatedAt": "2026-05-10T00:00:00Z"},
                     "selectedPacks": [],

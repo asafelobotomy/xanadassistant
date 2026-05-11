@@ -1,7 +1,7 @@
 # Memory Review — What To Keep From The Predecessor Template
 
 This note extracts the useful parts of the predecessor `copilot-instructions-template`
-memory model and separates them from the parts xanad-assistant should avoid.
+memory model and separates them from the parts xanadAssistant should avoid.
 
 ## Keep
 
@@ -18,7 +18,7 @@ The value is not the file itself. The value is that durable team knowledge becom
 - portable across machines
 - separate from ephemeral session notes
 
-For xanad-assistant, that durable target should stay simple: one `docs/memory.md`
+For xanadAssistant, that durable target should stay simple: one `docs/memory.md`
 file with clear sections rather than multiple persona files.
 
 ### Inbox-to-promotion workflow
@@ -38,7 +38,7 @@ This avoids forcing every observed pattern into a permanent document too early.
 
 The predecessor’s strongest durable-memory habit was associating facts with sources.
 
-That should remain mandatory for xanad-assistant durable repo memory because it keeps
+That should remain mandatory for xanadAssistant durable repo memory because it keeps
 memory subordinate to repository truth instead of turning it into folklore.
 
 ## Avoid
@@ -54,7 +54,7 @@ It introduced:
 - silent degradation risk
 - extra maintenance burden unrelated to lifecycle correctness
 
-Xanad-assistant should not adopt an always-on session-monitoring system as part of
+xanadAssistant should not adopt an always-on session-monitoring system as part of
 memory v1.
 
 ### Mixing runtime state with git-tracked knowledge
@@ -63,7 +63,7 @@ The predecessor mixed tracked knowledge and runtime artifacts under the same gen
 workspace tree. That increases `git status` noise and blurs the difference between
 durable knowledge and operational state.
 
-Xanad-assistant should keep these separate:
+xanadAssistant should keep these separate:
 
 - runtime or temporary state stays outside durable docs
 - durable repo knowledge stays in version-controlled docs only
@@ -73,7 +73,7 @@ Xanad-assistant should keep these separate:
 The predecessor’s separate MEMORY, SOUL, and USER files imposed too much routing
 overhead for normal development work.
 
-For xanad-assistant, a single durable repo memory document with topic sections is the
+For xanadAssistant, a single durable repo memory document with topic sections is the
 better default unless real scale later proves otherwise.
 
 ## Proposed Xanad V1 Shape

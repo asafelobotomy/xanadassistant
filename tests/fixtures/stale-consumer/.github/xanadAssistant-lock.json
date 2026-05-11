@@ -1,7 +1,7 @@
 {
   "schemaVersion": "0.1.0",
   "package": {
-    "name": "xanad-assistant",
+    "name": "xanadAssistant",
     "version": "v0.0.1"
   },
   "manifest": {

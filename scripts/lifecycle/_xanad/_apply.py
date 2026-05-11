@@ -104,12 +104,12 @@ def build_copilot_version_summary(lockfile_contents: dict, manifest: dict | None
     packs_summary = ", ".join(selected_packs) if selected_packs else "none"
 
     return (
-        "# Xanad Assistant Installed Summary\n\n"
+        "# xanadAssistant Installed Summary\n\n"
         f"Version: {package_version}\n"
         f"Profile: {lockfile_contents.get('profile') or 'unknown'}\n"
         f"Selected packs: {packs_summary}\n"
         f"Applied at: {lockfile_contents.get('timestamps', {}).get('appliedAt') or 'unknown'}\n"
-        f"Lockfile: .github/xanad-assistant-lock.json\n\n"
+        f"Lockfile: .github/xanadAssistant-lock.json\n\n"
         "```json\n"
         f"{json.dumps(summary_digest, indent=2)}\n"
         "```\n"

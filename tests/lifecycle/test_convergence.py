@@ -135,7 +135,7 @@ class StaleConsumerFixtureConvergenceTests(unittest.TestCase):
             fresh_result = _apply_fresh(fresh_ws)
             self.assertEqual(0, fresh_result.returncode, fresh_result.stderr)
             fresh_lockfile = json.loads(
-                (fresh_ws / ".github" / "xanad-assistant-lock.json").read_text(encoding="utf-8")
+                (fresh_ws / ".github" / "xanadAssistant-lock.json").read_text(encoding="utf-8")
             )
 
         # Update from committed stale fixture.
@@ -144,7 +144,7 @@ class StaleConsumerFixtureConvergenceTests(unittest.TestCase):
             update_result = _run("update", "--json", "--non-interactive", workspace=stale_tmp)
             self.assertEqual(0, update_result.returncode, update_result.stderr)
             updated_lockfile = json.loads(
-                (stale_tmp / ".github" / "xanad-assistant-lock.json").read_text(encoding="utf-8")
+                (stale_tmp / ".github" / "xanadAssistant-lock.json").read_text(encoding="utf-8")
             )
         finally:
             shutil.rmtree(stale_tmp, ignore_errors=True)

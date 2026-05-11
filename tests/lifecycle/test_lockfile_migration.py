@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.lifecycle.xanad_assistant import (
+from scripts.lifecycle.xanadAssistant import (
     _lockfile_needs_migration,
     migrate_lockfile_shape,
     parse_lockfile_state,
@@ -17,7 +17,7 @@ class LockfileMigrationTests(XanadTestBase):
     """Coverage for pre-0.1.0 lockfile shapes that are valid JSON but structurally incomplete."""
 
     def _write_lockfile(self, workspace: Path, data: dict) -> None:
-        path = workspace / ".github" / "xanad-assistant-lock.json"
+        path = workspace / ".github" / "xanadAssistant-lock.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
@@ -42,7 +42,7 @@ class LockfileMigrationTests(XanadTestBase):
             result = self._run("repair", "--json", "--non-interactive", workspace=workspace)
             self.assertEqual(0, result.returncode, result.stderr)
             payload = json.loads(result.stdout)
-            lockfile = json.loads((workspace / ".github" / "xanad-assistant-lock.json").read_text(encoding="utf-8"))
+            lockfile = json.loads((workspace / ".github" / "xanadAssistant-lock.json").read_text(encoding="utf-8"))
             return payload, lockfile
 
     def test_needs_migration_empty_object(self) -> None:
@@ -83,7 +83,7 @@ class LockfileMigrationTests(XanadTestBase):
         migrated = migrate_lockfile_shape({})
         self.assertFalse(_lockfile_needs_migration(migrated))
         self.assertEqual("0.1.0", migrated["schemaVersion"])
-        self.assertEqual("xanad-assistant", migrated["package"]["name"])
+        self.assertEqual("xanadAssistant", migrated["package"]["name"])
         self.assertIn("hash", migrated["manifest"])
         self.assertIn("appliedAt", migrated["timestamps"])
         self.assertEqual([], migrated["selectedPacks"])
@@ -104,7 +104,7 @@ class LockfileMigrationTests(XanadTestBase):
     def test_migrate_preserves_predecessor_package_name_in_unknown_values(self) -> None:
         data = self.make_minimal_lockfile(package={"name": "copilot-instructions-template"})
         migrated = migrate_lockfile_shape(data)
-        self.assertEqual("xanad-assistant", migrated["package"]["name"])
+        self.assertEqual("xanadAssistant", migrated["package"]["name"])
         self.assertEqual(
             "copilot-instructions-template",
             migrated["unknownValues"]["migratedFromPackageName"],
@@ -166,7 +166,7 @@ class LockfileMigrationTests(XanadTestBase):
         payload, lockfile = self._repair_and_load_lockfile({})
         self.assertEqual("ok", payload["status"])
         self.assertEqual("0.1.0", lockfile["schemaVersion"])
-        self.assertEqual("xanad-assistant", lockfile["package"]["name"])
+        self.assertEqual("xanadAssistant", lockfile["package"]["name"])
         self.assertIn("hash", lockfile["manifest"])
         self.assertNotEqual("sha256:unknown", lockfile["manifest"]["hash"])
 
@@ -204,8 +204,8 @@ class LockfileMigrationTests(XanadTestBase):
             self.assertEqual("ok", payload["status"])
             self.assertFalse(legacy_hook.exists())
             self.assertFalse(legacy_mcp.exists())
-            self.assertTrue((workspace / ".xanad-assistant" / "archive" / ".github" / "hooks" / "copilot-hooks.json").exists())
-            self.assertTrue((workspace / ".xanad-assistant" / "archive" / ".mcp.json").exists())
+            self.assertTrue((workspace / ".xanadAssistant" / "archive" / ".github" / "hooks" / "copilot-hooks.json").exists())
+            self.assertTrue((workspace / ".xanadAssistant" / "archive" / ".mcp.json").exists())
 
             check_result = self._run("check", "--json", workspace=workspace)
             self.assertEqual(0, check_result.returncode, check_result.stderr)

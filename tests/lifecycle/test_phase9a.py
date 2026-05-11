@@ -16,14 +16,14 @@ class XanadAssistantPhase9Tests(XanadTestBase):
     # ------------------------------------------------------------------
 
     def test_condition_matches_list_membership(self) -> None:
-        from scripts.lifecycle.xanad_assistant import condition_matches
+        from scripts.lifecycle.xanadAssistant import condition_matches
         self.assertTrue(condition_matches("packs.selected=lean", {"packs.selected": ["lean"]}))
         self.assertTrue(condition_matches("packs.selected=lean", {"packs.selected": ["lean", "memory"]}))
         self.assertFalse(condition_matches("packs.selected=lean", {"packs.selected": ["memory"]}))
         self.assertFalse(condition_matches("packs.selected=lean", {"packs.selected": []}))
 
     def test_condition_matches_list_does_not_affect_scalar(self) -> None:
-        from scripts.lifecycle.xanad_assistant import condition_matches
+        from scripts.lifecycle.xanadAssistant import condition_matches
         self.assertTrue(condition_matches("mcp.enabled=true", {"mcp.enabled": True}))
         self.assertFalse(condition_matches("mcp.enabled=true", {"mcp.enabled": False}))
 
@@ -133,7 +133,7 @@ class XanadAssistantPhase9Tests(XanadTestBase):
                 workspace=workspace,
             )
             self.assertEqual(0, result.returncode, result.stderr)
-            lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+            lockfile_path = workspace / ".github" / "xanadAssistant-lock.json"
             self.assertTrue(lockfile_path.exists())
             lockfile = json.loads(lockfile_path.read_text(encoding="utf-8"))
             self.assertEqual(["lean"], lockfile["selectedPacks"])
@@ -143,7 +143,7 @@ class XanadAssistantPhase9Tests(XanadTestBase):
     # ------------------------------------------------------------------
 
     def test_lean_profile_seeds_lean_pack(self) -> None:
-        from scripts.lifecycle.xanad_assistant import seed_answers_from_profile
+        from scripts.lifecycle.xanadAssistant import seed_answers_from_profile
         profile_registry = {
             "profiles": [
                 {

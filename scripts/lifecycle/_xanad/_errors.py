@@ -6,11 +6,11 @@ from pathlib import Path
 DEFAULT_POLICY_PATH = Path("template/setup/install-policy.json")
 DEFAULT_POLICY_SCHEMA_PATH = Path("template/setup/install-policy.schema.json")
 DEFAULT_MANIFEST_SCHEMA_PATH = Path("template/setup/install-manifest.schema.json")
-DEFAULT_LOCK_SCHEMA_PATH = Path("template/setup/xanad-assistant-lock.schema.json")
+DEFAULT_LOCK_SCHEMA_PATH = Path("template/setup/xanadAssistant-lock.schema.json")
 DEFAULT_PACK_REGISTRY_PATH = Path("template/setup/pack-registry.json")
 DEFAULT_PROFILE_REGISTRY_PATH = Path("template/setup/profile-registry.json")
 DEFAULT_CATALOG_PATH = Path("template/setup/catalog.json")
-DEFAULT_CACHE_ROOT = Path.home() / ".xanad-assistant" / "pkg-cache"
+DEFAULT_CACHE_ROOT = Path.home() / ".xanadAssistant" / "pkg-cache"
 
 
 class _State:

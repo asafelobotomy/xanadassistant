@@ -1,14 +1,14 @@
 ---
 name: tech-debt-audit
-description: "Use when: auditing xanadassistant for maintainability debt such as oversized files, generated-artifact drift, manifest coverage gaps, brittle tests, stale debt markers, or lifecycle-engine complexity hotspots, and you need prioritized follow-up actions."
+description: "Use when: auditing xanadAssistant for maintainability debt such as oversized files, generated-artifact drift, manifest coverage gaps, brittle tests, stale debt markers, or lifecycle-engine complexity hotspots, and you need prioritized follow-up actions."
 compatibility: ">=1.4"
 ---
 
 # Tech Debt Audit
 
-> Skill metadata: version "1.0"; tags [tech-debt, quality, xanadassistant, maintainability, generated-artifacts]; recommended tools [codebase, runCommands, editFiles].
+> Skill metadata: version "1.0"; tags [tech-debt, quality, xanadAssistant, maintainability, generated-artifacts]; recommended tools [codebase, runCommands, editFiles].
 
-Audit xanadassistant for repo-native maintainability debt. Start from the quality signals this repository already trusts, then build a prioritized debt register with concrete follow-up actions and expected validation.
+Audit xanadAssistant for repo-native maintainability debt. Start from the quality signals this repository already trusts, then build a prioritized debt register with concrete follow-up actions and expected validation.
 
 ## When to use
 
@@ -18,7 +18,7 @@ Audit xanadassistant for repo-native maintainability debt. Start from the qualit
 
 ## When not to use
 
-- Outside the xanadassistant repository
+- Outside the xanadAssistant repository
 - For security review; use a dedicated security-focused audit instead
 - For dependency upgrades or ecosystem migrations; this repository is stdlib-only at runtime and needs a narrower workflow
 
@@ -38,7 +38,7 @@ Audit xanadassistant for repo-native maintainability debt. Start from the qualit
    - Look for modules or tests that repeatedly need exact-string maintenance after wording-only changes.
    - Flag maintainer-only logic that may be leaking into consumer-delivered surfaces.
 
-4. Use xanadassistant's primary debt categories.
+4. Use xanadAssistant's primary debt categories.
    - `contract-drift`: generated artifacts, manifest coverage, or policy expectations drifting out of sync.
    - `test-brittleness`: wording-sensitive or duplicated assertions that make harmless surface cleanups expensive.
    - `size-pressure`: Python, Markdown, or shell files approaching or exceeding LOC thresholds.
@@ -56,7 +56,7 @@ Audit xanadassistant for repo-native maintainability debt. Start from the qualit
 ## Verify
 
 - [ ] Repo-native quality signals were checked before broader speculation
-- [ ] Debt findings are grouped by xanadassistant-specific categories, not generic language buckets
+- [ ] Debt findings are grouped by xanadAssistant-specific categories, not generic language buckets
 - [ ] High-priority items include a concrete next action and validation step
 - [ ] Generated-artifact drift, manifest coverage, and brittle tests were considered alongside explicit debt markers
 - [ ] Optional external tools were treated as second-tier, not mandatory

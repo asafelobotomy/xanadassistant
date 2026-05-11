@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Xanad Assistant Profile Registry",
+  "title": "xanadAssistant Profile Registry",
   "type": "object",
   "additionalProperties": false,
   "required": [

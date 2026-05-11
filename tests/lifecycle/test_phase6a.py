@@ -22,35 +22,35 @@ class XanadAssistantPhase6Tests(XanadTestBase):
     # ------------------------------------------------------------------
 
     def test_parse_github_source_valid(self) -> None:
-        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+        from scripts.lifecycle.xanadAssistant import parse_github_source, LifecycleCommandError
 
         owner, repo = parse_github_source("github:myorg/myrepo")
         self.assertEqual("myorg", owner)
         self.assertEqual("myrepo", repo)
 
     def test_parse_github_source_invalid_scheme(self) -> None:
-        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+        from scripts.lifecycle.xanadAssistant import parse_github_source, LifecycleCommandError
 
         with self.assertRaises(LifecycleCommandError) as ctx:
             parse_github_source("bitbucket:owner/repo")
         self.assertEqual("source_resolution_failure", ctx.exception.code)
 
     def test_parse_github_source_missing_repo(self) -> None:
-        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+        from scripts.lifecycle.xanadAssistant import parse_github_source, LifecycleCommandError
 
         with self.assertRaises(LifecycleCommandError) as ctx:
             parse_github_source("github:owneronly")
         self.assertEqual("source_resolution_failure", ctx.exception.code)
 
     def test_parse_github_source_too_many_slashes(self) -> None:
-        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+        from scripts.lifecycle.xanadAssistant import parse_github_source, LifecycleCommandError
 
         with self.assertRaises(LifecycleCommandError) as ctx:
             parse_github_source("github:owner/repo/extra")
         self.assertEqual("source_resolution_failure", ctx.exception.code)
 
     def test_parse_github_source_rejects_special_chars(self) -> None:
-        from scripts.lifecycle.xanad_assistant import parse_github_source, LifecycleCommandError
+        from scripts.lifecycle.xanadAssistant import parse_github_source, LifecycleCommandError
 
         with self.assertRaises(LifecycleCommandError) as ctx:
             parse_github_source("github:own!er/rep$o")
@@ -62,7 +62,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
 
     def test_get_cache_root_default(self) -> None:
         import os
-        from scripts.lifecycle.xanad_assistant import get_cache_root, DEFAULT_CACHE_ROOT
+        from scripts.lifecycle.xanadAssistant import get_cache_root, DEFAULT_CACHE_ROOT
 
         env = os.environ.copy()
         env.pop("XANAD_PKG_CACHE", None)
@@ -77,7 +77,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
 
     def test_get_cache_root_env_override(self) -> None:
         import os
-        from scripts.lifecycle.xanad_assistant import get_cache_root
+        from scripts.lifecycle.xanadAssistant import get_cache_root
         from pathlib import Path
 
         original = os.environ.get("XANAD_PKG_CACHE")
@@ -96,7 +96,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
     # ------------------------------------------------------------------
 
     def test_resolve_effective_no_args_raises(self) -> None:
-        from scripts.lifecycle.xanad_assistant import resolve_effective_package_root, LifecycleCommandError
+        from scripts.lifecycle.xanadAssistant import resolve_effective_package_root, LifecycleCommandError
 
         with self.assertRaises(LifecycleCommandError) as ctx:
             resolve_effective_package_root(None, None, None, None)
@@ -104,7 +104,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         self.assertEqual(2, ctx.exception.exit_code)
 
     def test_resolve_effective_with_package_root(self) -> None:
-        from scripts.lifecycle.xanad_assistant import resolve_effective_package_root
+        from scripts.lifecycle.xanadAssistant import resolve_effective_package_root
 
         pkg_root, source_info = resolve_effective_package_root(str(self.REPO_ROOT), None, None, None)
         self.assertEqual(self.REPO_ROOT, pkg_root)
@@ -115,7 +115,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
     # ------------------------------------------------------------------
 
     def test_build_lockfile_package_info_default(self) -> None:
-        from scripts.lifecycle.xanad_assistant import _State, _build_lockfile_package_info
+        from scripts.lifecycle.xanadAssistant import _State, _build_lockfile_package_info
 
         original = _State.session_source_info
         try:
@@ -123,10 +123,10 @@ class XanadAssistantPhase6Tests(XanadTestBase):
             info = _build_lockfile_package_info()
         finally:
             _State.session_source_info = original
-        self.assertEqual({"name": "xanad-assistant"}, info)
+        self.assertEqual({"name": "xanadAssistant"}, info)
 
     def test_build_lockfile_package_info_with_release(self) -> None:
-        from scripts.lifecycle.xanad_assistant import _State, _build_lockfile_package_info
+        from scripts.lifecycle.xanadAssistant import _State, _build_lockfile_package_info
 
         original = _State.session_source_info
         try:
@@ -139,14 +139,14 @@ class XanadAssistantPhase6Tests(XanadTestBase):
             info = _build_lockfile_package_info()
         finally:
             _State.session_source_info = original
-        self.assertEqual("xanad-assistant", info["name"])
+        self.assertEqual("xanadAssistant", info["name"])
         self.assertEqual("v1.2.3", info["version"])
         self.assertEqual("github:myorg/myrepo", info["source"])
         self.assertEqual("/fake/path", info["packageRoot"])
         self.assertNotIn("ref", info)
 
     def test_build_lockfile_package_info_with_package_root(self) -> None:
-        from scripts.lifecycle.xanad_assistant import _State, _build_lockfile_package_info
+        from scripts.lifecycle.xanadAssistant import _State, _build_lockfile_package_info
 
         original = _State.session_source_info
         try:
@@ -158,7 +158,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         finally:
             _State.session_source_info = original
 
-        self.assertEqual("xanad-assistant", info["name"])
+        self.assertEqual("xanadAssistant", info["name"])
         self.assertEqual("/fake/local/xanadassistant", info["packageRoot"])
 
     # ------------------------------------------------------------------
@@ -166,14 +166,14 @@ class XanadAssistantPhase6Tests(XanadTestBase):
     # ------------------------------------------------------------------
 
     def test_verify_manifest_integrity_no_lockfile(self) -> None:
-        from scripts.lifecycle.xanad_assistant import verify_manifest_integrity
+        from scripts.lifecycle.xanadAssistant import verify_manifest_integrity
 
         ok, reason = verify_manifest_integrity(self.REPO_ROOT, {"present": False})
         self.assertTrue(ok)
         self.assertIsNone(reason)
 
     def test_verify_manifest_integrity_malformed_lockfile(self) -> None:
-        from scripts.lifecycle.xanad_assistant import verify_manifest_integrity
+        from scripts.lifecycle.xanadAssistant import verify_manifest_integrity
 
         ok, reason = verify_manifest_integrity(
             self.REPO_ROOT, {"present": True, "malformed": True}
@@ -182,7 +182,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         self.assertIsNone(reason)
 
     def test_verify_manifest_integrity_no_recorded_hash(self) -> None:
-        from scripts.lifecycle.xanad_assistant import verify_manifest_integrity
+        from scripts.lifecycle.xanadAssistant import verify_manifest_integrity
 
         ok, reason = verify_manifest_integrity(
             self.REPO_ROOT,
@@ -192,7 +192,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         self.assertIsNone(reason)
 
     def test_verify_manifest_integrity_hash_mismatch(self) -> None:
-        from scripts.lifecycle.xanad_assistant import verify_manifest_integrity
+        from scripts.lifecycle.xanadAssistant import verify_manifest_integrity
 
         ok, reason = verify_manifest_integrity(
             self.REPO_ROOT,
@@ -206,7 +206,7 @@ class XanadAssistantPhase6Tests(XanadTestBase):
         self.assertIn("Manifest hash mismatch", reason)
 
     def test_classify_manifest_entries_requires_annotated_status(self) -> None:
-        from scripts.lifecycle.xanad_assistant import classify_manifest_entries
+        from scripts.lifecycle.xanadAssistant import classify_manifest_entries
 
         manifest = {
             "managedFiles": [

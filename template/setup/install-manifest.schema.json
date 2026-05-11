@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Xanad Assistant Install Manifest",
-  "description": "Generated package truth for xanad-assistant managed surfaces.",
+  "title": "xanadAssistant Install Manifest",
+  "description": "Generated package truth for xanadAssistant managed surfaces.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -31,7 +31,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
         workspace: Path,
         retired_target: str,
         strategy: str = "archive-retired",
-        archive_root: str | None = ".xanad-assistant/archive",
+        archive_root: str | None = ".xanadAssistant/archive",
     ) -> dict:
         archive_targets = []
         if strategy != "report-retired" and archive_root is not None:
@@ -54,13 +54,13 @@ class XanadAssistantPhase5Tests(XanadTestBase):
                 ],
                 "backupPlan": {
                     "required": True,
-                    "root": ".xanad-assistant/backups/<apply-timestamp>",
+                    "root": ".xanadAssistant/backups/<apply-timestamp>",
                     "targets": [],
                     "archiveRoot": archive_root,
                     "archiveTargets": archive_targets,
                 },
                 "plannedLockfile": {
-                    "path": ".github/xanad-assistant-lock.json",
+                    "path": ".github/xanadAssistant-lock.json",
                     "contents": self.make_minimal_lockfile(
                         timestamps={
                             "appliedAt": "<apply-timestamp>",
@@ -69,7 +69,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
                         skippedManagedFiles=[],
                         retiredManagedFiles=[],
                         unknownValues={},
-                        lastBackup={"path": ".xanad-assistant/backups/<apply-timestamp>"},
+                        lastBackup={"path": ".xanadAssistant/backups/<apply-timestamp>"},
                     ),
                 },
                 "skippedActions": [],
@@ -80,7 +80,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
     def test_lockfile_written_by_apply_validates_against_schema(self) -> None:
         repo_root = Path(__file__).resolve().parents[2]
         lock_schema = json.loads(
-            (repo_root / "template/setup/xanad-assistant-lock.schema.json").read_text(encoding="utf-8")
+            (repo_root / "template/setup/xanadAssistant-lock.schema.json").read_text(encoding="utf-8")
         )
         from tests.schema_validation import validate_instance
 
@@ -89,7 +89,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
             result = subprocess.run(
                 [
                     sys.executable,
-                    str(repo_root / "scripts/lifecycle/xanad_assistant.py"),
+                    str(repo_root / "scripts/lifecycle/xanadAssistant.py"),
                     "apply",
                     "--json",
                     "--workspace",
@@ -104,7 +104,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
             )
 
             self.assertEqual(0, result.returncode)
-            lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+            lockfile_path = workspace / ".github" / "xanadAssistant-lock.json"
             self.assertTrue(lockfile_path.exists())
             lockfile_data = json.loads(lockfile_path.read_text(encoding="utf-8"))
             validate_instance(lockfile_data, lock_schema, lock_schema)
@@ -123,13 +123,13 @@ class XanadAssistantPhase5Tests(XanadTestBase):
             prompt.parent.mkdir(parents=True)
             prompt.write_text("modified\n", encoding="utf-8")
 
-            lockfile_path = github_dir / "xanad-assistant-lock.json"
+            lockfile_path = github_dir / "xanadAssistant-lock.json"
             lockfile_path.write_text(original_lockfile_content, encoding="utf-8")
 
             result = subprocess.run(
                 [
                     sys.executable,
-                    str(repo_root / "scripts/lifecycle/xanad_assistant.py"),
+                    str(repo_root / "scripts/lifecycle/xanadAssistant.py"),
                     "repair",
                     "--json",
                     "--workspace",
@@ -153,7 +153,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
             backup_root = payload["result"]["backup"]["path"]
             self.assertIsNotNone(backup_root)
 
-            lockfile_backup = workspace / backup_root / ".github" / "xanad-assistant-lock.json"
+            lockfile_backup = workspace / backup_root / ".github" / "xanadAssistant-lock.json"
             self.assertTrue(lockfile_backup.exists(), f"Lockfile backup not found at {lockfile_backup}")
             self.assertEqual(original_lockfile_content, lockfile_backup.read_text(encoding="utf-8"))
 
@@ -162,7 +162,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
 
     def test_validation_failure_leaves_backup_intact(self) -> None:
         from unittest.mock import patch
-        from scripts.lifecycle.xanad_assistant import (
+        from scripts.lifecycle.xanadAssistant import (
             build_plan_result,
             execute_apply_plan,
             LifecycleCommandError,

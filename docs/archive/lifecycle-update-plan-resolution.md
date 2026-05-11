@@ -109,7 +109,7 @@ Produces:
 
 ### Lockfile Manager
 
-Owns `.github/xanad-assistant-lock.json` and repairs legacy state.
+Owns `.github/xanadAssistant-lock.json` and repairs legacy state.
 
 ## Manifest And Policy Model
 

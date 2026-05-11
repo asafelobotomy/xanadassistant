@@ -1,4 +1,4 @@
-from scripts.lifecycle.xanad_assistant import main
+from scripts.lifecycle.xanadAssistant import main
 
 
 if __name__ == "__main__":

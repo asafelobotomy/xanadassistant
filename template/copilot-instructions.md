@@ -1,40 +1,42 @@
 # {{WORKSPACE_NAME}} — Copilot Instructions
 
-> This project uses **xanad-assistant** to manage its Copilot surface files (agents, skills, hooks, prompts).
-> Lifecycle authority: `xanad-assistant.py` — use the `xanad-lifecycle` agent for all xanad-assistant operations.
+> This project uses **xanadAssistant** to manage its Copilot surface files (agents, skills, hooks, prompts).
+> Lifecycle authority: `xanadAssistant.py` — use the `xanad-lifecycle` agent for all xanadAssistant operations.
 
 ## My Role
 
-I work **in** {{WORKSPACE_NAME}} — implementing features, reviewing code, running tests, and maintaining the project's Copilot surface via xanad-assistant. Changes to agents, skills, hooks, and prompts go through `xanad-assistant.py update` rather than direct file edits to `.github/`.
+I work **in** {{WORKSPACE_NAME}} — implementing features, reviewing code, running tests, and maintaining the project's Copilot surface via xanadAssistant. Changes to agents, skills, hooks, and prompts go through `xanadAssistant.py update` rather than direct file edits to `.github/`.
 
 ## Key Commands
 
 | Task | Command |
 |------|---------|
 | Run tests | `{{TEST_COMMAND}}` |
-| Inspect Copilot install state | `python3 <xanad-root>/xanad-assistant.py inspect --workspace . --package-root <xanad-root> --json` |
-| Check for repair needs | `python3 <xanad-root>/xanad-assistant.py check --workspace . --package-root <xanad-root> --json` |
+| Inspect Copilot install state | `python3 <xanad-root>/xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` |
+| Check for repair needs | `python3 <xanad-root>/xanadAssistant.py check --workspace . --package-root <xanad-root> --json` |
 
 ## Lifecycle Operations
 
-Use the **xanad-lifecycle** agent for all xanad-assistant operations. Trigger phrases:
+Use the **xanad-lifecycle** agent for all xanadAssistant operations. Trigger phrases:
 
 | Trigger phrase | Operation |
 |---|---|
-| `"set up xanad-assistant"` | First-time install |
-| `"update xanad-assistant"` | Pull latest agents, skills, hooks, prompts |
+| `"set up xanadAssistant"` | First-time install |
+| `"update xanadAssistant"` | Pull latest agents, skills, hooks, prompts |
 | `"run lifecycle check"` | Inspect + check; surface repair reasons |
 | `"repair install"` | Fix stale or broken managed files |
 | `"factory restore"` | Reset to clean managed state |
 
-Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanad-assistant. Review state with the workspace-local `xanadTools` lifecycle tools (`lifecycle_inspect`, `lifecycle_check`) before proposing any lifecycle operation.
+Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanadAssistant. Use the `lifecycle-audit` skill to review state before proposing any lifecycle operation.
+ 8f6b648 (refactor: standardize product name to xanadAssistant)
 When the workspace-local `xanadTools` MCP server is available and can resolve a
-local xanad-assistant package root or a supported remote source, setup-oriented
+local xanadAssistant package root or a supported remote source, setup-oriented
 lifecycle operations may use its `lifecycle.*` tools instead of shelling out directly.
 This repository's lockfile should include a GitHub `source` plus `ref` fallback so lifecycle tools still work when a sibling xanad-assistant checkout is unavailable.
 If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`,
-the workspace still has predecessor-managed Copilot surfaces; use `repair`
-or `update` so xanad-assistant can archive predecessor-owned files and install the
+the workspace is being migrated from `copilot-instructions-template`; use `repair`
+or `update` so xanadAssistant can archive predecessor-owned files and install the
+ 8f6b648 (refactor: standardize product name to xanadAssistant)
 current bundle atomically.
 
 ## Agent Routing
@@ -50,7 +52,7 @@ Route specialist work to the matching agent before acting directly. If a task ha
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanad-assistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle` |
+| xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanad-lifecycle` |
 
 ## Coding Conventions
 

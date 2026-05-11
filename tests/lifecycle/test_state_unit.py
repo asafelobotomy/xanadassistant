@@ -50,7 +50,7 @@ class DetermineInstallStateTests(unittest.TestCase):
     def test_installed_when_lockfile_present(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
-            lockfile = ws / ".github" / "xanad-assistant-lock.json"
+            lockfile = ws / ".github" / "xanadAssistant-lock.json"
             lockfile.parent.mkdir(parents=True)
             lockfile.write_text("{}", encoding="utf-8")
             state, paths = determine_install_state(ws)
@@ -160,8 +160,8 @@ class LockfileNeedsMigrationTests(unittest.TestCase):
 
 class GetLockfilePackageNameTests(unittest.TestCase):
     def test_returns_name_from_valid_state(self) -> None:
-        state = {"data": {"package": {"name": "xanad-assistant"}}}
-        self.assertEqual("xanad-assistant", get_lockfile_package_name(state))
+        state = {"data": {"package": {"name": "xanadAssistant"}}}
+        self.assertEqual("xanadAssistant", get_lockfile_package_name(state))
 
     def test_returns_none_when_data_is_none(self) -> None:
         self.assertIsNone(get_lockfile_package_name({"data": None}))
@@ -234,7 +234,7 @@ class ParseLockfileStateTests(unittest.TestCase):
     def test_returns_malformed_for_invalid_json(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
-            lockfile = ws / ".github" / "xanad-assistant-lock.json"
+            lockfile = ws / ".github" / "xanadAssistant-lock.json"
             lockfile.parent.mkdir()
             lockfile.write_text("{ invalid json", encoding="utf-8")
             result = parse_lockfile_state(ws)
@@ -244,7 +244,7 @@ class ParseLockfileStateTests(unittest.TestCase):
     def test_returns_present_and_migrates_old_lockfile(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
-            lockfile = ws / ".github" / "xanad-assistant-lock.json"
+            lockfile = ws / ".github" / "xanadAssistant-lock.json"
             lockfile.parent.mkdir()
             old_data = {"package": {"name": "copilot-instructions-template"}}
             lockfile.write_text(json.dumps(old_data), encoding="utf-8")
@@ -256,7 +256,7 @@ class ParseLockfileStateTests(unittest.TestCase):
     def test_returns_present_for_valid_current_lockfile(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
-            lockfile = ws / ".github" / "xanad-assistant-lock.json"
+            lockfile = ws / ".github" / "xanadAssistant-lock.json"
             lockfile.parent.mkdir()
             valid_data = {
                 "schemaVersion": "0.1.0",
@@ -377,7 +377,7 @@ class ParseLockfileStateSetupAnswersTests(unittest.TestCase):
     """Verify that setupAnswers and mcpEnabled are surfaced from lockfile state (Bug 1+2)."""
 
     def _write_lockfile(self, ws: Path, data: dict) -> None:
-        lockfile = ws / ".github" / "xanad-assistant-lock.json"
+        lockfile = ws / ".github" / "xanadAssistant-lock.json"
         lockfile.parent.mkdir(parents=True, exist_ok=True)
         lockfile.write_text(json.dumps(data), encoding="utf-8")
 
@@ -432,7 +432,7 @@ class ParseLockfileStateSetupAnswersTests(unittest.TestCase):
     def test_malformed_lockfile_has_empty_setup_answers(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
-            lockfile = ws / ".github" / "xanad-assistant-lock.json"
+            lockfile = ws / ".github" / "xanadAssistant-lock.json"
             lockfile.parent.mkdir()
             lockfile.write_text("{ invalid", encoding="utf-8")
             result = parse_lockfile_state(ws)

@@ -841,7 +841,7 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
     def test_read_lockfile_missing(self):
         # Override WORKSPACE_LOCKFILE_PATH to a nonexistent file
         orig = self.mod.WORKSPACE_LOCKFILE_PATH
-        self.mod.WORKSPACE_LOCKFILE_PATH = Path("/nonexistent/xanad-assistant-lock.json")
+        self.mod.WORKSPACE_LOCKFILE_PATH = Path("/nonexistent/xanadAssistant-lock.json")
         try:
             result = self.mod.read_lockfile()
             self.assertIsNone(result)
@@ -1024,7 +1024,7 @@ class XanadWorkspaceMcpToolTests(unittest.TestCase):
         cls.orig_lockfile = cls.mod.WORKSPACE_LOCKFILE_PATH
         cls.mod.WORKSPACE_ROOT = REPO_ROOT
         cls.mod.WORKSPACE_INSTRUCTIONS_PATH = REPO_ROOT / ".github" / "copilot-instructions.md"
-        cls.mod.WORKSPACE_LOCKFILE_PATH = REPO_ROOT / ".github" / "xanad-assistant-lock.json"
+        cls.mod.WORKSPACE_LOCKFILE_PATH = REPO_ROOT / ".github" / "xanadAssistant-lock.json"
 
     @classmethod
     def tearDownClass(cls):
@@ -1055,7 +1055,7 @@ class XanadWorkspaceMcpToolTests(unittest.TestCase):
             orig_root = self.mod.WORKSPACE_ROOT
             orig_lock = self.mod.WORKSPACE_LOCKFILE_PATH
             self.mod.WORKSPACE_ROOT = Path(tmp)
-            self.mod.WORKSPACE_LOCKFILE_PATH = Path(tmp) / ".github" / "xanad-assistant-lock.json"
+            self.mod.WORKSPACE_LOCKFILE_PATH = Path(tmp) / ".github" / "xanadAssistant-lock.json"
             try:
                 result = self.mod.tool_workspace_validate_lockfile({})
                 self.assertEqual("unavailable", result["status"])
@@ -1127,7 +1127,7 @@ class XanadWorkspaceMcpCoverageTests(unittest.TestCase):
                 orig_lockfile = self.mod.WORKSPACE_LOCKFILE_PATH
                 self.mod.WORKSPACE_ROOT = ws
                 self.mod.WORKSPACE_INSTRUCTIONS_PATH = ws / ".github" / "copilot-instructions.md"
-                self.mod.WORKSPACE_LOCKFILE_PATH = ws / ".github" / "xanad-assistant-lock.json"
+                self.mod.WORKSPACE_LOCKFILE_PATH = ws / ".github" / "xanadAssistant-lock.json"
                 if instructions_content is not None:
                     self.mod.WORKSPACE_INSTRUCTIONS_PATH.write_text(instructions_content, encoding="utf-8")
                 try:
@@ -1171,7 +1171,7 @@ class XanadWorkspaceMcpCoverageTests(unittest.TestCase):
             ws = Path(tmp)
             (ws / ".github").mkdir()
             lockfile = {"package": {"packageRoot": str(REPO_ROOT)}}
-            lockfile_path = ws / ".github" / "xanad-assistant-lock.json"
+            lockfile_path = ws / ".github" / "xanadAssistant-lock.json"
             lockfile_path.write_text(_json.dumps(lockfile), encoding="utf-8")
             orig = self.mod.WORKSPACE_LOCKFILE_PATH
             self.mod.WORKSPACE_LOCKFILE_PATH = lockfile_path
@@ -1373,7 +1373,7 @@ class XanadWorkspaceMcpCoverageTests(unittest.TestCase):
             "timestamps": {}, "files": [],
         }
         with self._with_workspace() as ws:
-            (ws / ".github" / "xanad-assistant-lock.json").write_text(_json.dumps(lockfile), encoding="utf-8")
+            (ws / ".github" / "xanadAssistant-lock.json").write_text(_json.dumps(lockfile), encoding="utf-8")
             result = self.mod.tool_workspace_validate_lockfile({})
         self.assertEqual("ok", result["status"])
         self.assertIn("lockfile", result)
@@ -1382,7 +1382,7 @@ class XanadWorkspaceMcpCoverageTests(unittest.TestCase):
         """tool_workspace_validate_lockfile: lockfile missing keys → failed."""
         import json as _json
         with self._with_workspace() as ws:
-            (ws / ".github" / "xanad-assistant-lock.json").write_text(
+            (ws / ".github" / "xanadAssistant-lock.json").write_text(
                 _json.dumps({"schemaVersion": "0.1.0"}), encoding="utf-8",
             )
             result = self.mod.tool_workspace_validate_lockfile({})

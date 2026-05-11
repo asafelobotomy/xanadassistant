@@ -1,11 +1,11 @@
 ---
 name: lifecycle-audit
-description: Audit xanad-assistant workspace lifecycle state — inspect install status, surface repair reasons, and validate the lockfile before proposing install, update, repair, or restore operations
+description: Audit xanadAssistant workspace lifecycle state — inspect install status, surface repair reasons, and validate the lockfile before proposing install, update, repair, or restore operations
 ---
 
 # Lifecycle Audit
 
-> Skill metadata: version "1.0"; license MIT; tags [xanad-assistant, lifecycle, inspect, repair, lockfile]; recommended tools [codebase, runCommands].
+> Skill metadata: version "1.0"; license MIT; tags [xanadAssistant, lifecycle, inspect, repair, lockfile]; recommended tools [codebase, runCommands].
 
 Systematic lifecycle state review before any install, update, repair, or factory-restore operation.
 
@@ -22,9 +22,9 @@ Systematic lifecycle state review before any install, update, repair, or factory
 
 ## Steps
 
-1. **Inspect** — run `python3 xanad-assistant.py inspect --workspace . --package-root <xanad-root> --json` and verify `installState` and `manifestSummary`.
+1. **Inspect** — run `python3 xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` and verify `installState` and `manifestSummary`.
 
-2. **Check** — run `python3 xanad-assistant.py check --workspace . --package-root <xanad-root> --json` and read `repairReasons`. Non-empty means repair is needed before proceeding.
+2. **Check** — run `python3 xanadAssistant.py check --workspace . --package-root <xanad-root> --json` and read `repairReasons`. Non-empty means repair is needed before proceeding.
 
 3. **Classify the state**:
 

@@ -221,16 +221,16 @@ class ExecuteApplyUnitTests(unittest.TestCase):
                 "actions": actions or [],
                 "backupPlan": {
                     "required": bool(backup_targets),
-                    "root": ".xanad-assistant/backups/<apply-timestamp>" if backup_targets else None,
+                    "root": ".xanadAssistant/backups/<apply-timestamp>" if backup_targets else None,
                     "targets": backup_targets or [],
                     "archiveRoot": None,
                     "archiveTargets": [],
                 },
                 "plannedLockfile": {
-                    "path": ".github/xanad-assistant-lock.json",
+                    "path": ".github/xanadAssistant-lock.json",
                     "contents": {
                         "schemaVersion": "0.1.0",
-                        "package": {"name": "xanad-assistant", "packageRoot": str(REPO_ROOT)},
+                        "package": {"name": "xanadAssistant", "packageRoot": str(REPO_ROOT)},
                         "manifest": {"schemaVersion": "0.1.0", "hash": manifest_hash},
                         "timestamps": {
                             "appliedAt": "<apply-timestamp>",
@@ -278,7 +278,7 @@ class ExecuteApplyUnitTests(unittest.TestCase):
                 {
                     "target": target_rel,
                     "action": "replace",
-                    "backupPath": f".xanad-assistant/backups/<apply-timestamp>/{target_rel}",
+                    "backupPath": f".xanadAssistant/backups/<apply-timestamp>/{target_rel}",
                 }
             ]
             plan = self._make_minimal_plan_payload(workspace, backup_targets=backup_targets)
@@ -298,7 +298,7 @@ class ExecuteApplyUnitTests(unittest.TestCase):
                 {
                     "target": ".github/nonexistent-file.md",
                     "action": "replace",
-                    "backupPath": ".xanad-assistant/backups/<apply-timestamp>/.github/nonexistent-file.md",
+                    "backupPath": ".xanadAssistant/backups/<apply-timestamp>/.github/nonexistent-file.md",
                 }
             ]
             plan = self._make_minimal_plan_payload(workspace, backup_targets=backup_targets)
@@ -555,7 +555,7 @@ class ExecuteApplyUnitTests(unittest.TestCase):
                 workspace, backup_targets=backup_targets, factory_restore=True,
             )
             # Override the backup plan to include a root so backup_root is not None
-            plan["result"]["backupPlan"]["root"] = ".xanad-assistant/backups/<apply-timestamp>"
+            plan["result"]["backupPlan"]["root"] = ".xanadAssistant/backups/<apply-timestamp>"
             plan["result"]["backupPlan"]["required"] = True
             with patch("scripts.lifecycle._xanad._check.build_check_result") as mock_check:
                 mock_check.return_value = {"status": "clean", "result": {"summary": {}}}
@@ -602,12 +602,12 @@ class ExecuteApplyUnitTests(unittest.TestCase):
             github_dir = workspace / ".github"
             github_dir.mkdir(parents=True)
             # Create an existing lockfile so it gets backed up
-            lockfile_path = github_dir / "xanad-assistant-lock.json"
+            lockfile_path = github_dir / "xanadAssistant-lock.json"
             lockfile_path.write_text('{"schemaVersion": "0.1.0"}', encoding="utf-8")
             backup_targets: list[dict] = []
             plan = self._make_minimal_plan_payload(workspace, backup_targets=backup_targets)
             # Set a backup root so the lockfile is backed up
-            plan["result"]["backupPlan"]["root"] = ".xanad-assistant/backups/<apply-timestamp>"
+            plan["result"]["backupPlan"]["root"] = ".xanadAssistant/backups/<apply-timestamp>"
             plan["result"]["backupPlan"]["required"] = True
             with patch("scripts.lifecycle._xanad._check.build_check_result") as mock_check:
                 mock_check.return_value = {"status": "clean", "result": {"summary": {}}}

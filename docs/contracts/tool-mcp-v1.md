@@ -1,6 +1,6 @@
-# Xanad Assistant Tool MCP V1
+# xanadAssistant Tool MCP V1
 
-This document defines the first practical implementation slice for the xanad-assistant first-party tooling MCP.
+This document defines the first practical implementation slice for the xanadAssistant first-party tooling MCP.
 
 ## Status
 
@@ -12,7 +12,7 @@ V1 uses NDJSON stdio transport: one JSON object per line, `\n` terminated, with 
 
 ## V1 Goal
 
-Ship one small first-party MCP server that is useful in consumer workspaces without requiring the full xanad-assistant package checkout to be present for every tool.
+Ship one small first-party MCP server that is useful in consumer workspaces without requiring the full xanadAssistant package checkout to be present for every tool.
 
 ## Controlling Constraint
 
@@ -20,8 +20,8 @@ The managed MCP server script is installed into the consumer workspace as a loca
 
 That script must not assume that:
 
-- the xanad-assistant repository checkout exists locally
-- `xanad-assistant.py` is importable as a Python module
+- the xanadAssistant repository checkout exists locally
+- `xanadAssistant.py` is importable as a Python module
 - the original package root can be rediscovered later
 
 Because of that, V1 must avoid lifecycle tools that directly wrap the lifecycle CLI unless the workspace records a stable package-source contract for the MCP server to use.
@@ -63,7 +63,7 @@ Purpose: run the repo LOC gate when explicitly present.
 
 Input schema: no arguments.
 
-Behavior: prefer a known repo-local command from the instructions file; in xanadassistant's own repo this resolves to `python3 scripts/check_loc.py`; return `unavailable` in consumer workspaces without a declared LOC command.
+Behavior: prefer a known repo-local command from the instructions file; in xanadAssistant's own repo this resolves to `python3 scripts/check_loc.py`; return `unavailable` in consumer workspaces without a declared LOC command.
 
 Output: `status`, `command`, `exitCode`, `summary`.
 
@@ -83,15 +83,15 @@ All five lifecycle tools share the same input schema and resolution rules.
 
 **Shared input schema** (all fields optional):
 
-- `packageRoot`: path to a local xanad-assistant checkout
+- `packageRoot`: path to a local xanadAssistant checkout
 - `source`: package source string such as `github:owner/repo`
 - `version`: release version for GitHub release resolution
 - `ref`: Git ref for GitHub ref resolution
 
 **Package-root resolution order:**
 
-1. `packageRoot` argument — validate as local xanad-assistant checkout
-2. `.github/xanad-assistant-lock.json` `package.packageRoot`
+1. `packageRoot` argument — validate as local xanadAssistant checkout
+2. `.github/xanadAssistant-lock.json` `package.packageRoot`
 3. `source` + `version`/`ref` from tool input or lockfile `package` block
 
 For GitHub sources, use the package cache when present; otherwise download the release tarball or perform a shallow clone into the cache. Return `unavailable` when no usable local package root or supported remote source can be resolved safely.
@@ -100,29 +100,29 @@ For GitHub sources, use the package cache when present; otherwise download the r
 
 ### `lifecycle_inspect`
 
-Run `xanad-assistant.py inspect --workspace <workspace-root> --package-root <resolved-root> --json`. No additional inputs beyond the shared schema.
+Run `xanadAssistant.py inspect --workspace <workspace-root> --package-root <resolved-root> --json`. No additional inputs beyond the shared schema.
 
 ### `lifecycle_interview`
 
 Additional input: `mode` — optional enum: `setup`, `update`, `repair`, `factory-restore`.
 
-Run `xanad-assistant.py interview --mode <mode> --json`.
+Run `xanadAssistant.py interview --mode <mode> --json`.
 
 ### `lifecycle_plan_setup`
 
 Additional inputs: `answersPath` (string path), `nonInteractive` (boolean).
 
-Run `xanad-assistant.py plan setup --json` with optional `--answers` / `--non-interactive` flags.
+Run `xanadAssistant.py plan setup --json` with optional `--answers` / `--non-interactive` flags.
 
 ### `lifecycle_apply`
 
 Additional inputs: `answersPath` (string path), `nonInteractive` (boolean), `dryRun` (boolean).
 
-Run `xanad-assistant.py apply --json` with optional `--answers`, `--non-interactive`, `--dry-run` flags.
+Run `xanadAssistant.py apply --json` with optional `--answers`, `--non-interactive`, `--dry-run` flags.
 
 ### `lifecycle_check`
 
-Run `xanad-assistant.py check --json`. No additional inputs beyond the shared schema.
+Run `xanadAssistant.py check --json`. No additional inputs beyond the shared schema.
 
 ## Deferred Tools
 
@@ -154,6 +154,6 @@ It must not fall back to inferred shell commands.
 
 ## Upgrade Path
 
-Lifecycle tools may be added in a later slice only after xanad-assistant records a stable package-source contract that the workspace-local MCP server can use safely and deterministically.
+Lifecycle tools may be added in a later slice only after xanadAssistant records a stable package-source contract that the workspace-local MCP server can use safely and deterministically.
 
 The current lifecycle MCP slice supports explicit local package roots, installed lockfiles that record `package.packageRoot`, and explicit or lockfile-recorded GitHub `source` plus `version` or `ref` values.

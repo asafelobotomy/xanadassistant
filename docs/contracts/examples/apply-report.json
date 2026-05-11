@@ -3,7 +3,7 @@
   "workspace": ".",
   "source": {
     "kind": "package-root",
-    "packageRoot": "/path/to/xanad-assistant"
+    "packageRoot": "/path/to/xanadAssistant"
   },
   "status": "ok",
   "warnings": [],
@@ -11,7 +11,7 @@
   "result": {
     "backup": {
       "created": true,
-      "path": ".xanad-assistant/backups/2026-05-07T12-00-00Z"
+      "path": ".xanadAssistant/backups/2026-05-07T12-00-00Z"
     },
     "writes": {
       "added": 12,
@@ -22,7 +22,7 @@
     "retired": [],
     "lockfile": {
       "written": true,
-      "path": ".github/xanad-assistant-lock.json"
+      "path": ".github/xanadAssistant-lock.json"
     },
     "validation": {
       "status": "passed"

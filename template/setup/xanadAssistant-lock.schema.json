@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Xanad Assistant Lockfile",
-  "description": "Installed-state lockfile for consumer repositories using xanad-assistant.",
+  "title": "xanadAssistant Lockfile",
+  "description": "Installed-state lockfile for consumer repositories using xanadAssistant.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -105,7 +105,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "const": "xanad-assistant"
+          "const": "xanadAssistant"
         },
         "version": {
           "type": "string"

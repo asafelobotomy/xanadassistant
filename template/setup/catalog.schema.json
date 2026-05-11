@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Xanad Assistant Discovery Catalog",
+  "title": "xanadAssistant Discovery Catalog",
   "type": "object",
   "additionalProperties": false,
   "required": [

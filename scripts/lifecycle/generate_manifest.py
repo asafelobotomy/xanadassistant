@@ -22,8 +22,8 @@ from scripts.lifecycle._manifest_utils import (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate xanad-assistant install manifest.")
-    parser.add_argument("--package-root", required=True, help="Path to the xanad-assistant package root.")
+    parser = argparse.ArgumentParser(description="Generate xanadAssistant install manifest.")
+    parser.add_argument("--package-root", required=True, help="Path to the xanadAssistant package root.")
     parser.add_argument(
         "--policy",
         default="template/setup/install-policy.json",

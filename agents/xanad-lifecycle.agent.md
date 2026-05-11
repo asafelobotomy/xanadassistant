@@ -1,6 +1,6 @@
 ---
 name: xanad-lifecycle
-description: "Use when: set up xanad-assistant, inspect workspace, run lifecycle check, interview, plan setup, apply setup, update xanad-assistant, repair install, factory restore, or coordinate any lifecycle command in a consumer workspace."
+description: "Use when: set up xanadAssistant, inspect workspace, run lifecycle check, interview, plan setup, apply setup, update xanadAssistant, repair install, factory restore, or coordinate any lifecycle command in a consumer workspace."
 argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, apply, update, repair, or factory restore."
 model:
   - Claude Sonnet 4.6
@@ -12,7 +12,7 @@ user-invocable: true
 
 ## Authority
 
-Use `xanad-assistant.py` as the single lifecycle entrypoint. Do not edit managed
+Use `xanadAssistant.py` as the single lifecycle entrypoint. Do not edit managed
 files directly when the lifecycle engine can express the same change.
 
 When the workspace `xanadTools` MCP server is connected and can resolve a local
@@ -24,7 +24,7 @@ resolution is missing.
 
 ## Trigger phrases
 
-- Install or set up xanad-assistant → run `apply` (after `inspect` and `plan setup`)
+- Install or set up xanadAssistant → run `apply` (after `inspect` and `plan setup`)
 - Update to the latest version → run `update`
 - Repair a broken or incomplete install → run `repair`
 - Restore to factory defaults → run `factory-restore`
@@ -47,69 +47,69 @@ resolution is missing.
 
 ```
 # Read-only inspection
-python3 xanad-assistant.py inspect \
+python3 xanadAssistant.py inspect \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --ui agent --json-lines
 
 # Drift check (exits 7 if not clean)
-python3 xanad-assistant.py check \
+python3 xanadAssistant.py check \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --ui agent --json-lines
 
 # Emit structured setup questions
-python3 xanad-assistant.py interview \
+python3 xanadAssistant.py interview \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --mode setup --json-lines
 
 # Generate a setup plan (no writes)
-python3 xanad-assistant.py plan setup \
+python3 xanadAssistant.py plan setup \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 
 # Generate a factory-restore plan (no writes)
-python3 xanad-assistant.py plan factory-restore \
+python3 xanadAssistant.py plan factory-restore \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 
 # Apply the setup plan
-python3 xanad-assistant.py apply \
+python3 xanadAssistant.py apply \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 
 # Update an existing install
-python3 xanad-assistant.py update \
+python3 xanadAssistant.py update \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 
 # Repair a damaged or incomplete install
-python3 xanad-assistant.py repair \
+python3 xanadAssistant.py repair \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 
 # Factory restore to clean package state
-python3 xanad-assistant.py factory-restore \
+python3 xanadAssistant.py factory-restore \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 
 # Preview any write-capable command without making changes
-python3 xanad-assistant.py apply \
+python3 xanadAssistant.py apply \
   --workspace <consumer-repo-path> \
-  --package-root <xanad-assistant-checkout> \
+  --package-root <xanadAssistant-checkout> \
   --dry-run --json-lines
 
 # Use a GitHub release instead of a local checkout
-python3 xanad-assistant.py apply \
+python3 xanadAssistant.py apply \
   --workspace <consumer-repo-path> \
-  --source github:asafelobotomy/xanad-assistant \
+  --source github:asafelobotomy/xanadAssistant \
   --version v1.0.0 \
   --non-interactive --ui agent --json-lines
 ```

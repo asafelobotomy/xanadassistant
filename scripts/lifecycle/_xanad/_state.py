@@ -8,8 +8,20 @@ from pathlib import Path
 from scripts.lifecycle._xanad._loader import load_json, load_optional_json
 
 
-CURRENT_PACKAGE_NAME = "xanad-assistant"
+CURRENT_PACKAGE_NAME = "xanadAssistant"
 PREDECESSOR_PACKAGE_NAMES = frozenset({"copilot-instructions-template"})
+_LOCKFILE_FILENAME = "xanadAssistant-lock.json"
+_LEGACY_LOCKFILE_FILENAME = "xanad-assistant-lock.json"
+
+
+def _resolve_lockfile_path(workspace: Path) -> Path:
+    """Return the canonical lockfile path, falling back to the legacy name for migration."""
+    new_path = workspace / ".github" / _LOCKFILE_FILENAME
+    if not new_path.exists():
+        legacy_path = workspace / ".github" / _LEGACY_LOCKFILE_FILENAME
+        if legacy_path.exists():
+            return legacy_path
+    return new_path
 _LOCKFILE_REQUIRED_FIELDS = frozenset({"schemaVersion", "package", "manifest", "timestamps", "selectedPacks", "files"})
 
 
@@ -35,7 +47,7 @@ def detect_git_state(workspace: Path) -> dict:
 
 
 def determine_install_state(workspace: Path) -> tuple[str, dict]:
-    lockfile = workspace / ".github" / "xanad-assistant-lock.json"
+    lockfile = _resolve_lockfile_path(workspace)
     legacy_version = workspace / ".github" / "copilot-version.md"
 
     if lockfile.exists():
@@ -147,7 +159,7 @@ def migrate_lockfile_shape(data: dict) -> dict:
 
 
 def parse_lockfile_state(workspace: Path) -> dict:
-    lockfile_path = workspace / ".github" / "xanad-assistant-lock.json"
+    lockfile_path = _resolve_lockfile_path(workspace)
     if not lockfile_path.exists():
         return {
             "present": False, "malformed": False, "needsMigration": False,

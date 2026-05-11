@@ -149,7 +149,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:b030228be9685d2f166d191b24d690c33f0075f9370c2df92787119c57beaaef"
+      "hash": "sha256:df9707534336c76d471bc996d3941a4774fab5faff591a7133b773141f4c9d79"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -173,8 +173,8 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:38b71f789247b4bbe010a9908f2f8cad881d80802a95702e517f48034b22fc16"
- (refactor: rename xanad-lifecycle-planning agent to xanad-lifecycle; audit fixes)
+      "hash": "sha256:c5ef7f3476bd16e1ee823f24b340e67c407fce5de5e48d96464d52d12b19b849"
+ 8f6b648 (refactor: standardize product name to xanadAssistant)
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -191,7 +191,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:3444346f1685eaaf667182edcac4e5252010123cc489715d6137c2121b15be4c"
+      "hash": "sha256:026e4520f87c476760befe39a3a4fd0345ae2b8409a0d29f94a175d228e9211e"
     },
     {
       "id": "hook-scripts.git-mcp.py",
@@ -327,7 +327,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:51b405194322fc780eaa5a97b2c3aa170a3d6c37b5eb2f51cfa4b1e6d6b92c37"
+      "hash": "sha256:396c6ac38c468b4c925ab08d5773aa38504f6c5533b59f5a7a27fb963c6dc6c7"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -382,7 +382,8 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:690a5aee8811180cf691f626e2dcbbb5b5febc712ed3c384b6e7df54d208eae0"
+      "hash": "sha256:6cf7b037236f2f0e6606596fa32164fa061ebfe7c1e38e9ed3e96dfe8781a2c4"
+ 8f6b648 (refactor: standardize product name to xanadAssistant)
     },
     {
       "id": "lean-skills.lean-output.SKILL.md",
@@ -416,7 +417,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:348ab68b7fa6621d224fb0fbc69d2180c3c8a5c6e6a6cd863a8813357ba32f2d"
+      "hash": "sha256:3958bfacd70800a13308437ff3b707097bde196b6c431a408977f00eeea5d47d"
     },
     {
       "id": "mcp-config.mcp.json",

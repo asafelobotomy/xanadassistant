@@ -150,7 +150,7 @@ class StateGapTests(unittest.TestCase):
         from scripts.lifecycle._xanad._state import _lockfile_needs_migration
         data = {
             "schemaVersion": "0.1.0",
-            "package": {"name": "xanad-assistant"},
+            "package": {"name": "xanadAssistant"},
             "manifest": "not-a-dict",
             "timestamps": {},
             "selectedPacks": [],
@@ -163,7 +163,7 @@ class StateGapTests(unittest.TestCase):
         from scripts.lifecycle._xanad._state import _lockfile_needs_migration
         data = {
             "schemaVersion": "0.1.0",
-            "package": {"name": "xanad-assistant"},
+            "package": {"name": "xanadAssistant"},
             "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:abc"},
             "timestamps": {},
             "selectedPacks": [],
@@ -298,7 +298,7 @@ class InspectGapTests(unittest.TestCase):
                 "selectedPacks": [], "profile": "balanced",
                 "ownershipBySurface": {}, "files": [],
             }
-            (workspace / ".github" / "xanad-assistant-lock.json").write_text(
+            (workspace / ".github" / "xanadAssistant-lock.json").write_text(
                 json.dumps(lockfile), encoding="utf-8"
             )
             context = collect_context(workspace, REPO_ROOT)
@@ -320,7 +320,7 @@ class InspectGapTests(unittest.TestCase):
                 "selectedPacks": [], "profile": "balanced",
                 "ownershipBySurface": {}, "files": [],
             }
-            (workspace / ".github" / "xanad-assistant-lock.json").write_text(
+            (workspace / ".github" / "xanadAssistant-lock.json").write_text(
                 json.dumps(lockfile), encoding="utf-8"
             )
             # Create a file in a successor migration root that is NOT in the managed set
@@ -340,13 +340,13 @@ class InspectGapTests(unittest.TestCase):
             # Write lockfile with a fake manifest hash (won't match real one)
             lockfile = {
                 "schemaVersion": "0.1.0",
-                "package": {"name": "xanad-assistant"},
+                "package": {"name": "xanadAssistant"},
                 "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:aaaaaaaaaaaa"},
                 "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
                 "selectedPacks": [], "profile": "balanced",
                 "ownershipBySurface": {}, "files": [],
             }
-            (workspace / ".github" / "xanad-assistant-lock.json").write_text(
+            (workspace / ".github" / "xanadAssistant-lock.json").write_text(
                 json.dumps(lockfile), encoding="utf-8"
             )
             context = collect_context(workspace, REPO_ROOT)
@@ -362,7 +362,7 @@ class CheckGapTests(unittest.TestCase):
     def _make_ws_with_lockfile(self, tmp: Path, lockfile: dict) -> Path:
         ws = tmp / "ws"
         (ws / ".github").mkdir(parents=True)
-        (ws / ".github" / "xanad-assistant-lock.json").write_text(
+        (ws / ".github" / "xanadAssistant-lock.json").write_text(
             json.dumps(lockfile), encoding="utf-8"
         )
         return ws
@@ -373,7 +373,7 @@ class CheckGapTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp) / "ws"
             (ws / ".github").mkdir(parents=True)
-            (ws / ".github" / "xanad-assistant-lock.json").write_text(
+            (ws / ".github" / "xanadAssistant-lock.json").write_text(
                 "this is not valid JSON {{{", encoding="utf-8"
             )
             result = build_check_result(ws, REPO_ROOT)
@@ -399,7 +399,7 @@ class CheckGapTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             lockfile = {
                 "schemaVersion": "0.1.0",
-                "package": {"name": "xanad-assistant"},
+                "package": {"name": "xanadAssistant"},
                 "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:fake"},
                 "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
                 "selectedPacks": [], "profile": "balanced",
@@ -419,7 +419,7 @@ class CheckGapTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             lockfile = {
                 "schemaVersion": "0.1.0",
-                "package": {"name": "xanad-assistant"},
+                "package": {"name": "xanadAssistant"},
                 "manifest": {"schemaVersion": "0.1.0", "hash": "sha256:fake"},
                 "timestamps": {"appliedAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"},
                 "selectedPacks": [], "profile": "balanced",

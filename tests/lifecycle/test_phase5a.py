@@ -31,7 +31,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
         workspace: Path,
         retired_target: str,
         strategy: str = "archive-retired",
-        archive_root: str | None = ".xanad-assistant/archive",
+        archive_root: str | None = ".xanadAssistant/archive",
     ) -> dict:
         archive_targets = []
         if strategy != "report-retired" and archive_root is not None:
@@ -54,13 +54,13 @@ class XanadAssistantPhase5Tests(XanadTestBase):
                 ],
                 "backupPlan": {
                     "required": True,
-                    "root": ".xanad-assistant/backups/<apply-timestamp>",
+                    "root": ".xanadAssistant/backups/<apply-timestamp>",
                     "targets": [],
                     "archiveRoot": archive_root,
                     "archiveTargets": archive_targets,
                 },
                 "plannedLockfile": {
-                    "path": ".github/xanad-assistant-lock.json",
+                    "path": ".github/xanadAssistant-lock.json",
                     "contents": self.make_minimal_lockfile(
                         timestamps={
                             "appliedAt": "<apply-timestamp>",
@@ -69,7 +69,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
                         skippedManagedFiles=[],
                         retiredManagedFiles=[],
                         unknownValues={},
-                        lastBackup={"path": ".xanad-assistant/backups/<apply-timestamp>"},
+                        lastBackup={"path": ".xanadAssistant/backups/<apply-timestamp>"},
                     ),
                 },
                 "skippedActions": [],
@@ -78,7 +78,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
         }
 
     def test_copy_if_missing_plan_skips_file_when_present(self) -> None:
-        from scripts.lifecycle.xanad_assistant import build_setup_plan_actions
+        from scripts.lifecycle.xanadAssistant import build_setup_plan_actions
 
         repo_root = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -100,7 +100,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
         self.assertEqual(target, skipped[0]["target"])
 
     def test_copy_if_missing_plan_adds_file_when_absent(self) -> None:
-        from scripts.lifecycle.xanad_assistant import build_setup_plan_actions
+        from scripts.lifecycle.xanadAssistant import build_setup_plan_actions
 
         repo_root = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -119,7 +119,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
         self.assertEqual(0, len(skipped))
 
     def test_copy_if_missing_plan_skips_file_even_during_factory_restore(self) -> None:
-        from scripts.lifecycle.xanad_assistant import build_setup_plan_actions
+        from scripts.lifecycle.xanadAssistant import build_setup_plan_actions
 
         repo_root = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -141,11 +141,11 @@ class XanadAssistantPhase5Tests(XanadTestBase):
 
     def test_archive_retired_moves_file_to_archive_path(self) -> None:
         from unittest.mock import patch
-        from scripts.lifecycle.xanad_assistant import execute_apply_plan
+        from scripts.lifecycle.xanadAssistant import execute_apply_plan
 
         repo_root = Path(__file__).resolve().parents[2]
         retired_target = ".github/old-file.md"
-        archive_path = f".xanad-assistant/archive/{retired_target}"
+        archive_path = f".xanadAssistant/archive/{retired_target}"
 
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
@@ -170,7 +170,7 @@ class XanadAssistantPhase5Tests(XanadTestBase):
 
     def test_report_retired_leaves_file_in_place(self) -> None:
         from unittest.mock import patch
-        from scripts.lifecycle.xanad_assistant import execute_apply_plan
+        from scripts.lifecycle.xanadAssistant import execute_apply_plan
 
         repo_root = Path(__file__).resolve().parents[2]
         retired_target = ".github/old-file.md"

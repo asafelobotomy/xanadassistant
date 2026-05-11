@@ -49,7 +49,7 @@ def emit_agent_progress(payload: dict) -> None:
         print(msg, file=sys.stderr)
         _log_progress(msg)
 
-    out("xanad-assistant")
+    out("xanadAssistant")
     if payload["command"] == "inspect":
         out(_phase("Preflight"))
         out("  Package contracts loaded")

@@ -1,6 +1,6 @@
-# Xanad Assistant
+# xanadAssistant
 
-Use `xanad-assistant.py` as the lifecycle authority for setup, update, repair, and restore operations.
+Use `xanadAssistant.py` as the lifecycle authority for setup, update, repair, and restore operations.
 
 - Prefer structured plan and report files over manual file copying.
 - Treat generated manifest and lockfile data as authoritative.

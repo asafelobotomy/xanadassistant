@@ -16,7 +16,7 @@ class XanadAssistantPhase9Tests(XanadTestBase):
     # ------------------------------------------------------------------
 
     def test_lean_profile_does_not_override_explicit_packs(self) -> None:
-        from scripts.lifecycle.xanad_assistant import seed_answers_from_profile
+        from scripts.lifecycle.xanadAssistant import seed_answers_from_profile
         profile_registry = {
             "profiles": [{"id": "lean", "defaultPacks": ["lean"], "setupAnswerDefaults": {}}]
         }
@@ -24,7 +24,7 @@ class XanadAssistantPhase9Tests(XanadTestBase):
         self.assertEqual(["memory"], result["packs.selected"])
 
     def test_no_profile_selected_leaves_answers_unchanged(self) -> None:
-        from scripts.lifecycle.xanad_assistant import seed_answers_from_profile
+        from scripts.lifecycle.xanadAssistant import seed_answers_from_profile
         answers = {"packs.selected": ["memory"]}
         result = seed_answers_from_profile({}, answers)
         self.assertEqual(answers, result)

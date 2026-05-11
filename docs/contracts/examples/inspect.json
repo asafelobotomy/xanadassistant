@@ -3,7 +3,7 @@
   "workspace": "/path/to/workspace",
   "source": {
     "kind": "package-root",
-    "packageRoot": "/path/to/xanad-assistant"
+    "packageRoot": "/path/to/xanadAssistant"
   },
   "status": "ok",
   "warnings": [],
@@ -20,23 +20,23 @@
     },
     "contracts": {
       "policy": {
-        "path": "/path/to/xanad-assistant/template/setup/install-policy.json",
+        "path": "/path/to/xanadAssistant/template/setup/install-policy.json",
         "loaded": true
       },
       "policySchema": {
-        "path": "/path/to/xanad-assistant/template/setup/install-policy.schema.json",
+        "path": "/path/to/xanadAssistant/template/setup/install-policy.schema.json",
         "loaded": true
       },
       "manifestSchema": {
-        "path": "/path/to/xanad-assistant/template/setup/install-manifest.schema.json",
+        "path": "/path/to/xanadAssistant/template/setup/install-manifest.schema.json",
         "loaded": true
       },
       "lockSchema": {
-        "path": "/path/to/xanad-assistant/template/setup/xanad-assistant-lock.schema.json",
+        "path": "/path/to/xanadAssistant/template/setup/xanadAssistant-lock.schema.json",
         "loaded": true
       },
       "manifest": {
-        "path": "/path/to/xanad-assistant/template/setup/install-manifest.json",
+        "path": "/path/to/xanadAssistant/template/setup/install-manifest.json",
         "loaded": true
       }
     },

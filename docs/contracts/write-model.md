@@ -1,4 +1,4 @@
-# Xanad Assistant Write Model
+# xanadAssistant Write Model
 
 This document defines ownership modes, write strategies, and retired-file handling rules.
 

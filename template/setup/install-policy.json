@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.1.0",
-  "packageName": "xanad-assistant",
+  "packageName": "xanadAssistant",
   "canonicalSurfaces": [
     "core-instructions",
     "instructions",
@@ -187,7 +187,7 @@
   },
   "retiredFilePolicy": {
     "defaultAction": "report-retired",
-    "archiveRoot": ".xanad-assistant/archive",
+    "archiveRoot": ".xanadAssistant/archive",
     "entries": [
       {
         "id": "retired.agents.lifecycle-planning.agent.md",

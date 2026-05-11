@@ -95,7 +95,7 @@ class GetCacheRootTests(unittest.TestCase):
         import os
         os.environ.pop("XANAD_PKG_CACHE", None)
         result = get_cache_root()
-        self.assertIn(".xanad-assistant", str(result))
+        self.assertIn(".xanadAssistant", str(result))
 
     def test_honours_xanad_pkg_cache_env_var(self) -> None:
         import os

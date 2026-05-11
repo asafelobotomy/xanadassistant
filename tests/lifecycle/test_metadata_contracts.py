@@ -96,7 +96,7 @@ class MetadataContractTests(unittest.TestCase):
                 self.assertIn("| External documentation, upstream behavior", text)
                 self.assertIn("| Documentation updates, migration notes", text)
                 self.assertIn("| Code review, architecture review", text)
-                self.assertIn("| xanad-assistant inspect, check, plan", text)
+                self.assertIn("| xanadAssistant inspect, check, plan", text)
                 self.assertIn("Debugger", text)
                 self.assertIn("Docs", text)
                 self.assertIn("Planner", text)

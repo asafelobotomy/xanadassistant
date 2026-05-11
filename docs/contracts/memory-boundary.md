@@ -1,4 +1,4 @@
-# Xanad Assistant Memory Boundary
+# xanadAssistant Memory Boundary
 
 This document defines the boundary between core lifecycle behavior and optional memory behavior.
 

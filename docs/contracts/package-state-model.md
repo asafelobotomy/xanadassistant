@@ -1,4 +1,4 @@
-# Xanad Assistant Package State Model
+# xanadAssistant Package State Model
 
 This document defines contract-level expectations for package policy, generated manifest, and installed-state lockfile data.
 
@@ -16,7 +16,7 @@ Package-side authoritative artifacts:
 
 Consumer-side authoritative artifact:
 
-- `.github/xanad-assistant-lock.json`
+- `.github/xanadAssistant-lock.json`
 
 Human-readable derivative artifact:
 
@@ -60,7 +60,7 @@ The manifest should also express retired managed files and the intended handling
 
 ## Lockfile Contract
 
-`.github/xanad-assistant-lock.json` records installed state in the consumer workspace.
+`.github/xanadAssistant-lock.json` records installed state in the consumer workspace.
 It should contain at least:
 
 - lockfile schema version
@@ -80,7 +80,7 @@ It should contain at least:
 - Legacy `.github/copilot-version.md` may exist before the lockfile exists.
 - The lifecycle engine should read legacy version state when present.
 - A lockfile whose `package.name` is `copilot-instructions-template` is a predecessor install and must be treated as migration-required.
-- Successor migration should archive predecessor-owned local files before writing the fresh xanad-assistant lockfile.
+- Successor migration should archive predecessor-owned local files before writing the fresh xanadAssistant lockfile.
 - A successful approved apply or repair should write a fresh lockfile.
 - The generated Markdown summary is readable output only and must not become the installed-state authority.
 

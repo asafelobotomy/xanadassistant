@@ -74,7 +74,7 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
             "code": "package_name_mismatch",
             "message": (
                 "The installed lockfile belongs to a predecessor package and requires successor migration. "
-                "Run 'repair' or 'update' to adopt xanad-assistant ownership."
+                "Run 'repair' or 'update' to adopt xanadAssistant ownership."
             ),
             "details": {
                 "installedPackageName": installed_package_name,

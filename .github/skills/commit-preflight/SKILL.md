@@ -1,14 +1,14 @@
 ---
 name: commit-preflight
-description: "Use when: preparing to commit or push changes in the xanadassistant repository and you need local preflight checks for unit tests, manifest freshness, LOC limits, generated artifacts, or template-safety rules."
+description: "Use when: preparing to commit or push changes in the xanadAssistant repository and you need local preflight checks for unit tests, manifest freshness, LOC limits, generated artifacts, or template-safety rules."
 compatibility: ">=1.4"
 ---
 
 # Commit Preflight
 
-> Skill metadata: version "1.0"; tags [commit, preflight, ci, xanadassistant, generated-artifacts]; recommended tools [runCommands, codebase, editFiles, askQuestions].
+> Skill metadata: version "1.0"; tags [commit, preflight, ci, xanadAssistant, generated-artifacts]; recommended tools [runCommands, codebase, editFiles, askQuestions].
 
-Run xanadassistant's local CI-equivalent checks before commit or push, repair stale generated artifacts when the fix is mechanical, and return a clear pass, block, or residual-risk outcome to the Commit agent.
+Run xanadAssistant's local CI-equivalent checks before commit or push, repair stale generated artifacts when the fix is mechanical, and return a clear pass, block, or residual-risk outcome to the Commit agent.
 
 ## When to use
 
@@ -18,7 +18,7 @@ Run xanadassistant's local CI-equivalent checks before commit or push, repair st
 
 ## When not to use
 
-- Outside the xanadassistant repository
+- Outside the xanadAssistant repository
 - When there are no staged or proposed files to validate
 - When the user explicitly instructs you to skip local verification
 

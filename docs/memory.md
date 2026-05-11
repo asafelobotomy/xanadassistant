@@ -1,6 +1,6 @@
 # Memory
 
-This file is the durable repo memory surface for xanad-assistant.
+This file is the durable repo memory surface for xanadAssistant.
 
 Use it for validated project facts that are worth keeping but do not belong in
 always-on instructions, schemas, or generated artifacts.

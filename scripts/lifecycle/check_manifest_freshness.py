@@ -10,7 +10,7 @@ from scripts.lifecycle.generate_manifest import generate_catalog, generate_manif
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check whether the generated manifest and catalog are fresh.")
-    parser.add_argument("--package-root", required=True, help="Path to the xanad-assistant package root.")
+    parser.add_argument("--package-root", required=True, help="Path to the xanadAssistant package root.")
     parser.add_argument(
         "--policy",
         default="template/setup/install-policy.json",

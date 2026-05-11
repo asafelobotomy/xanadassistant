@@ -40,7 +40,7 @@ def _minimal_context(
         "manifestWithStatus": None,
         "warnings": [],
         "lockfileState": lockfile_state or {
-            "present": False, "malformed": False, "path": ".github/xanad-assistant-lock.json",
+            "present": False, "malformed": False, "path": ".github/xanadAssistant-lock.json",
             "data": None, "needsMigration": False, "profile": None, "selectedPacks": [],
             "ownershipBySurface": {}, "files": [], "skippedManagedFiles": [],
             "unknownValues": {}, "originalPackageName": None,
@@ -93,7 +93,7 @@ class PlanCTests(unittest.TestCase):
         from scripts.lifecycle._xanad._plan_c import determine_repair_reasons
         ctx = self._make_context(
             lockfileState={
-                "present": True, "malformed": True, "path": ".github/xanad-assistant-lock.json",
+                "present": True, "malformed": True, "path": ".github/xanadAssistant-lock.json",
                 "data": None, "needsMigration": False, "profile": None, "selectedPacks": [],
                 "ownershipBySurface": {}, "files": [], "skippedManagedFiles": [],
                 "unknownValues": {}, "originalPackageName": None,
@@ -107,7 +107,7 @@ class PlanCTests(unittest.TestCase):
         from scripts.lifecycle._xanad._plan_c import determine_repair_reasons
         ctx = self._make_context(
             lockfileState={
-                "present": True, "malformed": False, "path": ".github/xanad-assistant-lock.json",
+                "present": True, "malformed": False, "path": ".github/xanadAssistant-lock.json",
                 "data": {"schemaVersion": "0.1.0"}, "needsMigration": True, "profile": None,
                 "selectedPacks": [], "ownershipBySurface": {}, "files": [],
                 "skippedManagedFiles": [], "unknownValues": {}, "originalPackageName": None,
@@ -122,7 +122,7 @@ class PlanCTests(unittest.TestCase):
         ctx = self._make_context(
             installState="installed",
             lockfileState={
-                "present": True, "malformed": False, "path": ".github/xanad-assistant-lock.json",
+                "present": True, "malformed": False, "path": ".github/xanadAssistant-lock.json",
                 "data": {"package": {"name": "copilot-instructions-template"}},
                 "needsMigration": False, "profile": "balanced", "selectedPacks": [],
                 "ownershipBySurface": {}, "files": [], "skippedManagedFiles": [],
@@ -156,7 +156,7 @@ class PlanCTests(unittest.TestCase):
             installState="installed",
             manifestWithStatus=manifest_with_status,
             lockfileState={
-                "present": True, "malformed": False, "path": ".github/xanad-assistant-lock.json",
+                "present": True, "malformed": False, "path": ".github/xanadAssistant-lock.json",
                 "data": {}, "needsMigration": False, "profile": "balanced", "selectedPacks": [],
                 "ownershipBySurface": {}, "files": [], "skippedManagedFiles": [],
                 "unknownValues": {}, "originalPackageName": None,
@@ -1099,7 +1099,7 @@ class PlanBSuccessorTests(unittest.TestCase):
                 "skippedManagedFiles": [], "retiredManagedFiles": [],
                 "unknownValues": {},
             }
-            (github / "xanad-assistant-lock.json").write_text(
+            (github / "xanadAssistant-lock.json").write_text(
                 _json.dumps(predecessor_lock), encoding="utf-8"
             )
             # Create a file that collect_successor_migration_files will detect

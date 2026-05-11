@@ -1,4 +1,4 @@
-# Xanad Assistant UI Agent Contract
+# xanadAssistant UI Agent Contract
 
 This document defines the boundary for `--ui agent`.
 

@@ -1,11 +1,11 @@
-# Xanad Assistant Lifecycle Plan
+# xanadAssistant Lifecycle Plan
 
-This plan reinvents the template lifecycle around a Copilot-operated setup tool. The goal is to make `asafelobotomy/xanad-assistant` installable, updateable, repairable, and restorable without relying on Copilot to infer file ownership, merge behavior, version state, or package drift from prose.
+This plan reinvents the template lifecycle around a Copilot-operated setup tool. The goal is to make `asafelobotomy/xanadAssistant` installable, updateable, repairable, and restorable without relying on Copilot to infer file ownership, merge behavior, version state, or package drift from prose.
 
 The new default experience should be simple for the user:
 
-1. A user asks Copilot to set up `asafelobotomy/xanad-assistant` in an active repository.
-2. Copilot fetches or runs the `xanad-assistant` setup script.
+1. A user asks Copilot to set up `asafelobotomy/xanadAssistant` in an active repository.
+2. Copilot fetches or runs the `xanadAssistant` setup script.
 3. The script inspects the workspace, resolves the package source, generates a plan, and exposes any required questions.
 4. Copilot discusses the meaningful choices with the user.
 5. Copilot passes structured answers back to the script.
@@ -20,7 +20,7 @@ The script is the main tool. Copilot is the conversational operator. The termina
 - The setup script must own lifecycle decisions. Copilot should not manually copy, diff, merge, hash, repair, or validate managed surfaces.
 - The engine must be deterministic. Every write should come from an inspectable plan, use explicit strategies, create backups first, and produce structured reports.
 - The interface must be Copilot-native. Copilot should use JSON, JSON Lines, stable exit codes, answer files, plan files, and report files instead of scraping a TUI.
-- The visible terminal should still feel intentional. The human should see a polished `xanad-assistant` progress experience while Copilot uses the machine protocol.
+- The visible terminal should still feel intentional. The human should see a polished `xanadAssistant` progress experience while Copilot uses the machine protocol.
 - User choices and local content are protected by default. The tool should preserve project-specific content, archive before destructive changes, and prefer warnings over surprise deletions.
 - First implementation should be dependency-free. Use Python 3 standard library only until the lifecycle contract is stable.
 
@@ -39,7 +39,7 @@ The current template already provides strong raw material:
 - a machine-readable `llms.txt` index and routing metadata
 - initial response-style controls and prose-compression support
 
-`xanad-assistant` should preserve those strengths. The goal is not to remove them. The goal is to make them more deterministic, leaner, and easier for Copilot to operate.
+`xanadAssistant` should preserve those strengths. The goal is not to remove them. The goal is to make them more deterministic, leaner, and easier for Copilot to operate.
 
 ### What The External References Add
 
@@ -65,9 +65,9 @@ From `awesome-copilot`:
 - discoverability through machine-readable catalog surfaces
 - breadth through optional modules rather than one giant default install
 
-### What `xanad-assistant` Should Do Better
+### What `xanadAssistant` Should Do Better
 
-`xanad-assistant` should improve the current template in these specific ways:
+`xanadAssistant` should improve the current template in these specific ways:
 
 - Replace agent-procedural lifecycle logic with a real lifecycle engine and manifest-driven planner.
 - Turn starter-kit thinking into a broader capability-pack model, not just language-stack kits.
@@ -88,7 +88,7 @@ The core should stay small. Anything new must clearly belong to one of those lay
 
 ### Anti-Bloat Rules
 
-To keep `xanad-assistant` lean, every new capability must pass these tests:
+To keep `xanadAssistant` lean, every new capability must pass these tests:
 
 - It belongs in `core`, a `pack`, a `profile`, or the `catalog`.
 - It does not need to be always loaded to be useful.
@@ -100,7 +100,7 @@ If a capability fails those tests, it should not enter the default architecture.
 
 ### Explicit Non-Goals
 
-`xanad-assistant` should not:
+`xanadAssistant` should not:
 
 - make local memory mandatory
 - turn the assistant voice into a novelty persona
@@ -127,10 +127,10 @@ The root problem is that no single executable lifecycle system applied the packa
 
 The system has five durable parts:
 
-- `xanad-assistant.py`: the Copilot-facing setup, update, repair, and restore tool
+- `xanadAssistant.py`: the Copilot-facing setup, update, repair, and restore tool
 - `template/setup/install-policy.json`: small human-authored lifecycle policy
 - `template/setup/install-manifest.json`: generated package truth with sources, targets, hashes, ownership, strategies, and retired files
-- `.github/xanad-assistant-lock.json`: structured installed-state lockfile in consumer repos
+- `.github/xanadAssistant-lock.json`: structured installed-state lockfile in consumer repos
 - `.github/copilot-version.md`: optional human-readable installed summary generated from the lockfile
 
 The setup script should be able to run from a GitHub release, a branch, a local checkout, or a pinned commit. Normal user installs should prefer releases once release packaging exists. Development installs may use `main` or another branch explicitly.
@@ -140,24 +140,24 @@ The setup script should be able to run from a GitHub release, a branch, a local 
 The script should support these high-level commands through one engine:
 
 ```bash
-python3 xanad-assistant.py inspect --workspace .
-python3 xanad-assistant.py interview --workspace . --mode setup
-python3 xanad-assistant.py plan setup --workspace . --answers answers.json --plan-out plan.json
-python3 xanad-assistant.py apply --workspace . --plan plan.json
-python3 xanad-assistant.py check --workspace .
-python3 xanad-assistant.py update --workspace .
-python3 xanad-assistant.py repair --workspace .
-python3 xanad-assistant.py factory-restore --workspace .
+python3 xanadAssistant.py inspect --workspace .
+python3 xanadAssistant.py interview --workspace . --mode setup
+python3 xanadAssistant.py plan setup --workspace . --answers answers.json --plan-out plan.json
+python3 xanadAssistant.py apply --workspace . --plan plan.json
+python3 xanadAssistant.py check --workspace .
+python3 xanadAssistant.py update --workspace .
+python3 xanadAssistant.py repair --workspace .
+python3 xanadAssistant.py factory-restore --workspace .
 ```
 
 Supported source options:
 
 ```bash
---source github:asafelobotomy/xanad-assistant
+--source github:asafelobotomy/xanadAssistant
 --version latest
 --version 0.10.0
 --ref main
---package-root /local/path/to/xanad-assistant
+--package-root /local/path/to/xanadAssistant
 ```
 
 Supported automation options:
@@ -170,7 +170,7 @@ Supported automation options:
 --answers answers.json
 --plan-out plan.json
 --report-out report.json
---log-file .xanad-assistant/logs/<timestamp>.log
+--log-file .xanadAssistant/logs/<timestamp>.log
 --ui quiet
 --ui agent
 --ui tui
@@ -207,7 +207,7 @@ Recommended stream split:
 Example visible progress:
 
 ```text
-xanad-assistant
+xanadAssistant
 Copilot lifecycle companion
 
 Preflight

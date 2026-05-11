@@ -1,6 +1,6 @@
-# Xanad Assistant Memory v1 Contract
+# xanadAssistant Memory v1 Contract
 
-This document defines the first operational memory contract for xanad-assistant.
+This document defines the first operational memory contract for xanadAssistant.
 
 ## Status
 

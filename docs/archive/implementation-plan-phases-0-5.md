@@ -10,7 +10,7 @@ Make the package authoritative through a small hand-authored policy file and gen
 - `template/setup/install-policy.json`
 - `template/setup/install-manifest.schema.json`
 - generated `template/setup/install-manifest.json`
-- `template/setup/xanad-assistant-lock.schema.json`
+- `template/setup/xanadAssistant-lock.schema.json`
 - manifest generator under `scripts/lifecycle/`
 
 ### Phase 2 Checklist
@@ -49,7 +49,7 @@ Build the read-only engine first so inspection, drift detection, and question ge
 
 ### Phase 3 Deliverables
 
-- `xanad-assistant.py` or `scripts/lifecycle/xanad_assistant.py` skeleton
+- `xanadAssistant.py` or `scripts/lifecycle/xanadAssistant.py` skeleton
 - source resolver for local package roots first
 - workspace inspector
 - legacy install reader

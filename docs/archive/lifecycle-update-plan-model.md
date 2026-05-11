@@ -5,7 +5,7 @@ The canonical installed state should be structured JSON, not Markdown.
 Recommended file:
 
 ```text
-.github/xanad-assistant-lock.json
+.github/xanadAssistant-lock.json
 ```
 
 Required lockfile data:

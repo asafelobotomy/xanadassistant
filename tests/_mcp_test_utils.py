@@ -130,7 +130,7 @@ def make_fake_cached_release(cache_root: Path, source: str, version: str) -> Pat
     package_root = cache_root / "github" / f"{owner}-{repo}" / f"release-{safe_version}"
     package_root.mkdir(parents=True, exist_ok=True)
     (package_root / ".complete").write_text("ok\n", encoding="utf-8")
-    (package_root / "xanad-assistant.py").write_text(
+    (package_root / "xanadAssistant.py").write_text(
         "#!/usr/bin/env python3\n"
         "import json\n"
         "import sys\n"

@@ -1,6 +1,6 @@
 # Setup Prompt
 
-Use this prompt when the user asks to install or refresh xanad-assistant in the
+Use this prompt when the user asks to install or refresh xanadAssistant in the
 active repository.
 
 Target workspace: {{WORKSPACE_NAME}}
@@ -9,7 +9,7 @@ Selected profile: {{XANAD_PROFILE}}
 ## Workflow
 
 If the workspace already has the `xanadTools` MCP server connected and the
-server can resolve a local xanad-assistant package root or a supported remote
+server can resolve a local xanadAssistant package root or a supported remote
 source, prefer the MCP
 lifecycle tools over shelling out directly:
 
@@ -27,9 +27,9 @@ package source, fall back to the CLI commands below.
 ### 1. Inspect current state
 
 ```
-python3 xanad-assistant.py inspect \
+python3 xanadAssistant.py inspect \
   --workspace {{WORKSPACE_NAME}} \
-  --package-root <path-to-xanad-assistant-checkout> \
+  --package-root <path-to-xanadAssistant-checkout> \
   --ui agent --json-lines
 ```
 
@@ -42,8 +42,9 @@ Expect `.github/hooks/scripts/xanad-workspace-mcp.py`,
 to appear in the planned writes.
 
 If the warnings include `package_name_mismatch` or `successor_cleanup_required`,
-treat the workspace as a predecessor-managed install.
-Use `plan repair` plus `repair` so xanad-assistant can archive predecessor-owned
+treat the workspace as a predecessor `copilot-instructions-template` install.
+Use `plan repair` plus `repair` so xanadAssistant can archive predecessor-owned
+ 8f6b648 (refactor: standardize product name to xanadAssistant)
 files and adopt the workspace cleanly.
 
 ### 2. Clarify answers if needed
@@ -52,9 +53,9 @@ If `installState` is `not-installed` or if the user wants to change pack or
 profile selection, run the interview:
 
 ```
-python3 xanad-assistant.py interview \
+python3 xanadAssistant.py interview \
   --workspace {{WORKSPACE_NAME}} \
-  --package-root <path-to-xanad-assistant-checkout> \
+  --package-root <path-to-xanadAssistant-checkout> \
   --mode setup --json-lines
 ```
 
@@ -64,9 +65,9 @@ Collect the user's answers and write them to an answer file, or use
 ### 3. Generate a plan
 
 ```
-python3 xanad-assistant.py plan setup \
+python3 xanadAssistant.py plan setup \
   --workspace {{WORKSPACE_NAME}} \
-  --package-root <path-to-xanad-assistant-checkout> \
+  --package-root <path-to-xanadAssistant-checkout> \
   --non-interactive --json-lines
 ```
 
@@ -84,9 +85,9 @@ the `apply` command instead of running `plan` first.
 Once the user approves (or `approvalRequired` is false):
 
 ```
-python3 xanad-assistant.py apply \
+python3 xanadAssistant.py apply \
   --workspace {{WORKSPACE_NAME}} \
-  --package-root <path-to-xanad-assistant-checkout> \
+  --package-root <path-to-xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 ```
 

@@ -1,6 +1,6 @@
-# Xanad Assistant Tool MCP Boundary
+# xanadAssistant Tool MCP Boundary
 
-This document defines the boundary for xanad-assistant first-party MCP tooling.
+This document defines the boundary for xanadAssistant first-party MCP tooling.
 
 ## Status
 
@@ -8,7 +8,7 @@ This file is normative for first-party MCP design and future implementation slic
 
 ## Purpose
 
-Xanad-assistant may provide its own concise library of first-party MCP servers so the package owns:
+xanadAssistant may provide its own concise library of first-party MCP servers so the package owns:
 
 - tool names
 - tool input and output schemas
@@ -20,7 +20,7 @@ The goal is not to collect generic third-party tools. The goal is to expose stab
 
 ## Core Rule
 
-A xanad-assistant MCP must expose semantic workflow tools, not arbitrary shell access.
+A xanadAssistant MCP must expose semantic workflow tools, not arbitrary shell access.
 
 Good MCP tools express a stable repo-owned action such as `lifecycle.inspect` or `quality.check_loc`.
 
@@ -31,7 +31,7 @@ Bad MCP tools simply proxy generic host capabilities such as:
 - generic web fetch
 - generic git command passthrough
 
-Those capabilities should remain native agent tools unless a narrower xanad-assistant-owned contract is required.
+Those capabilities should remain native agent tools unless a narrower xanadAssistant-owned contract is required.
 
 ## Scope Rule
 

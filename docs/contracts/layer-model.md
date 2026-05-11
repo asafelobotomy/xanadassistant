@@ -1,4 +1,4 @@
-# Xanad Assistant Layer Model
+# xanadAssistant Layer Model
 
 This document defines the product-layer contract for `core`, `pack`, `profile`, and `catalog`.
 

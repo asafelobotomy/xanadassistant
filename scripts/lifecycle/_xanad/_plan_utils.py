@@ -96,7 +96,7 @@ def build_backup_plan(policy: dict, actions: list[dict], backup_required: bool) 
             "archiveTargets": [],
         }
 
-    backup_root = ".xanad-assistant/backups/<apply-timestamp>"
+    backup_root = ".xanadAssistant/backups/<apply-timestamp>"
     backup_targets = []
     archive_targets = []
 

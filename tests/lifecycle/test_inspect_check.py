@@ -56,7 +56,7 @@ class InspectCheckTests(XanadTestBase):
         def workspace_setup(workspace: Path, _repo_root: Path) -> None:
             github_dir = workspace / ".github"
             github_dir.mkdir(parents=True, exist_ok=True)
-            (github_dir / "xanad-assistant-lock.json").write_text(
+            (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
                         skippedManagedFiles=[".github/agents/commit.agent.md"],
@@ -247,7 +247,7 @@ class InspectCheckTests(XanadTestBase):
             github_dir = workspace / ".github"
             github_dir.mkdir(parents=True, exist_ok=True)
             (github_dir / "copilot-version.md").write_text("Version: 0.9.0\n", encoding="utf-8")
-            (github_dir / "xanad-assistant-lock.json").write_text(
+            (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
                         selectedPacks=["review"],
@@ -282,7 +282,7 @@ class InspectCheckTests(XanadTestBase):
             github_dir = workspace / ".github"
             github_dir.mkdir(parents=True, exist_ok=True)
             (github_dir / "copilot-version.md").write_text("broken legacy metadata\n", encoding="utf-8")
-            (github_dir / "xanad-assistant-lock.json").write_text(
+            (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
                     self.make_minimal_lockfile(
                         files=[

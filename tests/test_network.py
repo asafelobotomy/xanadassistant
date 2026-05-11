@@ -16,7 +16,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanad_assistant.py"
+SCRIPT = REPO_ROOT / "scripts" / "lifecycle" / "xanadAssistant.py"
 NETWORK_TESTS = bool(os.getenv("XANAD_NETWORK_TESTS"))
 
 
@@ -114,7 +114,7 @@ class GitHubSourceResolutionNetworkTests(unittest.TestCase):
         return decode_message(process.stdout)
 
     def test_resolve_github_ref_clones_main_branch(self) -> None:
-        from scripts.lifecycle.xanad_assistant import resolve_github_ref
+        from scripts.lifecycle.xanadAssistant import resolve_github_ref
 
         pkg_root = resolve_github_ref("asafelobotomy", "xanadassistant", "main", self.CACHE_ROOT)
         self.assertTrue(pkg_root.exists(), "Cloned package root should exist")
@@ -124,14 +124,14 @@ class GitHubSourceResolutionNetworkTests(unittest.TestCase):
         )
 
     def test_resolve_github_ref_result_is_cached(self) -> None:
-        from scripts.lifecycle.xanad_assistant import resolve_github_ref
+        from scripts.lifecycle.xanadAssistant import resolve_github_ref
 
         pkg_root_1 = resolve_github_ref("asafelobotomy", "xanadassistant", "main", self.CACHE_ROOT)
         pkg_root_2 = resolve_github_ref("asafelobotomy", "xanadassistant", "main", self.CACHE_ROOT)
         self.assertEqual(pkg_root_1, pkg_root_2, "Repeated calls should return the same path")
 
     def test_resolve_github_ref_package_is_usable(self) -> None:
-        from scripts.lifecycle.xanad_assistant import resolve_github_ref
+        from scripts.lifecycle.xanadAssistant import resolve_github_ref
 
         pkg_root = resolve_github_ref("asafelobotomy", "xanadassistant", "main", self.CACHE_ROOT)
 
@@ -151,14 +151,14 @@ class GitHubSourceResolutionNetworkTests(unittest.TestCase):
             self.assertEqual("ok", payload["status"])
 
     def test_local_and_github_ref_installs_converge(self) -> None:
-        from scripts.lifecycle.xanad_assistant import resolve_github_ref
+        from scripts.lifecycle.xanadAssistant import resolve_github_ref
 
         with tempfile.TemporaryDirectory() as local_tmp:
             local_ws = Path(local_tmp)
             local_result = _apply_fresh(local_ws)
             self.assertEqual(0, local_result.returncode, local_result.stderr)
             local_lockfile = json.loads(
-                (local_ws / ".github" / "xanad-assistant-lock.json").read_text(encoding="utf-8")
+                (local_ws / ".github" / "xanadAssistant-lock.json").read_text(encoding="utf-8")
             )
 
         pkg_root = resolve_github_ref("asafelobotomy", "xanadassistant", "main", self.CACHE_ROOT)
@@ -174,7 +174,7 @@ class GitHubSourceResolutionNetworkTests(unittest.TestCase):
             remote_result = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
             self.assertEqual(0, remote_result.returncode, remote_result.stderr)
             remote_lockfile = json.loads(
-                (remote_ws / ".github" / "xanad-assistant-lock.json").read_text(encoding="utf-8")
+                (remote_ws / ".github" / "xanadAssistant-lock.json").read_text(encoding="utf-8")
             )
 
         local_norm = _normalise_lockfile(local_lockfile)
