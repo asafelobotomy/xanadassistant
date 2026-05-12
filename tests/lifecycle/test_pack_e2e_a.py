@@ -108,6 +108,19 @@ class PackTokenRenderingTests(XanadTestBase):
             self.assertIn(_CORE_OUTPUT_PREFIX, content)
             self.assertNotIn(_PACK_MARKER, content)
 
+    def test_apply_no_pack_triage_agent_has_no_raw_pack_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            answers_path = ws / "answers.json"
+            answers_path.write_text(json.dumps(_answers()), encoding="utf-8")
+
+            result = self._run("apply", "--json", "--non-interactive",
+                               "--answers", str(answers_path), workspace=ws)
+            self.assertEqual(0, result.returncode, result.stderr)
+
+            content = (ws / ".github" / "agents" / "triage.agent.md").read_text(encoding="utf-8")
+            self.assertNotIn(_PACK_MARKER, content)
+
     # ------------------------------------------------------------------
     # Lean-pack install — lean overrides
     # ------------------------------------------------------------------

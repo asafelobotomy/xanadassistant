@@ -7,6 +7,7 @@ model:
   - GPT-5.4 mini
   - GPT-5 mini
 tools: [agent, codebase]
+agents: [Planner]
 user-invocable: false
 ---
 
@@ -52,5 +53,11 @@ If Compound or Complex, hand off to the Planner agent with the scope and approac
 {{pack:scope-discipline}}
 
 {{pack:blocker-discipline}}
+
+{{pack:reasoning-mode}}
+
+{{pack:step-size}}
+
+{{pack:context-hygiene}}
 
 Do not over-classify. A task that touches 3 files with a clear pattern is Simple, not Complex. Reserve Compound/Complex for genuine multi-approach situations or unknowable scope.

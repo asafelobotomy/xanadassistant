@@ -11,6 +11,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, and architecture lookup |
 | `Review` | yes | Code review, architecture review, security review, maintainability review, and regression-risk review |
 | `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, and `factory-restore` for xanadAssistant-managed surfaces |
+| `Triage` | no | First-pass complexity classification — determines whether a task needs a direct answer, targeted edit, single agent, or multi-agent plan |
 | `Debugger` | no | Root-cause diagnosis, failing tests, broken commands, unclear behavior reproduction, and minimal fix-path isolation |
 | `Planner` | no | Complex multi-step planning, phased rollout, migration planning, and scoped execution plans before implementation |
 | `Researcher` | no | External documentation, upstream behavior, GitHub-source research, and source-backed comparisons before implementation |
