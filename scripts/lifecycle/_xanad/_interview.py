@@ -34,11 +34,12 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
         questions.append({
             "id": "packs.selected",
             "kind": "multi-choice",
-            "prompt": f"Which optional packs should {mode} consider?",
+            "prompt": f"Which optional pack should {mode} use? Select at most one.",
             "required": False,
             "options": optional_packs,
             "recommended": [],
             "default": [],
+            "maxSelections": 1,
             "requiredFor": ["packs"],
         })
 
@@ -173,6 +174,14 @@ def validate_answer_value(question: dict, value: object) -> None:
                 f"Invalid answer for {question['id']}.",
                 4,
                 {"questionId": question["id"], "expected": sorted(valid_ids), "received": value},
+            )
+        max_sel = question.get("maxSelections")
+        if max_sel is not None and len(value) > max_sel:
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                f"Too many selections for {question['id']}: at most {max_sel} allowed.",
+                4,
+                {"questionId": question["id"], "maxSelections": max_sel, "received": value},
             )
         return
 

@@ -10,6 +10,26 @@
     "lean-skills",
     "lean-prompts",
     "lean-hooks",
+    "secure-skills",
+    "secure-prompts",
+    "secure-hooks",
+    "tdd-skills",
+    "tdd-prompts",
+    "oss-skills",
+    "oss-prompts",
+    "oss-hooks",
+    "docs-skills",
+    "docs-prompts",
+    "docs-hooks",
+    "devops-skills",
+    "devops-prompts",
+    "devops-hooks",
+    "mlops-skills",
+    "mlops-prompts",
+    "mlops-hooks",
+    "shapeup-skills",
+    "shapeup-prompts",
+    "shapeup-hooks",
     "hook-scripts",
     "mcp-config"
   ],
@@ -18,6 +38,13 @@
     "agents": "agents",
     "skills": "skills",
     "lean-pack": "packs/lean",
+    "secure-pack": "packs/secure",
+    "tdd-pack": "packs/tdd",
+    "oss-pack": "packs/oss",
+    "docs-pack": "packs/docs",
+    "devops-pack": "packs/devops",
+    "mlops-pack": "packs/mlops",
+    "shapeup-pack": "packs/shapeup",
     "hooks": "hooks"
   },
   "surfaceSources": {
@@ -75,6 +102,126 @@
       "kind": "directory",
       "layer": "pack"
     },
+    "secure-skills": {
+      "sourceRoot": "secure-pack",
+      "path": "skills",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "secure-prompts": {
+      "sourceRoot": "secure-pack",
+      "path": "prompts",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "secure-hooks": {
+      "sourceRoot": "secure-pack",
+      "path": "hooks",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "tdd-skills": {
+      "sourceRoot": "tdd-pack",
+      "path": "skills",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "tdd-prompts": {
+      "sourceRoot": "tdd-pack",
+      "path": "prompts",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "oss-skills": {
+      "sourceRoot": "oss-pack",
+      "path": "skills",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "oss-prompts": {
+      "sourceRoot": "oss-pack",
+      "path": "prompts",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "oss-hooks": {
+      "sourceRoot": "oss-pack",
+      "path": "hooks",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "docs-skills": {
+      "sourceRoot": "docs-pack",
+      "path": "skills",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "docs-prompts": {
+      "sourceRoot": "docs-pack",
+      "path": "prompts",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "docs-hooks": {
+      "sourceRoot": "docs-pack",
+      "path": "hooks",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "devops-skills": {
+      "sourceRoot": "devops-pack",
+      "path": "skills",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "devops-prompts": {
+      "sourceRoot": "devops-pack",
+      "path": "prompts",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "devops-hooks": {
+      "sourceRoot": "devops-pack",
+      "path": "hooks",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "mlops-skills": {
+      "sourceRoot": "mlops-pack",
+      "path": "skills",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "mlops-prompts": {
+      "sourceRoot": "mlops-pack",
+      "path": "prompts",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "mlops-hooks": {
+      "sourceRoot": "mlops-pack",
+      "path": "hooks",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "shapeup-skills": {
+      "sourceRoot": "shapeup-pack",
+      "path": "skills",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "shapeup-prompts": {
+      "sourceRoot": "shapeup-pack",
+      "path": "prompts",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "shapeup-hooks": {
+      "sourceRoot": "shapeup-pack",
+      "path": "hooks",
+      "kind": "directory",
+      "layer": "pack"
+    },
     "mcp-config": {
       "sourceRoot": "template",
       "path": "vscode/mcp.json",
@@ -116,6 +263,86 @@
       "targetRoot": ".github/hooks/scripts",
       "surface": "hooks"
     },
+    "secure-skills": {
+      "targetRoot": ".github/skills",
+      "surface": "skills"
+    },
+    "secure-prompts": {
+      "targetRoot": ".github/prompts",
+      "surface": "prompts"
+    },
+    "secure-hooks": {
+      "targetRoot": ".github/hooks/scripts",
+      "surface": "hooks"
+    },
+    "tdd-skills": {
+      "targetRoot": ".github/skills",
+      "surface": "skills"
+    },
+    "tdd-prompts": {
+      "targetRoot": ".github/prompts",
+      "surface": "prompts"
+    },
+    "oss-skills": {
+      "targetRoot": ".github/skills",
+      "surface": "skills"
+    },
+    "oss-prompts": {
+      "targetRoot": ".github/prompts",
+      "surface": "prompts"
+    },
+    "oss-hooks": {
+      "targetRoot": ".github/hooks/scripts",
+      "surface": "hooks"
+    },
+    "docs-skills": {
+      "targetRoot": ".github/skills",
+      "surface": "skills"
+    },
+    "docs-prompts": {
+      "targetRoot": ".github/prompts",
+      "surface": "prompts"
+    },
+    "docs-hooks": {
+      "targetRoot": ".github/hooks/scripts",
+      "surface": "hooks"
+    },
+    "devops-skills": {
+      "targetRoot": ".github/skills",
+      "surface": "skills"
+    },
+    "devops-prompts": {
+      "targetRoot": ".github/prompts",
+      "surface": "prompts"
+    },
+    "devops-hooks": {
+      "targetRoot": ".github/hooks/scripts",
+      "surface": "hooks"
+    },
+    "mlops-skills": {
+      "targetRoot": ".github/skills",
+      "surface": "skills"
+    },
+    "mlops-prompts": {
+      "targetRoot": ".github/prompts",
+      "surface": "prompts"
+    },
+    "mlops-hooks": {
+      "targetRoot": ".github/hooks/scripts",
+      "surface": "hooks"
+    },
+    "shapeup-skills": {
+      "targetRoot": ".github/skills",
+      "surface": "skills"
+    },
+    "shapeup-prompts": {
+      "targetRoot": ".github/prompts",
+      "surface": "prompts"
+    },
+    "shapeup-hooks": {
+      "targetRoot": ".github/hooks/scripts",
+      "surface": "hooks"
+    },
     "hook-scripts": {
       "targetRoot": ".github/hooks/scripts",
       "surface": "hooks"
@@ -135,6 +362,26 @@
     "lean-skills": "plugin-backed-copilot-format",
     "lean-prompts": "local",
     "lean-hooks": "local",
+    "secure-skills": "plugin-backed-copilot-format",
+    "secure-prompts": "local",
+    "secure-hooks": "local",
+    "tdd-skills": "plugin-backed-copilot-format",
+    "tdd-prompts": "local",
+    "oss-skills": "plugin-backed-copilot-format",
+    "oss-prompts": "local",
+    "oss-hooks": "local",
+    "docs-skills": "plugin-backed-copilot-format",
+    "docs-prompts": "local",
+    "docs-hooks": "local",
+    "devops-skills": "plugin-backed-copilot-format",
+    "devops-prompts": "local",
+    "devops-hooks": "local",
+    "mlops-skills": "plugin-backed-copilot-format",
+    "mlops-prompts": "local",
+    "mlops-hooks": "local",
+    "shapeup-skills": "plugin-backed-copilot-format",
+    "shapeup-prompts": "local",
+    "shapeup-hooks": "local",
     "hook-scripts": "local",
     "mcp-config": "local"
   },
@@ -147,6 +394,26 @@
     "lean-skills": "replace-verbatim",
     "lean-prompts": "token-replace",
     "lean-hooks": "replace-verbatim",
+    "secure-skills": "replace-verbatim",
+    "secure-prompts": "replace-verbatim",
+    "secure-hooks": "replace-verbatim",
+    "tdd-skills": "replace-verbatim",
+    "tdd-prompts": "replace-verbatim",
+    "oss-skills": "replace-verbatim",
+    "oss-prompts": "replace-verbatim",
+    "oss-hooks": "replace-verbatim",
+    "docs-skills": "replace-verbatim",
+    "docs-prompts": "replace-verbatim",
+    "docs-hooks": "replace-verbatim",
+    "devops-skills": "replace-verbatim",
+    "devops-prompts": "replace-verbatim",
+    "devops-hooks": "replace-verbatim",
+    "mlops-skills": "replace-verbatim",
+    "mlops-prompts": "replace-verbatim",
+    "mlops-hooks": "replace-verbatim",
+    "shapeup-skills": "replace-verbatim",
+    "shapeup-prompts": "replace-verbatim",
+    "shapeup-hooks": "replace-verbatim",
     "hook-scripts": "replace-verbatim",
     "mcp-config": "merge-json-object"
   },
@@ -159,6 +426,72 @@
     ],
     "lean-hooks": [
       "packs.selected=lean",
+      "hooks.enabled"
+    ],
+    "secure-skills": [
+      "packs.selected=secure"
+    ],
+    "secure-prompts": [
+      "packs.selected=secure"
+    ],
+    "secure-hooks": [
+      "packs.selected=secure",
+      "hooks.enabled"
+    ],
+    "tdd-skills": [
+      "packs.selected=tdd"
+    ],
+    "tdd-prompts": [
+      "packs.selected=tdd"
+    ],
+    "oss-skills": [
+      "packs.selected=oss"
+    ],
+    "oss-prompts": [
+      "packs.selected=oss"
+    ],
+    "oss-hooks": [
+      "packs.selected=oss",
+      "hooks.enabled"
+    ],
+    "docs-skills": [
+      "packs.selected=docs"
+    ],
+    "docs-prompts": [
+      "packs.selected=docs"
+    ],
+    "docs-hooks": [
+      "packs.selected=docs",
+      "hooks.enabled"
+    ],
+    "devops-skills": [
+      "packs.selected=devops"
+    ],
+    "devops-prompts": [
+      "packs.selected=devops"
+    ],
+    "devops-hooks": [
+      "packs.selected=devops",
+      "hooks.enabled"
+    ],
+    "mlops-skills": [
+      "packs.selected=mlops"
+    ],
+    "mlops-prompts": [
+      "packs.selected=mlops"
+    ],
+    "mlops-hooks": [
+      "packs.selected=mlops",
+      "hooks.enabled"
+    ],
+    "shapeup-skills": [
+      "packs.selected=shapeup"
+    ],
+    "shapeup-prompts": [
+      "packs.selected=shapeup"
+    ],
+    "shapeup-hooks": [
+      "packs.selected=shapeup",
       "hooks.enabled"
     ],
     "hook-scripts": [
@@ -258,11 +591,22 @@
       "token": "{{pack:context-hygiene}}",
       "description": "Context window management. Resolved from selected pack; defaults to thorough context retention.",
       "required": false
+    },
+    {
+      "token": "{{pack:secret-guard}}",
+      "description": "Pre-commit secret scanning discipline. Resolved from selected pack; defaults to surfacing probable secrets before staging.",
+      "required": false
     }
   ],
   "chmodRules": {
     "hook-scripts": "executable",
-    "lean-hooks": "executable"
+    "lean-hooks": "executable",
+    "secure-hooks": "executable",
+    "oss-hooks": "executable",
+    "docs-hooks": "executable",
+    "devops-hooks": "executable",
+    "mlops-hooks": "executable",
+    "shapeup-hooks": "executable"
   },
   "retiredFilePolicy": {
     "defaultAction": "report-retired",
@@ -385,6 +729,62 @@
         "plugin-backed-copilot-format"
       ],
       "notes": "Lean pack skills follow the same ownership model as core skills."
+    },
+    "secure-skills": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "Secure pack skills follow the same ownership model as core skills."
+    },
+    "tdd-skills": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "TDD pack skills follow the same ownership model as core skills."
+    },
+    "oss-skills": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "OSS pack skills follow the same ownership model as core skills."
+    },
+    "docs-skills": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "Docs pack skills follow the same ownership model as core skills."
+    },
+    "devops-skills": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "DevOps pack skills follow the same ownership model as core skills."
+    },
+    "mlops-skills": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "MLOps pack skills follow the same ownership model as core skills."
+    },
+    "shapeup-skills": {
+      "defaultOwnership": "plugin-backed-copilot-format",
+      "supportedOwnership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "notes": "Shape Up pack skills follow the same ownership model as core skills."
     }
   },
   "generationSettings": {

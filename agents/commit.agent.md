@@ -36,6 +36,10 @@ Your role: manage the full git lifecycle — staging, committing, pushing, pulli
 
 {{pack:commit-style}}
 
+## Secret guard
+
+{{pack:secret-guard}}
+
 ## Commit workflow
 
 1. Run `git status` and `git diff --cached --stat`.

@@ -35,7 +35,105 @@
         "brevity",
         "output"
       ],
-      "surfaces": ["lean-skills"]
+      "surfaces": ["lean-skills", "lean-prompts", "lean-hooks"]
+    },
+    {
+      "id": "secure",
+      "name": "Secure",
+      "summary": "Optional security-first coding defaults with OWASP Top 10:2025 review and dependency vulnerability scanning.",
+      "status": "active",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "security",
+        "owasp",
+        "vulnerabilities"
+      ],
+      "surfaces": ["secure-skills", "secure-prompts", "secure-hooks"]
+    },
+    {
+      "id": "tdd",
+      "name": "TDD",
+      "summary": "Optional test-driven development defaults — Red-Green-Refactor discipline, test double guidance, and coverage analysis.",
+      "status": "active",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "testing",
+        "tdd",
+        "coverage"
+      ],
+      "surfaces": ["tdd-skills", "tdd-prompts"]
+    },
+    {
+      "id": "oss",
+      "name": "OSS",
+      "summary": "Optional open-source contribution defaults — license compliance, changelog discipline, DCO/semver guidance, and structured git history for release notes.",
+      "status": "active",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "open-source",
+        "license",
+        "changelog"
+      ],
+      "surfaces": ["oss-skills", "oss-prompts", "oss-hooks"]
+    },
+    {
+      "id": "docs",
+      "name": "Docs",
+      "summary": "Optional documentation defaults — Diátaxis-structured drafting, API doc conventions, prose style guidance, and Markdown link validation.",
+      "status": "active",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "documentation",
+        "writing",
+        "readme"
+      ],
+      "surfaces": ["docs-skills", "docs-prompts", "docs-hooks"]
+    },
+    {
+      "id": "devops",
+      "name": "DevOps",
+      "summary": "Optional DevOps defaults — CI/CD pipeline design, container discipline, IaC conventions, deployment safety review, and secret-hygiene scanning.",
+      "status": "active",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "devops",
+        "cicd",
+        "infrastructure"
+      ],
+      "surfaces": ["devops-skills", "devops-prompts", "devops-hooks"]
+    },
+    {
+      "id": "mlops",
+      "name": "MLOps",
+      "summary": "Optional MLOps defaults — experiment tracking, data pipeline discipline, model serving conventions, drift investigation, and ML-specific code review.",
+      "status": "active",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "machine-learning",
+        "mlops",
+        "model-serving"
+      ],
+      "surfaces": ["mlops-skills", "mlops-prompts", "mlops-hooks"]
+    },
+    {
+      "id": "shapeup",
+      "name": "Shape Up",
+      "summary": "Optional Shape Up defaults — pitch writing, cycle execution, betting table process, and scope discipline.",
+      "status": "active",
+      "optional": true,
+      "dependencies": [],
+      "discoveryTags": [
+        "shapeup",
+        "product",
+        "planning"
+      ],
+      "surfaces": ["shapeup-skills", "shapeup-prompts", "shapeup-hooks"]
     },
     {
       "id": "review",

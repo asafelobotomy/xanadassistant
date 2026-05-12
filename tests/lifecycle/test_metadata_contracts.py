@@ -39,7 +39,7 @@ class MetadataContractTests(unittest.TestCase):
 
         self.assertEqual(["core-instructions", "prompts"], pack_registry["coreSurfaces"])
         self.assertEqual(
-            ["memory", "lean", "review", "research", "workspace-ops"],
+            ["memory", "lean", "secure", "tdd", "oss", "docs", "devops", "mlops", "shapeup", "review", "research", "workspace-ops"],
             [pack["id"] for pack in pack_registry["packs"]],
         )
         self.assertEqual(

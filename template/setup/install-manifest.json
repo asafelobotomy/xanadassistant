@@ -7,6 +7,13 @@
     "agents": "agents",
     "skills": "skills",
     "lean-pack": "packs/lean",
+    "secure-pack": "packs/secure",
+    "tdd-pack": "packs/tdd",
+    "oss-pack": "packs/oss",
+    "docs-pack": "packs/docs",
+    "devops-pack": "packs/devops",
+    "mlops-pack": "packs/mlops",
+    "shapeup-pack": "packs/shapeup",
     "hooks": "hooks"
   },
   "generationSettings": {
@@ -37,10 +44,11 @@
       "strategy": "token-replace",
       "requiredWhen": [],
       "tokens": [
-        "{{pack:commit-style}}"
+        "{{pack:commit-style}}",
+        "{{pack:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:d950ee21fd3164e70871fd1da56e49fa985fa6360e3a8ebf7997d4a5e7a3c7f1"
+      "hash": "sha256:1070b80795a19b171d436f17d6bc011ba14edd7320216227721b3f4e2b469e86"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -230,6 +238,42 @@
       "hash": "sha256:15a29220113857c93e3f54dbd12e4bf02ed39c644bcd3f15a6e0b4ce5074b879"
     },
     {
+      "id": "devops-hooks.devopsEnvCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/devops/hooks/devopsEnvCheck.py",
+      "target": ".github/hooks/scripts/devopsEnvCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=devops",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:a9dd5a1589ea7974c1acb94cb24c7cadd92f88085dd0c5c3e32e0a3cb54592aa"
+    },
+    {
+      "id": "docs-hooks.docsLinkCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/docs/hooks/docsLinkCheck.py",
+      "target": ".github/hooks/scripts/docsLinkCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=docs",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:01ca7dda9a2149d7bdd08382960c06e30b5638c38975e38b84f1bffbac557039"
+    },
+    {
       "id": "hook-scripts.gitMcp.py",
       "surface": "hooks",
       "layer": "core",
@@ -317,6 +361,60 @@
       "hash": "sha256:c86580e46c4d0a2867c5870f8e67bac978949bb388a30107c3e5a9ad9f883748"
     },
     {
+      "id": "mlops-hooks.mlopsModelCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/mlops/hooks/mlopsModelCheck.py",
+      "target": ".github/hooks/scripts/mlopsModelCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=mlops",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:b657a2082301f9de2f862bfee6dfad32d759713ea0d4882f4ad5f24c712e9ab0"
+    },
+    {
+      "id": "oss-hooks.ossGitLog.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/oss/hooks/ossGitLog.py",
+      "target": ".github/hooks/scripts/ossGitLog.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:f5a44c1cc256182a238953f405d4db2005e70a9b12ebf2f5f0c048f64e90b120"
+    },
+    {
+      "id": "secure-hooks.secureOsv.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/secure/hooks/secureOsv.py",
+      "target": ".github/hooks/scripts/secureOsv.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=secure",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:4486a214a1ed34ff222da07845b3dda8b7ec7d6e77b7c52a32f121c021e4c383"
+    },
+    {
       "id": "hook-scripts.securityMcp.py",
       "surface": "hooks",
       "layer": "core",
@@ -332,6 +430,24 @@
       "tokens": [],
       "chmod": "executable",
       "hash": "sha256:d316042e23eb4ac028bc06141e1799915eae7bacc97970c7421d1183914f5eb3"
+    },
+    {
+      "id": "shapeup-hooks.shapeupScopeCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/shapeup/hooks/shapeupScopeCheck.py",
+      "target": ".github/hooks/scripts/shapeupScopeCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=shapeup",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:e1f7cccc6f32cd22aa478203f0a0e46a3308eb37ab9982ee0d93c323dc9a4de8"
     },
     {
       "id": "hook-scripts.sqliteMcp.py",
@@ -439,6 +555,74 @@
       "hash": "sha256:99c1cda791d7774a900b386b9cc9d34f95fc8f702f291332bb58e87995f1df36"
     },
     {
+      "id": "devops-prompts.devops-incident.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/devops/prompts/devops-incident.prompt.md",
+      "target": ".github/prompts/devops-incident.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=devops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:1e9ae9f2a025bdf88c1ebe92d9106f0d06aefc837f171d29543894b28731b52a"
+    },
+    {
+      "id": "devops-prompts.devops-pipeline.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/devops/prompts/devops-pipeline.prompt.md",
+      "target": ".github/prompts/devops-pipeline.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=devops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:7d873b52bb062a6db86586f29a56140e23e8813e3594a726f124945e2a0e90f5"
+    },
+    {
+      "id": "docs-prompts.docs-draft.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/docs/prompts/docs-draft.prompt.md",
+      "target": ".github/prompts/docs-draft.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=docs"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:a40ab3857990036c99cca8f10509233b443aa84f7d8799c9f391c2906a4e5d26"
+    },
+    {
+      "id": "docs-prompts.docs-review.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/docs/prompts/docs-review.prompt.md",
+      "target": ".github/prompts/docs-review.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=docs"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:7f162171626078088162272c53f4dad36723bbaf221b0277345b366a8d1eb6fe"
+    },
+    {
       "id": "lean-prompts.lean-plan.prompt.md",
       "surface": "prompts",
       "layer": "pack",
@@ -490,6 +674,91 @@
       "hash": "sha256:f54f8fcdd5bad36e3fb4157bbe8a56c0cf80bb28e2d632419c428fcf8abf8bfe"
     },
     {
+      "id": "mlops-prompts.mlops-drift.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/mlops/prompts/mlops-drift.prompt.md",
+      "target": ".github/prompts/mlops-drift.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=mlops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:8ca6b9457943244bf9fd6b34d3417811b3772bee9ad49610c12c51d00bd3057d"
+    },
+    {
+      "id": "mlops-prompts.mlops-experiment.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/mlops/prompts/mlops-experiment.prompt.md",
+      "target": ".github/prompts/mlops-experiment.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=mlops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:42151cd536ce07224ba6a98f10d9486107b64285b40117d3576e7058d7dab98a"
+    },
+    {
+      "id": "oss-prompts.oss-changelog.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/oss/prompts/oss-changelog.prompt.md",
+      "target": ".github/prompts/oss-changelog.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:4c612da3c1b89077dd9bea1678adefecf5da5a9c975f93f5a8227830c6dfe370"
+    },
+    {
+      "id": "oss-prompts.oss-pr.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/oss/prompts/oss-pr.prompt.md",
+      "target": ".github/prompts/oss-pr.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:88ef08cd3770142b22d5923814949eda5702f9d520d6af80e5b6f1fffa3fa2dd"
+    },
+    {
+      "id": "secure-prompts.security-review.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/secure/prompts/security-review.prompt.md",
+      "target": ".github/prompts/security-review.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=secure"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:dba9395c12e5770b8b14cf71d769c18777b2937430d66c6bcb6b64d5994487ee"
+    },
+    {
       "id": "prompts.setup.md",
       "surface": "prompts",
       "layer": "core",
@@ -506,6 +775,253 @@
       ],
       "chmod": "none",
       "hash": "sha256:27a28399e813eb03aa35d7f8fae28edd43c869a79854b0e986038de18def6907"
+    },
+    {
+      "id": "shapeup-prompts.shapeup-kickoff.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/shapeup/prompts/shapeup-kickoff.prompt.md",
+      "target": ".github/prompts/shapeup-kickoff.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=shapeup"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:e2478c403203bb5ad0c214f2a4430c33ec69fc52c1f8f9dede46224832fe930e"
+    },
+    {
+      "id": "shapeup-prompts.shapeup-pitch.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/shapeup/prompts/shapeup-pitch.prompt.md",
+      "target": ".github/prompts/shapeup-pitch.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=shapeup"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:f2363b6e290f113085a05e08c4c1aa0b4e4162e7030ea4e3cafa826c20f120ac"
+    },
+    {
+      "id": "tdd-prompts.tdd-review.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/tdd/prompts/tdd-review.prompt.md",
+      "target": ".github/prompts/tdd-review.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=tdd"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:4926898801adde5ddc558da447a0ed692c3639971341e339270c23845ebcbf4d"
+    },
+    {
+      "id": "tdd-prompts.tdd-session.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/tdd/prompts/tdd-session.prompt.md",
+      "target": ".github/prompts/tdd-session.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=tdd"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:7247e80de455758be65faa356527455a6e38da5e855cad6b4e2e08ad1151cf2c"
+    },
+    {
+      "id": "secure-prompts.threat-model.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/secure/prompts/threat-model.prompt.md",
+      "target": ".github/prompts/threat-model.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=secure"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:0cd2e72a720f5feb3d90c9bf97333538e17f0d375af40b5a4f32cdbdf329b6c8"
+    },
+    {
+      "id": "secure-skills.dependencyAudit.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/secure/skills/dependencyAudit/SKILL.md",
+      "target": ".github/skills/dependencyAudit/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=secure"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:e0ea1f69e02bca4f8c8c0d3ef5845cca018b3842585c51e9b639cb6542fc5a5a"
+    },
+    {
+      "id": "devops-skills.devopsCiCd.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/devops/skills/devopsCiCd/SKILL.md",
+      "target": ".github/skills/devopsCiCd/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=devops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:096ad48ff5da3aa47fa005fbd727889f6b3c335693aa7dcd026e614773319758"
+    },
+    {
+      "id": "devops-skills.devopsContainers.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/devops/skills/devopsContainers/SKILL.md",
+      "target": ".github/skills/devopsContainers/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=devops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:7286ec3932808d2495ecb3f7f94cfa3a3ee32c6aa4d671505e79119842871445"
+    },
+    {
+      "id": "devops-skills.devopsInfraAsCode.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/devops/skills/devopsInfraAsCode/SKILL.md",
+      "target": ".github/skills/devopsInfraAsCode/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=devops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:e11f610c313e81184dbf18bc851b51856cfa0c0c75dba17b92711001c97d386d"
+    },
+    {
+      "id": "devops-skills.devopsReview.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/devops/skills/devopsReview/SKILL.md",
+      "target": ".github/skills/devopsReview/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=devops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:9c55cdd6f13e746d4c36a831efcb33930e0c0e4268cf04ebbc4034053c272aa8"
+    },
+    {
+      "id": "docs-skills.docsApi.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/docs/skills/docsApi/SKILL.md",
+      "target": ".github/skills/docsApi/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=docs"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:55f006d3b0ea8d8783ba880c62e904d02f1600da4a577a326cba225335fc1e5a"
+    },
+    {
+      "id": "docs-skills.docsReview.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/docs/skills/docsReview/SKILL.md",
+      "target": ".github/skills/docsReview/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=docs"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:7f9337068bdf577528f3066872c815fe7e5f11f8b8d812071f7497410a34b52b"
+    },
+    {
+      "id": "docs-skills.docsStructure.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/docs/skills/docsStructure/SKILL.md",
+      "target": ".github/skills/docsStructure/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=docs"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:5e0781decd6a98802cd85ff574c6d9e88d6582d0a08536ab5641d4dce16d0c34"
+    },
+    {
+      "id": "docs-skills.docsStyle.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/docs/skills/docsStyle/SKILL.md",
+      "target": ".github/skills/docsStyle/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=docs"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:b34d74353ee80417206007bb084d6d68afb6b1b5aca0aa6861a3980b6e37011b"
     },
     {
       "id": "lean-skills.leanAndon.SKILL.md",
@@ -594,6 +1110,348 @@
       "tokens": [],
       "chmod": "none",
       "hash": "sha256:9f3bb8b8751845b86dae879b938a8e3d89c18e3e76152638e4d1d68460bf0c24"
+    },
+    {
+      "id": "mlops-skills.mlopsDataPipelines.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/mlops/skills/mlopsDataPipelines/SKILL.md",
+      "target": ".github/skills/mlopsDataPipelines/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=mlops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:4b64f71428b57b3168303c3416df2c401b6667a6f742d17f7aa3068794bff52e"
+    },
+    {
+      "id": "mlops-skills.mlopsExperiments.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/mlops/skills/mlopsExperiments/SKILL.md",
+      "target": ".github/skills/mlopsExperiments/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=mlops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:df443a45c48d3a2740d162396ea503e9359f2fc2a0ae52f3454e585af90b52c7"
+    },
+    {
+      "id": "mlops-skills.mlopsModelServing.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/mlops/skills/mlopsModelServing/SKILL.md",
+      "target": ".github/skills/mlopsModelServing/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=mlops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:582a89414163ca456e8f81104ed2c72379e97325816752b1151ebb61d454e160"
+    },
+    {
+      "id": "mlops-skills.mlopsReview.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/mlops/skills/mlopsReview/SKILL.md",
+      "target": ".github/skills/mlopsReview/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=mlops"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:29f87e81ecb485563efe46a3936f46036f25abeb9a65f59543427136d0b32d4b"
+    },
+    {
+      "id": "oss-skills.ossChangelog.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/oss/skills/ossChangelog/SKILL.md",
+      "target": ".github/skills/ossChangelog/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:ec908e2b30d722dc704f607fc9121a47dc941f0383636999c438342ea872a9ce"
+    },
+    {
+      "id": "oss-skills.ossCodeReview.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/oss/skills/ossCodeReview/SKILL.md",
+      "target": ".github/skills/ossCodeReview/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:9e97622e217c3c3fb12daa9054430346094c5535d755685c62def769af725c0d"
+    },
+    {
+      "id": "oss-skills.ossContributing.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/oss/skills/ossContributing/SKILL.md",
+      "target": ".github/skills/ossContributing/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:327abcbbda03017b07d5faee7ffa4627ea1d889cc3b3e57b70aeb19ffb042b3e"
+    },
+    {
+      "id": "oss-skills.ossLicensing.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/oss/skills/ossLicensing/SKILL.md",
+      "target": ".github/skills/ossLicensing/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:c6b56086b9f0186e64096b0c302bb2cc0d59271e25389f0d0b728695ef41c267"
+    },
+    {
+      "id": "secure-skills.secretScanning.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/secure/skills/secretScanning/SKILL.md",
+      "target": ".github/skills/secretScanning/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=secure"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:8698797a3005a0a602d77aaf46d5f331cb74422c5660c43eb1871360982f03a5"
+    },
+    {
+      "id": "secure-skills.secureReview.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/secure/skills/secureReview/SKILL.md",
+      "target": ".github/skills/secureReview/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=secure"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:5412a50a4c695e48a05770060b57c87fd729c50d34255e94783bba79963df0cc"
+    },
+    {
+      "id": "shapeup-skills.shapeupBetting.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/shapeup/skills/shapeupBetting/SKILL.md",
+      "target": ".github/skills/shapeupBetting/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=shapeup"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:a3312747e882c24b6c8996fd33b9f8e96b4887e98d5dbc19e00e3bd51113b507"
+    },
+    {
+      "id": "shapeup-skills.shapeupCycleWork.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/shapeup/skills/shapeupCycleWork/SKILL.md",
+      "target": ".github/skills/shapeupCycleWork/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=shapeup"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:a58205aaf7843db4b0a7085d365fee782b1f77b688b14cd764854f8d4cea8937"
+    },
+    {
+      "id": "shapeup-skills.shapeupPitching.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/shapeup/skills/shapeupPitching/SKILL.md",
+      "target": ".github/skills/shapeupPitching/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=shapeup"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:74d610b09e7e9ea21ec08b24d660a0c9fec34ae37af853ed4aac9d315ec2cb03"
+    },
+    {
+      "id": "shapeup-skills.shapeupReview.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/shapeup/skills/shapeupReview/SKILL.md",
+      "target": ".github/skills/shapeupReview/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=shapeup"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:352dcf7dd1b3345c85b615c16822ad77e6d03a994c45d8d22ee2c05dedceffb3"
+    },
+    {
+      "id": "tdd-skills.tddCycle.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/tdd/skills/tddCycle/SKILL.md",
+      "target": ".github/skills/tddCycle/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=tdd"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:31d1554c6f04ec6683f4a624a62b646ee1d5eb3831406f0f34cc849f6b7529b8"
+    },
+    {
+      "id": "tdd-skills.testArchitecture.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/tdd/skills/testArchitecture/SKILL.md",
+      "target": ".github/skills/testArchitecture/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=tdd"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:c6a20dab55b0af8f18b44e60bd420a3620b14e46c5509bdb34a11d7c4feb4ac6"
+    },
+    {
+      "id": "tdd-skills.testCoverage.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/tdd/skills/testCoverage/SKILL.md",
+      "target": ".github/skills/testCoverage/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=tdd"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:8e8c3d6117847d7ba698b899fd7871ad99a2d6b7745a7481882fe79ceb96bd62"
+    },
+    {
+      "id": "tdd-skills.testDoubles.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/tdd/skills/testDoubles/SKILL.md",
+      "target": ".github/skills/testDoubles/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=tdd"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:544599c0926482d7601af985cfd5910c8d8b7212c9ef9db075a267dce41d7307"
+    },
+    {
+      "id": "secure-skills.threatModel.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/secure/skills/threatModel/SKILL.md",
+      "target": ".github/skills/threatModel/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=secure"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:84a00417900d31f7ad12d34508c88938111ca5c8437e9c5514696b2c7f5e4ef3"
     },
     {
       "id": "mcp-config.mcp.json",
