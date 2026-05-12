@@ -12,6 +12,7 @@ This produces:
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -30,7 +31,14 @@ from scripts.lifecycle.generate_manifest import (
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[1]
     policy_path = repo_root / "template/setup/install-policy.json"
-    policy = load_json(policy_path)
+    try:
+        policy = load_json(policy_path)
+    except FileNotFoundError:
+        print(f"ERROR: Policy file not found: {policy_path}", file=sys.stderr)
+        return 1
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"ERROR: Cannot load policy at {policy_path}: {exc}", file=sys.stderr)
+        return 1
 
     manifest = generate_manifest(repo_root, policy)
     manifest_path = repo_root / policy.get("generationSettings", {}).get(

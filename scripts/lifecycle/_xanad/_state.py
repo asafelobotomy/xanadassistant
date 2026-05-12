@@ -6,10 +6,14 @@ import subprocess
 from pathlib import Path
 
 from scripts.lifecycle._xanad._loader import load_json, load_optional_json
+from scripts.lifecycle._xanad._migration import (
+    CURRENT_PACKAGE_NAME,
+    PREDECESSOR_PACKAGE_NAMES,
+    _lockfile_needs_migration,
+    migrate_lockfile_shape,
+)
 
 
-CURRENT_PACKAGE_NAME = "xanadAssistant"
-PREDECESSOR_PACKAGE_NAMES = frozenset({"copilot-instructions-template"})
 _LOCKFILE_FILENAME = "xanadAssistant-lock.json"
 _LEGACY_LOCKFILE_FILENAME = "xanad-assistant-lock.json"
 
@@ -22,7 +26,6 @@ def _resolve_lockfile_path(workspace: Path) -> Path:
         if legacy_path.exists():
             return legacy_path
     return new_path
-_LOCKFILE_REQUIRED_FIELDS = frozenset({"schemaVersion", "package", "manifest", "timestamps", "selectedPacks", "files"})
 
 
 def detect_git_state(workspace: Path) -> dict:
@@ -85,26 +88,6 @@ def parse_legacy_version_file(workspace: Path) -> dict:
     return {"present": True, "malformed": True, "path": str(legacy_path), "data": None}
 
 
-def _lockfile_needs_migration(data: dict) -> bool:
-    """Return True when a valid-JSON lockfile is missing required 0.1.0 schema fields."""
-    if not isinstance(data, dict):
-        return False
-    missing = _LOCKFILE_REQUIRED_FIELDS - data.keys()
-    if missing:
-        return True
-    manifest_block = data.get("manifest")
-    if not isinstance(manifest_block, dict):
-        return True
-    if "schemaVersion" not in manifest_block or "hash" not in manifest_block:
-        return True
-    package_block = data.get("package")
-    if not isinstance(package_block, dict) or "name" not in package_block:
-        return True
-    if package_block.get("name") != CURRENT_PACKAGE_NAME:
-        return True
-    return False
-
-
 def get_lockfile_package_name(lockfile_state: dict) -> str | None:
     data = lockfile_state.get("data")
     if not isinstance(data, dict):
@@ -123,40 +106,6 @@ def get_predecessor_package_name(lockfile_state: dict) -> str | None:
     if package_name in PREDECESSOR_PACKAGE_NAMES:
         return package_name
     return None
-
-
-def migrate_lockfile_shape(data: dict) -> dict:
-    """Return a copy of *data* with missing required fields filled with safe defaults."""
-    migrated = dict(data)
-    migrated.setdefault("schemaVersion", "0.1.0")
-    existing_package_name = None
-    if isinstance(migrated.get("package"), dict):
-        existing_package_name = migrated.get("package", {}).get("name")
-    if not isinstance(migrated.get("package"), dict) or migrated.get("package", {}).get("name") != CURRENT_PACKAGE_NAME:
-        migrated["package"] = {"name": CURRENT_PACKAGE_NAME}
-    manifest_block = migrated.get("manifest")
-    if not isinstance(manifest_block, dict):
-        migrated["manifest"] = {"schemaVersion": "0.1.0", "hash": "sha256:unknown"}
-    else:
-        manifest_block = dict(manifest_block)
-        manifest_block.setdefault("schemaVersion", "0.1.0")
-        manifest_block.setdefault("hash", "sha256:unknown")
-        migrated["manifest"] = manifest_block
-    if not isinstance(migrated.get("timestamps"), dict):
-        migrated["timestamps"] = {
-            "appliedAt": "1970-01-01T00:00:00Z",
-            "updatedAt": "1970-01-01T00:00:00Z",
-        }
-    if not isinstance(migrated.get("selectedPacks"), list):
-        migrated["selectedPacks"] = []
-    if not isinstance(migrated.get("files"), list):
-        migrated["files"] = []
-    migrated.setdefault("unknownValues", {})
-    if isinstance(existing_package_name, str) and existing_package_name != CURRENT_PACKAGE_NAME:
-        migrated["unknownValues"].setdefault("migratedFromPackageName", existing_package_name)
-    migrated.setdefault("skippedManagedFiles", [])
-    migrated.setdefault("resolvedTokenConflicts", {})
-    return migrated
 
 
 def parse_lockfile_state(workspace: Path) -> dict:

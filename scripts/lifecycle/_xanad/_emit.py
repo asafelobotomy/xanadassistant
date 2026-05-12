@@ -35,11 +35,11 @@ def emit_json_lines(payload: dict) -> None:
     elif command == "interview":
         events = [{"type": "phase", "command": command, "sequence": 1, "phase": "Interview"}]
         for question in payload["result"]["questions"]:
-            event = {"type": "question", "command": command, "sequence": 0}
+            event = {"type": "question", "command": command, "sequence": -1}  # renumbered below
             event.update(question)
             events.append(event)
         events.append({
-            "type": "receipt", "command": command, "sequence": 0, "status": payload["status"],
+            "type": "receipt", "command": command, "sequence": -1, "status": payload["status"],
         })
     elif command == "plan":
         events = [
@@ -52,11 +52,11 @@ def emit_json_lines(payload: dict) -> None:
             },
         ]
         for question in payload["result"]["questions"]:
-            event = {"type": "question", "command": command, "sequence": 0}
+            event = {"type": "question", "command": command, "sequence": -1}  # renumbered below
             event.update(question)
             events.append(event)
         events.extend([
-            {"type": "phase", "command": command, "sequence": 0, "phase": "Plan"},
+            {"type": "phase", "command": command, "sequence": -1, "phase": "Plan"},  # renumbered below
             {
                 "type": "plan-summary", "command": command, "sequence": 0,
                 "mode": payload["mode"],
@@ -69,7 +69,7 @@ def emit_json_lines(payload: dict) -> None:
                 "questionsResolved": payload["result"]["questionsResolved"],
                 "conflictDetails": payload["result"].get("conflictDetails", []),
             },
-            {"type": "receipt", "command": command, "sequence": 0, "status": payload["status"]},
+            {"type": "receipt", "command": command, "sequence": -1, "status": payload["status"]},  # renumbered below
         ])
     elif command in {"apply", "update", "repair", "factory-restore"}:
         events = [
@@ -97,11 +97,12 @@ def emit_json_lines(payload: dict) -> None:
 
     for warning in payload.get("warnings", []):
         events.insert(2, {
-            "type": "warning", "command": payload["command"], "sequence": 99,
+            "type": "warning", "command": payload["command"], "sequence": -1,  # renumbered below
             "code": warning["code"], "message": warning["message"],
             "details": warning.get("details", {}),
         })
 
+    # Renumber all events sequentially; -1 sentinels above are replaced here.
     for index, event in enumerate(events, start=1):
         event["sequence"] = index
         sys.stdout.write(json.dumps(event) + "\n")

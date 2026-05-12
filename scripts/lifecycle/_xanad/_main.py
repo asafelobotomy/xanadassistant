@@ -74,7 +74,19 @@ def main(argv: list[str] | None = None) -> int:
 
     log_file_path = getattr(args, "log_file", None)
     if log_file_path:
-        _State.log_file = Path(log_file_path).open("w", encoding="utf-8")
+        try:
+            _State.log_file = Path(log_file_path).open("w", encoding="utf-8")
+        except OSError as exc:
+            payload, exit_code = build_error_payload(
+                getattr(args, "command", "unknown"),
+                Path(getattr(args, "workspace", ".")),
+                Path("."),
+                "contract_input_failure",
+                f"Cannot open log file: {exc}",
+                4,
+            )
+            emit_payload(payload, getattr(args, "ui", "quiet"), False)
+            return exit_code
 
     try:
         return _run_lifecycle(args)
@@ -122,17 +134,42 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
         return exit_code
 
     if args.command == "inspect":
-        payload = build_inspect_result(workspace, package_root)
+        try:
+            payload = build_inspect_result(workspace, package_root)
+        except LifecycleCommandError as error:
+            payload, exit_code = build_error_payload(
+                "inspect", workspace, package_root,
+                error.code, error.message, error.exit_code, details=error.details,
+            )
+            emit_payload(payload, args.ui, use_json_lines)
+            return exit_code
         emit_payload(payload, args.ui, use_json_lines)
         return 0
 
     if args.command == "check":
-        payload = build_check_result(workspace, package_root)
+        try:
+            payload = build_check_result(workspace, package_root)
+        except LifecycleCommandError as error:
+            payload, exit_code = build_error_payload(
+                "check", workspace, package_root,
+                error.code, error.message, error.exit_code, details=error.details,
+            )
+            emit_payload(payload, args.ui, use_json_lines)
+            return exit_code
         emit_payload(payload, args.ui, use_json_lines)
         return 0 if payload["status"] == "clean" else 7
 
     if args.command == "interview":
-        payload = build_interview_result(workspace, package_root, args.mode)
+        try:
+            payload = build_interview_result(workspace, package_root, args.mode)
+        except LifecycleCommandError as error:
+            payload, exit_code = build_error_payload(
+                "interview", workspace, package_root,
+                error.code, error.message, error.exit_code,
+                mode=args.mode, details=error.details,
+            )
+            emit_payload(payload, args.ui, use_json_lines)
+            return exit_code
         emit_payload(payload, args.ui, use_json_lines)
         return 0
 
@@ -148,7 +185,7 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
             return exit_code
         _attach_output_path(args.plan_out, payload, "planOut")
         emit_payload(payload, args.ui, use_json_lines)
-        return 0 if not payload["errors"] else 1
+        return 0 if not payload["errors"] else 4
 
     if args.command == "apply":
         return _run_execution_command(args, workspace, package_root, use_json_lines, "apply", "setup")

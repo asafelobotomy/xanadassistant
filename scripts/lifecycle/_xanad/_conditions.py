@@ -46,6 +46,8 @@ def parse_condition_literal(value: str) -> object:
 def condition_matches(condition: str, resolved_answers: dict) -> bool:
     if "=" in condition:
         condition_id, expected_value = condition.split("=", 1)
+        condition_id = condition_id.strip()
+        expected_value = expected_value.strip()
         actual = resolved_answers.get(condition_id)
         parsed = parse_condition_literal(expected_value)
         if isinstance(actual, list):

@@ -52,6 +52,8 @@
     "skills": "pack",
     "hook-scripts": "core",
     "lean-skills": "pack",
+    "lean-prompts": "pack",
+    "lean-hooks": "pack",
     "mcp-config": "core"
   },
   "packs": [

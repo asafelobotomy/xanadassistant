@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.lifecycle._xanad._inspect import (
+from scripts.lifecycle._xanad._inspect import collect_context
+from scripts.lifecycle._xanad._inspect_helpers import (
     classify_manifest_entries,
-    collect_context,
     collect_unmanaged_files,
 )
 from scripts.lifecycle._xanad._source import build_source_summary

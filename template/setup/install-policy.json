@@ -8,6 +8,8 @@
     "agents",
     "skills",
     "lean-skills",
+    "lean-prompts",
+    "lean-hooks",
     "hook-scripts",
     "mcp-config"
   ],
@@ -61,6 +63,18 @@
       "kind": "directory",
       "layer": "pack"
     },
+    "lean-prompts": {
+      "sourceRoot": "lean-pack",
+      "path": "prompts",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "lean-hooks": {
+      "sourceRoot": "lean-pack",
+      "path": "hooks",
+      "kind": "directory",
+      "layer": "pack"
+    },
     "mcp-config": {
       "sourceRoot": "template",
       "path": "vscode/mcp.json",
@@ -94,6 +108,14 @@
       "targetRoot": ".github/skills",
       "surface": "skills"
     },
+    "lean-prompts": {
+      "targetRoot": ".github/prompts",
+      "surface": "prompts"
+    },
+    "lean-hooks": {
+      "targetRoot": ".github/hooks/scripts",
+      "surface": "hooks"
+    },
     "hook-scripts": {
       "targetRoot": ".github/hooks/scripts",
       "surface": "hooks"
@@ -111,6 +133,8 @@
     "agents": "plugin-backed-copilot-format",
     "skills": "plugin-backed-copilot-format",
     "lean-skills": "plugin-backed-copilot-format",
+    "lean-prompts": "local",
+    "lean-hooks": "local",
     "hook-scripts": "local",
     "mcp-config": "local"
   },
@@ -121,12 +145,21 @@
     "agents": "token-replace",
     "skills": "replace-verbatim",
     "lean-skills": "replace-verbatim",
+    "lean-prompts": "token-replace",
+    "lean-hooks": "replace-verbatim",
     "hook-scripts": "replace-verbatim",
     "mcp-config": "merge-json-object"
   },
   "requiredConditions": {
     "lean-skills": [
       "packs.selected=lean"
+    ],
+    "lean-prompts": [
+      "packs.selected=lean"
+    ],
+    "lean-hooks": [
+      "packs.selected=lean",
+      "hooks.enabled"
     ],
     "hook-scripts": [
       "hooks.enabled"
@@ -200,10 +233,36 @@
       "token": "{{pack:review-depth}}",
       "description": "Review severity reporting threshold. Resolved from selected pack; defaults to all severities including Advisory.",
       "required": false
+    },
+    {
+      "token": "{{pack:scope-discipline}}",
+      "description": "Scope boundary rule. Resolved from selected pack; defaults to answering the request with appropriate context.",
+      "required": false
+    },
+    {
+      "token": "{{pack:blocker-discipline}}",
+      "description": "When to stop and ask vs. proceed. Resolved from selected pack; defaults to asking when uncertain.",
+      "required": false
+    },
+    {
+      "token": "{{pack:reasoning-mode}}",
+      "description": "Reasoning chain visibility. Resolved from selected pack; defaults to showing reasoning when helpful.",
+      "required": false
+    },
+    {
+      "token": "{{pack:step-size}}",
+      "description": "Step decomposition discipline. Resolved from selected pack; defaults to complete responses.",
+      "required": false
+    },
+    {
+      "token": "{{pack:context-hygiene}}",
+      "description": "Context window management. Resolved from selected pack; defaults to thorough context retention.",
+      "required": false
     }
   ],
   "chmodRules": {
-    "hook-scripts": "executable"
+    "hook-scripts": "executable",
+    "lean-hooks": "executable"
   },
   "retiredFilePolicy": {
     "defaultAction": "report-retired",

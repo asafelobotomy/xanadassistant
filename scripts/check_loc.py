@@ -25,6 +25,7 @@ from pathlib import Path
 
 WARN_LIMIT = 250
 HARD_LIMIT = 400
+REPO_ROOT = Path(__file__).resolve().parents[1]
 EXTENSIONS = {".py", ".md", ".sh"}
 WARN_LIMIT_OVERRIDES = {
     # Consumer workspaces receive these hooks as single files, so they need a little
@@ -71,7 +72,7 @@ def count_lines(path: Path) -> int:
 
 def warning_limit_for(path: Path) -> int:
     try:
-        key = path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+        key = path.resolve().relative_to(REPO_ROOT).as_posix()
     except ValueError:
         key = path.as_posix()
     return WARN_LIMIT_OVERRIDES.get(key, WARN_LIMIT)

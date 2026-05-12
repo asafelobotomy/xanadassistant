@@ -40,8 +40,10 @@ class ResolvePackageRootTests(unittest.TestCase):
             self.assertEqual(Path(tmp).resolve(), result)
 
     def test_raises_for_nonexistent_path(self) -> None:
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(LifecycleCommandError) as ctx:
             resolve_package_root("/nonexistent/path/that/does/not/exist")
+        self.assertEqual("source_resolution_failure", ctx.exception.code)
+        self.assertEqual(3, ctx.exception.exit_code)
 
 
 class ParseGithubSourceTests(unittest.TestCase):
@@ -174,5 +176,7 @@ class ResolveEffectivePackageRootTests(unittest.TestCase):
         self.assertEqual("source_resolution_failure", ctx.exception.code)
 
     def test_raises_for_nonexistent_local_package_root(self) -> None:
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(LifecycleCommandError) as ctx:
             resolve_effective_package_root("/nonexistent/path", None, None, None)
+        self.assertEqual("source_resolution_failure", ctx.exception.code)
+        self.assertEqual(3, ctx.exception.exit_code)

@@ -151,6 +151,25 @@
       "hash": "sha256:17bae8f91ce0052a95e6dcdab7fdc85ef1d6d820d5f50e315b96d8a56e0e4203"
     },
     {
+      "id": "agents.triage.agent.md",
+      "surface": "agents",
+      "layer": "pack",
+      "source": "agents/triage.agent.md",
+      "target": ".github/agents/triage.agent.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [],
+      "tokens": [
+        "{{pack:blocker-discipline}}",
+        "{{pack:scope-discipline}}"
+      ],
+      "chmod": "none",
+      "hash": "sha256:38f8050299b067f132e6ff3b7f06933dc640cb9dd9c4663aa920543f4a978068"
+    },
+    {
       "id": "agents.xanadLifecycle.agent.md",
       "surface": "agents",
       "layer": "pack",
@@ -240,6 +259,42 @@
       "tokens": [],
       "chmod": "executable",
       "hash": "sha256:01bf2f1831b3c881b5b8620516ab3166f749d100890c07da7c0a0f2245e7c756"
+    },
+    {
+      "id": "lean-hooks.leanContextBudget.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/lean/hooks/leanContextBudget.py",
+      "target": ".github/hooks/scripts/leanContextBudget.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=lean",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:083ad74792fd7a17d239494126bd05e40737aca103f9ecd19ae922cc437113e8"
+    },
+    {
+      "id": "lean-hooks.leanTestReporter.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/lean/hooks/leanTestReporter.py",
+      "target": ".github/hooks/scripts/leanTestReporter.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=lean",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:5de9d02f38090e8dd74263acddf5474ff74640c7dd3c864cc6f44928bb420122"
     },
     {
       "id": "hook-scripts.mcpSequentialThinkingServer.py",
@@ -381,6 +436,57 @@
       "hash": "sha256:99c1cda791d7774a900b386b9cc9d34f95fc8f702f291332bb58e87995f1df36"
     },
     {
+      "id": "lean-prompts.lean-plan.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/lean/prompts/lean-plan.prompt.md",
+      "target": ".github/prompts/lean-plan.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [
+        "packs.selected=lean"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:34a27de3df387a56bff68d4b6071fd7ba5697668d81a0eddf17900727a3003e0"
+    },
+    {
+      "id": "lean-prompts.lean-review.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/lean/prompts/lean-review.prompt.md",
+      "target": ".github/prompts/lean-review.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [
+        "packs.selected=lean"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:22af111d691fda4c47451ab41657197feeb69369130e6bee0ad5d43092fb3c9f"
+    },
+    {
+      "id": "lean-prompts.lean-status.prompt.md",
+      "surface": "prompts",
+      "layer": "pack",
+      "source": "packs/lean/prompts/lean-status.prompt.md",
+      "target": ".github/prompts/lean-status.prompt.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [
+        "packs.selected=lean"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:f54f8fcdd5bad36e3fb4157bbe8a56c0cf80bb28e2d632419c428fcf8abf8bfe"
+    },
+    {
       "id": "prompts.setup.md",
       "surface": "prompts",
       "layer": "core",
@@ -399,6 +505,42 @@
       "hash": "sha256:27a28399e813eb03aa35d7f8fae28edd43c869a79854b0e986038de18def6907"
     },
     {
+      "id": "lean-skills.leanAndon.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/lean/skills/leanAndon/SKILL.md",
+      "target": ".github/skills/leanAndon/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=lean"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:32a89ad62743f1eada3798000f3cf4566a083c43af20e8101b99061f11cb0649"
+    },
+    {
+      "id": "lean-skills.leanContext.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/lean/skills/leanContext/SKILL.md",
+      "target": ".github/skills/leanContext/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=lean"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:46da0d525a1ecb0242dca31281a30d0b34ab7fcb8b175d9281e7e1396230c327"
+    },
+    {
       "id": "lean-skills.leanOutput.SKILL.md",
       "surface": "skills",
       "layer": "pack",
@@ -415,6 +557,24 @@
       "tokens": [],
       "chmod": "none",
       "hash": "sha256:6189ba81cb8cffa1b36f49968c907448ab48ca0d999a25c422401a42c9e43843"
+    },
+    {
+      "id": "lean-skills.leanVerification.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "packs/lean/skills/leanVerification/SKILL.md",
+      "target": ".github/skills/leanVerification/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=lean"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:b4266150d33447b776aa74913aa39e38bb17bfaed61d79228a441dbc937e383a"
     },
     {
       "id": "skills.lifecycleAudit.SKILL.md",

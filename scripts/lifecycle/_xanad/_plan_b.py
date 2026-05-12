@@ -28,7 +28,12 @@ from scripts.lifecycle._xanad._pack_conflicts import (
     collect_conflict_resolutions,
     detect_pack_token_conflicts,
 )
-from scripts.lifecycle._xanad._plan_utils import build_backup_plan, build_token_plan_summary
+from scripts.lifecycle._xanad._plan_utils import (
+    build_backup_plan,
+    build_token_plan_summary,
+    _build_lockfile_package_info,  # noqa: F401 – re-exported
+    build_planned_lockfile,  # noqa: F401 – re-exported
+)
 from scripts.lifecycle._xanad._progress import build_not_implemented_payload
 from scripts.lifecycle._xanad._source import build_source_summary
 
@@ -72,107 +77,6 @@ def _conflict_blocked_plan(
             "resolvedAnswers": resolved_answers, "questions": questions,
         },
     }
-
-
-def _build_lockfile_package_info() -> dict:
-    """Return the lockfile package dict, populated from session source info when available."""
-    source_info = _State.session_source_info
-    info: dict = {"name": "xanadAssistant"}
-    if source_info is not None:
-        if "packageRoot" in source_info:
-            info["packageRoot"] = source_info["packageRoot"]
-        if "version" in source_info:
-            info["version"] = source_info["version"]
-        if "source" in source_info:
-            info["source"] = source_info["source"]
-        if "ref" in source_info:
-            info["ref"] = source_info["ref"]
-    return info
-
-
-def build_planned_lockfile(
-    workspace: Path,
-    context: dict,
-    ownership_by_surface: dict,
-    resolved_answers: dict,
-    token_values: dict[str, str],
-    actions: list[dict],
-    skipped_actions: list[dict],
-    retired_targets: list[str],
-    backup_plan: dict,
-) -> dict:
-    from scripts.lifecycle._xanad._plan_utils import expected_entry_hash
-
-    manifest = context["manifest"] or {"schemaVersion": "unknown", "managedFiles": [], "retiredFiles": []}
-    manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
-    file_records = []
-
-    for action in actions:
-        if action["action"] == "archive-retired":
-            continue
-        manifest_entry = manifest_entries.get(action["id"])
-        if manifest_entry is None:
-            continue
-        file_records.append({
-            "id": action["id"],
-            "target": action["target"],
-            "sourceHash": manifest_entry["hash"],
-            "installedHash": expected_entry_hash(
-                context["packageRoot"],
-                manifest_entry,
-                token_values,
-                workspace / action["target"],
-            ) or "unknown",
-            "ownershipMode": action["ownershipMode"],
-            "status": "applied",
-        })
-
-    archive_targets = {entry["target"]: entry["archivePath"] for entry in backup_plan.get("archiveTargets", [])}
-    retired_records = []
-    for action in actions:
-        if action["action"] != "archive-retired":
-            continue
-        target = action.get("target")
-        retired_record = {
-            "id": action["id"],
-            "action": "archived" if target in archive_targets else "reported",
-        }
-        if target is not None:
-            retired_record["target"] = target
-        if target in archive_targets:
-            retired_record["archivePath"] = archive_targets[target]
-        retired_records.append(retired_record)
-
-    lockfile_contents = {
-        "schemaVersion": "0.1.0",
-        "package": _build_lockfile_package_info(),
-        "manifest": {
-            "schemaVersion": manifest.get("schemaVersion", "0.1.0"),
-            "hash": sha256_json(manifest),
-        },
-        "timestamps": {"appliedAt": "<apply-timestamp>", "updatedAt": "<apply-timestamp>"},
-        "selectedPacks": resolved_answers.get("packs.selected", []),
-        "profile": resolved_answers.get("profile.selected"),
-        "ownershipBySurface": ownership_by_surface,
-        "setupAnswers": resolved_answers,
-        "resolvedTokenConflicts": {
-            key[len("resolvedTokenConflicts."):]: value
-            for key, value in resolved_answers.items()
-            if key.startswith("resolvedTokenConflicts.") and isinstance(value, str)
-        },
-        "installMetadata": {
-            "mcpAvailable": True,
-            "mcpEnabled": bool(resolved_answers.get("mcp.enabled", False)),
-        },
-        "files": sorted(file_records, key=lambda record: record["target"]),
-        "skippedManagedFiles": sorted(entry["target"] for entry in skipped_actions),
-        "retiredManagedFiles": retired_records,
-        "unknownValues": {},
-    }
-    if backup_plan.get("required") and backup_plan.get("root"):
-        lockfile_contents["lastBackup"] = {"path": backup_plan["root"]}
-
-    return {"path": ".github/xanadAssistant-lock.json", "contents": lockfile_contents}
 
 
 def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_path: str | None, non_interactive: bool) -> dict:
