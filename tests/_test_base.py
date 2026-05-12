@@ -16,13 +16,15 @@ def run_lifecycle_subprocess(
     *extra_args: str,
     workspace: Path | None = None,
     repo_root: Path = TEST_REPO_ROOT,
+    package_root: Path | None = None,
 ) -> subprocess.CompletedProcess[str]:
     command_args = [sys.executable, str(repo_root / "scripts" / "lifecycle" / "xanadAssistant.py"), command]
     if command == "plan" and extra_args and not extra_args[0].startswith("-"):
         command_args.append(extra_args[0])
         extra_args = extra_args[1:]
     if workspace is not None:
-        command_args.extend(["--workspace", str(workspace), "--package-root", str(repo_root)])
+        effective_pkg_root = package_root if package_root is not None else repo_root
+        command_args.extend(["--workspace", str(workspace), "--package-root", str(effective_pkg_root)])
     command_args.extend(extra_args)
     return subprocess.run(
         command_args,
@@ -111,8 +113,8 @@ class XanadTestBase(unittest.TestCase):
             .replace("{{TESTING_PHILOSOPHY}}", "Always \u2014 write tests alongside every code change.")
         )
 
-    def _run(self, command: str, *extra_args: str, workspace: Path | None = None) -> subprocess.CompletedProcess[str]:
-        return run_lifecycle_subprocess(command, *extra_args, workspace=workspace, repo_root=self.REPO_ROOT)
+    def _run(self, command: str, *extra_args: str, workspace: Path | None = None, package_root: Path | None = None) -> subprocess.CompletedProcess[str]:
+        return run_lifecycle_subprocess(command, *extra_args, workspace=workspace, repo_root=self.REPO_ROOT, package_root=package_root)
 
     def run_command_in_workspace(self, workspace: Path, command: str, *extra_args: str) -> subprocess.CompletedProcess[str]:
         return self._run(command, *extra_args, workspace=workspace)

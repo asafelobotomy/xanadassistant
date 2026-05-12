@@ -38,9 +38,9 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
     # uses the same choices that were in effect when the files were installed.
     resolved_conflicts = lockfile_state.get("resolvedTokenConflicts", {})
     if isinstance(resolved_conflicts, dict):
-        for _token_name, _winning_pack in resolved_conflicts.items():
-            if isinstance(_winning_pack, str):
-                default_answers[f"resolvedTokenConflicts.{_token_name}"] = _winning_pack
+        for token_name, winning_pack in resolved_conflicts.items():
+            if isinstance(winning_pack, str):
+                default_answers[f"resolvedTokenConflicts.{token_name}"] = winning_pack
     token_values = resolve_token_values(policy, workspace, default_answers, package_root=package_root)
     manifest_with_status = annotate_manifest_entries(
         workspace, package_root, manifest, ownership_by_surface, default_answers, token_values,

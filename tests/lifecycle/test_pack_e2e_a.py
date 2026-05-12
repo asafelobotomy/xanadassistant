@@ -180,6 +180,7 @@ class PlannedLockfilePackShapeTests(XanadTestBase):
             lockfile = json.loads(result.stdout)["result"]["plannedLockfile"]["contents"]
             self.assertIn("resolvedTokenConflicts", lockfile)
             self.assertEqual({}, lockfile["resolvedTokenConflicts"])
+            self.assertEqual([], json.loads(result.stdout)["result"]["conflictDetails"])
 
     def test_plan_lean_pack_lockfile_records_selected_packs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

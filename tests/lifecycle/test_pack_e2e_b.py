@@ -20,12 +20,11 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from tests._test_base import XanadTestBase
+from tests._test_base import XanadTestBase, run_lifecycle_subprocess
 
 # ------------------------------------------------------------------
 # Canonical token value prefixes (distinctive substrings from tokens.json)
@@ -69,7 +68,7 @@ class ConflictGateTests(XanadTestBase):
     accepts them.  The real repo's pack-registry.json is not modified.
     """
 
-    _temp_pkg_dir: str = ""
+    _temp_pkg_dir: str | None = None
     _temp_pkg: Path
 
     @classmethod
@@ -99,8 +98,22 @@ class ConflictGateTests(XanadTestBase):
                 "status": "active", "optional": True,
                 "dependencies": [], "discoveryTags": ["test"], "surfaces": [],
             },
+            {
+                "id": "gamma", "name": "Gamma Fixture",
+                "summary": "Test fixture pack for 3-pack conflict resolution testing.",
+                "status": "active", "optional": True,
+                "dependencies": [], "discoveryTags": ["test"], "surfaces": [],
+            },
         ])
         registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+
+        # Create gamma fixture pack tokens (not in real repo; only in temp).
+        gamma_dir = cls._temp_pkg / "packs" / "gamma"
+        gamma_dir.mkdir(parents=True, exist_ok=True)
+        (gamma_dir / "tokens.json").write_text(
+            json.dumps({"pack:output-style": "Gamma pack output style: step-by-step procedures."}),
+            encoding="utf-8",
+        )
 
         # Regenerate catalog so the temp package root is self-consistent.
         from scripts.lifecycle.generate_manifest import generate_catalog
@@ -113,21 +126,16 @@ class ConflictGateTests(XanadTestBase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        shutil.rmtree(cls._temp_pkg_dir, ignore_errors=True)
+        if cls._temp_pkg_dir:
+            shutil.rmtree(cls._temp_pkg_dir, ignore_errors=True)
 
     def _run_conflict(self, command: str, *extra_args: str, workspace: Path) -> subprocess.CompletedProcess[str]:
         """Run lifecycle command using the temp package root with alpha/beta registered."""
-        cmd = [
-            sys.executable,
-            str(self._temp_pkg / "scripts" / "lifecycle" / "xanadAssistant.py"),
-            command,
-        ]
-        if command == "plan" and extra_args and not extra_args[0].startswith("-"):
-            cmd.append(extra_args[0])
-            extra_args = extra_args[1:]
-        cmd.extend(["--workspace", str(workspace), "--package-root", str(self._temp_pkg)])
-        cmd.extend(extra_args)
-        return subprocess.run(cmd, cwd=str(self._temp_pkg), capture_output=True, text=True, check=False)
+        return run_lifecycle_subprocess(
+            command, *extra_args,
+            workspace=workspace,
+            repo_root=self._temp_pkg,
+        )
 
     # ------------------------------------------------------------------
     # Non-interactive: plan exits 6
@@ -222,6 +230,7 @@ class ConflictGateTests(XanadTestBase):
             payload = json.loads(result.stdout)
             self.assertTrue(payload["result"]["questionsResolved"])
             self.assertIsNotNone(payload["result"]["plannedLockfile"])
+            self.assertEqual([], payload["result"]["conflictDetails"])
 
     def test_plan_conflict_resolved_lockfile_records_winner(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -322,6 +331,60 @@ class ConflictGateTests(XanadTestBase):
             self.assertEqual("clean", payload["status"])
             self.assertEqual(0, payload["result"]["summary"].get("stale", 0))
             self.assertEqual(0, payload["result"]["summary"].get("missing", 0))
+
+    # ------------------------------------------------------------------
+    # F-07: 3-pack conflict — all three packs reported
+    # ------------------------------------------------------------------
+
+    def test_plan_three_pack_conflict_reports_all_three_packs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            answers_path = ws / "answers.json"
+            answers_path.write_text(
+                json.dumps(_answers({"packs.selected": ["alpha", "beta", "gamma"]})),
+                encoding="utf-8",
+            )
+
+            result = self._run_conflict("plan", "setup", "--json",
+                                        "--answers", str(answers_path), workspace=ws)
+            self.assertEqual(0, result.returncode, result.stderr)
+
+            conflict_details = json.loads(result.stdout)["result"]["conflictDetails"]
+            self.assertEqual(1, len(conflict_details))
+            self.assertCountEqual(["alpha", "beta", "gamma"], conflict_details[0]["packs"])
+
+    # ------------------------------------------------------------------
+    # F-08: lockfile seeds conflict resolution when no answer is provided
+    # ------------------------------------------------------------------
+
+    def test_plan_uses_lockfile_resolution_when_no_answer_given(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            answers_path = ws / "answers.json"
+
+            # Step 1: apply with explicit resolution — writes lockfile.
+            answers_path.write_text(
+                json.dumps(_answers({
+                    "packs.selected": ["alpha", "beta"],
+                    "resolvedTokenConflicts.pack:output-style": "alpha",
+                })), encoding="utf-8",
+            )
+            apply_result = self._run_conflict("apply", "--json", "--non-interactive",
+                                              "--answers", str(answers_path), workspace=ws)
+            self.assertEqual(0, apply_result.returncode, apply_result.stderr)
+
+            # Step 2: plan again with same packs but no conflict answer.
+            answers_path.write_text(
+                json.dumps(_answers({"packs.selected": ["alpha", "beta"]})),
+                encoding="utf-8",
+            )
+            result = self._run_conflict("plan", "setup", "--json", "--non-interactive",
+                                        "--answers", str(answers_path), workspace=ws)
+            self.assertEqual(0, result.returncode, result.stderr)
+
+            payload = json.loads(result.stdout)
+            self.assertTrue(payload["result"]["questionsResolved"])
+            self.assertEqual([], payload["result"]["conflictDetails"])
 
 
 if __name__ == "__main__":

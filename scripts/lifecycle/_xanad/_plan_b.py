@@ -33,6 +33,47 @@ from scripts.lifecycle._xanad._progress import build_not_implemented_payload
 from scripts.lifecycle._xanad._source import build_source_summary
 
 
+def _conflict_blocked_plan(
+    workspace: Path,
+    package_root: Path,
+    mode: str,
+    context: dict,
+    resolved_answers: dict,
+    questions: list,
+    pack_conflicts: list,
+    repair_reasons: list,
+) -> dict:
+    """Return the approval-required plan payload for unresolved pack token conflicts."""
+    ownership_by_surface = resolve_ownership_by_surface(
+        context["policy"], context["manifest"], context["lockfileState"], resolved_answers,
+    )
+    return {
+        "command": "plan", "mode": mode, "workspace": str(workspace),
+        "source": build_source_summary(package_root),
+        "status": "approval-required", "warnings": [], "errors": [],
+        "result": {
+            "installState": context["installState"],
+            "installPaths": context["installPaths"],
+            "contracts": context["artifacts"],
+            "discoveryMetadata": context["metadataArtifacts"],
+            "approvalRequired": True, "backupRequired": False,
+            "backupPlan": build_backup_plan(context["policy"], [], False),
+            "plannedLockfile": None,
+            "writes": {"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0},
+            "conflicts": [], "conflictSummary": build_conflict_summary([]),
+            "conflictDetails": pack_conflicts,
+            "actions": [], "skippedActions": [], "tokenSubstitutions": [],
+            "ownershipBySurface": ownership_by_surface,
+            "packs": resolved_answers.get("packs.selected", []),
+            "profile": resolved_answers.get("profile.selected"),
+            "factoryRestore": mode == "factory-restore",
+            "repairReasons": repair_reasons, "retired": [],
+            "questionsResolved": False,
+            "resolvedAnswers": resolved_answers, "questions": questions,
+        },
+    }
+
+
 def _build_lockfile_package_info() -> dict:
     """Return the lockfile package dict, populated from session source info when available."""
     source_info = _State.session_source_info
@@ -167,7 +208,8 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
 
     questions = build_interview_questions(context["policy"], context["metadata"], mode)
     question_ids = {q["id"] for q in questions}
-    answers = seed_answers_from_install_state(mode, questions, context["lockfileState"], load_answers(answers_path))
+    raw_answers = load_answers(answers_path)
+    answers = seed_answers_from_install_state(mode, questions, context["lockfileState"], raw_answers)
     answers = seed_answers_from_profile(context["metadata"].get("profileRegistry") or {}, answers, question_ids)
     resolved_answers, unresolved, unknown_answer_ids = resolve_question_answers(questions, answers)
     resolved_answers = normalize_plan_answers(context["policy"], resolved_answers)
@@ -183,7 +225,6 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
     pack_conflicts = detect_pack_token_conflicts(package_root, selected_packs)
     unresolved_conflicts: list[str] = []
     if pack_conflicts:
-        raw_answers = load_answers(answers_path)
         conflict_resolutions, unresolved_conflicts = collect_conflict_resolutions(
             pack_conflicts, context["lockfileState"], raw_answers
         )
@@ -198,34 +239,10 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
                     "Pack token conflicts must be resolved before planning can proceed.", 6,
                     {"questionIds": unresolved_conflicts, "conflicts": pack_conflicts},
                 )
-            ownership_by_surface = resolve_ownership_by_surface(
-                context["policy"], context["manifest"], context["lockfileState"], resolved_answers,
+            return _conflict_blocked_plan(
+                workspace, package_root, mode, context,
+                resolved_answers, questions, pack_conflicts, repair_reasons,
             )
-            return {
-                "command": "plan", "mode": mode, "workspace": str(workspace),
-                "source": build_source_summary(package_root),
-                "status": "approval-required", "warnings": [], "errors": [],
-                "result": {
-                    "installState": context["installState"],
-                    "installPaths": context["installPaths"],
-                    "contracts": context["artifacts"],
-                    "discoveryMetadata": context["metadataArtifacts"],
-                    "approvalRequired": True, "backupRequired": False,
-                    "backupPlan": build_backup_plan(context["policy"], [], False),
-                    "plannedLockfile": None,
-                    "writes": {"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0},
-                    "conflicts": [], "conflictSummary": build_conflict_summary([]),
-                    "conflictDetails": pack_conflicts,
-                    "actions": [], "skippedActions": [], "tokenSubstitutions": [],
-                    "ownershipBySurface": ownership_by_surface,
-                    "packs": resolved_answers.get("packs.selected", []),
-                    "profile": resolved_answers.get("profile.selected"),
-                    "factoryRestore": mode == "factory-restore",
-                    "repairReasons": repair_reasons, "retired": [],
-                    "questionsResolved": False,
-                    "resolvedAnswers": resolved_answers, "questions": questions,
-                },
-            }
 
     ownership_by_surface = resolve_ownership_by_surface(
         context["policy"], context["manifest"], context["lockfileState"], resolved_answers,
@@ -284,6 +301,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
             "writes": writes,
             "conflicts": conflicts,
             "conflictSummary": build_conflict_summary(conflicts),
+            # [] when all conflicts resolved or no conflicts — the apply gate is truthy-based.
             "conflictDetails": pack_conflicts if unresolved_conflicts else [],
             "actions": actions,
             "skippedActions": skipped_actions,

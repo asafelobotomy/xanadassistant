@@ -27,6 +27,7 @@ def load_pack_tokens(
     ]
 
     tokens: dict[str, str] = {}
+    pack_data_cache: dict[str, dict] = {}
     for source in sources:
         if not source.is_file():
             continue
@@ -36,6 +37,7 @@ def load_pack_tokens(
             continue
         if not isinstance(data, dict):
             continue
+        pack_data_cache[source.parent.name] = data
         for key, value in data.items():
             if isinstance(key, str) and isinstance(value, str):
                 tokens["{{" + key + "}}"] = value
@@ -43,14 +45,8 @@ def load_pack_tokens(
     if resolved_token_conflicts:
         for raw_key, winning_pack in resolved_token_conflicts.items():
             marker = "{{" + raw_key + "}}"
-            pack_file = package_root / "packs" / winning_pack / "tokens.json"
-            if not pack_file.is_file():
-                continue
-            try:
-                data = json.loads(pack_file.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, OSError):
-                continue
-            if isinstance(data, dict) and raw_key in data and isinstance(data[raw_key], str):
-                tokens[marker] = data[raw_key]
+            cached = pack_data_cache.get(winning_pack, {})
+            if raw_key in cached and isinstance(cached[raw_key], str):
+                tokens[marker] = cached[raw_key]
 
     return tokens

@@ -21,6 +21,7 @@
     "packs": [],
     "profile": "balanced",
     "retired": [],
+    "conflictDetails": [],
     "questionsResolved": true
   }
 }
