@@ -26,3 +26,7 @@ Your role: turn medium or large requests into scoped execution plans before impl
 - Use `Review` when the plan depends on contract, architecture, or regression-risk analysis.
 - Name the narrowest tests or commands that can falsify the plan.
 - Return an executable plan, not an implementation.
+
+## Plan format
+
+{{pack:plan-format}}

@@ -177,6 +177,12 @@ def build_execution_result(
     answers_path: str | None, non_interactive: bool, dry_run: bool = False,
 ) -> dict:
     plan_payload = build_plan_result(workspace, package_root, mode, answers_path, non_interactive)
+    if plan_payload["result"].get("conflictDetails"):
+        raise LifecycleCommandError(
+            "approval_or_answers_required",
+            "Pack token conflicts must be resolved before applying.", 6,
+            {"questionIds": [c["questionId"] for c in plan_payload["result"]["conflictDetails"]]},
+        )
     apply_result = execute_apply_plan(workspace, package_root, plan_payload, dry_run=dry_run)
     return {
         "command": command, "mode": mode,

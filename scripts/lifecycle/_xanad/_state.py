@@ -155,6 +155,7 @@ def migrate_lockfile_shape(data: dict) -> dict:
     if isinstance(existing_package_name, str) and existing_package_name != CURRENT_PACKAGE_NAME:
         migrated["unknownValues"].setdefault("migratedFromPackageName", existing_package_name)
     migrated.setdefault("skippedManagedFiles", [])
+    migrated.setdefault("resolvedTokenConflicts", {})
     return migrated
 
 
@@ -166,7 +167,7 @@ def parse_lockfile_state(workspace: Path) -> dict:
             "path": str(lockfile_path), "data": None,
             "selectedPacks": [], "profile": None, "ownershipBySurface": {},
             "skippedManagedFiles": [], "unknownValues": {}, "files": [],
-            "setupAnswers": {}, "mcpEnabled": None,
+            "setupAnswers": {}, "mcpEnabled": None, "resolvedTokenConflicts": {},
         }
 
     try:
@@ -177,7 +178,7 @@ def parse_lockfile_state(workspace: Path) -> dict:
             "path": str(lockfile_path), "data": None,
             "selectedPacks": [], "profile": None, "ownershipBySurface": {},
             "skippedManagedFiles": [], "unknownValues": {}, "files": [],
-            "setupAnswers": {}, "mcpEnabled": None,
+            "setupAnswers": {}, "mcpEnabled": None, "resolvedTokenConflicts": {},
         }
 
     original_package_name = None
@@ -202,6 +203,7 @@ def parse_lockfile_state(workspace: Path) -> dict:
         "files": data.get("files", []),
         "setupAnswers": data.get("setupAnswers", {}),
         "mcpEnabled": data.get("installMetadata", {}).get("mcpEnabled"),
+        "resolvedTokenConflicts": data.get("resolvedTokenConflicts", {}),
     }
 
 

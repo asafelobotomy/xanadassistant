@@ -46,6 +46,10 @@ For each finding, report:
 | `contract` | Violates a frozen contract (CLI surface, exit codes, schema) |
 | `over-engineering` | More complexity than the problem warrants |
 
+## Reporting threshold
+
+{{pack:review-depth}}
+
 ## Architectural review
 
 When the scope includes design or architecture:

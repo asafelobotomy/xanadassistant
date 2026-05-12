@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scripts.lifecycle._xanad._pack_tokens import load_pack_tokens
 from scripts.lifecycle._xanad._workspace_scan import scan_workspace_stack
 
 _RESPONSE_STYLE_LABELS: dict[str, str] = {
@@ -67,7 +68,9 @@ def normalize_plan_answers(policy: dict, resolved_answers: dict) -> dict:
     return normalized_answers
 
 
-def resolve_token_values(policy: dict, workspace: Path, resolved_answers: dict) -> dict[str, str]:
+def resolve_token_values(
+    policy: dict, workspace: Path, resolved_answers: dict, package_root: Path | None = None
+) -> dict[str, str]:
     token_values: dict[str, str] = {}
 
     # Run workspace scanner once if any scan tokens are registered in the policy.
@@ -114,6 +117,17 @@ def resolve_token_values(policy: dict, workspace: Path, resolved_answers: dict) 
                 token_values[token] = _TESTING_PHILOSOPHY_LABELS.get(philosophy, philosophy)
             else:
                 token_values[token] = "(not configured)"
+    if package_root is not None:
+        resolved_token_conflicts = {
+            key[len("resolvedTokenConflicts."):]: value
+            for key, value in resolved_answers.items()
+            if key.startswith("resolvedTokenConflicts.") and isinstance(value, str)
+        }
+        token_values.update(load_pack_tokens(
+            package_root,
+            resolved_answers.get("packs.selected") or [],
+            resolved_token_conflicts or None,
+        ))
     return token_values
 
 

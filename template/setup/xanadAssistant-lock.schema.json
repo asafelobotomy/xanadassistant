@@ -84,6 +84,13 @@
       "type": "object",
       "additionalProperties": true
     },
+    "resolvedTokenConflicts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
     "lastBackup": {
       "$ref": "#/$defs/backupRef"
     }

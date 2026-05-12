@@ -118,7 +118,7 @@
     "core-instructions": "preserve-marked-markdown-blocks",
     "instructions": "token-replace",
     "prompts": "token-replace",
-    "agents": "replace-verbatim",
+    "agents": "token-replace",
     "skills": "replace-verbatim",
     "lean-skills": "replace-verbatim",
     "hook-scripts": "replace-verbatim",
@@ -179,6 +179,26 @@
     {
       "token": "{{TESTING_PHILOSOPHY}}",
       "description": "Testing philosophy for this workspace.",
+      "required": false
+    },
+    {
+      "token": "{{pack:commit-style}}",
+      "description": "Commit message style and conventions. Resolved from selected pack; defaults to Conventional Commits best practices.",
+      "required": false
+    },
+    {
+      "token": "{{pack:output-style}}",
+      "description": "Agent response verbosity and formatting. Resolved from selected pack; defaults to thorough responses with context.",
+      "required": false
+    },
+    {
+      "token": "{{pack:plan-format}}",
+      "description": "Plan output format and detail level. Resolved from selected pack; defaults to full phased plans with rationale.",
+      "required": false
+    },
+    {
+      "token": "{{pack:review-depth}}",
+      "description": "Review severity reporting threshold. Resolved from selected pack; defaults to all severities including Advisory.",
       "required": false
     }
   ],
@@ -318,7 +338,8 @@
       "indexes": []
     },
     "unmanagedSourceExcludes": [
-      "template/setup/**"
+      "template/setup/**",
+      "packs/*/tokens.json"
     ]
   }
 }

@@ -34,7 +34,14 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
     legacy_version_state = parse_legacy_version_file(workspace)
     lockfile_state = parse_lockfile_state(workspace)
     default_answers, ownership_by_surface = derive_effective_plan_defaults(policy, metadata, manifest, lockfile_state)
-    token_values = resolve_token_values(policy, workspace, default_answers)
+    # Inject resolved token conflict winners from the lockfile so token resolution
+    # uses the same choices that were in effect when the files were installed.
+    resolved_conflicts = lockfile_state.get("resolvedTokenConflicts", {})
+    if isinstance(resolved_conflicts, dict):
+        for _token_name, _winning_pack in resolved_conflicts.items():
+            if isinstance(_winning_pack, str):
+                default_answers[f"resolvedTokenConflicts.{_token_name}"] = _winning_pack
+    token_values = resolve_token_values(policy, workspace, default_answers, package_root=package_root)
     manifest_with_status = annotate_manifest_entries(
         workspace, package_root, manifest, ownership_by_surface, default_answers, token_values,
     )

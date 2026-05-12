@@ -24,3 +24,7 @@ Your role: write and update documentation that explains how the current project 
 - Use `Planner` when the documentation work should be scoped first because the surface is broad or coupled to a larger rollout.
 - Verify commands, paths, and examples against the repo before writing them down.
 - Do not silently change runtime behavior while doing docs-only work.
+
+## Output style
+
+{{pack:output-style}}

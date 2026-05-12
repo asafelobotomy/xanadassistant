@@ -32,6 +32,10 @@ Your role: manage the full git lifecycle — staging, committing, pushing, pulli
 | Tag, release | High | Confirm exact version; show release notes before creating |
 | Amend published commit | Very high | Refuse unless user explicitly confirms and accepts consequences |
 
+## Message conventions
+
+{{pack:commit-style}}
+
 ## Commit workflow
 
 1. Run `git status` and `git diff --cached --stat`.

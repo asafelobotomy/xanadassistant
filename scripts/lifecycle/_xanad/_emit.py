@@ -66,6 +66,8 @@ def emit_json_lines(payload: dict) -> None:
                 "plannedLockfile": payload["result"]["plannedLockfile"],
                 "writes": payload["result"]["writes"],
                 "conflicts": payload["result"]["conflictSummary"],
+                "questionsResolved": payload["result"]["questionsResolved"],
+                "conflictDetails": payload["result"].get("conflictDetails", []),
             },
             {"type": "receipt", "command": command, "sequence": 0, "status": payload["status"]},
         ])

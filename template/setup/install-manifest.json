@@ -19,7 +19,8 @@
       "indexes": []
     },
     "unmanagedSourceExcludes": [
-      "template/setup/**"
+      "template/setup/**",
+      "packs/*/tokens.json"
     ]
   },
   "managedFiles": [
@@ -33,11 +34,13 @@
         "local",
         "plugin-backed-copilot-format"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{pack:commit-style}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:a19f80dd964a57137336b11a0687bb27a0babe7e3fdbb4b993e57415da415a62"
+      "hash": "sha256:d950ee21fd3164e70871fd1da56e49fa985fa6360e3a8ebf7997d4a5e7a3c7f1"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -49,11 +52,13 @@
         "local",
         "plugin-backed-copilot-format"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{pack:output-style}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:f9861ce4d528840ae944758ba485ab2e75fa830416ece078d8e8c8268462c964"
+      "hash": "sha256:07fd15c712eb8d23fd953229f835e7f2227e1133a1518e3700d28b6cc3bec11d"
     },
     {
       "id": "agents.docs.agent.md",
@@ -65,11 +70,13 @@
         "local",
         "plugin-backed-copilot-format"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{pack:output-style}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:265586380c74cc50a179c0eba955fe09611c7a50c071a5bacbc5738811f8b6cf"
+      "hash": "sha256:df6aaf50b35f37bbd8720396c7f30952143d030b55079cdef21be7b38d402ffd"
     },
     {
       "id": "agents.explore.agent.md",
@@ -81,11 +88,13 @@
         "local",
         "plugin-backed-copilot-format"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{pack:output-style}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:c8abda66853e496d433fc18191e24c66210bff484acb626d8881494f3e30b755"
+      "hash": "sha256:272aa9f55bedd82ba68515f3103c6ebfaca65e1505bc745069239b875b7fb40a"
     },
     {
       "id": "agents.planner.agent.md",
@@ -97,11 +106,13 @@
         "local",
         "plugin-backed-copilot-format"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{pack:plan-format}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:b582c389926caa61bb61748df23a82fe49434457e8e3a4f13e76addda12a0178"
+      "hash": "sha256:0a35635f4dee2d1b3bdfd9522d126b70d0bdc4ddfa8b3ba1055b9418558d8204"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -113,11 +124,13 @@
         "local",
         "plugin-backed-copilot-format"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{pack:output-style}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:b123fdf3df4b68e2e920149d1ae5d97abefb5488df60aec85edd8d842cce8c52"
+      "hash": "sha256:8818c23b49a99954e4067a605d594a6a21a625b26fd78eb09827870b832d3b88"
     },
     {
       "id": "agents.review.agent.md",
@@ -129,11 +142,13 @@
         "local",
         "plugin-backed-copilot-format"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{pack:review-depth}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:5b79a4892eaa73287bef024d78b090b17959f8002fb18cff1f3a6e54bf316d4a"
+      "hash": "sha256:17bae8f91ce0052a95e6dcdab7fdc85ef1d6d820d5f50e315b96d8a56e0e4203"
     },
     {
       "id": "agents.xanadLifecycle.agent.md",
@@ -145,7 +160,7 @@
         "local",
         "plugin-backed-copilot-format"
       ],
-      "strategy": "replace-verbatim",
+      "strategy": "token-replace",
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
@@ -173,8 +188,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:1219c3e438bd088768eab511fa72cb56035f87d279ac0beb972eea4e5c0b5c41"
- dbecf3e (refactor: standardize consumer-facing names to camelCase)
+      "hash": "sha256:0728cfa32716dc688e4c515a370ef381dddc0955bf0c4f8b8a2217199c1395ae"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -382,8 +396,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:de95dd9a8141879cd7a0b8d651fd54248df9593587e6e5615fcaec7958b67895"
- dbecf3e (refactor: standardize consumer-facing names to camelCase)
+      "hash": "sha256:27a28399e813eb03aa35d7f8fae28edd43c869a79854b0e986038de18def6907"
     },
     {
       "id": "lean-skills.leanOutput.SKILL.md",

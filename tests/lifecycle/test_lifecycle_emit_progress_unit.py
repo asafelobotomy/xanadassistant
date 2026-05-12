@@ -96,6 +96,7 @@ class EmitJsonLinesTests(unittest.TestCase):
                 "writes": {"added": 0, "replaced": 0},
                 "conflictSummary": {},
                 "conflicts": [],
+                "questionsResolved": True,
             },
         }
         events = self._emit(payload)
@@ -161,7 +162,6 @@ class EmitJsonLinesTests(unittest.TestCase):
         events = self._emit(payload)
         types = [e["type"] for e in events]
         self.assertIn("apply-report", types)
-
 
 class ProgressTests(unittest.TestCase):
     def setUp(self) -> None:

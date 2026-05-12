@@ -23,6 +23,11 @@ from scripts.lifecycle._xanad._plan_c import (
     seed_answers_from_install_state,
     seed_answers_from_profile,
 )
+from scripts.lifecycle._xanad._pack_conflicts import (
+    build_conflict_questions,
+    collect_conflict_resolutions,
+    detect_pack_token_conflicts,
+)
 from scripts.lifecycle._xanad._plan_utils import build_backup_plan, build_token_plan_summary
 from scripts.lifecycle._xanad._progress import build_not_implemented_payload
 from scripts.lifecycle._xanad._source import build_source_summary
@@ -109,6 +114,11 @@ def build_planned_lockfile(
         "profile": resolved_answers.get("profile.selected"),
         "ownershipBySurface": ownership_by_surface,
         "setupAnswers": resolved_answers,
+        "resolvedTokenConflicts": {
+            key[len("resolvedTokenConflicts."):]: value
+            for key, value in resolved_answers.items()
+            if key.startswith("resolvedTokenConflicts.") and isinstance(value, str)
+        },
         "installMetadata": {
             "mcpAvailable": True,
             "mcpEnabled": bool(resolved_answers.get("mcp.enabled", False)),
@@ -168,10 +178,59 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
             {"questionIds": unresolved},
         )
 
+    # Phase 3: Detect and gate on pack token conflicts.
+    selected_packs = resolved_answers.get("packs.selected") or []
+    pack_conflicts = detect_pack_token_conflicts(package_root, selected_packs)
+    unresolved_conflicts: list[str] = []
+    if pack_conflicts:
+        raw_answers = load_answers(answers_path)
+        conflict_resolutions, unresolved_conflicts = collect_conflict_resolutions(
+            pack_conflicts, context["lockfileState"], raw_answers
+        )
+        resolved_answers.update({
+            f"resolvedTokenConflicts.{k}": v for k, v in conflict_resolutions.items()
+        })
+        questions = questions + build_conflict_questions(pack_conflicts)
+        if unresolved_conflicts:
+            if non_interactive:
+                raise LifecycleCommandError(
+                    "approval_or_answers_required",
+                    "Pack token conflicts must be resolved before planning can proceed.", 6,
+                    {"questionIds": unresolved_conflicts, "conflicts": pack_conflicts},
+                )
+            ownership_by_surface = resolve_ownership_by_surface(
+                context["policy"], context["manifest"], context["lockfileState"], resolved_answers,
+            )
+            return {
+                "command": "plan", "mode": mode, "workspace": str(workspace),
+                "source": build_source_summary(package_root),
+                "status": "approval-required", "warnings": [], "errors": [],
+                "result": {
+                    "installState": context["installState"],
+                    "installPaths": context["installPaths"],
+                    "contracts": context["artifacts"],
+                    "discoveryMetadata": context["metadataArtifacts"],
+                    "approvalRequired": True, "backupRequired": False,
+                    "backupPlan": build_backup_plan(context["policy"], [], False),
+                    "plannedLockfile": None,
+                    "writes": {"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0},
+                    "conflicts": [], "conflictSummary": build_conflict_summary([]),
+                    "conflictDetails": pack_conflicts,
+                    "actions": [], "skippedActions": [], "tokenSubstitutions": [],
+                    "ownershipBySurface": ownership_by_surface,
+                    "packs": resolved_answers.get("packs.selected", []),
+                    "profile": resolved_answers.get("profile.selected"),
+                    "factoryRestore": mode == "factory-restore",
+                    "repairReasons": repair_reasons, "retired": [],
+                    "questionsResolved": False,
+                    "resolvedAnswers": resolved_answers, "questions": questions,
+                },
+            }
+
     ownership_by_surface = resolve_ownership_by_surface(
         context["policy"], context["manifest"], context["lockfileState"], resolved_answers,
     )
-    token_values = resolve_token_values(context["policy"], workspace, resolved_answers)
+    token_values = resolve_token_values(context["policy"], workspace, resolved_answers, package_root=package_root)
 
     writes, actions, skipped_actions, retired_targets = build_setup_plan_actions(
         workspace, package_root, context["manifest"], ownership_by_surface,
@@ -225,6 +284,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
             "writes": writes,
             "conflicts": conflicts,
             "conflictSummary": build_conflict_summary(conflicts),
+            "conflictDetails": pack_conflicts if unresolved_conflicts else [],
             "actions": actions,
             "skippedActions": skipped_actions,
             "tokenSubstitutions": token_plan,
