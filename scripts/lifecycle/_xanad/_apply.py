@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import stat
 from datetime import datetime, timezone
@@ -40,11 +41,27 @@ def render_entry_bytes(package_root: Path, manifest_entry: dict, token_values: d
     return result
 
 
+_JSONC_RE = re.compile(
+    r'"(?:[^"\\]|\\.)*"'   # double-quoted string — preserve
+    r'|//[^\n]*'              # // line comment — remove
+    r'|/\*.*?\*/',             # /* block comment */ — remove
+    re.DOTALL,
+)
+
+
+def _strip_json_comments(text: str) -> str:
+    """Strip // and /* */ comments from JSONC text without altering quoted strings."""
+    def _replace(m: re.Match) -> str:
+        s = m.group(0)
+        return s if s.startswith('"') else ""
+    return _JSONC_RE.sub(_replace, text)
+
+
 def merge_json_object_file(target_path: Path, package_root: Path, manifest_entry: dict) -> None:
     source_path = package_root / manifest_entry["source"]
     if target_path.exists():
         try:
-            existing_data = load_json(target_path)
+            existing_data = json.loads(_strip_json_comments(target_path.read_text(encoding="utf-8")))
             source_data = load_json(source_path)
         except json.JSONDecodeError as error:
             raise LifecycleCommandError(

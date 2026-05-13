@@ -261,6 +261,50 @@ class ExecuteApplyUnitTests(unittest.TestCase):
                 result = execute_apply_plan(workspace, REPO_ROOT, plan)
             self.assertEqual(1, result["writes"]["replaced"])
 
+    def test_add_action_rolled_back_on_subsequent_failure(self):
+        """New files written by add actions are removed when a later action raises."""
+        from scripts.lifecycle._xanad._execute_apply import execute_apply_plan
+        from scripts.lifecycle._xanad._errors import LifecycleCommandError
+        from scripts.lifecycle._xanad._loader import load_manifest, load_json
+        from scripts.lifecycle._xanad._errors import DEFAULT_POLICY_PATH
+        manifest = load_manifest(REPO_ROOT, load_json(REPO_ROOT / DEFAULT_POLICY_PATH)) or {}
+        entries = manifest.get("managedFiles", [])
+        copy_entry = next(
+            (e for e in entries if e.get("strategy") not in {"merge-json-object", "preserve-marked-markdown-blocks"}),
+            None,
+        )
+        if copy_entry is None:
+            self.skipTest("No copy-strategy entries in manifest")
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp) / "ws"
+            workspace.mkdir()
+            # Action 1: valid add (will succeed and write a file)
+            action_add = {
+                "id": copy_entry["id"],
+                "surface": copy_entry["surface"],
+                "target": copy_entry["target"],
+                "action": "add",
+                "strategy": copy_entry["strategy"],
+                "tokens": copy_entry.get("tokens", []),
+                "tokenValues": {},
+                "ownershipMode": "local",
+            }
+            # Action 2: merge with unsupported strategy (raises LifecycleCommandError)
+            action_fail = {
+                "id": copy_entry["id"],
+                "surface": copy_entry["surface"],
+                "target": copy_entry["target"],
+                "action": "merge",
+                "strategy": "unsupported-strategy-xyz",
+                "tokens": [],
+                "tokenValues": {},
+                "ownershipMode": "local",
+            }
+            plan = self._make_minimal_plan_payload(workspace, actions=[action_add, action_fail])
+            with self.assertRaises(LifecycleCommandError):
+                execute_apply_plan(workspace, REPO_ROOT, plan)
+            # File written by action_add must have been cleaned up
+            self.assertFalse((workspace / copy_entry["target"]).exists())
 
 
 if __name__ == "__main__":  # pragma: no cover

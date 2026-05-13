@@ -27,11 +27,8 @@ def scan_workspace_stack(workspace: Path) -> dict[str, str]:
     return results
 
 
-# Priority-ordered language detection rules (first match wins).
+# Non-Python language detection rules checked after JS/TS (first match wins).
 _LANGUAGE_CHECKS: list[tuple[str, str]] = [
-    ("pyproject.toml", "Python"),
-    ("setup.py", "Python"),
-    ("requirements.txt", "Python"),
     ("Cargo.toml", "Rust"),
     ("go.mod", "Go"),
     ("pom.xml", "Java"),
@@ -42,14 +39,19 @@ _LANGUAGE_CHECKS: list[tuple[str, str]] = [
 
 
 def _detect_language(workspace: Path) -> str | None:
-    for filename, language in _LANGUAGE_CHECKS:
+    for filename in ("pyproject.toml", "setup.py", "requirements.txt"):
         if (workspace / filename).exists():
-            return language
+            return "Python"
+    # Check JS/TS before lower-priority Rust/Go/Java/Ruby so polyglot repos
+    # that include Rust build tooling (e.g. SWC) are not misdetected.
     pkg = workspace / "package.json"
     if pkg.exists():
         if (workspace / "tsconfig.json").exists():
             return "TypeScript"
         return "JavaScript"
+    for filename, language in _LANGUAGE_CHECKS:
+        if (workspace / filename).exists():
+            return language
     return None
 
 
@@ -81,13 +83,28 @@ def _detect_package_manager(workspace: Path) -> str | None:
 
 
 def _detect_test_command(workspace: Path) -> str | None:
+    # Check Python test runner before package.json so Python repos with JS build
+    # tooling (e.g. Gruntfile, Makefile.js) are not misdetected.
+    pyproject = workspace / "pyproject.toml"
+    if pyproject.exists():
+        try:
+            text = pyproject.read_text(encoding="utf-8")
+            if "pytest" in text or "[tool.pytest" in text:
+                return "pytest"
+        except OSError:  # pragma: no cover
+            pass
     pkg = workspace / "package.json"
     if pkg.exists():
         try:
             data = json.loads(pkg.read_text(encoding="utf-8"))
             test_script = (data.get("scripts") or {}).get("test")
             _NO_TEST = 'echo "Error: no test specified"'
-            if isinstance(test_script, str) and test_script and test_script.strip() != _NO_TEST:
+            if (
+                isinstance(test_script, str)
+                and test_script
+                and test_script.strip() != _NO_TEST
+                and not test_script.strip().lower().startswith("echo ")
+            ):
                 return test_script
         except (OSError, json.JSONDecodeError):  # pragma: no cover
             pass
@@ -98,14 +115,6 @@ def _detect_test_command(workspace: Path) -> str | None:
         return "go test ./..."
     if (workspace / "Cargo.toml").exists():
         return "cargo test"
-    pyproject = workspace / "pyproject.toml"
-    if pyproject.exists():
-        try:
-            text = pyproject.read_text(encoding="utf-8")
-            if "pytest" in text or "[tool.pytest" in text:
-                return "pytest"
-        except OSError:  # pragma: no cover
-            pass
     makefile = workspace / "Makefile"
     if makefile.exists():
         try:

@@ -84,6 +84,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
         "deleted": 0,
         "skipped": len(plan_payload["result"].get("skippedActions", [])),
     }
+    _new_paths: list[Path] = []
 
     try:
         for action in actions:
@@ -145,9 +146,12 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
             apply_chmod_rule(target_path, manifest_entry.get("chmod", "none"))
             if action["action"] == "add":
                 writes["added"] += 1
+                _new_paths.append(target_path)
             elif action["action"] == "replace":
                 writes["replaced"] += 1
     except LifecycleCommandError:
+        for _p in _new_paths:
+            _p.unlink(missing_ok=True)
         raise
     except Exception as exc:
         raise LifecycleCommandError(

@@ -231,3 +231,41 @@ class ScanWorkspaceStackTests(unittest.TestCase):
             result = scan_workspace_stack(ws)
             for key in result:
                 self.assertTrue(key.startswith("{{") and key.endswith("}}"), f"Key {key!r} lacks token delimiters")
+
+
+class DetectLanguagePolyglotTests(unittest.TestCase):
+    def test_package_json_wins_over_cargo_toml(self) -> None:
+        """JS projects with Rust build tooling must not be detected as Rust."""
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "package.json").write_text('{"name": "app"}\n', encoding="utf-8")
+            (ws / "Cargo.toml").write_text("[package]\nname = \"swc\"\n", encoding="utf-8")
+            self.assertEqual("JavaScript", _detect_language(ws))
+
+    def test_tsconfig_plus_cargo_toml_gives_typescript(self) -> None:
+        """TS projects with Rust SWC tooling must not be detected as Rust."""
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "package.json").write_text('{"name": "app"}\n', encoding="utf-8")
+            (ws / "tsconfig.json").write_text("{}\n", encoding="utf-8")
+            (ws / "Cargo.toml").write_text("[package]\nname = \"swc\"\n", encoding="utf-8")
+            self.assertEqual("TypeScript", _detect_language(ws))
+
+
+class DetectTestCommandPriorityTests(unittest.TestCase):
+    def test_pytest_wins_over_package_json_grunt_script(self) -> None:
+        """Python projects with JS build tooling must get pytest, not grunt."""
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "pyproject.toml").write_text("[tool.pytest.ini_options]\n", encoding="utf-8")
+            pkg = {"scripts": {"test": "grunt test --verbose"}}
+            (ws / "package.json").write_text(json.dumps(pkg), encoding="utf-8")
+            self.assertEqual("pytest", _detect_test_command(ws))
+
+    def test_echo_test_script_is_ignored(self) -> None:
+        """package.json scripts.test starting with 'echo' must be skipped."""
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            pkg = {"scripts": {"test": "echo Please run tests manually"}}
+            (ws / "package.json").write_text(json.dumps(pkg), encoding="utf-8")
+            self.assertIsNone(_detect_test_command(ws))

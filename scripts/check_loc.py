@@ -36,6 +36,12 @@ WARN_LIMIT_OVERRIDES = {
     "hooks/scripts/githubMcp.py": 380,
     # Developer sandbox grows with each new workspace template; not a consumer surface.
     "scripts/sandbox.py": 380,
+    # Polyglot + priority tests added alongside existing coverage; still under hard limit.
+    "tests/lifecycle/test_workspace_scan_unit.py": 300,
+    # JSONC and merge tests added; still well under hard limit.
+    "tests/lifecycle/test_apply_unit.py": 300,
+    # Rollback test added alongside existing coverage; still well under hard limit.
+    "tests/lifecycle/test_execute_apply_unit.py": 380,
 }
 
 

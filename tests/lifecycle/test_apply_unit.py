@@ -197,5 +197,62 @@ class BuildCopilotVersionSummaryTests(unittest.TestCase):
 
 
 
+class StripJsonCommentsTests(unittest.TestCase):
+    def test_strips_single_line_comments(self) -> None:
+        from scripts.lifecycle._xanad._apply import _strip_json_comments
+        text = '{\n    // a comment\n    "key": "value"\n}'
+        result = _strip_json_comments(text)
+        self.assertEqual("value", json.loads(result)["key"])
+
+    def test_strips_block_comments(self) -> None:
+        from scripts.lifecycle._xanad._apply import _strip_json_comments
+        text = '{ /* block */ "key": 1 }'
+        result = _strip_json_comments(text)
+        self.assertEqual(1, json.loads(result)["key"])
+
+    def test_preserves_url_in_string_value(self) -> None:
+        from scripts.lifecycle._xanad._apply import _strip_json_comments
+        text = '{"url": "https://example.com/path"}'
+        result = _strip_json_comments(text)
+        self.assertEqual("https://example.com/path", json.loads(result)["url"])
+
+    def test_strips_inline_comment_after_value(self) -> None:
+        from scripts.lifecycle._xanad._apply import _strip_json_comments
+        text = '{"key": "value" // trailing\n}'
+        result = _strip_json_comments(text)
+        self.assertEqual("value", json.loads(result)["key"])
+
+    def test_passes_through_plain_json_unchanged(self) -> None:
+        from scripts.lifecycle._xanad._apply import _strip_json_comments
+        text = '{"a": 1, "b": "two"}'
+        self.assertEqual(json.loads(text), json.loads(_strip_json_comments(text)))
+
+
+class MergeJsonObjectFileJsoncTests(unittest.TestCase):
+    def test_merge_succeeds_with_jsonc_existing_target(self) -> None:
+        """merge_json_object_file() must not crash on // comments in the existing target."""
+        from scripts.lifecycle._xanad._apply import merge_json_object_file
+        from scripts.lifecycle._xanad._loader import load_manifest, load_json
+        from scripts.lifecycle._xanad._errors import DEFAULT_POLICY_PATH
+        manifest = load_manifest(REPO_ROOT, load_json(REPO_ROOT / DEFAULT_POLICY_PATH)) or {}
+        entry = next(
+            (e for e in manifest.get("managedFiles", []) if e.get("strategy") == "merge-json-object"),
+            None,
+        )
+        if entry is None:
+            self.skipTest("No merge-json-object entries in manifest")
+        with tempfile.TemporaryDirectory() as tmp:
+            target_path = Path(tmp) / entry["target"]
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            # Simulate VS Code settings.json with // comments
+            target_path.write_text(
+                '{\n    // a comment\n    "existing.key": "existing-value"\n}\n',
+                encoding="utf-8",
+            )
+            merge_json_object_file(target_path, REPO_ROOT, entry)
+            result = json.loads(target_path.read_text(encoding="utf-8"))
+            self.assertIn("existing.key", result)
+
+
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
