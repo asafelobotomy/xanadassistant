@@ -1,0 +1,5 @@
+{
+  "chat.useAgentsMdFile": true,
+  "chat.useCustomAgentHooks": true,
+  "chat.agent.maxRequests": 128
+}

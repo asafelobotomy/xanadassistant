@@ -221,6 +221,13 @@ class InspectCheckTests(XanadTestBase):
                 ) + "\n",
                 encoding="utf-8",
             )
+            (vscode_dir / "settings.json").write_text(
+                json.dumps(
+                    json.loads((repo_root / "template" / "vscode" / "settings.json").read_text(encoding="utf-8")),
+                    indent=2,
+                ) + "\n",
+                encoding="utf-8",
+            )
 
         result = self.run_command("check", "--json", workspace_setup=workspace_setup)
 

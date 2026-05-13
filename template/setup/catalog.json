@@ -75,7 +75,8 @@
     "shapeup-skills": "pack",
     "shapeup-prompts": "pack",
     "shapeup-hooks": "pack",
-    "mcp-config": "core"
+    "mcp-config": "core",
+    "vscode-settings": "core"
   },
   "packs": [
     "memory",

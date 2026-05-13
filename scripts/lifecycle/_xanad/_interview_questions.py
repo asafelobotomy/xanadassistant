@@ -11,6 +11,7 @@ def personalisation_questions() -> list[dict]:
         {
             "id": "response.style",
             "kind": "choice",
+            "batch": "advanced",
             "prompt": "What response style do you prefer?",
             "required": False,
             "default": "balanced",
@@ -24,6 +25,7 @@ def personalisation_questions() -> list[dict]:
         {
             "id": "autonomy.level",
             "kind": "choice",
+            "batch": "advanced",
             "prompt": "How should the assistant handle ambiguity?",
             "required": False,
             "default": "ask-first",
@@ -37,6 +39,7 @@ def personalisation_questions() -> list[dict]:
         {
             "id": "agent.persona",
             "kind": "choice",
+            "batch": "advanced",
             "prompt": "What tone should the assistant use?",
             "required": False,
             "default": "professional",
@@ -51,6 +54,7 @@ def personalisation_questions() -> list[dict]:
         {
             "id": "testing.philosophy",
             "kind": "choice",
+            "batch": "full",
             "prompt": "What is your testing philosophy?",
             "required": False,
             "default": "always",
@@ -69,6 +73,7 @@ def mcp_servers_question() -> dict:
     return {
         "id": "mcp.servers",
         "kind": "multi-choice",
+        "batch": "full",
         "prompt": "Which optional MCP servers would you like to enable?",
         "required": False,
         "options": [
@@ -103,6 +108,7 @@ def mcp_question() -> dict:
     return {
         "id": "mcp.enabled",
         "kind": "confirm",
+        "batch": "simple",
         "prompt": "Enable MCP configuration for this workspace?",
         "required": True,
         "default": True,

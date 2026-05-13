@@ -17,11 +17,29 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
     profile_registry = metadata.get("profileRegistry") or {}
     pack_registry = metadata.get("packRegistry") or {}
 
+    # ── setup ────────────────────────────────────────────────────────────────
+    questions.append({
+        "id": "setup.depth",
+        "kind": "choice",
+        "batch": "setup",
+        "prompt": "How much would you like to customise this install?",
+        "required": True,
+        "default": "simple",
+        "recommended": "simple",
+        "options": [
+            {"id": "simple", "label": "Simple", "description": "Core install with sensible defaults — profile, packs, and MCP"},
+            {"id": "advanced", "label": "Advanced", "description": "Adds ownership model and assistant personalisation"},
+            {"id": "full", "label": "Full", "description": "All options including testing philosophy and optional MCP servers"},
+        ],
+    })
+
+    # ── simple ───────────────────────────────────────────────────────────────
     profile_options = [profile["id"] for profile in profile_registry.get("profiles", []) if profile.get("status") == "active"]
     if profile_options:
         questions.append({
             "id": "profile.selected",
             "kind": "choice",
+            "batch": "simple",
             "prompt": f"Which behavior profile should {mode} use?",
             "required": True,
             "options": profile_options,
@@ -35,21 +53,26 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
         questions.append({
             "id": "packs.selected",
             "kind": "multi-choice",
-            "prompt": f"Which optional pack should {mode} use? Select at most one.",
+            "batch": "simple",
+            "prompt": f"Which optional packs should {mode} use?",
             "required": False,
             "options": optional_packs,
             "recommended": [],
             "default": [],
-            "maxSelections": 1,
             "requiredFor": ["packs"],
         })
 
+    if "mcp-config" in policy.get("canonicalSurfaces", []):
+        questions.append(mcp_question())
+
+    # ── advanced ─────────────────────────────────────────────────────────────
     for surface in ("agents", "skills"):
         if surface not in ownership_defaults:
             continue
         questions.append({
             "id": f"ownership.{surface}",
             "kind": "choice",
+            "batch": "advanced",
             "prompt": f"How should {surface} be owned for this workspace?",
             "required": True,
             "options": ["local", "plugin-backed-copilot-format"],
@@ -58,9 +81,10 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
             "requiredFor": [surface],
         })
 
+    questions.extend(personalisation_questions())
+
+    # ── full ─────────────────────────────────────────────────────────────────
     if "mcp-config" in policy.get("canonicalSurfaces", []):
-        questions.extend(personalisation_questions())
-        questions.append(mcp_question())
         questions.append(mcp_servers_question())
 
     return questions

@@ -5,13 +5,14 @@ Covers:
 2. Planned lockfile shape — resolvedTokenConflicts field is always present.
 3. Post-install pack add via update — agents re-rendered, lockfile updated.
 4. Check after apply — no drift for either pack configuration.
-5. Pack selection constraint — packs.selected accepts at most one pack (maxSelections=1).
+5. Multi-pack conflict gating — selecting multiple packs with conflicting tokens
+   requires conflict resolution answers; unresolved conflicts exit 6 in non-interactive.
 
 Fixture packs:
   packs/alpha/tokens.json — defines pack:output-style (alpha value)
   packs/beta/tokens.json  — defines pack:output-style (beta value)
 Both packs are excluded from the install policy surface and catalog; they
-exist solely as token-provider fixtures for selection-constraint testing.
+exist solely as token-provider fixtures for conflict-resolution testing.
 """
 
 from __future__ import annotations
@@ -59,13 +60,14 @@ def _answers(extra: dict | None = None) -> dict:
 
 
 class ConflictGateTests(XanadTestBase):
-    """The packs.selected question accepts at most one pack (maxSelections=1).
+    """Multi-pack selection is allowed; conflicting tokens must be resolved.
 
     Uses packs/alpha/tokens.json, packs/beta/tokens.json, and packs/gamma/tokens.json
-    as test fixtures to exercise the constraint without modifying the real
-    pack-registry.json.  A temporary package root is built in setUpClass that
-    registers alpha, beta, and gamma as active optional packs so the answer
-    validator recognises them as valid pack ids.
+    as test fixtures.  All three define pack:output-style, so any combination of two
+    or more creates a token conflict.  In --non-interactive mode with no resolution
+    answers the plan exits 6 (approval_or_answers_required).  A temporary package
+    root is built in setUpClass that registers alpha, beta, and gamma as active optional
+    packs so the answer validator recognises them as valid pack ids.
     """
 
     _temp_pkg_dir: str | None = None
@@ -127,11 +129,11 @@ class ConflictGateTests(XanadTestBase):
         )
 
     # ------------------------------------------------------------------
-    # maxSelections=1 constraint: 2+ packs → exit 4
+    # Unresolved conflict: 2+ packs with conflicting tokens → exit 6
     # ------------------------------------------------------------------
 
-    def test_plan_two_packs_exits_4(self) -> None:
-        """Providing two packs in packs.selected is a contract input failure (exit 4)."""
+    def test_plan_two_conflicting_packs_exits_6(self) -> None:
+        """Two packs with a conflicting token and no resolution answer exits 6."""
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
             answers_path = ws / "answers.json"
@@ -140,10 +142,10 @@ class ConflictGateTests(XanadTestBase):
             )
             result = self._run_conflict("plan", "setup", "--json", "--non-interactive",
                                         "--answers", str(answers_path), workspace=ws)
-            self.assertEqual(4, result.returncode, result.stderr)
+            self.assertEqual(6, result.returncode, result.stderr)
 
-    def test_apply_two_packs_exits_4(self) -> None:
-        """Providing two packs to apply is also rejected (exit 4)."""
+    def test_apply_two_conflicting_packs_exits_6(self) -> None:
+        """apply with two conflicting packs and no resolution also exits 6."""
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
             answers_path = ws / "answers.json"
@@ -152,10 +154,10 @@ class ConflictGateTests(XanadTestBase):
             )
             result = self._run_conflict("apply", "--json", "--non-interactive",
                                         "--answers", str(answers_path), workspace=ws)
-            self.assertEqual(4, result.returncode, result.stderr)
+            self.assertEqual(6, result.returncode, result.stderr)
 
-    def test_plan_three_packs_exits_4(self) -> None:
-        """Three packs in packs.selected is also rejected (exit 4)."""
+    def test_plan_three_conflicting_packs_exits_6(self) -> None:
+        """Three packs with a conflicting token and no resolution answer exits 6."""
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
             answers_path = ws / "answers.json"
@@ -165,7 +167,7 @@ class ConflictGateTests(XanadTestBase):
             )
             result = self._run_conflict("plan", "setup", "--json", "--non-interactive",
                                         "--answers", str(answers_path), workspace=ws)
-            self.assertEqual(4, result.returncode, result.stderr)
+            self.assertEqual(6, result.returncode, result.stderr)
 
     # ------------------------------------------------------------------
     # Positive: zero or one pack proceeds

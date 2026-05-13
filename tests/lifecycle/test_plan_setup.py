@@ -17,6 +17,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual("interview", payload["command"])
         self.assertEqual("setup", payload["mode"])
         question_ids = [question["id"] for question in payload["result"]["questions"]]
+        self.assertIn("setup.depth", question_ids)
         self.assertIn("profile.selected", question_ids)
         self.assertIn("packs.selected", question_ids)
         self.assertIn("ownership.agents", question_ids)
@@ -170,6 +171,7 @@ class PlanSetupTests(XanadTestBase):
                 "skills": "plugin-backed-copilot-format",
                 "hooks": "local",
                 "mcp": "local",
+                "vscode-settings": "local",
             },
             payload["result"]["ownershipBySurface"],
         )

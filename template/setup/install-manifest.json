@@ -194,7 +194,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:685a7896b05df79c15de61c118d15e35a0f92f063b4815f628c28f8a17628f69"
+      "hash": "sha256:c107179bc858b2ea9447199d9654c58c39409851758816ab20dedc745c57111e"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -1520,6 +1520,21 @@
       "tokens": [],
       "chmod": "none",
       "hash": "sha256:577e66152903d3c839e564deb434f3e61aa75c8c2adf9f6a5c6b47d0cbf8d60a"
+    },
+    {
+      "id": "vscode-settings.settings.json",
+      "surface": "vscode-settings",
+      "layer": "core",
+      "source": "template/vscode/settings.json",
+      "target": ".vscode/settings.json",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "merge-json-object",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:7ac819eceae50bbc25f6f77a9b784ba92e8869aa6d0ef0043ddbcb5e63969894"
     }
   ],
   "retiredFiles": [

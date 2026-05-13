@@ -34,6 +34,8 @@ WARN_LIMIT_OVERRIDES = {
     "hooks/scripts/mcpSequentialThinkingServer.py": 380,
     "hooks/scripts/gitMcp.py": 380,
     "hooks/scripts/githubMcp.py": 380,
+    # Developer sandbox grows with each new workspace template; not a consumer surface.
+    "scripts/sandbox.py": 380,
 }
 
 

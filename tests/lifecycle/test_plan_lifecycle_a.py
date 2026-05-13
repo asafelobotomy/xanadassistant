@@ -288,6 +288,13 @@ class PlanLifecycleTests(XanadTestBase):
                 ) + "\n",
                 encoding="utf-8",
             )
+            (vscode_dir / "settings.json").write_text(
+                json.dumps(
+                    json.loads((repo_root / "template" / "vscode" / "settings.json").read_text(encoding="utf-8")),
+                    indent=2,
+                ) + "\n",
+                encoding="utf-8",
+            )
 
             (github_dir / "xanadAssistant-lock.json").write_text(
                 json.dumps(
@@ -297,6 +304,7 @@ class PlanLifecycleTests(XanadTestBase):
                             "prompts": "local",
                             "hooks": "local",
                             "mcp": "local",
+                            "vscode-settings": "local",
                         },
                     ),
                     indent=2,

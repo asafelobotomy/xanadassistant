@@ -5,7 +5,9 @@ Commands: init / list / destroy / reset [--all] [name...] / run <name> <cmd...> 
 
 Workspaces (sandbox/workspaces/):
   blank, bare-git, not-installed, fresh-install, lean-pack,
-  local-ownership, local-mods, stale, partial, legacy
+  local-ownership, local-mods, stale, partial, legacy,
+  broken-lockfile, broken-schema, complex,
+  partial-early, partial-mid, partial-late
 
 Direct use:
   cd sandbox/workspaces/<name>
@@ -113,6 +115,51 @@ def _legacy(ws: Path) -> None:
     }, indent=2) + "\n", encoding="utf-8")
 
 
+def _broken_lockfile(ws: Path) -> None:
+    gh = ws / ".github"
+    gh.mkdir(parents=True, exist_ok=True)
+    (gh / "copilot-instructions.md").write_text("# Broken workspace\n", encoding="utf-8")
+    (gh / "xanadAssistant-lock.json").write_text("{ NOT VALID JSON\n", encoding="utf-8")
+
+
+def _broken_schema(ws: Path) -> None:
+    gh = ws / ".github"
+    gh.mkdir(parents=True, exist_ok=True)
+    (gh / "xanadAssistant-lock.json").write_text(json.dumps({"corrupted": True}) + "\n", encoding="utf-8")
+
+
+def _complex(ws: Path) -> None:
+    ws.mkdir(parents=True, exist_ok=True)
+    gh = ws / ".github"
+    for d in ["agents", "prompts", "instructions"]:
+        (gh / d).mkdir(parents=True, exist_ok=True)
+    for i in range(4):
+        (gh / "agents" / f"team-{i}.agent.md").write_text(f"---\nname: team-{i}\n---\n", encoding="utf-8")
+    (gh / "copilot-instructions.md").write_text("# Complex workspace\n\n" + "".join(f"## Section {i}\nContent.\n\n" for i in range(4)), encoding="utf-8")
+    (gh / "instructions" / "coding.instructions.md").write_text("---\napplyTo: '**'\n---\nCoding standards.\n", encoding="utf-8")
+    (ws / ".vscode").mkdir()
+    (ws / ".vscode" / "mcp.json").write_text(json.dumps({"inputs": [], "servers": {"existing": {"type": "stdio", "command": "tool", "args": []}}}), encoding="utf-8")
+    subprocess.run(["git", "-C", str(ws), "init", "-q"], capture_output=True, check=False)
+
+
+def _partial_stage(ws: Path, remove: list[str]) -> None:
+    _fresh_install(ws)
+    for d in remove:
+        shutil.rmtree(ws / d, ignore_errors=True)
+
+
+def _partial_early(ws: Path) -> None:
+    _partial_stage(ws, [".github/instructions", ".github/prompts", ".github/hooks", ".vscode"])
+
+
+def _partial_mid(ws: Path) -> None:
+    _partial_stage(ws, [".github/hooks", ".vscode"])
+
+
+def _partial_late(ws: Path) -> None:
+    _partial_stage(ws, [".vscode"])
+
+
 WORKSPACES: dict[str, dict] = {
     "blank":           {"desc": "Empty directory",                                           "fn": _blank},
     "bare-git":        {"desc": "git-initialized, no xanadAssistant",                        "fn": _bare_git},
@@ -124,6 +171,12 @@ WORKSPACES: dict[str, dict] = {
     "stale":           {"desc": "Fresh install + modified hook (check exits 7)",            "fn": _stale},
     "partial":         {"desc": "Fresh install + managed files deleted (repair target)",     "fn": _partial},
     "legacy":          {"desc": "Predecessor lockfile (no files key) -- triggers migration", "fn": _legacy},
+    "broken-lockfile": {"desc": "Lockfile with invalid JSON (parse error on check/inspect)",          "fn": _broken_lockfile},
+    "broken-schema":   {"desc": "Lockfile valid JSON but wrong schema (schema error on check)",        "fn": _broken_schema},
+    "complex":         {"desc": "Dense pre-existing .github/ + MCP + git (collision-rich install)",   "fn": _complex},
+    "partial-early":   {"desc": "Apply stopped early: only core instruction file written, prompts/hooks/MCP absent", "fn": _partial_early},
+    "partial-mid":     {"desc": "Apply stopped mid: all .github surfaces written, .vscode/MCP absent",             "fn": _partial_mid},
+    "partial-late":    {"desc": "Apply stopped late: all surfaces written except .vscode/mcp.json",        "fn": _partial_late},
 }
 
 
