@@ -26,6 +26,7 @@ def annotate_manifest_entries(
     ownership_by_surface: dict,
     resolved_answers: dict,
     token_values: dict[str, str],
+    consumer_resolutions: dict | None = None,
 ) -> dict | None:
     if manifest is None:
         return None
@@ -41,6 +42,9 @@ def annotate_manifest_entries(
         elif not entry_required_for_plan(entry, resolved_answers):
             annotated_entry["status"] = "skipped"
             annotated_entry["skipReason"] = "condition-not-selected"
+        elif consumer_resolutions and entry["target"] in consumer_resolutions:
+            annotated_entry["status"] = "skipped"
+            annotated_entry["skipReason"] = "consumer-keep"
         else:
             target_path = workspace / entry["target"]
             if not target_path.exists():

@@ -7,6 +7,7 @@ from scripts.lifecycle._xanad._errors import LifecycleCommandError
 from scripts.lifecycle._xanad._inspect import collect_context
 from scripts.lifecycle._xanad._interview_questions import mcp_question, mcp_servers_question, personalisation_questions
 from scripts.lifecycle._xanad._loader import load_json
+from scripts.lifecycle._xanad._prescan import scan_consumer_kept_updates, scan_existing_copilot_files
 from scripts.lifecycle._xanad._source import build_source_summary
 
 
@@ -69,6 +70,15 @@ def build_interview_result(workspace: Path, package_root: Path, mode: str) -> di
     context = collect_context(workspace, package_root)
     questions = build_interview_questions(context["policy"], context["metadata"], mode)
 
+    if mode == "setup":
+        existing_files = scan_existing_copilot_files(workspace, context["manifest"])
+    elif mode == "update":
+        existing_files = scan_consumer_kept_updates(
+            workspace, context["manifest"], context["lockfileState"]
+        )
+    else:
+        existing_files = []
+
     return {
         "command": "interview",
         "mode": mode,
@@ -82,6 +92,8 @@ def build_interview_result(workspace: Path, package_root: Path, mode: str) -> di
             "discoveryMetadata": context["metadataArtifacts"],
             "questionCount": len(questions),
             "questions": questions,
+            "existingFiles": existing_files,
+            "existingFileCount": len(existing_files),
         },
     }
 

@@ -117,6 +117,7 @@ def parse_lockfile_state(workspace: Path) -> dict:
             "selectedPacks": [], "profile": None, "ownershipBySurface": {},
             "skippedManagedFiles": [], "unknownValues": {}, "files": [],
             "setupAnswers": {}, "mcpEnabled": None, "resolvedTokenConflicts": {},
+            "consumerResolutions": {},
         }
 
     try:
@@ -128,6 +129,7 @@ def parse_lockfile_state(workspace: Path) -> dict:
             "selectedPacks": [], "profile": None, "ownershipBySurface": {},
             "skippedManagedFiles": [], "unknownValues": {}, "files": [],
             "setupAnswers": {}, "mcpEnabled": None, "resolvedTokenConflicts": {},
+            "consumerResolutions": {},
         }
 
     original_package_name = None
@@ -153,6 +155,7 @@ def parse_lockfile_state(workspace: Path) -> dict:
         "setupAnswers": data.get("setupAnswers", {}),
         "mcpEnabled": data.get("installMetadata", {}).get("mcpEnabled"),
         "resolvedTokenConflicts": data.get("resolvedTokenConflicts", {}),
+        "consumerResolutions": data.get("consumerResolutions", {}),
     }
 
 

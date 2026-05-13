@@ -37,6 +37,7 @@ def _run_execution_command(
                 args.answers,
                 args.non_interactive,
                 dry_run=args.dry_run,
+                resolutions_path=getattr(args, "resolutions", None),
             )
         else:
             payload = build_execution_result(
@@ -47,6 +48,7 @@ def _run_execution_command(
                 args.answers,
                 args.non_interactive,
                 dry_run=args.dry_run,
+                resolutions_path=getattr(args, "resolutions", None),
             )
     except LifecycleCommandError as error:
         payload, exit_code = build_error_payload(
@@ -175,7 +177,7 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
 
     if args.command == "plan":
         try:
-            payload = build_plan_result(workspace, package_root, args.mode, args.answers, args.non_interactive)
+            payload = build_plan_result(workspace, package_root, args.mode, args.answers, args.non_interactive, resolutions_path=getattr(args, "resolutions", None))
         except LifecycleCommandError as error:
             payload, exit_code = build_error_payload(
                 "plan", workspace, package_root,

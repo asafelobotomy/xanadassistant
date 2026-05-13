@@ -8,16 +8,13 @@ from pathlib import Path
 
 from scripts.lifecycle._xanad._conditions import render_tokenized_text
 from scripts.lifecycle._xanad._errors import DEFAULT_POLICY_PATH, LifecycleCommandError
-from scripts.lifecycle._xanad._inspect import collect_unmanaged_files
 from scripts.lifecycle._xanad._loader import load_json, load_manifest
 from scripts.lifecycle._xanad._merge import (
     merge_json_objects,
     merge_markdown_with_preserved_blocks,
     serialize_json_object,
 )
-from scripts.lifecycle._xanad._plan_b import build_plan_result
 from scripts.lifecycle._xanad._plan_utils import expected_entry_bytes
-from scripts.lifecycle._xanad._source import build_source_summary
 
 
 def generate_apply_timestamps() -> tuple[str, str]:

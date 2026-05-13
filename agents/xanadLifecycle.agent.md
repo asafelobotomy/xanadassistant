@@ -24,12 +24,159 @@ resolution is missing.
 
 ## Trigger phrases
 
-- Install or set up xanadAssistant → run `apply` (after `inspect` and `plan setup`)
+- Install or set up xanadAssistant → cold-start path (see below) if not installed; `apply` otherwise
 - Update to the latest version → run `update`
 - Repair a broken or incomplete install → run `repair`
 - Restore to factory defaults → run `factory-restore`
 - Check current workspace state → run `inspect` or `check`
 - Natural-language requests to add a convention or preference to instructions are not lifecycle operations; do not invoke this agent for phrases like `Remember this for next time` or `Add this to your instructions`.
+
+## Cold-start (blank workspace)
+
+This agent is installed by xanadAssistant and is not present in a fresh
+workspace. When a user says something like "Setup asafelobotomy/xanadassistant"
+and this agent is not yet available, use `xanadBootstrap.py` instead of the
+lifecycle CLI. The bootstrap runner is a single stdlib-only file that resolves
+and downloads the package automatically.
+
+### Bootstrap steps
+
+**Step 1 — Fetch the bootstrap runner**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py -o xanadBootstrap.py
+```
+
+Or with Python if curl is unavailable:
+
+```sh
+python3 -c "import urllib.request; urllib.request.urlretrieve('https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py', 'xanadBootstrap.py')"
+```
+
+**Step 2 — Inspect**
+
+```sh
+python3 xanadBootstrap.py inspect --workspace . --json
+```
+
+Confirm `installState` is `not-installed` before continuing.
+
+**Step 3 — Interview and collect answers**
+
+```sh
+python3 xanadBootstrap.py interview --workspace . --mode setup --json
+```
+
+Parse `result.questions`. For each question, present the `prompt` and `default`
+to the user and ask whether they want to override. Create the temp directory and
+write only the keys the user explicitly changes to `.xanadAssistant/tmp/setup-answers.json`:
+
+```json
+{
+  "profile.selected": "balanced",
+  "packs.selected": [],
+  "ownership.agents": "plugin-backed-copilot-format",
+  "ownership.skills": "plugin-backed-copilot-format",
+  "response.style": "balanced",
+  "autonomy.level": "ask-first",
+  "agent.persona": "professional",
+  "testing.philosophy": "always",
+  "mcp.enabled": true,
+  "mcp.servers": []
+}
+```
+
+Any key omitted from the file is resolved to its declared `default` by the
+lifecycle engine.
+
+**Step 3.5 — Resolve pre-existing files (optional)**
+
+Inspect `result.existingFiles` in the interview output.  If the array is
+non-empty, present each entry to the user.
+
+Record shapes:
+
+```json
+{
+  "path": ".github/agents/old-agent.md",
+  "type": "collision",
+  "conflictsWith": "agents/old-agent",
+  "surface": "agents",
+  "mergeSupported": false,
+  "mergeStrategy": null,
+  "availableDecisions": ["keep", "replace"]
+}
+```
+
+- `collision` — xanadAssistant would overwrite this file.  Decisions: `keep`,
+  `replace`, `merge` (when `mergeSupported` is true).
+- `unmanaged` — a file in a managed directory that xanadAssistant does not own.
+  Decisions: `keep`, `remove`.
+- `consumer-kept-updated` (update mode only) — a previously-kept file whose
+  source has changed since install.  Decisions: `keep`, `update`.
+
+Collect per-file decisions and write to
+`.xanadAssistant/tmp/conflict-resolutions.json` (flat JSON object, path →
+decision):
+
+```json
+{
+  ".github/prompts/my-prompt.md": "keep",
+  ".github/agents/old-agent.md": "remove"
+}
+```
+
+Pass `--resolutions .xanadAssistant/tmp/conflict-resolutions.json` to both
+`plan setup` (or `plan update`) and `apply` (or `update`).
+Skip this step when `existingFiles` is empty.
+
+**Step 4 — Plan and confirm**
+
+```sh
+python3 xanadBootstrap.py plan setup \
+  --workspace . \
+  --answers .xanadAssistant/tmp/setup-answers.json \
+  --non-interactive --json
+```
+
+If `approvalRequired` is `true`, summarise the planned writes for the user and
+ask for confirmation before applying.
+
+**Step 5 — Apply**
+
+```sh
+python3 xanadBootstrap.py apply \
+  --workspace . \
+  --answers .xanadAssistant/tmp/setup-answers.json \
+  --non-interactive --json
+```
+
+Check `validation.status`. If it is not `passed`, report the error and
+`backupPath` to the user.
+
+**Step 6 — Clean up**
+
+```sh
+rm xanadBootstrap.py
+rm -rf .xanadAssistant/tmp
+```
+
+The install is complete. All future lifecycle operations use this agent or the
+installed CLI directly.
+
+### Pinning to a release
+
+To target a specific release instead of `main`, pass `--version v1.0.0` to the
+bootstrap runner. **Pass `--version` to every bootstrap command in the sequence**
+so all steps use the same cached release.
+Check the
+[releases page](https://github.com/asafelobotomy/xanadassistant/releases) for
+available tags.
+
+```sh
+python3 xanadBootstrap.py apply \
+  --workspace . --version v1.0.0 --non-interactive --json
+```
 
 ## Workflow discipline
 

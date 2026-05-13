@@ -157,6 +157,11 @@ class InspectCheckTests(XanadTestBase):
             target_two.parent.mkdir(parents=True, exist_ok=True)
             target_two.write_text(self.render_setup_prompt(repo_root, workspace), encoding="utf-8")
 
+            (workspace / ".github" / "prompts" / "bootstrap.md").write_text(
+                (repo_root / "template" / "prompts" / "bootstrap.md").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+
             instructions_dir = workspace / ".github" / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "tests.instructions.md").write_text(

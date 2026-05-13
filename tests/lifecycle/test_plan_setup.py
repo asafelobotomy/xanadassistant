@@ -41,7 +41,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual("setup", payload["mode"])
         self.assertEqual("approval-required", payload["status"])
         self.assertTrue(payload["result"]["approvalRequired"])
-        self.assertTrue(payload["result"]["backupRequired"])
+        self.assertFalse(payload["result"]["backupRequired"])  # pure-add: no files overwritten
         self.assertEqual(0, payload["result"]["writes"]["replace"])
         self.assertEqual(0, payload["result"]["writes"]["merge"])
         self.assertEqual("balanced", payload["result"]["profile"])
@@ -51,9 +51,8 @@ class PlanSetupTests(XanadTestBase):
             ".github/xanadAssistant-lock.json",
             payload["result"]["plannedLockfile"]["path"],
         )
-        self.assertEqual(
-            ".xanadAssistant/backups/<apply-timestamp>",
-            payload["result"]["plannedLockfile"]["contents"]["lastBackup"]["path"],
+        self.assertNotIn(  # no lastBackup for pure-add fresh install
+            "lastBackup", payload["result"]["plannedLockfile"]["contents"]
         )
         self.assertEqual(
             [
@@ -131,8 +130,8 @@ class PlanSetupTests(XanadTestBase):
         )
         self.assertEqual(
             {
-                "required": True,
-                "root": ".xanadAssistant/backups/<apply-timestamp>",
+                "required": False,  # pure-add fresh install: no files overwritten
+                "root": None,
                 "targets": [],
                 "archiveRoot": ".xanadAssistant/archive",
                 "archiveTargets": [],
@@ -326,6 +325,38 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual("act-then-tell", resolved["autonomy.level"])
         self.assertEqual("mentor", resolved["agent.persona"])
         self.assertEqual("suggest", resolved["testing.philosophy"])
+
+    def test_plan_setup_fills_defaults_for_omitted_answer_keys(self) -> None:
+        """Omitted answer keys must resolve to their declared defaults (INSTALL.md contract)."""
+        # Partial answer file — only one explicit override; all other keys are absent.
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as handle:
+            handle.write(json.dumps({"profile.selected": "balanced"}))
+            answers_path = handle.name
+
+        try:
+            result = self.run_command(
+                "plan", "setup", "--json", "--answers", answers_path, "--non-interactive"
+            )
+        finally:
+            Path(answers_path).unlink(missing_ok=True)
+
+        self.assertEqual(0, result.returncode)
+        payload = json.loads(result.stdout)
+        resolved = payload["result"]["resolvedAnswers"]
+        # The explicit answer is applied.
+        self.assertEqual("balanced", resolved["profile.selected"])
+        # All other questions must still be resolved (not absent or None).
+        self.assertIn("mcp.enabled", resolved)
+        self.assertIn("response.style", resolved)
+        self.assertIn("autonomy.level", resolved)
+        self.assertIn("agent.persona", resolved)
+        self.assertIn("testing.philosophy", resolved)
+        # Defaults match the declared values in _interview_questions.py.
+        self.assertEqual("balanced", resolved["response.style"])
+        self.assertEqual("ask-first", resolved["autonomy.level"])
+        self.assertEqual("professional", resolved["agent.persona"])
+        self.assertEqual("always", resolved["testing.philosophy"])
+        self.assertTrue(payload["result"]["questionsResolved"])
 
 
 if __name__ == "__main__":

@@ -44,6 +44,7 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
     token_values = resolve_token_values(policy, workspace, default_answers, package_root=package_root)
     manifest_with_status = annotate_manifest_entries(
         workspace, package_root, manifest, ownership_by_surface, default_answers, token_values,
+        consumer_resolutions=lockfile_state.get("consumerResolutions", {}),
     )
     manifest_summary = summarize_manifest_targets(workspace, manifest_with_status)
 

@@ -111,6 +111,14 @@ def build_backup_plan(policy: dict, actions: list[dict], backup_required: bool) 
                     "backupPath": f"{backup_root}/{action['target']}",
                 }
             )
+        elif action["action"] == "delete":
+            backup_targets.append(
+                {
+                    "target": action["target"],
+                    "action": "delete",
+                    "backupPath": f"{backup_root}/{action['target']}",
+                }
+            )
         elif (
             action["action"] == "archive-retired"
             and action.get("strategy", "archive-retired") != "report-retired"
@@ -158,6 +166,7 @@ def build_planned_lockfile(
     skipped_actions: list[dict],
     retired_targets: list[str],
     backup_plan: dict,
+    consumer_resolutions: dict | None = None,
 ) -> dict:
     manifest = context["manifest"] or {"schemaVersion": "unknown", "managedFiles": [], "retiredFiles": []}
     manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
@@ -223,6 +232,7 @@ def build_planned_lockfile(
         "files": sorted(file_records, key=lambda record: record["target"]),
         "skippedManagedFiles": sorted(entry["target"] for entry in skipped_actions),
         "retiredManagedFiles": retired_records,
+        "consumerResolutions": consumer_resolutions or {},
         "unknownValues": {},
     }
     if backup_plan.get("required") and backup_plan.get("root"):

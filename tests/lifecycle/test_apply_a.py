@@ -30,7 +30,7 @@ class ApplyTests(XanadTestBase):
             self.assertEqual("apply", payload["command"])
             self.assertEqual("setup", payload["mode"])
             self.assertEqual("ok", payload["status"])
-            self.assertTrue(payload["result"]["backup"]["created"])
+            self.assertFalse(payload["result"]["backup"]["created"])  # pure-add fresh install: no overwrite backup needed
             self.assertEqual(0, payload["result"]["writes"]["replaced"])
             self.assertTrue(payload["result"]["summary"]["written"])
             self.assertEqual(".github/copilot-version.md", payload["result"]["summary"]["path"])

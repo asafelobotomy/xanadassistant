@@ -224,6 +224,11 @@ class PlanLifecycleTests(XanadTestBase):
                 encoding="utf-8",
             )
 
+            (github_dir / "prompts" / "bootstrap.md").write_text(
+                (repo_root / "template" / "prompts" / "bootstrap.md").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+
             instructions_dir = github_dir / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "tests.instructions.md").write_text(

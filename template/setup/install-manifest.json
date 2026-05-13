@@ -194,7 +194,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:d9575da971c74c2f25d78855047d260f4743dfbb4bf6ca704ed9cbb4137e8c85"
+      "hash": "sha256:8e2792c5023a0986c2cd934e7129afbe105ce06458563ccda0384a1c0b3e0a8b"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -591,6 +591,21 @@
       "hash": "sha256:99c1cda791d7774a900b386b9cc9d34f95fc8f702f291332bb58e87995f1df36"
     },
     {
+      "id": "prompts.bootstrap.md",
+      "surface": "prompts",
+      "layer": "core",
+      "source": "template/prompts/bootstrap.md",
+      "target": ".github/prompts/bootstrap.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:20df60f2c6af792fe9e6f3c12c94fdf88b3f9e0d0ba933e9a9b9a12c2e0bc2d8"
+    },
+    {
       "id": "devops-prompts.devops-incident.prompt.md",
       "surface": "prompts",
       "layer": "pack",
@@ -810,7 +825,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:27a28399e813eb03aa35d7f8fae28edd43c869a79854b0e986038de18def6907"
+      "hash": "sha256:26dcff9b590b4609bf05b1c3b28f324a1d2b71c6eb36a687b81fa8764aff1e88"
     },
     {
       "id": "shapeup-prompts.shapeup-kickoff.prompt.md",

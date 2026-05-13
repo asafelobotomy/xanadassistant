@@ -23,6 +23,18 @@ Optional packs (e.g. `lean`) add further surfaces when selected at setup time.
 - Python 3.10+
 - stdlib only — no third-party runtime dependencies
 
+## Quick install
+
+For a fresh workspace with no prior install, fetch the bootstrap runner and
+follow the step-by-step guide in [INSTALL.md](INSTALL.md).
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py | python3 - apply --workspace . --non-interactive --json
+```
+
+If you have a local checkout of this repo, you can also run the lifecycle CLI
+directly — see [Usage](#usage) below.
+
 ## Usage
 
 Point `xanadAssistant.py` at a consumer workspace and at its own repo root:
@@ -87,7 +99,8 @@ python3 xanadAssistant.py plan setup --workspace <path> --package-root <path> --
 python3 xanadAssistant.py apply --workspace <path> --package-root <path> --plan <plan-file>
 ```
 
-> The `xanadLifecycle` Copilot agent can guide you through setup interactively.
+> For a fresh workspace, see [INSTALL.md](INSTALL.md) and the bootstrap runner.
+> Once installed, the `xanadLifecycle` Copilot agent (`.github/agents/xanadLifecycle.agent.md`) handles all future lifecycle operations.
 
 ---
 

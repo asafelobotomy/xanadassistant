@@ -36,6 +36,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
                 "added": plan_writes.get("add", 0), "replaced": plan_writes.get("replace", 0),
                 "merged": plan_writes.get("merge", 0),
                 "retiredArchived": plan_writes.get("archiveRetired", 0),
+                "deleted": plan_writes.get("deleted", 0),
                 "retiredReported": 0, "skipped": skipped_count,
             },
             "retired": [],
@@ -80,6 +81,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
     writes = {
         "added": 0, "replaced": 0, "merged": 0,
         "retiredArchived": 0, "retiredReported": 0,
+        "deleted": 0,
         "skipped": len(plan_payload["result"].get("skippedActions", [])),
     }
 
@@ -103,6 +105,17 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
                         "archivePath": archive_path_str,
                     })
                     writes["retiredArchived"] += 1
+                continue
+            if action["action"] == "delete":
+                target_path = workspace / action["target"]
+                if not target_path.exists():
+                    continue
+                if backup_root is not None:
+                    backup_dest = workspace / backup_root / action["target"]
+                    backup_dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(target_path, backup_dest)
+                target_path.unlink()
+                writes["deleted"] += 1
                 continue
             if action["action"] == "merge" and action["strategy"] not in {"merge-json-object", "preserve-marked-markdown-blocks"}:
                 raise LifecycleCommandError(
@@ -185,8 +198,9 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
 def build_execution_result(
     command: str, mode: str, workspace: Path, package_root: Path,
     answers_path: str | None, non_interactive: bool, dry_run: bool = False,
+    resolutions_path: str | None = None,
 ) -> dict:
-    plan_payload = build_plan_result(workspace, package_root, mode, answers_path, non_interactive)
+    plan_payload = build_plan_result(workspace, package_root, mode, answers_path, non_interactive, resolutions_path=resolutions_path)
     if plan_payload["result"].get("conflictDetails"):
         raise LifecycleCommandError(
             "approval_or_answers_required",
@@ -207,6 +221,9 @@ def build_execution_result(
 
 def build_apply_result(
     workspace: Path, package_root: Path, answers_path: str | None,
-    non_interactive: bool, dry_run: bool = False,
+    non_interactive: bool, dry_run: bool = False, resolutions_path: str | None = None,
 ) -> dict:
-    return build_execution_result("apply", "setup", workspace, package_root, answers_path, non_interactive, dry_run=dry_run)
+    return build_execution_result(
+        "apply", "setup", workspace, package_root, answers_path, non_interactive,
+        dry_run=dry_run, resolutions_path=resolutions_path,
+    )

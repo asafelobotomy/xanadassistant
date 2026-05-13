@@ -34,7 +34,14 @@ from scripts.lifecycle._xanad._plan_utils import (
     _build_lockfile_package_info,  # noqa: F401 – re-exported
     build_planned_lockfile,  # noqa: F401 – re-exported
 )
+from scripts.lifecycle._xanad._prescan import scan_consumer_kept_updates, scan_existing_copilot_files
 from scripts.lifecycle._xanad._progress import build_not_implemented_payload
+from scripts.lifecycle._xanad._resolutions import (
+    apply_resolutions_to_plan_actions,
+    build_delete_actions,
+    load_resolutions,
+    validate_resolutions,
+)
 from scripts.lifecycle._xanad._source import build_source_summary
 
 
@@ -64,7 +71,7 @@ def _conflict_blocked_plan(
             "approvalRequired": True, "backupRequired": False,
             "backupPlan": build_backup_plan(context["policy"], [], False),
             "plannedLockfile": None,
-            "writes": {"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0},
+            "writes": {"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0, "deleted": 0},
             "conflicts": [], "conflictSummary": build_conflict_summary([]),
             "conflictDetails": pack_conflicts,
             "actions": [], "skippedActions": [], "tokenSubstitutions": [],
@@ -79,7 +86,14 @@ def _conflict_blocked_plan(
     }
 
 
-def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_path: str | None, non_interactive: bool) -> dict:
+def build_plan_result(
+    workspace: Path,
+    package_root: Path,
+    mode: str,
+    answers_path: str | None,
+    non_interactive: bool,
+    resolutions_path: str | None = None,
+) -> dict:
     if mode not in {"setup", "update", "repair", "factory-restore"}:
         return build_not_implemented_payload("plan", workspace, package_root, mode)
 
@@ -117,6 +131,27 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
     answers = seed_answers_from_profile(context["metadata"].get("profileRegistry") or {}, answers, question_ids)
     resolved_answers, unresolved, unknown_answer_ids = resolve_question_answers(questions, answers)
     resolved_answers = normalize_plan_answers(context["policy"], resolved_answers)
+
+    # Prescan: detect pre-existing files and load consumer per-file resolutions.
+    _res_warnings: list[dict] = []
+    if mode == "setup":
+        existing_files = scan_existing_copilot_files(workspace, context["manifest"])
+        resolutions, _res_warnings = validate_resolutions(
+            load_resolutions(resolutions_path), existing_files
+        )
+    elif mode == "update":
+        _prior = context["lockfileState"].get("consumerResolutions", {})
+        existing_files = scan_consumer_kept_updates(
+            workspace, context["manifest"], context["lockfileState"]
+        )
+        _new, _res_warnings = validate_resolutions(
+            load_resolutions(resolutions_path), existing_files
+        )
+        resolutions = {**_prior, **_new}
+    else:
+        existing_files = []
+        resolutions = {}
+
     if non_interactive and unresolved:  # pragma: no cover
         raise LifecycleCommandError(
             "approval_or_answers_required",
@@ -157,6 +192,12 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
         workspace, package_root, context["manifest"], ownership_by_surface,
         resolved_answers, token_values, force_reinstall=(mode == "factory-restore"),
     )
+    # Apply consumer per-file resolutions (keep / replace / merge / update).
+    actions, skipped_actions = apply_resolutions_to_plan_actions(actions, skipped_actions, resolutions)
+    delete_actions = build_delete_actions(workspace, resolutions, existing_files)
+    actions.extend(delete_actions)
+    writes["deleted"] = len(delete_actions)
+
     for target in context.get("successorMigrationTargets", []):
         if target in retired_targets:  # pragma: no cover
             continue
@@ -170,6 +211,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
             "strategy": "archive-retired",
         })
     conflicts, warnings = classify_plan_conflicts(workspace, context, actions, retired_targets)
+    warnings.extend(_res_warnings)
     if unknown_answer_ids:
         warnings.append({
             "code": "unknown_answer_ids_ignored",
@@ -177,13 +219,18 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
             "details": {"questionIds": unknown_answer_ids},
         })
     token_plan = build_token_plan_summary(context["policy"], actions, token_values)
-    backup_required = any(count > 0 for count in writes.values())
+    backup_required = (
+        writes.get("replace", 0) + writes.get("merge", 0)
+        + writes.get("archiveRetired", 0) + writes.get("deleted", 0)
+    ) > 0
     backup_plan = build_backup_plan(context["policy"], actions, backup_required)
+    keep_resolutions = {k: v for k, v in resolutions.items() if v == "keep"}
     planned_lockfile = build_planned_lockfile(
         workspace, context, ownership_by_surface, resolved_answers, token_values,
         actions, skipped_actions, retired_targets, backup_plan,
+        consumer_resolutions=keep_resolutions,
     )
-    approval_required = backup_required
+    approval_required = any(count > 0 for count in writes.values())
 
     return {
         "command": "plan",
@@ -219,5 +266,7 @@ def build_plan_result(workspace: Path, package_root: Path, mode: str, answers_pa
             "questionsResolved": not unresolved,
             "resolvedAnswers": resolved_answers,
             "questions": questions,
+            "existingFiles": existing_files,
+            "consumerResolutions": resolutions,
         },
     }

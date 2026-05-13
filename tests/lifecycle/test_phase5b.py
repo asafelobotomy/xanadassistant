@@ -173,6 +173,11 @@ class XanadAssistantPhase5Tests(XanadTestBase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
+            # Pre-create a managed file so the plan has a replace action (backup is only
+            # created when something is overwritten, not for pure-add fresh installs).
+            github_dir = workspace / ".github"
+            github_dir.mkdir(parents=True)
+            (github_dir / "copilot-instructions.md").write_text("# Old instructions", encoding="utf-8")
             plan_payload = build_plan_result(workspace, repo_root, "setup", None, False)
 
             with patch("scripts.lifecycle._xanad._check.build_check_result") as mock_check:

@@ -14,6 +14,7 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--non-interactive", action="store_true", help="Disable interactive prompting.")
     parser.add_argument("--dry-run", action="store_true", help="Avoid managed writes.")
     parser.add_argument("--answers", help="Path to answer file.")
+    parser.add_argument("--resolutions", default=None, help="Path to conflict-resolutions.json for pre-existing file decisions.")
     parser.add_argument("--plan-out", help="Path to write a serialized plan.")
     parser.add_argument("--report-out", help="Path to write a structured report.")
     parser.add_argument("--log-file", help="Path to write a plain-text operational log.")
