@@ -71,12 +71,26 @@ Confirm `installState` is `not-installed` before continuing.
 python3 xanadBootstrap.py interview --workspace . --mode setup --json
 ```
 
-Parse `result.questions`. For each question, present the `prompt` and `default`
-to the user and ask whether they want to override. Create the temp directory and
-write only the keys the user explicitly changes to `.xanadAssistant/tmp/setup-answers.json`:
+Parse `result.questions`. Each question carries a `batch` field with one of
+four values:
+
+| batch | when to present |
+|---|---|
+| `setup` | always first — ask `setup.depth` before anything else |
+| `simple` | always |
+| `advanced` | when `setup.depth` is `advanced` or `full` |
+| `full` | when `setup.depth` is `full` |
+
+Present `setup`-batch questions first. Use the user's `setup.depth` answer to
+decide which remaining batches to show. Present only one question at a time.
+
+For each question, present the `prompt` and `default` to the user and ask
+whether they want to override. Create the temp directory and write only the
+keys the user explicitly changes to `.xanadAssistant/tmp/setup-answers.json`:
 
 ```json
 {
+  "setup.depth": "simple",
   "profile.selected": "balanced",
   "packs.selected": [],
   "ownership.agents": "plugin-backed-copilot-format",
@@ -89,6 +103,10 @@ write only the keys the user explicitly changes to `.xanadAssistant/tmp/setup-an
   "mcp.servers": []
 }
 ```
+
+`packs.selected` accepts one or more pack names as an array. If the user selects
+multiple packs, the plan step will surface any token conflicts that need
+resolution before proceeding.
 
 Any key omitted from the file is resolved to its declared `default` by the
 lifecycle engine.
@@ -233,10 +251,23 @@ python3 xanadAssistant.py apply \
   --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 
-# Update an existing install
+# Update an existing install (uses seeded answers from lockfile)
 python3 xanadAssistant.py update \
   --workspace <consumer-repo-path> \
   --package-root <xanadAssistant-checkout> \
+  --non-interactive --ui agent --json-lines
+
+# Update with a re-interview (use when the user wants to change packs, depth,
+# or personalisation answers during the update)
+python3 xanadAssistant.py interview \
+  --workspace <consumer-repo-path> \
+  --package-root <xanadAssistant-checkout> \
+  --mode update --json
+# → collect answers as in the cold-start interview step, write to answers file
+python3 xanadAssistant.py update \
+  --workspace <consumer-repo-path> \
+  --package-root <xanadAssistant-checkout> \
+  --answers <answers-file> \
   --non-interactive --ui agent --json-lines
 
 # Repair a damaged or incomplete install
