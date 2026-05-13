@@ -86,6 +86,10 @@ class OssPackSurfaceApplyTests(XanadTestBase):
                 (hooks_dir / "ossGitLog.py").exists(),
                 "ossGitLog.py not written",
             )
+            self.assertTrue(
+                (hooks_dir / "ossLicenseCheck.py").exists(),
+                "ossLicenseCheck.py not written",
+            )
 
     def test_apply_oss_pack_without_hooks_does_not_write_hook_scripts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -104,6 +108,10 @@ class OssPackSurfaceApplyTests(XanadTestBase):
             self.assertFalse(
                 (hooks_dir / "ossGitLog.py").exists(),
                 "ossGitLog.py should not be written when mcp.enabled=False",
+            )
+            self.assertFalse(
+                (hooks_dir / "ossLicenseCheck.py").exists(),
+                "ossLicenseCheck.py should not be written when mcp.enabled=False",
             )
 
     def test_apply_no_pack_does_not_write_oss_files(self) -> None:
@@ -133,6 +141,10 @@ class OssPackSurfaceApplyTests(XanadTestBase):
             self.assertFalse(
                 (hooks_dir / "ossGitLog.py").exists(),
                 "ossGitLog.py should not be written without oss pack",
+            )
+            self.assertFalse(
+                (hooks_dir / "ossLicenseCheck.py").exists(),
+                "ossLicenseCheck.py should not be written without oss pack",
             )
 
 

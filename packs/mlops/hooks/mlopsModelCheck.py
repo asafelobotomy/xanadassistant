@@ -6,6 +6,7 @@ Tools
 check_model_files        : Find large model artefact files that should not be committed to git.
 scan_for_leakage_patterns: Detect common data leakage code patterns in Python files.
 find_hardcoded_paths     : Report hardcoded absolute paths in source files and notebooks.
+diff_requirements        : Compare two requirements files and report package drift.
 
 Transport: stdio  |  Run: uvx --from "mcp[cli]" mcp run <this-file>
 """
@@ -198,6 +199,51 @@ def find_hardcoded_paths(directory: str) -> dict:
                     break  # one finding per line
 
     return {"directory": str(root), "findings": findings, "count": len(findings)}
+
+
+_VER_SPLIT = re.compile(r"([A-Za-z0-9_.\-]+)\s*([>=<!~^].+)?")
+
+
+@mcp.tool()
+def diff_requirements(path_a: str, path_b: str) -> dict:
+    """Compare two requirements files and report added, removed, and version-changed packages.
+
+    Supports requirements.txt and similar formats. Blank lines and comments are ignored.
+
+    Args:
+        path_a: Baseline requirements file (e.g., training environment).
+        path_b: Comparison requirements file (e.g., serving environment).
+
+    Returns:
+        {"added": list[str], "removed": list[str],
+         "changed": list[{"name": str, "from": str, "to": str}]}
+    """
+    def _parse(fpath: str) -> dict[str, str]:
+        result: dict[str, str] = {}
+        try:
+            for raw in Path(fpath).read_text(encoding="utf-8", errors="replace").splitlines():
+                line = raw.strip().split("#")[0].strip()
+                if not line or line.startswith("-"):
+                    continue
+                m = _VER_SPLIT.match(line)
+                if m:
+                    result[m.group(1).lower().replace("-", "_")] = (m.group(2) or "").strip()
+        except OSError:
+            pass
+        return result
+
+    a, b = _parse(path_a), _parse(path_b)
+    added = sorted(k for k in b if k not in a)
+    removed = sorted(k for k in a if k not in b)
+    changed = sorted(
+        [{"name": k, "from": a[k], "to": b[k]} for k in a if k in b and a[k] != b[k]],
+        key=lambda x: x["name"],
+    )
+    return {
+        "added": [f"{k}{b[k]}" if b[k] else k for k in added],
+        "removed": [f"{k}{a[k]}" if a[k] else k for k in removed],
+        "changed": changed,
+    }
 
 
 if __name__ == "__main__":

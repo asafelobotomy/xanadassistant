@@ -253,7 +253,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:a9dd5a1589ea7974c1acb94cb24c7cadd92f88085dd0c5c3e32e0a3cb54592aa"
+      "hash": "sha256:affc3bd7273a0b67e416105b7d46c3ee176850a49ba1da821f64a6a326c1f199"
     },
     {
       "id": "docs-hooks.docsLinkCheck.py",
@@ -376,7 +376,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:b657a2082301f9de2f862bfee6dfad32d759713ea0d4882f4ad5f24c712e9ab0"
+      "hash": "sha256:6243d3e88928be71fc7df2044fb19e39e518f56db16b6dc0ab4189e91ab89b5e"
     },
     {
       "id": "oss-hooks.ossGitLog.py",
@@ -397,6 +397,24 @@
       "hash": "sha256:f5a44c1cc256182a238953f405d4db2005e70a9b12ebf2f5f0c048f64e90b120"
     },
     {
+      "id": "oss-hooks.ossLicenseCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/oss/hooks/ossLicenseCheck.py",
+      "target": ".github/hooks/scripts/ossLicenseCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:a8ca27e9669b936d75db268237cf3d6e0951cb8e15c25f2cfee7058a892edc48"
+    },
+    {
       "id": "secure-hooks.secureOsv.py",
       "surface": "hooks",
       "layer": "pack",
@@ -412,7 +430,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:4486a214a1ed34ff222da07845b3dda8b7ec7d6e77b7c52a32f121c021e4c383"
+      "hash": "sha256:60ecd08bac31be6d2138772b44af6557408d1b44b666ead37f75ed6f51d678e0"
     },
     {
       "id": "hook-scripts.securityMcp.py",
@@ -447,7 +465,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:e1f7cccc6f32cd22aa478203f0a0e46a3308eb37ab9982ee0d93c323dc9a4de8"
+      "hash": "sha256:52a203b5321785afdec72814fd7e88130104a51b6dd8a2f82977542f22eae5f1"
     },
     {
       "id": "hook-scripts.sqliteMcp.py",
@@ -465,6 +483,24 @@
       "tokens": [],
       "chmod": "executable",
       "hash": "sha256:4bf52fa4b1e4b13c6251bdcf6c0d65133f61e5f0b3c7835e757e33b5eb038499"
+    },
+    {
+      "id": "tdd-hooks.tddTestRunner.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/tdd/hooks/tddTestRunner.py",
+      "target": ".github/hooks/scripts/tddTestRunner.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=tdd",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:0258f384b86372de4f6fcf221d331acfc964f095df47d4cc446d0d7ca68439cd"
     },
     {
       "id": "hook-scripts.timeMcp.py",

@@ -3,7 +3,9 @@
 Covers:
 1. tdd-skills surface — written when packs.selected=tdd
 2. tdd-prompts surface — written when packs.selected=tdd
-3. No-tdd install — tdd skill and prompt files are NOT written
+3. tdd-hooks surface — written when packs.selected=tdd AND hooks.enabled (mcp.enabled)
+4. tdd-hooks surface — NOT written when mcp.enabled=False
+5. No-tdd install — tdd skill, prompt, and hook files are NOT written
 """
 
 from __future__ import annotations
@@ -87,6 +89,48 @@ class TddPackSurfaceApplyTests(XanadTestBase):
                     (prompts_dir / prompt).exists(),
                     f"{prompt} should not be written without tdd pack",
                 )
+            hooks_dir = ws / ".github" / "hooks" / "scripts"
+            self.assertFalse(
+                (hooks_dir / "tddTestRunner.py").exists(),
+                "tddTestRunner.py should not be written without tdd pack",
+            )
+
+    def test_apply_tdd_pack_with_hooks_enabled_writes_hook_scripts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            answers_path = ws / "answers.json"
+            answers_path.write_text(
+                json.dumps(_answers({"packs.selected": ["tdd"]})), encoding="utf-8"
+            )
+
+            result = self._run("apply", "--json", "--non-interactive",
+                               "--answers", str(answers_path), workspace=ws)
+            self.assertEqual(0, result.returncode, result.stderr)
+
+            hooks_dir = ws / ".github" / "hooks" / "scripts"
+            self.assertTrue(
+                (hooks_dir / "tddTestRunner.py").exists(),
+                "tddTestRunner.py not written",
+            )
+
+    def test_apply_tdd_pack_without_hooks_does_not_write_hook_scripts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            answers_path = ws / "answers.json"
+            answers_path.write_text(
+                json.dumps(_answers({"packs.selected": ["tdd"], "mcp.enabled": False})),
+                encoding="utf-8",
+            )
+
+            result = self._run("apply", "--json", "--non-interactive",
+                               "--answers", str(answers_path), workspace=ws)
+            self.assertEqual(0, result.returncode, result.stderr)
+
+            hooks_dir = ws / ".github" / "hooks" / "scripts"
+            self.assertFalse(
+                (hooks_dir / "tddTestRunner.py").exists(),
+                "tddTestRunner.py should not be written when mcp.enabled=False",
+            )
 
 
 if __name__ == "__main__":

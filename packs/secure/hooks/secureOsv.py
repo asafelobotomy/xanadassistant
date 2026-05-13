@@ -5,6 +5,8 @@ Tools
 -----
 query_package_vulnerabilities : Query OSV.dev for a single package version.
 batch_query_lockfile          : Parse a lockfile and bulk-query all dependencies.
+list_supported_ecosystems     : Return the OSV-supported package ecosystems.
+scan_code_patterns            : Scan source files for OWASP-class security anti-patterns.
 
 Uses the public OSV.dev API (https://api.osv.dev/v1/query) — no auth required.
 
@@ -222,6 +224,53 @@ def batch_query_lockfile(lockfile_path: str) -> dict:
         "errors": errors,
         "note": "Results sourced from OSV.dev. Query is point-in-time.",
     }
+
+
+_OWASP_PATTERNS: list[tuple[str, str]] = [
+    (r"(?:execute|cursor\.execute)\s*\(\s*[\"'][^\"']*%[^\"']*[\"']\s*%", "SQL injection via string formatting"),
+    (r"eval\s*\(", "eval() — potential code injection"),
+    (r"exec\s*\(", "exec() — potential code injection"),
+    (r"subprocess\.[a-z_]+\s*\([^)]*shell\s*=\s*True", "subprocess shell=True — command injection risk"),
+    (r"os\.system\s*\(", "os.system() — use subprocess with a list instead"),
+    (r"pickle\.loads?\s*\(", "pickle.load — unsafe deserialization"),
+    (r"yaml\.load\s*\([^)]*\)(?![^\n]*safe)", "yaml.load without safe_load"),
+    (r"innerHTML\s*=", "innerHTML assignment — potential XSS"),
+    (r"document\.write\s*\(", "document.write() — potential XSS"),
+]
+_OWASP_COMPILED = [(re.compile(pat, re.IGNORECASE), label) for pat, label in _OWASP_PATTERNS]
+_SCANNABLE_EXTENSIONS = {".py", ".js", ".ts", ".jsx", ".tsx", ".rb", ".php", ".java"}
+
+
+@mcp.tool()
+def scan_code_patterns(path: str) -> dict:
+    """Scan a file or directory for OWASP-class security anti-patterns.
+
+    Checks for SQL injection, command injection, unsafe deserialization, eval/exec,
+    and DOM XSS vectors. Results are heuristic — confirm each finding manually.
+
+    Args:
+        path: File or directory to scan.
+
+    Returns:
+        {"scanned_files": int, "findings": list[{"file", "line", "pattern", "match"}]}
+    """
+    p = Path(path)
+    files: list[Path] = (
+        [p] if p.is_file()
+        else [f for f in p.rglob("*") if f.is_file() and f.suffix in _SCANNABLE_EXTENSIONS]
+    )
+    findings: list[dict] = []
+    for f in sorted(files):
+        try:
+            lines = f.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        for i, line in enumerate(lines, 1):
+            for rx, label in _OWASP_COMPILED:
+                if rx.search(line):
+                    findings.append({"file": str(f), "line": i, "pattern": label, "match": line.strip()[:120]})
+                    break
+    return {"scanned_files": len(files), "findings": findings}
 
 
 @mcp.tool()

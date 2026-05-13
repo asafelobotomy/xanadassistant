@@ -59,6 +59,7 @@
     "secure-hooks": "pack",
     "tdd-skills": "pack",
     "tdd-prompts": "pack",
+    "tdd-hooks": "pack",
     "oss-skills": "pack",
     "oss-prompts": "pack",
     "oss-hooks": "pack",

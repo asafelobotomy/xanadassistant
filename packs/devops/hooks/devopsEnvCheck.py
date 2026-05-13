@@ -3,9 +3,10 @@
 
 Tools
 -----
-scan_for_secrets   : Detect probable secrets in a file or directory tree.
-check_gitignore    : Report sensitive file patterns missing from .gitignore.
-list_env_vars      : List environment variable names (not values) set in a process env file.
+scan_for_secrets           : Detect probable secrets in a file or directory tree.
+check_gitignore            : Report sensitive file patterns missing from .gitignore.
+list_env_vars              : List environment variable names (not values) set in a process env file.
+validate_workflow_structure: Check a GitHub Actions workflow for required fields and pinned action SHAs.
 
 Transport: stdio  |  Run: uvx --from "mcp[cli]" mcp run <this-file>
 """
@@ -170,6 +171,57 @@ def list_env_vars(env_file: str) -> dict:
                 names.append(name)
 
     return {"file": str(path), "variable_names": names, "line_count": len(lines)}
+
+
+_USES_RE = re.compile(r"^\s*uses\s*:\s*(.+@(.+))\s*$")
+_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+
+
+@mcp.tool()
+def validate_workflow_structure(path: str) -> dict:
+    """Check a GitHub Actions workflow file for required fields and pinned action SHAs.
+
+    Validates presence of 'on:' trigger and 'jobs:' section, and reports any
+    'uses:' directives not pinned to a full 40-character commit SHA.
+
+    Args:
+        path: Path to a GitHub Actions YAML workflow file.
+
+    Returns:
+        {"path": str, "has_on_trigger": bool, "has_jobs": bool,
+         "unpinned_actions": list[{"line": int, "ref": str}], "findings": list[str]}
+    """
+    p = Path(path)
+    if not p.exists():
+        return {"error": f"File not found: {path}"}
+    try:
+        lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError as exc:
+        return {"error": str(exc)}
+
+    has_on = False
+    has_jobs = False
+    unpinned: list[dict] = []
+    for i, line in enumerate(lines, 1):
+        if re.match(r"^on\s*:", line):
+            has_on = True
+        if re.match(r"^jobs\s*:", line):
+            has_jobs = True
+        m = _USES_RE.match(line)
+        if m:
+            ref = m.group(2).split("#")[0].strip()
+            if not _SHA_RE.match(ref):
+                unpinned.append({"line": i, "ref": m.group(1).strip()})
+
+    findings = []
+    if not has_on:
+        findings.append("Missing 'on:' trigger definition")
+    if not has_jobs:
+        findings.append("Missing 'jobs:' section")
+    if unpinned:
+        findings.append(f"{len(unpinned)} action(s) not pinned to a full commit SHA")
+    return {"path": path, "has_on_trigger": has_on, "has_jobs": has_jobs,
+            "unpinned_actions": unpinned, "findings": findings}
 
 
 if __name__ == "__main__":

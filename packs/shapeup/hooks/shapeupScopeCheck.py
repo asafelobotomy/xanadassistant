@@ -6,6 +6,7 @@ Tools
 find_unscoped_todos  : Find TODO/FIXME/HACK comments without associated issue references.
 check_scope_creep    : Detect files modified outside a declared scope list.
 list_open_questions  : Extract open-question markers from Markdown and plain-text docs.
+check_appetite       : Check whether a cycle is within its Shape Up appetite budget.
 
 Transport: stdio  |  Run: uvx --from "mcp[cli]" mcp run <this-file>
 """
@@ -219,6 +220,40 @@ def list_open_questions(directory: str) -> dict:
                 })
 
     return {"directory": str(root), "questions": questions, "count": len(questions)}
+
+
+@mcp.tool()
+def check_appetite(start_date: str, budget_weeks: int = 6) -> dict:
+    """Check whether a Shape Up cycle is within its appetite.
+
+    Args:
+        start_date:   ISO 8601 date string (YYYY-MM-DD) when the cycle started.
+        budget_weeks: Appetite in weeks (default 6 for a standard Shape Up cycle).
+
+    Returns:
+        {"start_date": str, "today": str, "budget_weeks": int, "budget_days": int,
+         "elapsed_days": int, "remaining_days": int, "over_budget": bool,
+         "percent_complete": float}
+    """
+    from datetime import date as _date
+    try:
+        start = _date.fromisoformat(start_date)
+    except ValueError:
+        return {"error": f"Invalid date: {start_date!r} — expected YYYY-MM-DD."}
+    today = _date.today()
+    budget_days = budget_weeks * 7
+    elapsed = (today - start).days
+    remaining = budget_days - elapsed
+    return {
+        "start_date": start_date,
+        "today": today.isoformat(),
+        "budget_weeks": budget_weeks,
+        "budget_days": budget_days,
+        "elapsed_days": elapsed,
+        "remaining_days": remaining,
+        "over_budget": remaining < 0,
+        "percent_complete": round(min(elapsed / budget_days * 100, 100), 1) if budget_days else 0.0,
+    }
 
 
 if __name__ == "__main__":

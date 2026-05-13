@@ -15,6 +15,7 @@
     "secure-hooks",
     "tdd-skills",
     "tdd-prompts",
+    "tdd-hooks",
     "oss-skills",
     "oss-prompts",
     "oss-hooks",
@@ -129,6 +130,12 @@
     "tdd-prompts": {
       "sourceRoot": "tdd-pack",
       "path": "prompts",
+      "kind": "directory",
+      "layer": "pack"
+    },
+    "tdd-hooks": {
+      "sourceRoot": "tdd-pack",
+      "path": "hooks",
       "kind": "directory",
       "layer": "pack"
     },
@@ -283,6 +290,10 @@
       "targetRoot": ".github/prompts",
       "surface": "prompts"
     },
+    "tdd-hooks": {
+      "targetRoot": ".github/hooks/scripts",
+      "surface": "hooks"
+    },
     "oss-skills": {
       "targetRoot": ".github/skills",
       "surface": "skills"
@@ -367,6 +378,7 @@
     "secure-hooks": "local",
     "tdd-skills": "plugin-backed-copilot-format",
     "tdd-prompts": "local",
+    "tdd-hooks": "local",
     "oss-skills": "plugin-backed-copilot-format",
     "oss-prompts": "local",
     "oss-hooks": "local",
@@ -399,6 +411,7 @@
     "secure-hooks": "replace-verbatim",
     "tdd-skills": "replace-verbatim",
     "tdd-prompts": "replace-verbatim",
+    "tdd-hooks": "replace-verbatim",
     "oss-skills": "replace-verbatim",
     "oss-prompts": "replace-verbatim",
     "oss-hooks": "replace-verbatim",
@@ -443,6 +456,10 @@
     ],
     "tdd-prompts": [
       "packs.selected=tdd"
+    ],
+    "tdd-hooks": [
+      "packs.selected=tdd",
+      "hooks.enabled"
     ],
     "oss-skills": [
       "packs.selected=oss"
