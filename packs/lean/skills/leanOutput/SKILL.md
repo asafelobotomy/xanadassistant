@@ -1,3 +1,8 @@
+---
+name: leanOutput
+description: "Output discipline — lean factual responses with no filler, summaries as counts, and omitted routine narration."
+---
+
 # Lean Output
 
 Use this skill when the workspace has selected the lean pack. Apply it when generating responses, summaries, receipts, and reports.

@@ -131,5 +131,5 @@ def find_markdown_files(directory: str, max_results: int = 200) -> dict:
     return {"directory": str(root), "files": files, "truncated": False}
 
 
-if __name__ == "__main__":
-    mcp.run()
+if __name__ == "__main__":  # pragma: no cover
+    mcp.run(transport="stdio")

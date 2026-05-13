@@ -1,4 +1,5 @@
 ---
+mode: ask
 description: Code review scoped to Critical and High severity only — blockers, security vulnerabilities, and clear runtime bugs.
 ---
 

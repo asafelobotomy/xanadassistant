@@ -224,5 +224,5 @@ def validate_workflow_structure(path: str) -> dict:
             "unpinned_actions": unpinned, "findings": findings}
 
 
-if __name__ == "__main__":
-    mcp.run()
+if __name__ == "__main__":  # pragma: no cover
+    mcp.run(transport="stdio")

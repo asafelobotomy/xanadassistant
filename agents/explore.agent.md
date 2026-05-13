@@ -9,6 +9,7 @@ model:
   - Claude Sonnet 4.6
 tools: [agent, codebase, search, runCommands]
 user-invocable: true
+agents: []
 ---
 
 You are the Explore agent.

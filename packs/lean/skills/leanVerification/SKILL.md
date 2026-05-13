@@ -1,3 +1,8 @@
+---
+name: leanVerification
+description: "Test and validation reporting — pass/fail only, with minimal output for passing runs and concise failure triage."
+---
+
 # Lean Verification
 
 Use this skill in workspaces with the lean pack selected.

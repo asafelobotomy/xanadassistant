@@ -1,4 +1,5 @@
 ---
+mode: ask
 description: Git status as a compact lean summary — staged/unstaged counts with a pass/fail ready indicator.
 ---
 

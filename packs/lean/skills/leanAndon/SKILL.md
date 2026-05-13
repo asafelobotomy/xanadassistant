@@ -1,3 +1,8 @@
+---
+name: leanAndon
+description: "Andon cord protocol — defines when to stop and ask versus when to proceed autonomously."
+---
+
 # Lean Andon
 
 Use this skill in workspaces with the lean pack selected.

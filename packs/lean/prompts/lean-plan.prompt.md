@@ -1,4 +1,5 @@
 ---
+mode: ask
 description: Minimum-change execution plan — numbered steps, no rationale, smallest viable scope.
 ---
 

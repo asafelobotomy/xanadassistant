@@ -15,14 +15,14 @@ Perform security-focused code review against the OWASP Top 10:2025. For each fin
 |---|---|---|
 | A01 | Broken Access Control | Missing authorization checks, IDOR, path traversal, privilege escalation |
 | A02 | Security Misconfiguration | Default credentials, overly permissive CORS, debug endpoints in production, unnecessary features enabled |
-| A03 | Supply Chain Failures | Unpinned dependencies, unsigned artifacts, build system trust issues |
+| A03 | Software Supply Chain Failures | Unpinned dependencies, unsigned artifacts, build system trust issues |
 | A04 | Cryptographic Failures | Plaintext sensitive data, weak algorithms (MD5/SHA1 for secrets), hardcoded keys, insufficient key length |
 | A05 | Injection | SQL injection, command injection, LDAP injection, template injection, XSS |
 | A06 | Insecure Design | Missing rate limiting, no fraud controls, unsafe business logic, design decisions that assume trust |
 | A07 | Authentication Failures | Weak password policy, missing MFA, session fixation, predictable session tokens |
-| A08 | Software Integrity Failures | Deserialization of untrusted data, unsigned updates, missing integrity checks |
-| A09 | Logging and Monitoring Failures | No audit trail, logging sensitive data, no alerting on critical events |
-| A10 | Exception and Error Handling | Stack traces exposed to users, unsafe exception paths, resource leaks on error |
+| A08 | Software or Data Integrity Failures | Deserialization of untrusted data, unsigned updates, missing integrity checks |
+| A09 | Security Logging and Alerting Failures | No audit trail, logging sensitive data, no alerting on critical events |
+| A10 | Mishandling of Exceptional Conditions | Stack traces exposed to users, unsafe exception paths, resource leaks on error |
 
 ## Review output format
 

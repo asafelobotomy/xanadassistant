@@ -102,7 +102,7 @@
         "{{pack:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:272aa9f55bedd82ba68515f3103c6ebfaca65e1505bc745069239b875b7fb40a"
+      "hash": "sha256:5524e7b4d154417e8ca5c3695c4c7295675f3ea28b8663e34701b21bfd5a08bd"
     },
     {
       "id": "agents.planner.agent.md",
@@ -194,7 +194,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:8e2792c5023a0986c2cd934e7129afbe105ce06458563ccda0384a1c0b3e0a8b"
+      "hash": "sha256:685a7896b05df79c15de61c118d15e35a0f92f063b4815f628c28f8a17628f69"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -253,7 +253,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:affc3bd7273a0b67e416105b7d46c3ee176850a49ba1da821f64a6a326c1f199"
+      "hash": "sha256:5132c42269a71ea90ede2e692582b346c5d90b30d0fdda48c5e70f3760187aad"
     },
     {
       "id": "docs-hooks.docsLinkCheck.py",
@@ -271,7 +271,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:01ca7dda9a2149d7bdd08382960c06e30b5638c38975e38b84f1bffbac557039"
+      "hash": "sha256:a1d94883dd6052c8ce20cf4431d974d867b20fc6220de37f7d4a1e945a7823d7"
     },
     {
       "id": "hook-scripts.gitMcp.py",
@@ -376,7 +376,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:6243d3e88928be71fc7df2044fb19e39e518f56db16b6dc0ab4189e91ab89b5e"
+      "hash": "sha256:13f36ecc4efaee268daff977723a12d87eb2cfaea97c4540748308df887eb751"
     },
     {
       "id": "oss-hooks.ossGitLog.py",
@@ -394,7 +394,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:f5a44c1cc256182a238953f405d4db2005e70a9b12ebf2f5f0c048f64e90b120"
+      "hash": "sha256:194d5503fdb3bb1a56c2b177e04ed50a506d042fe96087930737bb45ac922e79"
     },
     {
       "id": "oss-hooks.ossLicenseCheck.py",
@@ -412,7 +412,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:a8ca27e9669b936d75db268237cf3d6e0951cb8e15c25f2cfee7058a892edc48"
+      "hash": "sha256:d7589632ab5ab3dcb215382fefe2c0a18c7db0cb446cf5b2338b70e993357d37"
     },
     {
       "id": "secure-hooks.secureOsv.py",
@@ -430,7 +430,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:60ecd08bac31be6d2138772b44af6557408d1b44b666ead37f75ed6f51d678e0"
+      "hash": "sha256:cef23b09ccea8dabbd167100aea29f6274e78379bf4f5a1f958a50755191574b"
     },
     {
       "id": "hook-scripts.securityMcp.py",
@@ -465,7 +465,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:52a203b5321785afdec72814fd7e88130104a51b6dd8a2f82977542f22eae5f1"
+      "hash": "sha256:e360aca1d3856c8ad1e5e90e1eabf0b089833c172da716e8e516ba74f8bc8147"
     },
     {
       "id": "hook-scripts.sqliteMcp.py",
@@ -500,7 +500,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:0258f384b86372de4f6fcf221d331acfc964f095df47d4cc446d0d7ca68439cd"
+      "hash": "sha256:9a20136073185fa6e820a715d959411c9efce3cc0572f2bb8a49f8647fefaf17"
     },
     {
       "id": "hook-scripts.timeMcp.py",
@@ -688,7 +688,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:34a27de3df387a56bff68d4b6071fd7ba5697668d81a0eddf17900727a3003e0"
+      "hash": "sha256:5599f12602ba8ed2fae5f7def35f8b90fc9a9e35f34341bc4f3e37d91f802f54"
     },
     {
       "id": "lean-prompts.lean-review.prompt.md",
@@ -705,7 +705,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:22af111d691fda4c47451ab41657197feeb69369130e6bee0ad5d43092fb3c9f"
+      "hash": "sha256:3b1cd1b5dfd2761a1f8cc7c215280b74246ea6c4b4743c4825fa313814c33cd9"
     },
     {
       "id": "lean-prompts.lean-status.prompt.md",
@@ -722,7 +722,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:f54f8fcdd5bad36e3fb4157bbe8a56c0cf80bb28e2d632419c428fcf8abf8bfe"
+      "hash": "sha256:8dc418aba8706ddc452b43348760b9eff469c2b7f4e7f7a46b3c82545b556ea7"
     },
     {
       "id": "mlops-prompts.mlops-drift.prompt.md",
@@ -1090,7 +1090,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:32a89ad62743f1eada3798000f3cf4566a083c43af20e8101b99061f11cb0649"
+      "hash": "sha256:c7fe7792a8bf94dd4cc9aebf6e67802d04d74e14c9ed56b60034b79dcc9ea81a"
     },
     {
       "id": "lean-skills.leanContext.SKILL.md",
@@ -1108,7 +1108,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:46da0d525a1ecb0242dca31281a30d0b34ab7fcb8b175d9281e7e1396230c327"
+      "hash": "sha256:0696b38b6929841e4837dac3d9cbaf61eec879fd87f69cfb74c7283d918db15b"
     },
     {
       "id": "lean-skills.leanOutput.SKILL.md",
@@ -1126,7 +1126,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:6189ba81cb8cffa1b36f49968c907448ab48ca0d999a25c422401a42c9e43843"
+      "hash": "sha256:b8bb305e9fb194ca4da5839820fd3b0e0a46bd2a568a3668555031a35cabd67a"
     },
     {
       "id": "lean-skills.leanVerification.SKILL.md",
@@ -1144,7 +1144,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:b4266150d33447b776aa74913aa39e38bb17bfaed61d79228a441dbc937e383a"
+      "hash": "sha256:e9f9c9c137bee923642fa0f74cbb612be2cac2d141ced426e4a24f528101ca24"
     },
     {
       "id": "skills.lifecycleAudit.SKILL.md",
@@ -1340,7 +1340,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:5412a50a4c695e48a05770060b57c87fd729c50d34255e94783bba79963df0cc"
+      "hash": "sha256:71e670b791f4b9a445c05715c23b5ce85bfb68c6da2eeb4e1f9dba4ea8789cc4"
     },
     {
       "id": "shapeup-skills.shapeupBetting.SKILL.md",

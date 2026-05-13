@@ -139,5 +139,5 @@ def validate_spdx(expression: str) -> dict:
     return {"expression": expression, "valid": not unknown, "unrecognised": unknown}
 
 
-if __name__ == "__main__":
-    mcp.run()
+if __name__ == "__main__":  # pragma: no cover
+    mcp.run(transport="stdio")

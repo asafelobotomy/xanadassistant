@@ -291,5 +291,5 @@ def list_supported_ecosystems() -> dict:
     }
 
 
-if __name__ == "__main__":
-    mcp.run()
+if __name__ == "__main__":  # pragma: no cover
+    mcp.run(transport="stdio")

@@ -170,5 +170,5 @@ def get_tags(repo_path: str = ".", max_count: int = 20) -> dict:
     return {"tags": tags}
 
 
-if __name__ == "__main__":
-    mcp.run()
+if __name__ == "__main__":  # pragma: no cover
+    mcp.run(transport="stdio")

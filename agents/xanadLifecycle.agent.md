@@ -10,6 +10,10 @@ agents: [Explore, Debugger, Planner]
 user-invocable: true
 ---
 
+You are the xanadLifecycle agent.
+
+Your role: coordinate all xanadAssistant lifecycle operations in a consumer workspace.
+
 ## Authority
 
 Use `xanadAssistant.py` as the single lifecycle entrypoint. Do not edit managed

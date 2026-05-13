@@ -256,5 +256,5 @@ def check_appetite(start_date: str, budget_weeks: int = 6) -> dict:
     }
 
 
-if __name__ == "__main__":
-    mcp.run()
+if __name__ == "__main__":  # pragma: no cover
+    mcp.run(transport="stdio")

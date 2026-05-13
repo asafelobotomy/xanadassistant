@@ -246,5 +246,5 @@ def diff_requirements(path_a: str, path_b: str) -> dict:
     }
 
 
-if __name__ == "__main__":
-    mcp.run()
+if __name__ == "__main__":  # pragma: no cover
+    mcp.run(transport="stdio")

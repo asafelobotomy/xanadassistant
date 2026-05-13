@@ -1,3 +1,8 @@
+---
+name: leanContext
+description: "Context window hygiene — keep working context tight, current, and actionable."
+---
+
 # Lean Context
 
 Use this skill in workspaces with the lean pack selected.

@@ -163,5 +163,5 @@ def summarize_cycle_state(test_output: str) -> dict:
     return {"state": "unknown", "reason": "Could not detect test runner output format."}
 
 
-if __name__ == "__main__":
-    mcp.run()
+if __name__ == "__main__":  # pragma: no cover
+    mcp.run(transport="stdio")
