@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Developer sandbox for interactive xanadAssistant lifecycle testing.
 
-Commands: init / list / destroy / reset [--all] [name...] / run <name> <cmd...> / inspect <name>
+Commands: init / list / destroy / reset [--all] [name...] / run <name> <cmd...> / inspect <name> / clone <repo> [--name <n>] [--reset]
 
 Workspaces (sandbox/workspaces/):
   blank, bare-git, not-installed, fresh-install, lean-pack,
@@ -214,6 +214,16 @@ def cmd_list() -> None:
             except (json.JSONDecodeError, KeyError):
                 state = "(error)"
         print(f"  {name:<18} {state:<18} {meta['desc']}")
+    cloned = sorted(d.name for d in SANDBOX_DIR.iterdir() if d.is_dir() and d.name not in WORKSPACES)
+    if cloned:
+        print("")
+        for name in cloned:
+            r = _lc("inspect", "--json", workspace=SANDBOX_DIR / name)
+            try:
+                state = json.loads(r.stdout).get("result", {}).get("installState", "?")
+            except (json.JSONDecodeError, KeyError):
+                state = "(error)"
+            print(f"  {name:<18} {state:<18} (cloned)")
 
 
 def cmd_reset(names: list[str], all_: bool) -> None:
@@ -237,17 +247,34 @@ def cmd_destroy() -> None:
 
 
 def cmd_run(name: str, lc_args: list[str]) -> None:
-    if name not in WORKSPACES:
-        print(f"Unknown: {name}. Available: {', '.join(WORKSPACES)}", file=sys.stderr)
-        sys.exit(1)
     ws = SANDBOX_DIR / name
     if not ws.exists():
-        print(f"'{name}' not initialized. Run: python3 scripts/sandbox.py init", file=sys.stderr)
+        avail = sorted(d.name for d in SANDBOX_DIR.iterdir() if d.is_dir()) if SANDBOX_DIR.exists() else []
+        print(f"'{name}' not found. Available: {', '.join(avail) or 'none'}", file=sys.stderr)
         sys.exit(1)
     result = _lc(*lc_args, workspace=ws)
     sys.stdout.write(result.stdout)
     sys.stderr.write(result.stderr)
     sys.exit(result.returncode)
+
+
+def cmd_clone(repo: str, name: str | None, reset: bool) -> None:
+    url = f"https://github.com/{repo}" if "/" in repo and not repo.startswith(("http", "git@")) else repo
+    if not name:
+        name = Path(url.rstrip("/")).stem.removesuffix(".git")
+    ws = SANDBOX_DIR / name
+    if ws.exists():
+        if not reset:
+            print(f"'{name}' already exists. Use --reset to re-clone.", file=sys.stderr)
+            sys.exit(1)
+        shutil.rmtree(ws)
+    SANDBOX_DIR.mkdir(parents=True, exist_ok=True)
+    print(f"Cloning {url} -> sandbox/workspaces/{name}/ ...")
+    r = subprocess.run(["git", "clone", "--depth", "1", url, str(ws)], check=False)
+    if r.returncode != 0:
+        print(f"Clone failed (exit {r.returncode})", file=sys.stderr)
+        sys.exit(r.returncode)
+    print(f"Done.  Run: python3 scripts/sandbox.py inspect {name}")
 
 
 def main() -> None:
@@ -269,6 +296,10 @@ def main() -> None:
     px.add_argument("args", nargs=argparse.REMAINDER)
     pi = sub.add_parser("inspect", help="Shortcut: run <name> inspect --json")
     pi.add_argument("name")
+    pc = sub.add_parser("clone", help="Clone a GitHub repo as a sandbox workspace")
+    pc.add_argument("repo", help="owner/repo shorthand or full URL")
+    pc.add_argument("--name", dest="clone_name", metavar="NAME", help="Workspace name (default: repo name)")
+    pc.add_argument("--reset", action="store_true", help="Re-clone if workspace already exists")
 
     args = p.parse_args()
     if args.cmd == "init":
@@ -285,6 +316,8 @@ def main() -> None:
         cmd_run(args.name, args.args)
     elif args.cmd == "inspect":
         cmd_run(args.name, ["inspect", "--json"])
+    elif args.cmd == "clone":
+        cmd_clone(args.repo, args.clone_name, args.reset)
 
 
 if __name__ == "__main__":
