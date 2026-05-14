@@ -1,8 +1,13 @@
 # xanadAssistant
 
-A lifecycle manager for GitHub Copilot surface files in VS Code workspaces.
+> Lifecycle management for GitHub Copilot surface files in VS Code workspaces.
 
-xanadAssistant installs, updates, repairs, and restores a curated set of Copilot surface files — agents, skills, hooks, prompts, and instructions — into any VS Code workspace. It tracks managed state in a lockfile, backs up user content before overwriting it, and exposes a structured JSON CLI for use by Copilot agents and MCP tools.
+xanadAssistant installs, updates, repairs, and factory-restores a curated set of Copilot surface files — agents, skills, hooks, prompts, and instructions — into any VS Code workspace.
+
+- **Managed state** — lockfile tracking with backup before every write
+- **Copilot-native** — driven by the `xanadLifecycle` agent and MCP tools; no manual CLI knowledge needed
+- **Interview-driven setup** — picks your profile, optional packs, and personalisation before writing anything
+- **Structured output** — full JSON CLI for programmatic use by agents and automations
 
 ## What it manages
 
@@ -91,7 +96,7 @@ python3 xanadAssistant.py <command> --workspace <path> --package-root <path> [--
 
 All commands accept `--json` for a single structured JSON response or `--json-lines` for streamed NDJSON events.
 
-### This workspace (development)
+### Developer commands
 
 ```sh
 # Run all tests
@@ -202,7 +207,7 @@ python3 xanadAssistant.py repair --workspace <path> --package-root <path> --json
 xanadAssistant.py            # thin entry point
 scripts/lifecycle/
   xanadAssistant.py          # public module and re-export surface
-  _xanad/                     # lifecycle engine (small focused submodules)
+  _xanad/                    # lifecycle engine (small focused submodules)
 template/
   copilot-instructions.md     # consumer instructions template ({{}} tokens)
   instructions/               # consumer instruction files
@@ -236,10 +241,6 @@ tests/                        # unittest suite
 | Pack | Status | Description |
 |---|---|---|
 | `lean` | active | Terse workflow helpers and brevity-oriented defaults |
-| `memory` | planned | Durable memory and recall features |
-| `review` | planned | Code review and audit workflows |
-| `research` | planned | Research and synthesis workflows |
-| `workspace-ops` | planned | Workspace automation and maintenance helpers |
 
 ### Profiles
 
@@ -247,7 +248,6 @@ tests/                        # unittest suite
 |---|---|---|
 | `balanced` | active | Standard detail and guidance |
 | `lean` | active | Concise output; includes `lean` pack by default |
-| `ultra-lean` | planned | Minimum viable output density |
 
 ## MCP servers
 
