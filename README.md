@@ -15,6 +15,7 @@ xanadAssistant installs, updates, repairs, and restores a curated set of Copilot
 | Skills | `.github/skills/` | `plugin-backed-copilot-format` |
 | Hook scripts | `.github/hooks/scripts/` | `local` |
 | MCP config | `.vscode/mcp.json` | `local` (merge-safe) |
+| VS Code settings | `.vscode/settings.json` | `local` (merge-safe) |
 
 Optional packs (e.g. `lean`) add further surfaces when selected at setup time.
 
@@ -25,17 +26,43 @@ Optional packs (e.g. `lean`) add further surfaces when selected at setup time.
 
 ## Quick install
 
-For a fresh workspace with no prior install, fetch the bootstrap runner and
-follow the step-by-step guide in [INSTALL.md](INSTALL.md).
+### Recommended: Copilot agent setup
+
+Get the lifecycle agent into your workspace with one command:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py | python3 - apply --workspace . --non-interactive --json
+mkdir -p .github/agents && curl -fsSL \
+  https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md \
+  -o .github/agents/xanadLifecycle.agent.md
 ```
 
-If you have a local checkout of this repo, you can also run the lifecycle CLI
-directly — see [Usage](#usage) below.
+Then open Copilot chat (agent mode) and say:
 
-## Usage
+> **@xanadLifecycle Setup xanadAssistant**
+
+The agent downloads the bootstrap runner, walks you through the interview,
+plans the install, applies it, and cleans up. All future lifecycle operations
+(update, repair, factory-restore) use the same installed agent — no CLI
+knowledge needed.
+
+For a full walkthrough of each step, see [INSTALL.md](INSTALL.md).
+
+### Without Copilot
+
+> **Note:** The Copilot method above is the recommended path. Use this only when Copilot agent mode is unavailable.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py \
+  | python3 - apply --workspace . --non-interactive --json
+```
+
+For a guided setup with interview and options, see [INSTALL.md](INSTALL.md).
+
+Once installed, use Copilot prompts for day-to-day operations: `/setup` (install or refresh), `/update` (pull latest package files), `/bootstrap` (cold-start from a bare workspace).
+
+## CLI reference
+
+> **Note:** Consumer setup and updates run through the `xanadLifecycle` Copilot agent. The CLI is for maintainers and advanced use.
 
 Point `xanadAssistant.py` at a consumer workspace and at its own repo root:
 
@@ -116,6 +143,21 @@ Refresh stale or missing managed files in a workspace that is already installed.
 ```sh
 # One-step shorthand
 python3 xanadAssistant.py update --workspace <path> --package-root <path> --json
+```
+
+---
+
+### Repair
+
+Targets a workspace with an existing but damaged, incomplete, or drifted xanadAssistant install — missing managed files, corrupted lockfile, or stale managed state. Also the primary path for migrating from a predecessor package.
+
+1. Run `inspect` — reports repair reasons: `managed-drift`, `missing-managed-files`, `malformed-managed-state`, `package_name_mismatch`, etc.
+2. Run `plan repair` — computes the minimal write set covering only damaged or missing entries.
+3. Run `repair` — backs up affected files, writes repairs, and updates the lockfile.
+
+```sh
+# One-step shorthand
+python3 xanadAssistant.py repair --workspace <path> --package-root <path> --json
 ```
 
 ---
@@ -210,7 +252,7 @@ When hooks are enabled, the following MCP servers are installed into `.github/ho
 
 | Server | Enabled by default | Description |
 |---|---|---|
-| `xanadWorkspaceMcp.py` | yes | xanadAssistant lifecycle tools (`lifecycle.*`) |
+| `xanadWorkspaceMcp.py` | yes | xanadAssistant lifecycle tools (`lifecycle_inspect`, `lifecycle_update`, etc.) |
 | `gitMcp.py` | yes | Full local + remote git workflow (22 tools) |
 | `webMcp.py` | yes | DuckDuckGo search and URL fetch |
 | `timeMcp.py` | yes | Current time, elapsed duration, timezone conversion |

@@ -38,10 +38,10 @@ resolution is missing.
 ## Cold-start (blank workspace)
 
 This agent is installed by xanadAssistant and is not present in a fresh
-workspace. When a user says something like "Setup asafelobotomy/xanadassistant"
-and this agent is not yet available, use `xanadBootstrap.py` instead of the
-lifecycle CLI. The bootstrap runner is a single stdlib-only file that resolves
-and downloads the package automatically.
+workspace. When a user says something like "Setup xanadAssistant" and this
+agent is not yet available, use `xanadBootstrap.py` instead of the lifecycle
+CLI. The bootstrap runner is a single stdlib-only file that resolves and
+downloads the package automatically.
 
 ### Bootstrap steps
 

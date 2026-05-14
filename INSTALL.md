@@ -7,7 +7,44 @@ Requirements: Python 3.10+, stdlib only, internet access.
 
 ---
 
-## For Copilot
+## Quickstart: Copilot agent setup (recommended)
+
+Get the lifecycle agent into your workspace with one command:
+
+```sh
+mkdir -p .github/agents && curl -fsSL \
+  https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md \
+  -o .github/agents/xanadLifecycle.agent.md
+```
+
+Or with Python if curl is unavailable:
+
+```sh
+python3 -c "
+import urllib.request, os
+os.makedirs('.github/agents', exist_ok=True)
+urllib.request.urlretrieve(
+  'https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md',
+  '.github/agents/xanadLifecycle.agent.md')
+"
+```
+
+Then open Copilot chat (agent mode) and say:
+
+> **@xanadLifecycle Setup xanadAssistant**
+
+The agent downloads the bootstrap runner, walks you through the interview,
+plans the install, applies it, and cleans up. Once done, the `xanadLifecycle`
+agent is installed and manages all future lifecycle operations — no CLI
+knowledge needed.
+
+---
+
+## Copilot agent workflow (step-by-step reference)
+
+This section documents what the `xanadLifecycle` agent does internally.
+It is also the procedure to follow when using Copilot without the agent
+pre-installed (e.g. when the agent file cannot be downloaded first).
 
 If a user has asked you to set up xanadAssistant in their workspace, follow
 these steps. No prior installation or local checkout is needed.
@@ -150,7 +187,9 @@ factory-restore).
 
 ---
 
-## For humans
+## Without Copilot
+
+> **Note:** The Copilot agent method above is the recommended path. Use this only when Copilot agent mode is unavailable.
 
 One-step install using defaults:
 
@@ -169,10 +208,9 @@ python3 xanadBootstrap.py apply --workspace . --version v1.0.0 --non-interactive
 
 ## After installation
 
-All future lifecycle operations are available through:
+All future lifecycle operations are available through the `xanadLifecycle`
+Copilot agent installed at `.github/agents/xanadLifecycle.agent.md`. Use the
+installed prompts for day-to-day operations: `/setup`, `/update`.
 
-- The `xanadLifecycle` Copilot agent (`.github/agents/xanadLifecycle.agent.md`)
-- The installed CLI: `python3 xanadAssistant.py <command> --workspace . --package-root <path>`
-
-See [README.md](README.md) for full usage, update, repair, and factory-restore
-documentation.
+The lifecycle CLI (`python3 xanadAssistant.py`) is available for maintainers
+and advanced use — see [README.md](README.md).
