@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse, json, shutil, subprocess, sys, tempfile
 from pathlib import Path
 import _sandbox_agent_workspaces as _agent_ws
+import _sandbox_control_workspaces as _ctrl_ws
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SANDBOX_DIR = REPO_ROOT / "sandbox" / "workspaces"
@@ -180,6 +181,7 @@ WORKSPACES: dict[str, dict] = {
     "partial-late":    {"desc": "Apply stopped late: all surfaces written except .vscode/mcp.json",        "fn": _partial_late},
 }
 WORKSPACES.update(_agent_ws.AGENT_WORKSPACES)
+WORKSPACES.update(_ctrl_ws.CONTROL_WORKSPACES)
 
 
 def _create_workspace(name: str) -> None:
@@ -310,49 +312,74 @@ def cmd_audit() -> None:
 
 
 def cmd_benchmark() -> None:
-    """Time inspect + check on every agent/pack workspace and report results."""
+    """Time inspect + check on control + agent/pack workspaces and compare."""
     import time
 
     if not SANDBOX_DIR.exists():
         print("No sandbox. Run: python3 scripts/sandbox.py init")
         return
 
+    header = f"  {'Workspace':<30} {'Cmd':<9} {'Exit':>4} {'ms':>7}  Result"
+    divider = "  " + "-" * 64
+    ctrl_i_ms: list[int] = []
+    ctrl_c_ms: list[int] = []
+    ag_i_ms: list[int] = []
+    ag_c_ms: list[int] = []
     total_pass = total_fail = total_skip = 0
-    print(f"{'Workspace':<32} {'Cmd':<9} {'Exit':>4} {'ms':>7}  Result")
-    print("-" * 70)
 
-    for name, meta in _agent_ws.AGENT_WORKSPACES.items():
-        ws = SANDBOX_DIR / name
-        if not ws.exists():
-            print(f"  {name:<30} {'—':<9} {'—':>4} {'—':>7}  SKIP")
-            total_skip += 1
-            continue
+    def _run_section(workspaces: dict, inspect_acc: list[int], check_acc: list[int]) -> None:
+        nonlocal total_pass, total_fail, total_skip
+        for name, meta in workspaces.items():
+            ws = SANDBOX_DIR / name
+            if not ws.exists():
+                print(f"  {name:<30} {'—':<9} {'—':>4} {'—':>7}  SKIP")
+                total_skip += 1
+                continue
+            expected_state = meta.get("expected_state", "?")
+            for cmd in ("inspect", "check"):
+                t0 = time.monotonic()
+                r = _lc(cmd, "--json", workspace=ws)
+                ms = int((time.monotonic() - t0) * 1000)
+                if cmd == "inspect":
+                    try:
+                        actual = json.loads(r.stdout).get("result", {}).get("installState", "?")
+                    except json.JSONDecodeError:
+                        actual = "?"
+                    ok = r.returncode == 0 and actual == expected_state
+                    note = f"state={actual}"
+                    if ok:
+                        inspect_acc.append(ms)
+                else:
+                    # exit 0 = clean, exit 7 = drift detected — both are valid states
+                    ok = r.returncode in (0, 7)
+                    note = f"exit={r.returncode}"
+                    if ok:
+                        check_acc.append(ms)
+                if ok:
+                    total_pass += 1
+                else:
+                    total_fail += 1
+                result = "PASS" if ok else f"FAIL  [{note}]"
+                print(f"  {name:<30} {cmd:<9} {r.returncode:>4} {ms:>7}  {result}")
 
-        expected_state = meta.get("expected_state", "?")
+    print("\n=== CONTROL (baseline — no packs) ===")
+    print(header)
+    print(divider)
+    _run_section(_ctrl_ws.CONTROL_WORKSPACES, ctrl_i_ms, ctrl_c_ms)
+    ctrl_i_avg = int(sum(ctrl_i_ms) / len(ctrl_i_ms)) if ctrl_i_ms else 0
+    ctrl_c_avg = int(sum(ctrl_c_ms) / len(ctrl_c_ms)) if ctrl_c_ms else 0
+    print(f"\n  Baseline avg — inspect: {ctrl_i_avg}ms  check: {ctrl_c_avg}ms")
 
-        for cmd in ("inspect", "check"):
-            t0 = time.monotonic()
-            r = _lc(cmd, "--json", workspace=ws)
-            elapsed_ms = int((time.monotonic() - t0) * 1000)
-
-            if cmd == "inspect":
-                try:
-                    actual = json.loads(r.stdout).get("result", {}).get("installState", "?")
-                except json.JSONDecodeError:
-                    actual = "?"
-                ok = r.returncode == 0 and actual == expected_state
-                note = f"state={actual}"
-            else:
-                # exit 0 = clean, exit 7 = drift detected — both are valid states
-                ok = r.returncode in (0, 7)
-                note = f"exit={r.returncode}"
-
-            label = "PASS" if ok else f"FAIL  [{note}]"
-            if ok:
-                total_pass += 1
-            else:
-                total_fail += 1
-            print(f"  {name:<30} {cmd:<9} {r.returncode:>4} {elapsed_ms:>7}  {label}")
+    print("\n=== AGENT / PACK WORKSPACES ===")
+    print(header)
+    print(divider)
+    _run_section(_agent_ws.AGENT_WORKSPACES, ag_i_ms, ag_c_ms)
+    ag_i_avg = int(sum(ag_i_ms) / len(ag_i_ms)) if ag_i_ms else 0
+    ag_c_avg = int(sum(ag_c_ms) / len(ag_c_ms)) if ag_c_ms else 0
+    print(f"\n  Agent/pack avg  — inspect: {ag_i_avg}ms  check: {ag_c_avg}ms")
+    if ctrl_i_avg:
+        print(f"  Overhead vs control — inspect: {ag_i_avg - ctrl_i_avg:+d}ms  "
+              f"check: {ag_c_avg - ctrl_c_avg:+d}ms")
 
     print(f"\n{total_pass} passed, {total_fail} failed, {total_skip} workspaces skipped")
     if total_fail:
