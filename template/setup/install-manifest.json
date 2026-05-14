@@ -196,7 +196,7 @@
         "{{pack:step-size}}"
       ],
       "chmod": "none",
-      "hash": "sha256:a4bce83ad89ea34416793e1ca1de9d2d85a3dc875787d54478ae01defa1e6293"
+      "hash": "sha256:31a14d66959c65e914e5d9229ca5896f48b8682fab8b0d6e92329e3f6eb44651"
     },
     {
       "id": "agents.xanadLifecycle.agent.md",
