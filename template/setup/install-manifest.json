@@ -236,7 +236,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:0728cfa32716dc688e4c515a370ef381dddc0955bf0c4f8b8a2217199c1395ae"
+      "hash": "sha256:1219c3e438bd088768eab511fa72cb56035f87d279ac0beb972eea4e5c0b5c41"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -621,7 +621,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:20df60f2c6af792fe9e6f3c12c94fdf88b3f9e0d0ba933e9a9b9a12c2e0bc2d8"
+      "hash": "sha256:ba576c4c639fef48dd27650ea54213d21dc7cc1e36ebb56664463f140cf3a7d7"
     },
     {
       "id": "devops-prompts.devops-incident.prompt.md",
@@ -843,7 +843,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:26dcff9b590b4609bf05b1c3b28f324a1d2b71c6eb36a687b81fa8764aff1e88"
+      "hash": "sha256:89e5f3e6be81e9b781839d17116c6c1570a3225d42d314ed13845f772e8b732d"
     },
     {
       "id": "shapeup-prompts.shapeup-kickoff.prompt.md",

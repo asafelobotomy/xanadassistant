@@ -50,6 +50,15 @@ responses. Omitted keys are filled from their `default` values automatically —
 only include keys that differ from the default or that the user explicitly
 provided.
 
+Each question also carries a `batch` field:
+
+- `setup` — always first; ask `setup.depth` before anything else
+- `simple` — always shown
+- `advanced` — shown when `setup.depth` is `advanced` or `full`
+- `full` — shown only when `setup.depth` is `full`
+
+Use the user's `setup.depth` answer to decide which later questions to ask.
+
 Create the temporary answers directory and write the answers file:
 
 ```sh
@@ -61,6 +70,7 @@ Include only the keys the user explicitly overrides:
 
 ```json
 {
+  "setup.depth": "simple",
   "profile.selected": "balanced",
   "packs.selected": [],
   "ownership.agents": "plugin-backed-copilot-format",
@@ -77,6 +87,10 @@ Include only the keys the user explicitly overrides:
 Write the collected answers to `.xanadAssistant/tmp/setup-answers.json`. Any
 key omitted from the file is resolved to its declared `default` by the
 lifecycle engine.
+
+`packs.selected` accepts one or more pack names as an array. If the user
+selects multiple packs, the plan step will surface any token conflicts that
+need resolution before proceeding.
 
 ### Step 3.5 — Resolve pre-existing files (optional)
 

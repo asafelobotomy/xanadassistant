@@ -27,10 +27,20 @@ Parse `result.questions`. For each question, present the `prompt` and `default`
 to the user and ask whether they want to override. Write the collected answers
 to `.xanadAssistant/tmp/setup-answers.json`.
 
+Each question also carries a `batch` field:
+
+- `setup` — always first; ask `setup.depth` before anything else
+- `simple` — always shown
+- `advanced` — shown when `setup.depth` is `advanced` or `full`
+- `full` — shown only when `setup.depth` is `full`
+
+Use the user's `setup.depth` answer to decide which later questions to show.
+
 **Answer file format** — include only keys the user explicitly overrides:
 
 ```json
 {
+  "setup.depth": "simple",
   "profile.selected": "balanced",
   "packs.selected": [],
   "ownership.agents": "plugin-backed-copilot-format",
@@ -46,6 +56,10 @@ to `.xanadAssistant/tmp/setup-answers.json`.
 
 Any key omitted from the file is resolved to its declared `default` by the
 lifecycle engine. Create the directory first:
+
+`packs.selected` accepts one or more pack names as an array. If the user selects
+multiple packs, the plan step will surface any token conflicts that need
+resolution before proceeding.
 
 ```sh
 mkdir -p .xanadAssistant/tmp

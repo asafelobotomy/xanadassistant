@@ -72,7 +72,7 @@ It must not accept a free-form command string when a narrower typed input can ex
 Examples:
 
 - `quality.run_targeted_tests` may accept test module paths.
-- `lifecycle.plan_setup` may accept workspace, package root, and non-interactive flags.
+- `lifecycle_plan_setup` may accept workspace, package root, and non-interactive flags.
 - `package.generate` should not accept arbitrary subprocess arguments.
 
 ## Output Rule

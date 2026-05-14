@@ -37,9 +37,9 @@ Review `installState`, `manifestSummary`, and any warnings. Ask the user to
 confirm the target workspace path if it is not clear from context.
 
 When `mcp.enabled` is true, the plan should also install the local hook scripts.
-Expect `.github/hooks/scripts/xanadWorkspaceMcp.py`,
-`.github/hooks/scripts/mcpSequentialThinkingServer.py`, and `.vscode/mcp.json`
-to appear in the planned writes.
+Expect entries under `.github/hooks/scripts/` plus `.vscode/mcp.json` to appear
+in the planned writes; at minimum, `xanadWorkspaceMcp.py` and
+`mcpSequentialThinkingServer.py` should be present.
 
 If the warnings include `package_name_mismatch` or `successor_cleanup_required`,
 treat the workspace as a predecessor `copilot-instructions-template` install.
@@ -64,10 +64,20 @@ and write the collected answers to `.xanadAssistant/tmp/setup-answers.json`.
 Include only keys the user explicitly overrides — omitted keys are filled from
 their declared `default` values by the lifecycle engine.
 
+Each question also carries a `batch` field:
+
+- `setup` — always first; ask `setup.depth` before anything else
+- `simple` — always shown
+- `advanced` — shown when `setup.depth` is `advanced` or `full`
+- `full` — shown only when `setup.depth` is `full`
+
+Use the user's `setup.depth` answer to decide which later questions to show.
+
 **Answer file format:**
 
 ```json
 {
+  "setup.depth": "simple",
   "profile.selected": "balanced",
   "packs.selected": [],
   "ownership.agents": "plugin-backed-copilot-format",
@@ -80,6 +90,10 @@ their declared `default` values by the lifecycle engine.
   "mcp.servers": []
 }
 ```
+
+`packs.selected` accepts one or more pack names as an array. If the user selects
+multiple packs, the plan step will surface any token conflicts that need
+resolution before proceeding.
 
 If the user accepts all defaults, use `--non-interactive` and omit `--answers`.
 

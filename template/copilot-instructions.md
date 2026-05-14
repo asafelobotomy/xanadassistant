@@ -28,15 +28,12 @@ Use the **xanadLifecycle** agent for all xanadAssistant operations. Trigger phra
 | `"factory restore"` | Reset to clean managed state |
 
 Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanadAssistant. Use the `lifecycleAudit` skill to review state before proposing any lifecycle operation.
- dbecf3e (refactor: standardize consumer-facing names to camelCase)
 When the workspace-local `xanadTools` MCP server is available and can resolve a
 local xanadAssistant package root or a supported remote source, setup-oriented
 lifecycle operations may use its `lifecycle.*` tools instead of shelling out directly.
-This repository's lockfile should include a GitHub `source` plus `ref` fallback so lifecycle tools still work when a sibling xanad-assistant checkout is unavailable.
 If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`,
 the workspace is being migrated from `copilot-instructions-template`; use `repair`
 or `update` so xanadAssistant can archive predecessor-owned files and install the
- 8f6b648 (refactor: standardize product name to xanadAssistant)
 current bundle atomically.
 
 ## Agent Routing
@@ -88,7 +85,6 @@ Use memory as optional recall, not as lifecycle authority.
 ## Skills and Agents
 
 - `lifecycleAudit` skill — loaded on demand; run before any lifecycle operation
- dbecf3e (refactor: standardize consumer-facing names to camelCase)
 - `Debugger` agent — diagnose failures and isolate root causes before implementation
 - `Planner` agent — produce scoped execution plans for multi-step work before implementation
 - `Researcher` agent — gather source-backed external constraints before implementation or review
