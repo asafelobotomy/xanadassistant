@@ -64,7 +64,7 @@
         "{{pack:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:ed3c2aa536555ccabf5b7e08a68606715745dd1d854a5e8fd4ef48906840e2ad"
+      "hash": "sha256:9af9da223617f3f084de9966b597f94329750cd4365b1fc7289fadf9b91f3691"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -979,6 +979,22 @@
       ],
       "chmod": "none",
       "hash": "sha256:2e09d11a9798de83439fac4b089006f4726eb0cdeb3f13b2e85335853c587505"
+    },
+    {
+      "id": "skills.ciPreflight.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "skills/ciPreflight/SKILL.md",
+      "target": ".github/skills/ciPreflight/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:d966be566cb245ce332bcaaf374c4def8d84d64cf3022fe3f46479cf5c23fb82"
     },
     {
       "id": "secure-skills.dependencyAudit.SKILL.md",

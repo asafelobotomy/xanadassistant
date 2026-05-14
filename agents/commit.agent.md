@@ -42,40 +42,17 @@ Your role: manage the full git lifecycle — staging, committing, pushing, pulli
 
 ## CI preflight
 
-Run before every commit. Discover the project's CI checks, run local equivalents,
-fix or escalate failures, and only proceed once all checks pass (or the user
-explicitly accepts residual risk).
+Run before every commit using the `ciPreflight` skill. That skill uses
+workspace tools to discover CI checks from `.github/workflows/`, scopes them
+to staged files, runs them cheapest-first, and returns a clear pass / block /
+residual-risk outcome.
 
-### Step 1 — Discover CI checks
+If the workspace has a project-specific preflight skill (e.g. `commitPreflight`
+in xanadAssistant), prefer that skill — it knows the project's exact commands
+and repair steps.
 
-Read every file under `.github/workflows/` that triggers on `push` or
-`pull_request`. Extract all `run:` steps. Identify which ones can execute
-locally without secrets or environment-specific setup.
-
-### Step 2 — Build the check list from staged files
-
-Run `git diff --cached --name-only` to determine scope. Only run checks
-relevant to the staged changes — skip expensive checks when nothing in their
-scope changed.
-
-### Step 3 — Execute checks cheapest-first
-
-Stop at the first blocker before running later checks.
-
-### Step 4 — Handle failures
-
-| Failure type | Action |
-|---|---|
-| Generated/derived artifact stale | Auto-repair: re-run the generator, re-stage the output, re-run the check |
-| Unit test failures | Delegate to `Debugger`: pass the exact failure output and staged file list; apply the minimal fix returned; re-run tests |
-| LOC or budget violation | Surface the exact violation to the user; ask whether to fix or accept residual risk |
-| Template-safety violation (e.g. unresolved tokens) | Block — do not commit until resolved |
-| Any other check failure | Surface the exact output; ask the user how to proceed |
-
-### Step 5 — Proceed
-
-Proceed to the commit workflow only after all checks pass or the user has
-explicitly accepted any residual risk.
+Proceed to the commit workflow only after preflight returns **pass**, or the
+user explicitly accepts any residual risk surfaced.
 
 ## Commit workflow
 
