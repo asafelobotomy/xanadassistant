@@ -57,11 +57,13 @@ class PlanSetupTests(XanadTestBase):
         )
         self.assertEqual(
             [
+                ".github/agents/cleaner.agent.md",
                 ".github/agents/commit.agent.md",
                 ".github/agents/debugger.agent.md",
                 ".github/agents/deps.agent.md",
                 ".github/agents/docs.agent.md",
                 ".github/agents/explore.agent.md",
+                ".github/agents/organise.agent.md",
                 ".github/agents/planner.agent.md",
                 ".github/agents/researcher.agent.md",
                 ".github/agents/review.agent.md",

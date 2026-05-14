@@ -27,12 +27,14 @@ Run xanadAssistant's local CI-equivalent checks before commit or push, repair st
 1. Determine the candidate file set with `git diff --cached --name-only`. If nothing is staged, inspect the proposed file list before widening scope.
 
 2. Decide the required checks.
+   - Always run `python3 scripts/check_attention_budget.py`.
    - Always run `python3 scripts/check_loc.py`.
    - Always run `python3 -m unittest discover -s tests -p 'test_*.py'` before push, and before commit when the change is more than trivial wording in a single documentation file.
    - Run the freshness check whenever any staged file is under `template/`, `agents/`, `skills/`, `packs/lean/skills/`, or `hooks/`.
    - Run a `{{}}` token-presence check whenever `template/copilot-instructions.md` is staged.
 
 3. Execute checks cheapest-first.
+   - `python3 scripts/check_attention_budget.py`
    - `python3 scripts/check_loc.py`
    - `grep -q '{{' template/copilot-instructions.md` when needed
    - `python3 -m unittest discover -s tests -p 'test_*.py'`
@@ -57,6 +59,7 @@ Run xanadAssistant's local CI-equivalent checks before commit or push, repair st
 
 ## Verify
 
+- [ ] Attention budget check run and passed, or the exact failure is surfaced
 - [ ] LOC gate run and passed, or the exact failure is surfaced
 - [ ] Full unittest suite run when required, or the skip reason is explicit
 - [ ] Freshness check run when managed surfaces changed

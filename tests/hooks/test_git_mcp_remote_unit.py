@@ -12,6 +12,8 @@ from pathlib import Path
 
 HOOKS_DIR = Path(__file__).resolve().parents[2] / "hooks" / "scripts"
 
+_MCP_AVAILABLE = importlib.util.find_spec("mcp") is not None
+
 
 def _load(name: str):
     """Load a hook module from HOOKS_DIR by filename stem."""
@@ -32,6 +34,7 @@ def _git(*args: str, cwd: str) -> str:
     return result.stdout.strip()
 
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class GitMcpRemoteTests(unittest.TestCase):
     """Tests for git_fetch, git_pull, and git_push using local repos."""
 

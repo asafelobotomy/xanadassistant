@@ -1,6 +1,6 @@
 ---
 name: Organise
-description: "Subagent-only structural worker for organising directories, moving files, fixing broken paths, and building logical repository layouts."
+description: "Use when: a subagent needs to perform structural work — moving files, regrouping folders, fixing broken paths, or building logical repository layouts."
 argument-hint: "Describe what to reorganise — e.g. move scripts into logical directories, fix paths after a file move, or normalise folder layout."
 model:
   - Claude Sonnet 4.6

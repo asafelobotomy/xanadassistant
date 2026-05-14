@@ -15,6 +15,8 @@ from unittest.mock import MagicMock, patch
 HOOKS_DIR = Path(__file__).resolve().parents[2] / "hooks" / "scripts"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+_MCP_AVAILABLE = importlib.util.find_spec("mcp") is not None
+
 
 def _load(name: str):
     """Load a hook module from HOOKS_DIR by filename stem."""
@@ -35,6 +37,7 @@ def _load_hyphen(filename: str):
     return mod
 
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class SecurityMcpImportTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -54,6 +57,7 @@ class SecurityMcpImportTests(unittest.TestCase):
 # webMcp.py  (_guard_ssrf, _ssrf_redirect_hook, _RateLimiter, _to_markdown)
 # ---------------------------------------------------------------------------
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class WebMcpSsrfTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -129,6 +133,7 @@ class WebMcpSsrfTests(unittest.TestCase):
 # securityMcp.py  — functional (mock-based)
 # ---------------------------------------------------------------------------
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class SecurityMcpFunctionalTests(unittest.TestCase):
     """Mock-based functional tests for securityMcp tools."""
 
@@ -171,6 +176,7 @@ class SecurityMcpFunctionalTests(unittest.TestCase):
 # webMcp.py  — functional (mock-based)
 # ---------------------------------------------------------------------------
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class WebMcpFunctionalTests(unittest.TestCase):
     """Mock-based functional tests for webMcp tools."""
 

@@ -38,7 +38,7 @@ class InspectCheckTests(XanadTestBase):
         self.assertEqual("check", payload["command"])
         self.assertEqual("drift", payload["status"])
         self.assertGreater(payload["result"]["summary"]["missing"], 0)
-        self.assertEqual(70, payload["result"]["summary"]["skipped"])
+        self.assertEqual(72, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["unmanaged"])
 
     def test_inspect_does_not_create_missing_workspace(self) -> None:
@@ -70,7 +70,7 @@ class InspectCheckTests(XanadTestBase):
 
         self.assertEqual(7, result.returncode)
         payload = json.loads(result.stdout)
-        self.assertEqual(70, payload["result"]["summary"]["skipped"])
+        self.assertEqual(72, payload["result"]["summary"]["skipped"])
         skipped_entries = [
             entry for entry in payload["result"]["entries"]
             if entry["target"] == ".github/agents/commit.agent.md"
@@ -240,7 +240,7 @@ class InspectCheckTests(XanadTestBase):
         payload = json.loads(result.stdout)
         self.assertEqual("clean", payload["status"])
         self.assertEqual(0, payload["result"]["summary"]["missing"])
-        self.assertEqual(70, payload["result"]["summary"]["skipped"])
+        self.assertEqual(72, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["stale"])
 
     def test_check_reports_stale_when_target_content_differs(self) -> None:

@@ -14,6 +14,8 @@ from unittest.mock import MagicMock, patch
 
 HOOKS_DIR = Path(__file__).resolve().parents[2] / "hooks" / "scripts"
 
+_MCP_AVAILABLE = importlib.util.find_spec("mcp") is not None
+
 
 def _load(name: str):
     """Load a hook module from HOOKS_DIR by filename stem."""
@@ -28,6 +30,7 @@ def _load(name: str):
 # githubMcp.py  (_token() — env var and gh CLI fallback)
 # ---------------------------------------------------------------------------
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class GitHubMcpTokenTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -87,6 +90,7 @@ class GitHubMcpTokenTests(unittest.TestCase):
 # githubMcp.py  — _gh_cli_token (subprocess)
 # ---------------------------------------------------------------------------
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class GitHubMcpGhCliTokenTests(unittest.TestCase):
 
     @classmethod
@@ -116,6 +120,7 @@ class GitHubMcpGhCliTokenTests(unittest.TestCase):
 # githubMcp.py  — functional (mock-based)
 # ---------------------------------------------------------------------------
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class GitHubMcpFunctionalTests(unittest.TestCase):
     """Mock-based functional tests for githubMcp tools."""
 

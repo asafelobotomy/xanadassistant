@@ -64,7 +64,7 @@
         "{{pack:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:1070b80795a19b171d436f17d6bc011ba14edd7320216227721b3f4e2b469e86"
+      "hash": "sha256:ed3c2aa536555ccabf5b7e08a68606715745dd1d854a5e8fd4ef48906840e2ad"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -152,7 +152,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:7a307301e7aca29ac8242507c5d3c8039df2a664a3b547e7e6990fae0f8379d1"
+      "hash": "sha256:ebebf627cf204c01c0b5698d7ba6915bf206e3a138317b69ae2c1100e3ee1c62"
     },
     {
       "id": "agents.planner.agent.md",

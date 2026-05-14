@@ -19,6 +19,8 @@ from unittest.mock import MagicMock, patch
 HOOKS_DIR = Path(__file__).resolve().parents[2] / "hooks" / "scripts"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+_MCP_AVAILABLE = importlib.util.find_spec("mcp") is not None
+
 
 def _load(name: str):
     """Load a hook module from HOOKS_DIR by filename stem."""
@@ -43,6 +45,7 @@ def _load_hyphen(filename: str):
 # timeMcp.py
 # ---------------------------------------------------------------------------
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class TimeMcpImportTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -129,6 +132,7 @@ class TimeMcpImportTests(unittest.TestCase):
 # sqliteMcp.py
 # ---------------------------------------------------------------------------
 
+@unittest.skipUnless(_MCP_AVAILABLE, "mcp package not available — install with: pip install 'mcp[cli]'")
 class SqliteMcpTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
