@@ -16,6 +16,7 @@ Direct use:
 from __future__ import annotations
 import argparse, json, shutil, subprocess, sys, tempfile
 from pathlib import Path
+import _sandbox_agent_workspaces as _agent_ws
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SANDBOX_DIR = REPO_ROOT / "sandbox" / "workspaces"
@@ -178,6 +179,7 @@ WORKSPACES: dict[str, dict] = {
     "partial-mid":     {"desc": "Apply stopped mid: all .github surfaces written, .vscode/MCP absent",             "fn": _partial_mid},
     "partial-late":    {"desc": "Apply stopped late: all surfaces written except .vscode/mcp.json",        "fn": _partial_late},
 }
+WORKSPACES.update(_agent_ws.AGENT_WORKSPACES)
 
 
 def _create_workspace(name: str) -> None:
@@ -277,6 +279,36 @@ def cmd_clone(repo: str, name: str | None, reset: bool) -> None:
     print(f"Done.  Run: python3 scripts/sandbox.py inspect {name}")
 
 
+def cmd_audit() -> None:
+    if not SANDBOX_DIR.exists():
+        print("No sandbox. Run: python3 scripts/sandbox.py init")
+        return
+    passed = failed = missing = 0
+    print(f"{'Workspace':<30} {'Expected':<16} {'Actual':<16} Result")
+    print("-" * 76)
+    for name, meta in _agent_ws.AGENT_WORKSPACES.items():
+        ws = SANDBOX_DIR / name
+        if not ws.exists():
+            print(f"  {name:<28} {meta.get('expected_state','?'):<16} {'(missing)':<16} SKIP")
+            missing += 1
+            continue
+        r = _lc("inspect", "--json", workspace=ws)
+        try:
+            actual = json.loads(r.stdout).get("result", {}).get("installState", "?")
+        except json.JSONDecodeError:
+            actual = "(error)"
+        expected = meta.get("expected_state", "?")
+        ok = actual == expected
+        if ok:
+            passed += 1
+        else:
+            failed += 1
+        print(f"  {name:<28} {expected:<16} {actual:<16} {'PASS' if ok else 'FAIL'}")
+    print(f"\n{passed} passed, {failed} failed, {missing} missing")
+    if failed:
+        sys.exit(1)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(
         prog="sandbox.py",
@@ -300,6 +332,7 @@ def main() -> None:
     pc.add_argument("repo", help="owner/repo shorthand or full URL")
     pc.add_argument("--name", dest="clone_name", metavar="NAME", help="Workspace name (default: repo name)")
     pc.add_argument("--reset", action="store_true", help="Re-clone if workspace already exists")
+    sub.add_parser("audit", help="Check expected lifecycle state of all agent/pack workspaces")
 
     args = p.parse_args()
     if args.cmd == "init":
@@ -318,6 +351,8 @@ def main() -> None:
         cmd_run(args.name, ["inspect", "--json"])
     elif args.cmd == "clone":
         cmd_clone(args.repo, args.clone_name, args.reset)
+    elif args.cmd == "audit":
+        cmd_audit()
 
 
 if __name__ == "__main__":
