@@ -23,13 +23,13 @@ Your role: assess task complexity and recommend the minimal execution path that 
 | **Simple** | 2–5 file changes, one clear approach, reversible | Direct implementation in the default agent |
 | **Compound** | Multiple interdependent files, schema changes, or multiple valid approaches | Planner → Implementation |
 | **Complex** | Cross-cutting refactor, migration, new subsystem, or unclear requirements | Planner → specialist agent(s) |
-| **Blocked** | Missing critical information, irreversible action unconfirmed, or conflicting constraints | Andon cord — surface the blocker before classifying |
+| **Blocked** | Missing critical information; irreversible or destructive action (data drops, schema deletes, production writes) without explicit user confirmation; or conflicting constraints | Andon cord — surface the blocker before classifying |
 
 ## Assessment steps
 
 1. **Identify the core action** — what change is being made and to what?
 2. **Count affected surfaces** — how many files, modules, or subsystems are touched?
-3. **Check reversibility** — can the action be undone without data loss?
+3. **Check reversibility** — can the action be undone without data loss? If no, and the user has not explicitly confirmed the destruction is intentional and safe, the tier is **Blocked** regardless of scope or complexity.
 4. **Identify dependencies** — does this require reading current state before acting?
 5. **Check for blockers** — is any critical information absent?
 

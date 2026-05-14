@@ -32,11 +32,15 @@ def parse(text: str) -> dict | None:
     m = _PATTERN.search(text)
     if not m:
         return None
+    blockers = m.group(4).strip().rstrip("`").strip()
+    # Strip angle-bracket template markers, e.g. "<none>" → "none"
+    if blockers.startswith("<") and blockers.endswith(">"):
+        blockers = blockers[1:-1].strip()
     return {
         "tier": m.group(1).strip().capitalize(),
         "scope": m.group(2).strip(),
         "approach": m.group(3).strip(),
-        "blockers": m.group(4).strip().rstrip("`").strip(),
+        "blockers": blockers,
     }
 
 

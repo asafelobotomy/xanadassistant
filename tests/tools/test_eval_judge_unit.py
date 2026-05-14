@@ -89,6 +89,18 @@ class TestParse(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertFalse(result["blockers"].endswith("`"))
 
+    def test_blockers_angle_bracket_none_stripped(self) -> None:
+        """Model sometimes fills the template placeholder literally: <none>."""
+        text = (
+            "Tier: Compound\n"
+            "Scope: Extract JWT logic to core/tokens.py\n"
+            "Approach: Planner → Implementation\n"
+            "Blockers: <none>\n"
+        )
+        result = judge.parse(text)
+        self.assertIsNotNone(result)
+        self.assertEqual("none", result["blockers"])
+
     def test_extra_text_before_format_is_ignored(self) -> None:
         text = (
             "Let me analyse this request carefully.\n\n"
