@@ -1,0 +1,17 @@
+# Developer / test dependencies for xanadAssistant.
+#
+# The lifecycle engine (xanadAssistant.py, scripts/lifecycle/) is stdlib-only
+# and has no runtime dependencies.  These packages are required only to:
+#   - run the test suite (tests/)
+#   - run hook scripts locally (hooks/scripts/)
+#
+# Hook scripts are normally invoked via:
+#   uvx --from "mcp[cli]" mcp run <hook> [--with httpx --with markdownify --with beautifulsoup4]
+#
+# Install for local development:
+#   pip install -r requirements-dev.txt
+
+mcp[cli]>=1.27.1
+httpx>=0.28.1
+markdownify>=1.2.2
+beautifulsoup4>=4.14.3

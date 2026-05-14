@@ -69,6 +69,24 @@
       "hash": "sha256:07fd15c712eb8d23fd953229f835e7f2227e1133a1518e3700d28b6cc3bec11d"
     },
     {
+      "id": "agents.deps.agent.md",
+      "surface": "agents",
+      "layer": "pack",
+      "source": "agents/deps.agent.md",
+      "target": ".github/agents/deps.agent.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [],
+      "tokens": [
+        "{{pack:output-style}}"
+      ],
+      "chmod": "none",
+      "hash": "sha256:b62d12d1823ec2d7c0173d6e6fef3e5b41b861485a2662dfa83680b137d56953"
+    },
+    {
       "id": "agents.docs.agent.md",
       "surface": "agents",
       "layer": "pack",

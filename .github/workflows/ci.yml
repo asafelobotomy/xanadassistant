@@ -41,7 +41,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install test dependencies
-        run: pip install 'mcp[cli]' httpx markdownify beautifulsoup4
+        run: pip install -r requirements-dev.txt
       - name: Run unit tests
         run: python3 -m unittest discover -s tests -p 'test_*.py'
 

@@ -52,6 +52,8 @@ WARN_LIMIT_OVERRIDES = {
     # ── Developer sandbox ────────────────────────────────────────────────────────
     # Grows with each new workspace template; not a consumer surface.
     "scripts/sandbox.py": 380,
+    # Manifest generator grows as new surfaces and rules are added.
+    "scripts/lifecycle/generate_manifest.py": 300,
 
     # ── Hook test modules ────────────────────────────────────────────────────────
     "tests/hooks/test_github_mcp_unit.py": 380,

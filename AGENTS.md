@@ -8,6 +8,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | Agent | User-invocable | Use when |
 |---|---|---|
 | `Commit` | yes | Git status, staging, commit messages, commits, pushes, pulls, rebases, branches, tags, releases, and PR work |
+| `Deps` | yes | Scanning workspace dependencies, auditing installed packages, checking for vulnerabilities, suggesting updates or alternatives, and installing/updating/repairing/removing packages |
 | `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, and architecture lookup |
 | `Review` | yes | Code review, architecture review, security review, maintainability review, and regression-risk review |
 | `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, and `factory-restore` for xanadAssistant-managed surfaces |
@@ -22,7 +23,8 @@ Use it to decide which specialist agent should own a task before widening scope.
 | Work type | Required agent |
 |---|---|
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
-| Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
+| Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, suggesting updates or alternatives, or installing/updating/removing packages | `Deps` |
+| Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or "find where this lives" | `Explore` |
 | Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |
 | Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
@@ -37,6 +39,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 - `Debugger` stays read-only and returns diagnosis, evidence, and the minimal next fix step.
 - `Planner` stays read-only and returns an executable plan with file list, risks, and verification.
 - `Researcher` stays read-only and returns source-backed findings, constraints, and recommended next steps.
+- `Deps` may delegate to `Researcher` for replacement-candidate research, `Explore` for local import/usage inventory, and `Review` for security findings that require deeper analysis.
 - `Docs` may delegate to `Researcher` for external references, `Explore` for local accuracy checks, `Review` for doc quality, and `Planner` when the documentation scope is broad.
 - Do not introduce a separate routing manifest. Agent frontmatter plus this file is the routing authority.
 
