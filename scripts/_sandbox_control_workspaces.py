@@ -81,3 +81,7 @@ CONTROL_WORKSPACES: dict[str, dict] = {
         "group": "control",
     },
 }
+
+for _v in CONTROL_WORKSPACES.values():
+    _v.setdefault("expected_exit_codes", {"inspect": 0, "check": 0})
+    _v.setdefault("expected_findings", [])

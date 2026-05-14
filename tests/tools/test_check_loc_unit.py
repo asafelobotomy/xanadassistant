@@ -79,6 +79,17 @@ class CheckLocWarningLimitTests(unittest.TestCase):
         finally:
             os.chdir(original_cwd)
 
+    def test_warning_limit_for_sandbox_core_workspaces_override(self) -> None:
+        import os
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(str(REPO_ROOT))
+            path = Path("scripts/_sandbox_core_workspaces.py")
+            limit = check_loc.warning_limit_for(path)
+            self.assertEqual(380, limit)
+        finally:
+            os.chdir(original_cwd)
+
     def test_warning_limit_for_unknown_path_outside_cwd(self) -> None:
         # An absolute path that can't be relativized to cwd falls back to the key as-is.
         with tempfile.TemporaryDirectory() as tmp:

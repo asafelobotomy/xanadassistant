@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Developer sandbox for interactive xanadAssistant lifecycle testing.
 
-Commands: init / list / destroy / reset [--all] [name...] / run <name> <cmd...> / inspect <name> / clone <repo> [--name <n>] [--reset]
+Commands: init / list / destroy / reset [--all] [name...] / run <name> <cmd...> / inspect <name> /
+         clone <repo> [--name <n>] [--reset] / audit / validate / benchmark [--timed] [--save]
 
 Workspaces (sandbox/workspaces/):
   blank, bare-git, not-installed, fresh-install, lean-pack,
@@ -17,7 +18,9 @@ from __future__ import annotations
 import argparse, json, shutil, subprocess, sys, tempfile
 from pathlib import Path
 import _sandbox_agent_workspaces as _agent_ws
+import _sandbox_benchmark as _bench_module
 import _sandbox_control_workspaces as _ctrl_ws
+import _sandbox_validate
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SANDBOX_DIR = REPO_ROOT / "sandbox" / "workspaces"
@@ -311,81 +314,6 @@ def cmd_audit() -> None:
         sys.exit(1)
 
 
-def cmd_benchmark() -> None:
-    """Time inspect + check on control + agent/pack workspaces and compare."""
-    import time
-
-    if not SANDBOX_DIR.exists():
-        print("No sandbox. Run: python3 scripts/sandbox.py init")
-        return
-
-    header = f"  {'Workspace':<30} {'Cmd':<9} {'Exit':>4} {'ms':>7}  Result"
-    divider = "  " + "-" * 64
-    ctrl_i_ms: list[int] = []
-    ctrl_c_ms: list[int] = []
-    ag_i_ms: list[int] = []
-    ag_c_ms: list[int] = []
-    total_pass = total_fail = total_skip = 0
-
-    def _run_section(workspaces: dict, inspect_acc: list[int], check_acc: list[int]) -> None:
-        nonlocal total_pass, total_fail, total_skip
-        for name, meta in workspaces.items():
-            ws = SANDBOX_DIR / name
-            if not ws.exists():
-                print(f"  {name:<30} {'—':<9} {'—':>4} {'—':>7}  SKIP")
-                total_skip += 1
-                continue
-            expected_state = meta.get("expected_state", "?")
-            for cmd in ("inspect", "check"):
-                t0 = time.monotonic()
-                r = _lc(cmd, "--json", workspace=ws)
-                ms = int((time.monotonic() - t0) * 1000)
-                if cmd == "inspect":
-                    try:
-                        actual = json.loads(r.stdout).get("result", {}).get("installState", "?")
-                    except json.JSONDecodeError:
-                        actual = "?"
-                    ok = r.returncode == 0 and actual == expected_state
-                    note = f"state={actual}"
-                    if ok:
-                        inspect_acc.append(ms)
-                else:
-                    # exit 0 = clean, exit 7 = drift detected — both are valid states
-                    ok = r.returncode in (0, 7)
-                    note = f"exit={r.returncode}"
-                    if ok:
-                        check_acc.append(ms)
-                if ok:
-                    total_pass += 1
-                else:
-                    total_fail += 1
-                result = "PASS" if ok else f"FAIL  [{note}]"
-                print(f"  {name:<30} {cmd:<9} {r.returncode:>4} {ms:>7}  {result}")
-
-    print("\n=== CONTROL (baseline — no packs) ===")
-    print(header)
-    print(divider)
-    _run_section(_ctrl_ws.CONTROL_WORKSPACES, ctrl_i_ms, ctrl_c_ms)
-    ctrl_i_avg = int(sum(ctrl_i_ms) / len(ctrl_i_ms)) if ctrl_i_ms else 0
-    ctrl_c_avg = int(sum(ctrl_c_ms) / len(ctrl_c_ms)) if ctrl_c_ms else 0
-    print(f"\n  Baseline avg — inspect: {ctrl_i_avg}ms  check: {ctrl_c_avg}ms")
-
-    print("\n=== AGENT / PACK WORKSPACES ===")
-    print(header)
-    print(divider)
-    _run_section(_agent_ws.AGENT_WORKSPACES, ag_i_ms, ag_c_ms)
-    ag_i_avg = int(sum(ag_i_ms) / len(ag_i_ms)) if ag_i_ms else 0
-    ag_c_avg = int(sum(ag_c_ms) / len(ag_c_ms)) if ag_c_ms else 0
-    print(f"\n  Agent/pack avg  — inspect: {ag_i_avg}ms  check: {ag_c_avg}ms")
-    if ctrl_i_avg:
-        print(f"  Overhead vs control — inspect: {ag_i_avg - ctrl_i_avg:+d}ms  "
-              f"check: {ag_c_avg - ctrl_c_avg:+d}ms")
-
-    print(f"\n{total_pass} passed, {total_fail} failed, {total_skip} workspaces skipped")
-    if total_fail:
-        sys.exit(1)
-
-
 def main() -> None:
     p = argparse.ArgumentParser(
         prog="sandbox.py",
@@ -410,7 +338,10 @@ def main() -> None:
     pc.add_argument("--name", dest="clone_name", metavar="NAME", help="Workspace name (default: repo name)")
     pc.add_argument("--reset", action="store_true", help="Re-clone if workspace already exists")
     sub.add_parser("audit",      help="Check expected lifecycle state of all agent/pack workspaces")
-    sub.add_parser("benchmark",  help="Time inspect + check across all agent/pack workspaces")
+    pb = sub.add_parser("benchmark",  help="Time inspect + check across all agent/pack workspaces")
+    pb.add_argument("--timed", action="store_true", help="Multi-run mode: 20 runs, report p50/p95")
+    pb.add_argument("--save",  action="store_true", help="Write results to results/bench-<ts>.json (use with --timed)")
+    sub.add_parser("validate",   help="Assert exit codes and lifecycle state for workspaces with metadata")
 
     args = p.parse_args()
     if args.cmd == "init":
@@ -432,7 +363,11 @@ def main() -> None:
     elif args.cmd == "audit":
         cmd_audit()
     elif args.cmd == "benchmark":
-        cmd_benchmark()
+        _bench_module.cmd_benchmark(
+            _agent_ws.AGENT_WORKSPACES, _ctrl_ws.CONTROL_WORKSPACES,
+            SANDBOX_DIR, timed=args.timed, save=args.save)
+    elif args.cmd == "validate":
+        _sandbox_validate.cmd_validate(WORKSPACES, SANDBOX_DIR)
 
 
 if __name__ == "__main__":

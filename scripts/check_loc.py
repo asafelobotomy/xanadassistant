@@ -53,7 +53,9 @@ WARN_LIMIT_OVERRIDES = {
     # Grows with each new workspace template; not a consumer surface.
     "scripts/sandbox.py": 450,
     # Pack workspace templates; _apply_in_ws + 17 template functions.
-    "scripts/_sandbox_pack_workspaces.py": 300,    # Manifest generator grows as new surfaces and rules are added.
+    "scripts/_sandbox_pack_workspaces.py": 300,
+    # Core agent workspace templates; grows with each new scenario group.
+    "scripts/_sandbox_core_workspaces.py": 380,    # Manifest generator grows as new surfaces and rules are added.
     "scripts/lifecycle/generate_manifest.py": 300,
 
     # ── Hook test modules ────────────────────────────────────────────────────────

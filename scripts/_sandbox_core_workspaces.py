@@ -221,6 +221,118 @@ def _agent_triage_complex(ws: Path) -> None:
         "- Update README setup instructions\n", encoding="utf-8")
 
 
+def _agent_commit_conflict(ws: Path) -> None:
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / "main.py").write_text(
+        "def merge_configs(base, override):\n"
+        "<<<<<<< HEAD\n"
+        "    return {**base, **override}\n"
+        "=======\n"
+        "    return base | override\n"
+        ">>>>>>> feature/dict-union\n",
+        encoding="utf-8")
+    (ws / "config.py").write_text("DEFAULT = {'timeout': 30, 'retries': 3}\n", encoding="utf-8")
+
+
+def _agent_commit_binary(ws: Path) -> None:
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 64)
+    (ws / "app.py").write_text(
+        "from pathlib import Path\n\n"
+        "LOGO = Path('logo.png')\n\n"
+        "def get_logo_path() -> Path:\n"
+        "    return LOGO\n",
+        encoding="utf-8")
+
+
+def _agent_debug_cross_module(ws: Path) -> None:
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / "core").mkdir(exist_ok=True)
+    (ws / "core" / "models.py").write_text(
+        "class User:\n"
+        "    def __init__(self, first_name: str, last_name: str) -> None:\n"
+        "        self.full_name = f'{first_name} {last_name}'\n",
+        encoding="utf-8")
+    (ws / "api").mkdir(exist_ok=True)
+    (ws / "api" / "routes.py").write_text(
+        "from core.models import User\n\n"
+        "def get_display_name(user: User) -> str:\n"
+        "    return user.name  # AttributeError: User has no attribute 'name'\n",
+        encoding="utf-8")
+    (ws / "tests").mkdir(exist_ok=True)
+    (ws / "tests" / "test_routes.py").write_text(
+        "from api.routes import get_display_name\n"
+        "from core.models import User\n\n"
+        "def test_display_name():\n"
+        "    u = User('Ada', 'Lovelace')\n"
+        "    assert get_display_name(u) == 'Ada Lovelace'\n",
+        encoding="utf-8")
+
+
+def _agent_deps_pyproject(ws: Path) -> None:
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / "pyproject.toml").write_text(
+        "[project]\n"
+        'name = "myapp"\n'
+        'version = "0.1.0"\n'
+        'requires-python = ">=3.8"\n'
+        "dependencies = [\n"
+        "    \"flask>=0.12,<1\",      # ancient — current is 3.x\n"
+        "    \"werkzeug==0.16.1\",    # exact old pin\n"
+        "    \"sqlalchemy>=1.3,<2\",  # missing SQLAlchemy 2.x support\n"
+        "    \"requests>=2.20\",      # acceptable\n"
+        "]\n\n"
+        "[build-system]\n"
+        'requires = ["hatchling"]\n'
+        'build-backend = "hatchling.build"\n',
+        encoding="utf-8")
+    (ws / "src").mkdir(exist_ok=True)
+    (ws / "src" / "app.py").write_text(
+        "from flask import Flask\nfrom sqlalchemy import create_engine\n\n"
+        "app = Flask(__name__)\n",
+        encoding="utf-8")
+
+
+def _agent_deps_conflict(ws: Path) -> None:
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / "requirements.txt").write_text(
+        "package-a==1.0\n"
+        "package-b==1.0\n",
+        encoding="utf-8")
+    (ws / "requirements-dev.txt").write_text(
+        "# Transitive conflict:\n"
+        "# package-a 1.0 requires shared-lib>=2.0\n"
+        "# package-b 1.0 requires shared-lib<2.0\n"
+        "# No common version of shared-lib satisfies both constraints.\n"
+        "pytest>=7.0\n",
+        encoding="utf-8")
+    (ws / "app.py").write_text(
+        "import package_a\nimport package_b\n\n"
+        "def run() -> None:\n    package_a.init()\n    package_b.init()\n",
+        encoding="utf-8")
+
+
+def _agent_review_contract_break(ws: Path) -> None:
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / "api.py").write_text(
+        "def get_users() -> list:\n"
+        "    \"\"\"Return all active users.\"\"\"\n"
+        "    return [{'id': 1, 'name': 'Alice'}, {'id': 2, 'name': 'Bob'}]\n",
+        encoding="utf-8")
+    (ws / "api_v2.py").write_text(
+        "def get_users() -> dict:\n"
+        "    \"\"\"Return all active users.\"\"\"\n"
+        "    return {'users': [{'id': 1, 'name': 'Alice'}], 'total': 1}\n",
+        encoding="utf-8")
+    (ws / "CHANGELOG.md").write_text(
+        "# Changelog\n\n"
+        "## v2.0.0\n"
+        "- `get_users()` now returns a `dict` with `users` and `total` keys\n\n"
+        "## v1.0.0\n"
+        "- Initial release\n",
+        encoding="utf-8")
+
+
 # ── Registry ─────────────────────────────────────────────────────────────────
 
 CORE_WORKSPACES: dict[str, dict] = {
@@ -238,5 +350,15 @@ CORE_WORKSPACES: dict[str, dict] = {
     "agent-review-security": {"desc": "Hardcoded secrets, shell injection, SQL injection",        "fn": _agent_review_security, "group": "review",   "expected_state": "not-installed"},
     "agent-review-quality":  {"desc": "Deeply nested conditionals, O(n\u00b2) loop, no tests",   "fn": _agent_review_quality,  "group": "review",   "expected_state": "not-installed"},
     "agent-triage-simple":   {"desc": "Single function rename across 3 files",                    "fn": _agent_triage_simple,   "group": "triage",   "expected_state": "not-installed"},
-    "agent-triage-complex":  {"desc": "Multi-module ORM migration task description",              "fn": _agent_triage_complex,  "group": "triage",   "expected_state": "not-installed"},
+    "agent-triage-complex":        {"desc": "Multi-module ORM migration task description",             "fn": _agent_triage_complex,          "group": "triage",   "expected_state": "not-installed"},
+    "agent-commit-conflict":        {"desc": "Python file with merge conflict markers",                 "fn": _agent_commit_conflict,         "group": "commit",   "expected_state": "not-installed"},
+    "agent-commit-binary":          {"desc": "PNG binary stub alongside Python source",                 "fn": _agent_commit_binary,           "group": "commit",   "expected_state": "not-installed"},
+    "agent-debug-cross-module":     {"desc": "User.name AttributeError across core/api/tests",         "fn": _agent_debug_cross_module,      "group": "debugger", "expected_state": "not-installed"},
+    "agent-deps-pyproject":         {"desc": "pyproject.toml with ancient Flask/SQLAlchemy pins",      "fn": _agent_deps_pyproject,          "group": "deps",     "expected_state": "not-installed"},
+    "agent-deps-conflict":          {"desc": "requirements.txt with transitive version conflict",      "fn": _agent_deps_conflict,           "group": "deps",     "expected_state": "not-installed"},
+    "agent-review-contract-break":  {"desc": "get_users() return type list\u2192dict, no deprecation", "fn": _agent_review_contract_break,   "group": "review",  "expected_state": "not-installed"},
 }
+
+for _v in CORE_WORKSPACES.values():
+    _v.setdefault("expected_exit_codes", {"inspect": 0, "check": 7})
+    _v.setdefault("expected_findings", [])

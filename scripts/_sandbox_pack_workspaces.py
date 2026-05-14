@@ -262,3 +262,7 @@ PACK_WORKSPACES: dict[str, dict] = {
     "pack-tdd-failing":      {"desc": "tdd pack + inventory module with negative-stock bug",      "fn": _pack_tdd_failing,      "group": "tdd",      "expected_state": "installed"},
     "pack-tdd-new":          {"desc": "tdd pack + RateLimiter with no tests (TDD starting point)","fn": _pack_tdd_new,          "group": "tdd",      "expected_state": "installed"},
 }
+
+for _v in PACK_WORKSPACES.values():
+    _v.setdefault("expected_exit_codes", {"inspect": 0, "check": 0})
+    _v.setdefault("expected_findings", [])
