@@ -305,7 +305,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:01bf2f1831b3c881b5b8620516ab3166f749d100890c07da7c0a0f2245e7c756"
+      "hash": "sha256:0f398faae76958a141586b7199d330696a268e8707c28e53d4862f2657da7fbe"
     },
     {
       "id": "lean-hooks.leanContextBudget.py",
@@ -1519,7 +1519,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:577e66152903d3c839e564deb434f3e61aa75c8c2adf9f6a5c6b47d0cbf8d60a"
+      "hash": "sha256:94a2b7924481d728f63cc9ceb65279e05526296734cac712fac21d52b9bfc14d"
     },
     {
       "id": "vscode-settings.settings.json",

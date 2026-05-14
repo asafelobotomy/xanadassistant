@@ -73,7 +73,8 @@
       "command": "uvx",
       "env": {
         "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
-        "TMPDIR": "${userHome}/.cache/uv"
+        "TMPDIR": "${userHome}/.cache/uv",
+        "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
       },
       "args": [
         "--from",
