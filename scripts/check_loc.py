@@ -56,6 +56,8 @@ WARN_LIMIT_OVERRIDES = {
     "scripts/_sandbox_pack_workspaces.py": 300,
     # Core agent workspace templates; grows with each new scenario group.
     "scripts/_sandbox_core_workspaces.py": 380,    # Manifest generator grows as new surfaces and rules are added.
+    # Benchmark module; grows with new timing utilities and workspace harness.
+    "scripts/_sandbox_benchmark.py": 280,
     "scripts/lifecycle/generate_manifest.py": 300,
 
     # ── Hook test modules ────────────────────────────────────────────────────────
