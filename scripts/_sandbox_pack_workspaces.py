@@ -38,6 +38,7 @@ def _apply_in_ws(workspace: Path, answers: dict | None = None) -> None:
 
 def _pack_devops_pipeline(ws: Path) -> None:
     ws.mkdir(parents=True, exist_ok=True)
+    (ws / "requirements.txt").write_text("flask>=3.0.0\ngunicorn>=21.0.0\n", encoding="utf-8")
     _apply_in_ws(ws, {"packs.selected": ["devops"]})
     (ws / ".github" / "workflows").mkdir(parents=True, exist_ok=True)
     (ws / ".github" / "workflows" / "ci.yml").write_text(
@@ -48,7 +49,6 @@ def _pack_devops_pipeline(ws: Path) -> None:
     (ws / "Dockerfile").write_text(
         "FROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\n"
         "RUN pip install -r requirements.txt\nCOPY . .\nCMD [\"python\", \"app.py\"]\n", encoding="utf-8")
-    (ws / "requirements.txt").write_text("flask>=3.0.0\ngunicorn>=21.0.0\n", encoding="utf-8")
 
 
 def _pack_devops_incident(ws: Path) -> None:
@@ -150,17 +150,17 @@ def _pack_oss_missing(ws: Path) -> None:
 
 def _pack_secure_clean(ws: Path) -> None:
     ws.mkdir(parents=True, exist_ok=True)
-    _apply_in_ws(ws, {"packs.selected": ["secure"]})
     (ws / "requirements.txt").write_text(
         "fastapi>=0.115.0\nuvicorn>=0.32.0\nsqlalchemy>=2.0.36\npydantic>=2.10.0\n", encoding="utf-8")
+    _apply_in_ws(ws, {"packs.selected": ["secure"]})
 
 
 def _pack_secure_vuln(ws: Path) -> None:
     ws.mkdir(parents=True, exist_ok=True)
-    _apply_in_ws(ws, {"packs.selected": ["secure"]})
     (ws / "requirements.txt").write_text(
         "flask==0.12.4\nrequests==2.18.0\npillow==9.0.0\npyyaml==5.1\ncryptography==2.6\n",
         encoding="utf-8")
+    _apply_in_ws(ws, {"packs.selected": ["secure"]})
 
 
 def _pack_shapeup_pitch(ws: Path) -> None:
