@@ -29,13 +29,13 @@ EXTENSIONS = {".py", ".md", ".sh"}
 WARN_LIMIT_OVERRIDES = {
     # ── Agent surface files ───────────────────────────────────────────────────────
     # Agent definitions are long-form instruction documents; they grow with features.
-    "agents/xanadLifecycle.agent.md": 380,
+    "agents/xanadLifecycle.agent.md": 320,
 
     # ── Consumer hook scripts (single-file delivery) ──────────────────────────────
     # Consumer workspaces receive these hooks as single files, so they need a little
     # more room than the default warning budget while still honoring the hard limit.
     "hooks/scripts/xanadWorkspaceMcp.py": 380,
-    "hooks/scripts/mcpSequentialThinkingServer.py": 380,
+    "hooks/scripts/mcpSequentialThinkingServer.py": 260,
     "hooks/scripts/gitMcp.py": 380,
     "hooks/scripts/githubMcp.py": 450,  # matches hard limit override
 
@@ -51,8 +51,9 @@ WARN_LIMIT_OVERRIDES = {
 
     # ── Developer sandbox ────────────────────────────────────────────────────────
     # Grows with each new workspace template; not a consumer surface.
-    "scripts/sandbox.py": 380,    # 32 agent/pack workspace templates in a single developer-only module.
-    "scripts/_sandbox_agent_workspaces.py": 500,    # Manifest generator grows as new surfaces and rules are added.
+    "scripts/sandbox.py": 380,
+    # Pack workspace templates; _apply_in_ws + 17 template functions.
+    "scripts/_sandbox_pack_workspaces.py": 300,    # Manifest generator grows as new surfaces and rules are added.
     "scripts/lifecycle/generate_manifest.py": 300,
 
     # ── Hook test modules ────────────────────────────────────────────────────────
@@ -64,12 +65,12 @@ WARN_LIMIT_OVERRIDES = {
     "tests/lifecycle/test_apply_unit.py": 300,
     "tests/lifecycle/test_coverage_gaps.py": 380,
     "tests/lifecycle/test_execute_apply_b_unit.py": 300,
-    "tests/lifecycle/test_execute_apply_unit.py": 380,
+    "tests/lifecycle/test_execute_apply_unit.py": 320,
     "tests/lifecycle/test_inspect_check.py": 380,
     "tests/lifecycle/test_lifecycle_emit_progress_unit.py": 400,
-    "tests/lifecycle/test_lifecycle_unit.py": 380,
+    "tests/lifecycle/test_lifecycle_unit.py": 320,
     "tests/lifecycle/test_pack_e2e_a.py": 380,
-    "tests/lifecycle/test_plan_actions_unit.py": 380,
+    "tests/lifecycle/test_plan_actions_unit.py": 320,
     "tests/lifecycle/test_plan_lifecycle_a.py": 380,
     "tests/lifecycle/test_plan_result_unit.py": 380,
     "tests/lifecycle/test_plan_seed_unit.py": 300,
@@ -86,8 +87,6 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Splitting the MCP server would require import machinery unavailable in those
     # workspaces, so a higher hard ceiling is appropriate here.
     "hooks/scripts/githubMcp.py": 450,
-    # 32 agent/pack workspace templates in a single developer-only module.
-    "scripts/_sandbox_agent_workspaces.py": 500,
 }
 
 

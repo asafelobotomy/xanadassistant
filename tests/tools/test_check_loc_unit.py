@@ -64,7 +64,7 @@ class CheckLocWarningLimitTests(unittest.TestCase):
             os.chdir(str(REPO_ROOT))
             path = Path("hooks/scripts/mcpSequentialThinkingServer.py")
             limit = check_loc.warning_limit_for(path)
-            self.assertEqual(380, limit)
+            self.assertEqual(260, limit)
         finally:
             os.chdir(original_cwd)
 
