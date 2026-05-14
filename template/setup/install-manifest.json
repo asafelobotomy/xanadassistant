@@ -212,7 +212,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:a52fee94acf4596da65eca7a70689c54558bb798847ea1ed0139ee7561bc1c1e"
+      "hash": "sha256:df8513db81e4f032bea6f912d68bbf6fbcca06bd531c2976596daba8c40a7a59"
     },
     {
       "id": "core-instructions.copilot-instructions.md",

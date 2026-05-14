@@ -38,12 +38,37 @@ resolution is missing.
 ## Cold-start (blank workspace)
 
 This agent is installed by xanadAssistant and is not present in a fresh
-workspace. When a user says something like "Setup xanadAssistant" and this
-agent is not yet available, use `xanadBootstrap.py` instead of the lifecycle
-CLI. The bootstrap runner is a single stdlib-only file that resolves and
+workspace. When a user says something like "Setup asafelobotomy/xanadassistant"
+or "Setup xanadAssistant" and this agent is not yet available, follow the steps
+below. The bootstrap runner is a single stdlib-only file that resolves and
 downloads the package automatically.
 
 ### Bootstrap steps
+
+**Step 0 — Install this agent**
+
+Before fetching the bootstrap runner, install the `xanadLifecycle` agent so all
+future lifecycle operations route through it automatically.
+
+```sh
+mkdir -p .github/agents && curl -fsSL \
+  https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md \
+  -o .github/agents/xanadLifecycle.agent.md
+```
+
+Or with Python if curl is unavailable:
+
+```sh
+python3 -c "
+import urllib.request, os
+os.makedirs('.github/agents', exist_ok=True)
+urllib.request.urlretrieve(
+  'https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md',
+  '.github/agents/xanadLifecycle.agent.md')
+"
+```
+
+Proceed with the remaining steps below.
 
 **Step 1 — Fetch the bootstrap runner**
 

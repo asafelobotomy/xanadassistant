@@ -26,9 +26,21 @@ Optional packs (e.g. `lean`) add further surfaces when selected at setup time.
 
 ## Quick install
 
-### Recommended: Copilot agent setup
+### Recommended: just tell Copilot
 
-Get the lifecycle agent into your workspace with one command:
+Open Copilot chat (agent mode) and say:
+
+> **Setup asafelobotomy/xanadassistant**
+
+Copilot fetches the `xanadLifecycle` agent from GitHub, installs it into your
+workspace, and drives the full setup — interview, plan, apply, cleanup.
+No manual commands needed.
+
+For a step-by-step walkthrough of what happens, see [INSTALL.md](INSTALL.md).
+
+### Manual alternative
+
+If you prefer to run the agent install step yourself before involving Copilot:
 
 ```sh
 mkdir -p .github/agents && curl -fsSL \
@@ -36,20 +48,11 @@ mkdir -p .github/agents && curl -fsSL \
   -o .github/agents/xanadLifecycle.agent.md
 ```
 
-Then open Copilot chat (agent mode) and say:
-
-> **@xanadLifecycle Setup xanadAssistant**
-
-The agent downloads the bootstrap runner, walks you through the interview,
-plans the install, applies it, and cleans up. All future lifecycle operations
-(update, repair, factory-restore) use the same installed agent — no CLI
-knowledge needed.
-
-For a full walkthrough of each step, see [INSTALL.md](INSTALL.md).
+Then in Copilot chat: **@xanadLifecycle Setup xanadAssistant**
 
 ### Without Copilot
 
-> **Note:** The Copilot method above is the recommended path. Use this only when Copilot agent mode is unavailable.
+> **Note:** Use a Copilot method above when possible. This is a fallback for environments without Copilot agent mode.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py \

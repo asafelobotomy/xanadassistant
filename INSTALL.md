@@ -9,7 +9,17 @@ Requirements: Python 3.10+, stdlib only, internet access.
 
 ## Quickstart: Copilot agent setup (recommended)
 
-Get the lifecycle agent into your workspace with one command:
+Open Copilot chat (agent mode) and say:
+
+> **Setup asafelobotomy/xanadassistant**
+
+Copilot fetches the `xanadLifecycle` agent from GitHub (Step 0 below), installs
+it into your workspace, then drives the full bootstrap — interview, plan, apply,
+cleanup. No manual commands needed.
+
+### Manual alternative
+
+If you prefer to run Step 0 yourself before handing off to Copilot:
 
 ```sh
 mkdir -p .github/agents && curl -fsSL \
@@ -17,26 +27,7 @@ mkdir -p .github/agents && curl -fsSL \
   -o .github/agents/xanadLifecycle.agent.md
 ```
 
-Or with Python if curl is unavailable:
-
-```sh
-python3 -c "
-import urllib.request, os
-os.makedirs('.github/agents', exist_ok=True)
-urllib.request.urlretrieve(
-  'https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md',
-  '.github/agents/xanadLifecycle.agent.md')
-"
-```
-
-Then open Copilot chat (agent mode) and say:
-
-> **@xanadLifecycle Setup xanadAssistant**
-
-The agent downloads the bootstrap runner, walks you through the interview,
-plans the install, applies it, and cleans up. Once done, the `xanadLifecycle`
-agent is installed and manages all future lifecycle operations — no CLI
-knowledge needed.
+Then in Copilot chat: **@xanadLifecycle Setup xanadAssistant**
 
 ---
 
