@@ -96,6 +96,7 @@ Use memory as optional recall, not as lifecycle authority.
 - `xanadLifecycle` agent — delegate all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
 - `AGENTS.md` — canonical repo-local routing table for agent selection, handoffs, and lifecycle trigger phrases
 - Trigger phrases: `"inspect workspace"`, `"run lifecycle check"`, `"repair install"`, `"update xanadAssistant"`, `"factory restore"`
+- Available prompts: `/setup` (install or refresh this workspace), `/update` (pull latest package files for this workspace)
 - If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`, treat the workspace as a predecessor `copilot-instructions-template` migration and route it through `repair` or `update` rather than ad hoc cleanup.
 
 ## Agent Routing

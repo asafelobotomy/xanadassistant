@@ -230,6 +230,11 @@ class PlanLifecycleTests(XanadTestBase):
                 encoding="utf-8",
             )
 
+            (github_dir / "prompts" / "update.md").write_text(
+                self.render_update_prompt(repo_root, workspace),
+                encoding="utf-8",
+            )
+
             instructions_dir = github_dir / "instructions"
             instructions_dir.mkdir(parents=True, exist_ok=True)
             (instructions_dir / "tests.instructions.md").write_text(

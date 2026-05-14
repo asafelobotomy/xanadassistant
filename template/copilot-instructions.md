@@ -27,6 +27,8 @@ Use the **xanadLifecycle** agent for all xanadAssistant operations. Trigger phra
 | `"repair install"` | Fix stale or broken managed files |
 | `"factory restore"` | Reset to clean managed state |
 
+Available prompts: `/setup` (install or refresh), `/bootstrap` (cold-start from bare workspace), `/update` (pull latest package files).
+
 Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanadAssistant. Use the `lifecycleAudit` skill to review state before proposing any lifecycle operation.
 When the workspace-local `xanadTools` MCP server is available and can resolve a
 local xanadAssistant package root or a supported remote source, setup-oriented

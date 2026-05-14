@@ -236,7 +236,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:1219c3e438bd088768eab511fa72cb56035f87d279ac0beb972eea4e5c0b5c41"
+      "hash": "sha256:76b43625c6dec2adf9614225d9a9baf754c1396ae0826108f2596f6efe356c04"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -929,6 +929,24 @@
       "tokens": [],
       "chmod": "none",
       "hash": "sha256:0cd2e72a720f5feb3d90c9bf97333538e17f0d375af40b5a4f32cdbdf329b6c8"
+    },
+    {
+      "id": "prompts.update.md",
+      "surface": "prompts",
+      "layer": "core",
+      "source": "template/prompts/update.md",
+      "target": ".github/prompts/update.md",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [],
+      "tokens": [
+        "{{WORKSPACE_NAME}}",
+        "{{XANAD_PROFILE}}"
+      ],
+      "chmod": "none",
+      "hash": "sha256:2e09d11a9798de83439fac4b089006f4726eb0cdeb3f13b2e85335853c587505"
     },
     {
       "id": "secure-skills.dependencyAudit.SKILL.md",

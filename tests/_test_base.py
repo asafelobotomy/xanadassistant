@@ -88,6 +88,14 @@ class XanadTestBase(unittest.TestCase):
             .replace("{{XANAD_PROFILE}}", profile)
         )
 
+    def render_update_prompt(self, repo_root: Path, workspace: Path, profile: str = "balanced") -> str:
+        return (
+            (repo_root / "template" / "prompts" / "update.md")
+            .read_text(encoding="utf-8")
+            .replace("{{WORKSPACE_NAME}}", workspace.name)
+            .replace("{{XANAD_PROFILE}}", profile)
+        )
+
     def render_copilot_instructions(self, repo_root: Path, workspace: Path) -> str:
         """Render copilot-instructions.md with default token values for an empty workspace."""
         return (
