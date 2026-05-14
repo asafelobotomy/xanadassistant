@@ -179,9 +179,16 @@ def generate_manifest(package_root: Path, policy: dict) -> dict:
     if policy.get("generationSettings", {}).get("includeRetiredFiles", False):
         retired_files = retired_policy.get("entries", [])
 
+    version_file = package_root / "VERSION"
+    package_version = (
+        version_file.read_text(encoding="utf-8").strip()
+        if version_file.is_file()
+        else policy["schemaVersion"]
+    )
+
     return {
         "schemaVersion": policy.get("generationSettings", {}).get("manifestSchemaVersion", policy["schemaVersion"]),
-        "packageVersion": policy["schemaVersion"],
+        "packageVersion": package_version,
         "policySchemaVersion": policy["schemaVersion"],
         "sourceRoots": source_roots,
         "generationSettings": policy.get("generationSettings", {}),
