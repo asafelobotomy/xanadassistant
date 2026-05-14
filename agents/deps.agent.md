@@ -71,7 +71,9 @@ For each declared package, assess:
 
 ### 3a — Vulnerability check
 
-Use `mcp_security_query_osv` for packages with known CVEs. Query at minimum every package that is:
+Use `mcp_security_query_osv` if the xanadTools MCP server is connected;
+otherwise fall back to `pip-audit` (Python), `npm audit` (Node.js), or
+`osv-scanner` (all ecosystems). Query at minimum every package that is:
 - Pinned to a version older than 6 months
 - Flagged by the package manager as having known issues
 - In a security-sensitive role (auth, crypto, HTTP, file parsing)
@@ -86,7 +88,10 @@ Fix: upgrade to <version>
 
 ### 3b — Health check
 
-Use `mcp_security_query_deps` to retrieve deps.dev signals for each package:
+Use `mcp_security_query_deps` if the xanadTools MCP server is connected;
+otherwise fetch package metadata from the ecosystem registry directly
+(`pip index versions`, `npm view`, `cargo search`, etc.) or via `search`.
+Retrieve deps.dev signals for each package:
 - Latest stable version vs installed version
 - OpenSSF Scorecard (if available)
 - License

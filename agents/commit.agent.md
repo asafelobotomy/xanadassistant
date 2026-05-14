@@ -47,9 +47,9 @@ workspace tools to discover CI checks from `.github/workflows/`, scopes them
 to staged files, runs them cheapest-first, and returns a clear pass / block /
 residual-risk outcome.
 
-If the workspace has a project-specific preflight skill (e.g. `commitPreflight`
-in xanadAssistant), prefer that skill — it knows the project's exact commands
-and repair steps.
+If the workspace has a project-specific preflight skill (e.g. a custom
+`commitPreflight` or `ciCheck` skill tailored to this project), prefer that
+skill — it knows the project's exact commands and repair steps.
 
 Proceed to the commit workflow only after preflight returns **pass**, or the
 user explicitly accepts any residual risk surfaced.
