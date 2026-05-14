@@ -89,6 +89,7 @@ Use memory as optional recall, not as lifecycle authority.
 - `lifecycleAudit` skill — use before any lifecycle operation on this workspace
 - `commitPreflight` skill — repo-local git preflight for this workspace
 - `techDebtAudit` skill — repo-local maintainability audit for this workspace
+- `Cleaner` agent — prune stale artefacts, caches, archives, and dead files; requires approval gate before any tracked deletion
 - `Debugger` agent — diagnose failures and isolate root causes before implementation
 - `Planner` agent — produce scoped execution plans for multi-step work before implementation
 - `Researcher` agent — gather source-backed external constraints before implementation or review
@@ -105,6 +106,7 @@ Route specialist work to the matching agent before acting directly. If a task ha
 
 | Work type | Required agent |
 |---|---|
+| Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `Cleaner` |
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
 | Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
 | Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |

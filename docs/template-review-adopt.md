@@ -14,6 +14,8 @@ skill, workflow, instruction, and contract files.
 | A6 | Durable memory routing adopted | `docs/memory.md`, `.github/copilot-instructions.md`, `template/copilot-instructions.md` | Durable repo facts promote into `docs/memory.md`; `/memories/repo/` remains the in-flight inbox. |
 | A8 | `commitPreflight` adopted as repo-local maintainer skill | `.github/skills/commitPreflight/SKILL.md` | Adapted for repo-specific commands and generated-artifact checks; not consumer-delivered. |
 | A9 | `techDebtAudit` adopted as repo-local maintainer skill | `.github/skills/techDebtAudit/SKILL.md` | Narrowed to repo-native signals such as LOC, regression, freshness, and debt markers. |
+| A10 | `Cleaner` adopted as consumer-delivered agent | `agents/cleaner.agent.md` | Adapted: removed mcp-servers/handoffs/Codex models; Audit → Review; Code dropped; diary refs removed. |
+| A11 | `Organise` adopted as consumer-delivered subagent | `agents/organise.agent.md` | Adapted: same model/key cleanup; user-invocable remains false; Code dropped. |
 
 ## Deferred
 
@@ -32,11 +34,9 @@ skill, workflow, instruction, and contract files.
 |---|---|---|---|
 | 1 | `Audit` | Conditional next | Strongest remaining specialist if broader repo-health or security review becomes a recurring workflow. |
 | 2 | `Fast` | Defer | Useful for tiny tasks, but lower leverage than the default coding flow in this repo. |
-| 3 | `Cleaner` | Defer | Hygiene matters, but cleanup is not frequent enough yet to justify a dedicated agent. |
-| 4 | `Organise` | Defer | Structural reorg work is still rare and can stay in the default coding path. |
-| 5 | `Extensions` | Avoid for now | Too tied to extension/profile workflows that are peripheral to xanadassistant. |
-| 6 | `Code` | Reject as duplicate | Duplicates the default coding agent without adding distinct value. |
-| 7 | `Setup` | Reject for this architecture | Assumes plugin-style delivery rather than xanadassistant's CLI- and manifest-driven model. |
+| 3 | `Extensions` | Avoid for now | Too tied to extension/profile workflows that are peripheral to xanadassistant. |
+| 4 | `Code` | Reject as duplicate | Duplicates the default coding agent without adding distinct value. |
+| 5 | `Setup` | Reject for this architecture | Assumes plugin-style delivery rather than xanadassistant's CLI- and manifest-driven model. |
 
 Current recommendation: adopt `Audit` only if the existing `lifecycleAudit` skill needs to expand into a broader repository health review surface.
 

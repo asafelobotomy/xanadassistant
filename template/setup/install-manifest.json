@@ -32,6 +32,22 @@
   },
   "managedFiles": [
     {
+      "id": "agents.cleaner.agent.md",
+      "surface": "agents",
+      "layer": "pack",
+      "source": "agents/cleaner.agent.md",
+      "target": ".github/agents/cleaner.agent.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:46d4f5436e7da2c83ee390dd8de3c16aaeba434f5af6c2027d635527e0c08d1c"
+    },
+    {
       "id": "agents.commit.agent.md",
       "surface": "agents",
       "layer": "pack",
@@ -121,6 +137,22 @@
       ],
       "chmod": "none",
       "hash": "sha256:5524e7b4d154417e8ca5c3695c4c7295675f3ea28b8663e34701b21bfd5a08bd"
+    },
+    {
+      "id": "agents.organise.agent.md",
+      "surface": "agents",
+      "layer": "pack",
+      "source": "agents/organise.agent.md",
+      "target": ".github/agents/organise.agent.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "token-replace",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:7a307301e7aca29ac8242507c5d3c8039df2a664a3b547e7e6990fae0f8379d1"
     },
     {
       "id": "agents.planner.agent.md",

@@ -7,6 +7,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 
 | Agent | User-invocable | Use when |
 |---|---|---|
+| `Cleaner` | yes | Pruning stale artefacts, caches, archives, and dead files; tightening repository hygiene without changing behaviour |
 | `Commit` | yes | Git status, staging, commit messages, commits, pushes, pulls, rebases, branches, tags, releases, and PR work |
 | `Deps` | yes | Scanning workspace dependencies, auditing installed packages, checking for vulnerabilities, suggesting updates or alternatives, and installing/updating/repairing/removing packages |
 | `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, and architecture lookup |
@@ -14,6 +15,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, and `factory-restore` for xanadAssistant-managed surfaces |
 | `Triage` | no | First-pass complexity classification — determines whether a task needs a direct answer, targeted edit, single agent, or multi-agent plan |
 | `Debugger` | no | Root-cause diagnosis, failing tests, broken commands, unclear behavior reproduction, and minimal fix-path isolation |
+| `Organise` | no | Subagent-only structural worker — moving files, regrouping folders, fixing caller paths after a file move |
 | `Planner` | no | Complex multi-step planning, phased rollout, migration planning, and scoped execution plans before implementation |
 | `Researcher` | no | External documentation, upstream behavior, GitHub-source research, and source-backed comparisons before implementation |
 | `Docs` | yes | Documentation updates, migration notes, contract explanations, walkthroughs, and user-facing technical guides |
@@ -22,6 +24,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 
 | Work type | Required agent |
 |---|---|
+| Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `Cleaner` |
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
 | Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, suggesting updates or alternatives, or installing/updating/removing packages | `Deps` |
 | Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or "find where this lives" | `Explore` |
@@ -35,10 +38,12 @@ Use it to decide which specialist agent should own a task before widening scope.
 ## Handoff Rules
 
 - `xanadLifecycle` may delegate to `Explore` for repo inventory, `Debugger` for failing lifecycle behavior, and `Planner` for phased remediation.
+- `Cleaner` may delegate to `Review` for security-sensitive or policy-owned files, `Organise` when cleanup turns into file moves or reshaping, `Docs` when cleanup changes maintenance guidance or user-facing references, and `Commit` when the approved scope is ready to stage.
 - `Review` may delegate to `Explore` for inventory, `Debugger` for concrete reproduction, `Planner` for remediation planning, and `Researcher` for current external constraints.
 - `Debugger` stays read-only and returns diagnosis, evidence, and the minimal next fix step.
 - `Planner` stays read-only and returns an executable plan with file list, risks, and verification.
 - `Researcher` stays read-only and returns source-backed findings, constraints, and recommended next steps.
+- `Organise` stays structural-only — no semantic implementation unless explicitly widened by the caller.
 - `Deps` may delegate to `Researcher` for replacement-candidate research, `Explore` for local import/usage inventory, and `Review` for security findings that require deeper analysis.
 - `Docs` may delegate to `Researcher` for external references, `Explore` for local accuracy checks, `Review` for doc quality, and `Planner` when the documentation scope is broad.
 - Do not introduce a separate routing manifest. Agent frontmatter plus this file is the routing authority.
@@ -49,6 +54,9 @@ Use these patterns when a task crosses specialist boundaries but should still st
 
 | Start | Hand off to | Use when |
 |---|---|---|
+| `Cleaner` | `Review` | Cleanup touches security-sensitive files, managed surfaces, or policy-owned content |
+| `Cleaner` | `Organise` | Cleanup turns into file moves, path repair, or repository reshaping |
+| `Cleaner` | `Docs` | Cleanup changes archive conventions, maintenance guidance, or user-facing references |
 | `Review` | `Debugger` | A finding depends on reproducing a failure or isolating a concrete regression before the review is credible |
 | `Review` | `Planner` | Findings imply a phased remediation path rather than a single local fix |
 | `Review` | `Researcher` | The review depends on current upstream docs, release behavior, or external contract constraints |
