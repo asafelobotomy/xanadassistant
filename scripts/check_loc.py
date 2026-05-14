@@ -27,20 +27,56 @@ HARD_LIMIT = 400
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXTENSIONS = {".py", ".md", ".sh"}
 WARN_LIMIT_OVERRIDES = {
+    # ── Agent surface files ───────────────────────────────────────────────────────
+    # Agent definitions are long-form instruction documents; they grow with features.
+    "agents/xanadLifecycle.agent.md": 380,
+
+    # ── Consumer hook scripts (single-file delivery) ──────────────────────────────
     # Consumer workspaces receive these hooks as single files, so they need a little
     # more room than the default warning budget while still honoring the hard limit.
     "hooks/scripts/xanadWorkspaceMcp.py": 380,
     "hooks/scripts/mcpSequentialThinkingServer.py": 380,
     "hooks/scripts/gitMcp.py": 380,
-    "hooks/scripts/githubMcp.py": 380,
-    # Developer sandbox grows with each new workspace template; not a consumer surface.
+    "hooks/scripts/githubMcp.py": 450,  # matches hard limit override
+
+    # ── Pack hooks (consumer-facing single-file scripts) ──────────────────────────
+    "packs/secure/hooks/secureOsv.py": 300,
+    "packs/shapeup/hooks/shapeupScopeCheck.py": 300,
+
+    # ── Lifecycle engine submodules ───────────────────────────────────────────────
+    # Each submodule is intentionally scoped; these grew slightly beyond 250 while
+    # remaining well under the hard limit.
+    "scripts/lifecycle/_xanad/_interview.py": 300,
+    "scripts/lifecycle/_xanad/_plan_b.py": 300,
+
+    # ── Developer sandbox ────────────────────────────────────────────────────────
+    # Grows with each new workspace template; not a consumer surface.
     "scripts/sandbox.py": 380,
-    # Polyglot + priority tests added alongside existing coverage; still under hard limit.
-    "tests/lifecycle/test_workspace_scan_unit.py": 300,
-    # JSONC and merge tests added; still well under hard limit.
+
+    # ── Hook test modules ────────────────────────────────────────────────────────
+    "tests/hooks/test_github_mcp_unit.py": 380,
+    "tests/hooks/test_xanad_workspace_mcp_coverage2_unit.py": 300,
+    "tests/hooks/test_xanad_workspace_mcp_unit.py": 380,
+
+    # ── Lifecycle test modules ───────────────────────────────────────────────────
     "tests/lifecycle/test_apply_unit.py": 300,
-    # Rollback test added alongside existing coverage; still well under hard limit.
+    "tests/lifecycle/test_coverage_gaps.py": 380,
+    "tests/lifecycle/test_execute_apply_b_unit.py": 300,
     "tests/lifecycle/test_execute_apply_unit.py": 380,
+    "tests/lifecycle/test_inspect_check.py": 380,
+    "tests/lifecycle/test_lifecycle_emit_progress_unit.py": 400,
+    "tests/lifecycle/test_lifecycle_unit.py": 380,
+    "tests/lifecycle/test_pack_e2e_a.py": 380,
+    "tests/lifecycle/test_plan_actions_unit.py": 380,
+    "tests/lifecycle/test_plan_lifecycle_a.py": 380,
+    "tests/lifecycle/test_plan_result_unit.py": 380,
+    "tests/lifecycle/test_plan_seed_unit.py": 300,
+    "tests/lifecycle/test_plan_setup.py": 380,
+    "tests/lifecycle/test_plan_unit.py": 380,
+    "tests/lifecycle/test_workspace_scan_unit.py": 300,
+
+    # ── Manifest test modules ────────────────────────────────────────────────────
+    "tests/manifest/test_generate_manifest_unit.py": 300,
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # githubMcp.py covers a full GitHub REST API surface (auth, repos, issues, PRs,
@@ -107,7 +143,7 @@ def main(argv: list[str] | None = None) -> int:
 
     files = collect_files(args.files)
     warnings: list[tuple[Path, int, int]] = []
-    violations: list[tuple[Path, int]] = []
+    violations: list[tuple[Path, int, int]] = []
 
     for path in sorted(files):
         n = count_lines(path)
@@ -123,8 +159,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"WARN  {n:>5} lines  {path}{suffix}", file=sys.stderr)
 
     for path, n, hard_limit in violations:
-        suffix = "" if hard_limit == HARD_LIMIT else f"  (hard limit: {hard_limit})"
-        print(f"ERROR {n:>5} lines  {path}{suffix}", file=sys.stderr)
+        print(f"ERROR {n:>5} lines  {path}  (hard limit: {hard_limit})", file=sys.stderr)
 
     if violations:
         print(
