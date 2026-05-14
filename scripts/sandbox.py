@@ -309,6 +309,56 @@ def cmd_audit() -> None:
         sys.exit(1)
 
 
+def cmd_benchmark() -> None:
+    """Time inspect + check on every agent/pack workspace and report results."""
+    import time
+
+    if not SANDBOX_DIR.exists():
+        print("No sandbox. Run: python3 scripts/sandbox.py init")
+        return
+
+    total_pass = total_fail = total_skip = 0
+    print(f"{'Workspace':<32} {'Cmd':<9} {'Exit':>4} {'ms':>7}  Result")
+    print("-" * 70)
+
+    for name, meta in _agent_ws.AGENT_WORKSPACES.items():
+        ws = SANDBOX_DIR / name
+        if not ws.exists():
+            print(f"  {name:<30} {'—':<9} {'—':>4} {'—':>7}  SKIP")
+            total_skip += 1
+            continue
+
+        expected_state = meta.get("expected_state", "?")
+
+        for cmd in ("inspect", "check"):
+            t0 = time.monotonic()
+            r = _lc(cmd, "--json", workspace=ws)
+            elapsed_ms = int((time.monotonic() - t0) * 1000)
+
+            if cmd == "inspect":
+                try:
+                    actual = json.loads(r.stdout).get("result", {}).get("installState", "?")
+                except json.JSONDecodeError:
+                    actual = "?"
+                ok = r.returncode == 0 and actual == expected_state
+                note = f"state={actual}"
+            else:
+                # exit 0 = clean, exit 7 = drift detected — both are valid states
+                ok = r.returncode in (0, 7)
+                note = f"exit={r.returncode}"
+
+            label = "PASS" if ok else f"FAIL  [{note}]"
+            if ok:
+                total_pass += 1
+            else:
+                total_fail += 1
+            print(f"  {name:<30} {cmd:<9} {r.returncode:>4} {elapsed_ms:>7}  {label}")
+
+    print(f"\n{total_pass} passed, {total_fail} failed, {total_skip} workspaces skipped")
+    if total_fail:
+        sys.exit(1)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(
         prog="sandbox.py",
@@ -332,7 +382,8 @@ def main() -> None:
     pc.add_argument("repo", help="owner/repo shorthand or full URL")
     pc.add_argument("--name", dest="clone_name", metavar="NAME", help="Workspace name (default: repo name)")
     pc.add_argument("--reset", action="store_true", help="Re-clone if workspace already exists")
-    sub.add_parser("audit", help="Check expected lifecycle state of all agent/pack workspaces")
+    sub.add_parser("audit",      help="Check expected lifecycle state of all agent/pack workspaces")
+    sub.add_parser("benchmark",  help="Time inspect + check across all agent/pack workspaces")
 
     args = p.parse_args()
     if args.cmd == "init":
@@ -353,6 +404,8 @@ def main() -> None:
         cmd_clone(args.repo, args.clone_name, args.reset)
     elif args.cmd == "audit":
         cmd_audit()
+    elif args.cmd == "benchmark":
+        cmd_benchmark()
 
 
 if __name__ == "__main__":

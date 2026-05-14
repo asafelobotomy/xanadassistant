@@ -51,7 +51,7 @@ WARN_LIMIT_OVERRIDES = {
 
     # ── Developer sandbox ────────────────────────────────────────────────────────
     # Grows with each new workspace template; not a consumer surface.
-    "scripts/sandbox.py": 380,
+    "scripts/sandbox.py": 450,
     # Pack workspace templates; _apply_in_ws + 17 template functions.
     "scripts/_sandbox_pack_workspaces.py": 300,    # Manifest generator grows as new surfaces and rules are added.
     "scripts/lifecycle/generate_manifest.py": 300,
@@ -87,6 +87,8 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Splitting the MCP server would require import machinery unavailable in those
     # workspaces, so a higher hard ceiling is appropriate here.
     "hooks/scripts/githubMcp.py": 450,
+    # sandbox.py grows with each new workspace scenario (32 templates + commands).
+    "scripts/sandbox.py": 450,
 }
 
 
