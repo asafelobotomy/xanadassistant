@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import tempfile
 import unittest
 from pathlib import Path
@@ -140,6 +142,14 @@ class CheckLocCollectFilesTests(unittest.TestCase):
 
 
 class CheckLocMainTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._stderr = io.StringIO()
+        self._redirect = contextlib.redirect_stderr(self._stderr)
+        self._redirect.__enter__()
+
+    def tearDown(self) -> None:
+        self._redirect.__exit__(None, None, None)
+
     def test_main_returns_zero_for_clean_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "clean.py"

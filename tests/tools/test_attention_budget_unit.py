@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import tempfile
 import unittest
 from pathlib import Path
@@ -62,6 +64,14 @@ class CountLinesTests(unittest.TestCase):
 
 
 class RunTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._stderr = io.StringIO()
+        self._redirect = contextlib.redirect_stderr(self._stderr)
+        self._redirect.__enter__()
+
+    def tearDown(self) -> None:
+        self._redirect.__exit__(None, None, None)
+
     def test_run_returns_zero_within_budget(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -105,6 +115,14 @@ class RunTests(unittest.TestCase):
 
 
 class AttentionBudgetMainTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._stderr = io.StringIO()
+        self._redirect = contextlib.redirect_stderr(self._stderr)
+        self._redirect.__enter__()
+
+    def tearDown(self) -> None:
+        self._redirect.__exit__(None, None, None)
+
     def test_main_with_custom_budget_passes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
