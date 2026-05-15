@@ -30,3 +30,12 @@ Your role: turn medium or large requests into scoped execution plans before impl
 ## Plan format
 
 {{pack:plan-format}}
+
+## Memory
+
+At the start of every task, call `memory_dump(agent="planner")`.
+- If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
+- **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
+- **Facts** returned are working context — for any fact you intend to act on, call `mcp_time_elapsed(start=fact.updated_at)` to verify its age.
+
+When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="planner", key=..., value=...)` before finishing.

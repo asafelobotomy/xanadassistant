@@ -80,6 +80,7 @@ class PlanLifecycleTests(XanadTestBase):
                 ".github/prompts/tdd-review.prompt.md",
                 ".github/prompts/tdd-session.prompt.md",
                 ".github/prompts/threat-model.prompt.md",
+                ".github/skills/ciPreflight/SKILL.md",
                 ".github/skills/dependencyAudit/SKILL.md",
                 ".github/skills/devopsCiCd/SKILL.md",
                 ".github/skills/devopsContainers/SKILL.md",
@@ -284,6 +285,10 @@ class PlanLifecycleTests(XanadTestBase):
             )
             (hooks_dir / "sqliteMcp.py").write_text(
                 (repo_root / "hooks" / "scripts" / "sqliteMcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (hooks_dir / "memoryMcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "memoryMcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
 

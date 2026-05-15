@@ -9,14 +9,7 @@ Implementation may be stubbed, but later code and schemas should conform to this
 
 ## Execution Entry
 
-The product entry point is `xanadAssistant.py`.
-
-During early implementation, the script may live at either of these locations:
-
-- repo root as `xanadAssistant.py`
-- `scripts/lifecycle/xanadAssistant.py`
-
-The external command surface should still be described as `xanadAssistant.py` even if the internal module path changes.
+The entry point is `xanadAssistant.py` at the repo root. The internal engine module lives at `scripts/lifecycle/xanadAssistant.py` but is not part of the external command surface.
 
 ## Core Command Set
 
@@ -96,6 +89,7 @@ Machine I/O:
 - `--non-interactive`
 - `--dry-run`
 - `--answers`
+- `--resolutions`
 - `--plan-out`
 - `--report-out`
 - `--log-file`
@@ -150,6 +144,11 @@ Presentation:
 `--answers`
 
 - Supplies machine-readable answers for interview-driven decisions.
+
+`--resolutions`
+
+- Supplies a pre-recorded conflict-resolution file.
+- Used by `apply`, `update`, and `repair` to resolve decisions about pre-existing files.
 
 `--plan-out`
 

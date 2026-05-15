@@ -70,15 +70,14 @@ class XanadWorkspaceMcpCoverageBTests(unittest.TestCase):
 
     _KEY_COMMANDS_MD = "## Key Commands\n\n| Task | Command |\n|---|---|\n| Run tests | `python3 -m unittest` |\n| LOC gate | `python3 scripts/check_loc.py` |\n"
 
-    def test_lifecycle_handler_fixed_mode(self):
-        """_build_lifecycle_handler.handler: fixed_mode set → mode not from arguments."""
-        handler = self.mod._build_lifecycle_handler("inspect", fixed_mode="repair")
+    def test_lifecycle_plan_setup_passes_fixed_mode(self):
+        """lifecycle_plan_setup: always passes mode='setup' to run_lifecycle_command."""
+        import json
         with patch.object(self.mod, "run_lifecycle_command", return_value={"status": "ok", "summary": "done"}) as mock_cmd:
-            result = handler({"packageRoot": str(REPO_ROOT)})
+            result = json.loads(self.mod.lifecycle_plan_setup(packageRoot=str(REPO_ROOT)))
         self.assertEqual("ok", result["status"])
-        # Check mode kwarg is "repair"
         call_kwargs = mock_cmd.call_args[1]
-        self.assertEqual("repair", call_kwargs.get("mode"))
+        self.assertEqual("setup", call_kwargs.get("mode"))
 
     def test_show_key_commands_no_commands_in_file(self):
         """tool_workspace_show_key_commands line 202: instructions exist but no commands."""
@@ -177,23 +176,20 @@ class XanadWorkspaceMcpCoverageBTests(unittest.TestCase):
         self.assertIsNone(reason)
         mock_gr.assert_called_once()
 
-    def test_lifecycle_handler_with_answers_non_interactive_dry_run(self):
-        """_build_lifecycle_handler lines 163/165/167: allow_answers/non_interactive/dry_run kwargs."""
-        handler = self.mod._build_lifecycle_handler(
-            "apply",
-            allow_answers=True, allow_non_interactive=True, allow_dry_run=True,
-        )
+    def test_lifecycle_apply_passes_answers_non_interactive_dry_run(self):
+        """lifecycle_apply: answersPath/nonInteractive/dryRun forwarded to run_lifecycle_command."""
+        import json
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
             answers_file = f.name
         try:
             with patch.object(self.mod, "run_lifecycle_command", return_value={"status": "ok", "summary": "done"}) as mock_cmd:
                 with self._with_workspace(self._KEY_COMMANDS_MD):
-                    result = handler({
-                        "packageRoot": str(REPO_ROOT),
-                        "answersPath": answers_file,
-                        "nonInteractive": True,
-                        "dryRun": True,
-                    })
+                    result = json.loads(self.mod.lifecycle_apply(
+                        packageRoot=str(REPO_ROOT),
+                        answersPath=answers_file,
+                        nonInteractive=True,
+                        dryRun=True,
+                    ))
             call_kwargs = mock_cmd.call_args[1]
             self.assertEqual(answers_file, call_kwargs.get("answers_path"))
             self.assertTrue(call_kwargs.get("non_interactive"))

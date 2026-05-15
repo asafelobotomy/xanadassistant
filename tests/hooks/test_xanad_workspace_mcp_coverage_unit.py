@@ -236,13 +236,17 @@ class XanadWorkspaceMcpCoverageATests(unittest.TestCase):
         argv_arg = mock_argv.call_args[0][0]
         self.assertIn("--dry-run", argv_arg)
 
-    def test_lifecycle_handler_valid_mode(self):
-        """_build_lifecycle_handler.handler lines 158-168: valid mode → run_lifecycle_command."""
-        handler = self.mod._build_lifecycle_handler("plan", allow_mode=True, mode_as_flag=True)
+    def test_lifecycle_interview_valid_mode_calls_run_lifecycle_command(self):
+        """lifecycle_interview: valid mode → run_lifecycle_command called with mode_as_flag=True."""
+        import json
         with patch.object(self.mod, "run_lifecycle_command", return_value={"status": "ok", "summary": "done"}) as mock_cmd:
-            result = handler({"mode": "setup", "packageRoot": str(REPO_ROOT)})
+            with self._with_workspace(self._KEY_COMMANDS_MD):
+                result = json.loads(self.mod.lifecycle_interview(packageRoot=str(REPO_ROOT), mode="setup"))
         self.assertEqual("ok", result["status"])
         mock_cmd.assert_called_once()
+        call_kwargs = mock_cmd.call_args[1]
+        self.assertEqual("setup", call_kwargs.get("mode"))
+        self.assertTrue(call_kwargs.get("mode_as_flag"))
 
 
 

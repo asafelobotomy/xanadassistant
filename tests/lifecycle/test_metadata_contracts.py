@@ -109,10 +109,9 @@ class MetadataContractTests(unittest.TestCase):
             with self.subTest(path=path):
                 text = path.read_text(encoding="utf-8")
                 self.assertIn("## Memory", text)
-                self.assertIn("/memories/session/", text)
-                self.assertIn("/memories/repo/", text)
-                self.assertIn("docs/memory.md", text)
                 self.assertIn("not as lifecycle authority", text)
+                self.assertIn("Memory MCP server", text)
+                self.assertIn("memory_dump", text)
 
     def test_root_agents_document_captures_specialist_routing(self) -> None:
         repo_root = Path(__file__).resolve().parents[2]

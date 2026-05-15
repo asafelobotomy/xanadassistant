@@ -34,6 +34,7 @@ WARN_LIMIT_OVERRIDES = {
     # ── Consumer hook scripts (single-file delivery) ──────────────────────────────
     # Consumer workspaces receive these hooks as single files, so they need a little
     # more room than the default warning budget while still honoring the hard limit.
+    "hooks/scripts/memoryMcp.py": 600,
     "hooks/scripts/xanadWorkspaceMcp.py": 380,
     "hooks/scripts/mcpSequentialThinkingServer.py": 260,
     "hooks/scripts/gitMcp.py": 380,
@@ -86,6 +87,10 @@ WARN_LIMIT_OVERRIDES = {
     "tests/manifest/test_generate_manifest_unit.py": 300,
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
+    # memoryMcp.py covers 13 tools across advisory facts, authoritative rules, and
+    # FTS-indexed agent diary — all delivered as a single file to consumer workspaces.
+    # Splitting the MCP server would require import machinery unavailable there.
+    "hooks/scripts/memoryMcp.py": 700,
     # githubMcp.py covers a full GitHub REST API surface (auth, repos, issues, PRs,
     # releases, Actions) as a single file delivered verbatim to consumer workspaces.
     # Splitting the MCP server would require import machinery unavailable in those

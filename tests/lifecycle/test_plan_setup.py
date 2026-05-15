@@ -96,6 +96,7 @@ class PlanSetupTests(XanadTestBase):
                 ".github/prompts/tdd-review.prompt.md",
                 ".github/prompts/tdd-session.prompt.md",
                 ".github/prompts/threat-model.prompt.md",
+                ".github/skills/ciPreflight/SKILL.md",
                 ".github/skills/dependencyAudit/SKILL.md",
                 ".github/skills/devopsCiCd/SKILL.md",
                 ".github/skills/devopsContainers/SKILL.md",
@@ -222,7 +223,7 @@ class PlanSetupTests(XanadTestBase):
         self.assertEqual("merge", actions_by_target[".github/copilot-instructions.md"])
         self.assertEqual("replace", actions_by_target[".github/prompts/setup.md"])
         self.assertEqual(1, payload["result"]["conflictSummary"]["managed-drift"])
-        self.assertEqual("managed_drift", payload["warnings"][0]["code"])
+        self.assertTrue(any(w["code"] == "managed_drift" for w in payload["warnings"]))
 
     def test_plan_setup_classifies_unmanaged_lookalikes(self) -> None:
         def workspace_setup(workspace: Path, repo_root: Path) -> None:

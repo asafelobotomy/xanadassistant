@@ -1,6 +1,7 @@
 """Unit tests for securityMcp.py and webMcp.py hooks."""
 from __future__ import annotations
 
+import concurrent.futures
 import importlib.util
 import io
 import json
@@ -86,6 +87,34 @@ class WebMcpSsrfTests(unittest.TestCase):
             self.mod._guard_ssrf("http://this.host.does.not.exist.xyzabc123/")
         self.assertIn("Cannot resolve", str(ctx.exception))
 
+    def test_guard_ssrf_zero_network_blocked(self):
+        with self.assertRaises(ValueError) as ctx:
+            self.mod._guard_ssrf("http://0.0.0.1/anything")
+        self.assertIn("blocked", str(ctx.exception))
+
+    def test_guard_ssrf_ipv6_loopback_blocked(self):
+        with self.assertRaises(ValueError) as ctx:
+            self.mod._guard_ssrf("http://[::1]/")
+        self.assertIn("blocked", str(ctx.exception))
+
+    def test_guard_ssrf_ipv4_mapped_ipv6_blocked(self):
+        # ::ffff:127.0.0.1 is IPv4-mapped IPv6 loopback — must be in _BLOCKED
+        with patch("socket.getaddrinfo",
+                   return_value=[(None, None, None, None, ("::ffff:127.0.0.1", 0, 0, 0))]):
+            with self.assertRaises(ValueError) as ctx:
+                self.mod._guard_ssrf("http://mapped.example.com/")
+        self.assertIn("blocked", str(ctx.exception))
+
+    def test_guard_ssrf_dns_timeout(self):
+        future_mock = MagicMock()
+        future_mock.result.side_effect = concurrent.futures.TimeoutError()
+        ex_mock = MagicMock()
+        ex_mock.submit.return_value = future_mock
+        with patch("concurrent.futures.ThreadPoolExecutor", return_value=ex_mock):
+            with self.assertRaises(ValueError) as ctx:
+                self.mod._guard_ssrf("http://slow.example.com/")
+        self.assertIn("DNS timeout", str(ctx.exception))
+
     def test_ssrf_redirect_hook_non_redirect_noop(self):
         resp = MagicMock()
         resp.is_redirect = False
@@ -105,6 +134,49 @@ class WebMcpSsrfTests(unittest.TestCase):
         resp.headers = {"location": ""}
         # Empty location should not raise
         self.mod._ssrf_redirect_hook(resp)
+
+    def test_ssrf_redirect_hook_relative_location_noop(self):
+        # Relative redirects have no hostname — no SSRF risk, must not raise.
+        resp = MagicMock()
+        resp.is_redirect = True
+        resp.headers = {"location": "/specification/2025-06-18/basic/transports"}
+        self.mod._ssrf_redirect_hook(resp)  # Should not raise
+
+    def test_ssrf_redirect_hook_protocol_relative_loopback_blocked(self):
+        resp = MagicMock()
+        resp.is_redirect = True
+        resp.headers = {"location": "//127.0.0.1/evil"}
+        with self.assertRaises(ValueError):
+            self.mod._ssrf_redirect_hook(resp)
+
+    def test_ssrf_redirect_hook_rfc1918_blocked(self):
+        resp = MagicMock()
+        resp.is_redirect = True
+        resp.headers = {"location": "http://10.0.0.1/"}
+        with self.assertRaises(ValueError):
+            self.mod._ssrf_redirect_hook(resp)
+
+    def test_ssrf_redirect_hook_link_local_blocked(self):
+        resp = MagicMock()
+        resp.is_redirect = True
+        resp.headers = {"location": "http://169.254.169.254/"}
+        with self.assertRaises(ValueError):
+            self.mod._ssrf_redirect_hook(resp)
+
+    def test_ssrf_redirect_hook_cgnat_blocked(self):
+        resp = MagicMock()
+        resp.is_redirect = True
+        resp.headers = {"location": "http://100.64.0.1/"}
+        with self.assertRaises(ValueError):
+            self.mod._ssrf_redirect_hook(resp)
+
+    def test_ssrf_redirect_hook_ftp_scheme_rejected(self):
+        resp = MagicMock()
+        resp.is_redirect = True
+        resp.headers = {"location": "ftp://files.example.com/file.txt"}
+        with self.assertRaises(ValueError) as ctx:
+            self.mod._ssrf_redirect_hook(resp)
+        self.assertIn("unsupported scheme", str(ctx.exception).lower())
 
     def test_rate_limiter_allows_within_limit(self):
         limiter = self.mod._RateLimiter(calls=5, period=60.0)
@@ -191,38 +263,118 @@ class WebMcpFunctionalTests(unittest.TestCase):
         self.assertIn("http", str(ctx.exception).lower())
 
     def test_fetch_happy_path_returns_markdown(self):
+        html_bytes = b"<html><body><h1>Hello</h1><p>World content</p></body></html>"
         resp_mock = MagicMock()
         resp_mock.raise_for_status = MagicMock()
-        resp_mock.text = "<html><body><h1>Hello</h1><p>World content</p></body></html>"
         resp_mock.headers = {"content-type": "text/html; charset=utf-8"}
+        resp_mock.iter_bytes.return_value = [html_bytes]
+
+        stream_ctx = MagicMock()
+        stream_ctx.__enter__ = lambda s: resp_mock
+        stream_ctx.__exit__ = MagicMock(return_value=False)
 
         client_ctx = MagicMock()
         client_ctx.__enter__ = lambda s: s
         client_ctx.__exit__ = MagicMock(return_value=False)
-        client_ctx.get.return_value = resp_mock
+        client_ctx.stream.return_value = stream_ctx
 
-        with patch("socket.gethostbyname", return_value="93.184.216.34"):
+        with patch("socket.getaddrinfo", return_value=[(None, None, None, None, ("93.184.216.34", 0))]):
             with patch("httpx.Client", return_value=client_ctx):
                 result = self.mod.fetch("https://example.com/")
         self.assertIn("Hello", result)
         self.assertIn("World content", result)
 
     def test_fetch_raw_skips_markdown_conversion(self):
+        html_bytes = b"<html><body><p>Raw</p></body></html>"
         resp_mock = MagicMock()
         resp_mock.raise_for_status = MagicMock()
-        resp_mock.text = "<html><body><p>Raw</p></body></html>"
         resp_mock.headers = {"content-type": "text/html"}
+        resp_mock.iter_bytes.return_value = [html_bytes]
+
+        stream_ctx = MagicMock()
+        stream_ctx.__enter__ = lambda s: resp_mock
+        stream_ctx.__exit__ = MagicMock(return_value=False)
 
         client_ctx = MagicMock()
         client_ctx.__enter__ = lambda s: s
         client_ctx.__exit__ = MagicMock(return_value=False)
-        client_ctx.get.return_value = resp_mock
+        client_ctx.stream.return_value = stream_ctx
 
-        with patch("socket.gethostbyname", return_value="93.184.216.34"):
+        with patch("socket.getaddrinfo", return_value=[(None, None, None, None, ("93.184.216.34", 0))]):
             with patch("httpx.Client", return_value=client_ctx):
                 result = self.mod.fetch("https://example.com/", raw=True)
         # Raw mode: HTML tags are preserved
         self.assertIn("<p>Raw</p>", result)
+
+    def _make_stream_mock(self, html_bytes: bytes, content_type: str = "text/html; charset=utf-8"):
+        resp_mock = MagicMock()
+        resp_mock.raise_for_status = MagicMock()
+        resp_mock.headers = {"content-type": content_type}
+        resp_mock.iter_bytes.return_value = [html_bytes]
+        stream_ctx = MagicMock()
+        stream_ctx.__enter__ = lambda s: resp_mock
+        stream_ctx.__exit__ = MagicMock(return_value=False)
+        client_ctx = MagicMock()
+        client_ctx.__enter__ = lambda s: s
+        client_ctx.__exit__ = MagicMock(return_value=False)
+        client_ctx.stream.return_value = stream_ctx
+        return client_ctx
+
+    def test_fetch_negative_start_index_clamped(self):
+        html_bytes = b"<html><body><p>Content here</p></body></html>"
+        client_ctx = self._make_stream_mock(html_bytes)
+        with patch("socket.getaddrinfo", return_value=[(None, None, None, None, ("93.184.216.34", 0))]):
+            with patch("httpx.Client", return_value=client_ctx):
+                result = self.mod.fetch("https://example.com/", start_index=-100)
+        # Negative start_index must be clamped to 0 — content starts from the beginning
+        self.assertIn("Content here", result)
+        self.assertGreater(len(result), 0)
+
+    def test_fetch_truncation_uses_structured_comment(self):
+        long_text = "word " * 4000  # ~20 000 chars
+        html_bytes = f"<html><body><p>{long_text}</p></body></html>".encode()
+        client_ctx = self._make_stream_mock(html_bytes)
+        with patch("socket.getaddrinfo", return_value=[(None, None, None, None, ("93.184.216.34", 0))]):
+            with patch("httpx.Client", return_value=client_ctx):
+                result = self.mod.fetch("https://example.com/", max_length=5000)
+        self.assertIn("<!-- xanad:truncation", result)
+        self.assertIn("next_start_index=", result)
+        self.assertNotIn("[Truncated —", result)
+
+    def test_extract_ddg_url_unwraps_ddg_redirect(self):
+        from bs4 import BeautifulSoup as _BS
+        soup = _BS(
+            '<div class="result">'
+            '<h2 class="result__title">'
+            '<a href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.com%2F">Title</a>'
+            '</h2><span class="result__url">example.com</span></div>',
+            "html.parser",
+        )
+        el = soup.select_one(".result")
+        url = self.mod._extract_ddg_url(el)
+        self.assertEqual("https://example.com/", url)
+
+    def test_extract_ddg_url_returns_direct_href(self):
+        from bs4 import BeautifulSoup as _BS
+        soup = _BS(
+            '<div class="result">'
+            '<h2 class="result__title"><a href="https://example.com/page">Title</a></h2>'
+            '</div>',
+            "html.parser",
+        )
+        el = soup.select_one(".result")
+        url = self.mod._extract_ddg_url(el)
+        self.assertEqual("https://example.com/page", url)
+
+    def test_extract_ddg_url_falls_back_to_display_text(self):
+        from bs4 import BeautifulSoup as _BS
+        soup = _BS(
+            '<div class="result"><span class="result__url">example.com</span></div>',
+            "html.parser",
+        )
+        el = soup.select_one(".result")
+        url = self.mod._extract_ddg_url(el)
+        self.assertEqual("example.com", url)
 
 
 # ---------------------------------------------------------------------------

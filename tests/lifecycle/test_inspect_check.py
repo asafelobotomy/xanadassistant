@@ -26,7 +26,7 @@ class InspectCheckTests(XanadTestBase):
 
         self.assertEqual(0, result.returncode)
         events = [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
-        self.assertEqual(["phase", "inspect-summary", "receipt"], [event["type"] for event in events])
+        self.assertEqual(["phase", "inspect-summary", "warning", "warning", "receipt"], [event["type"] for event in events])
         self.assertIn("Preflight", result.stderr)
         self.assertIn("Manifest entries", result.stderr)
 
@@ -38,7 +38,7 @@ class InspectCheckTests(XanadTestBase):
         self.assertEqual("check", payload["command"])
         self.assertEqual("drift", payload["status"])
         self.assertGreater(payload["result"]["summary"]["missing"], 0)
-        self.assertEqual(72, payload["result"]["summary"]["skipped"])
+        self.assertEqual(73, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["unmanaged"])
 
     def test_inspect_does_not_create_missing_workspace(self) -> None:
@@ -70,7 +70,7 @@ class InspectCheckTests(XanadTestBase):
 
         self.assertEqual(7, result.returncode)
         payload = json.loads(result.stdout)
-        self.assertEqual(72, payload["result"]["summary"]["skipped"])
+        self.assertEqual(73, payload["result"]["summary"]["skipped"])
         skipped_entries = [
             entry for entry in payload["result"]["entries"]
             if entry["target"] == ".github/agents/commit.agent.md"
@@ -216,6 +216,10 @@ class InspectCheckTests(XanadTestBase):
                 (repo_root / "hooks" / "scripts" / "sqliteMcp.py").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
+            (hooks_dir / "memoryMcp.py").write_text(
+                (repo_root / "hooks" / "scripts" / "memoryMcp.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
 
             vscode_dir = workspace / ".vscode"
             vscode_dir.mkdir(parents=True, exist_ok=True)
@@ -240,7 +244,7 @@ class InspectCheckTests(XanadTestBase):
         payload = json.loads(result.stdout)
         self.assertEqual("clean", payload["status"])
         self.assertEqual(0, payload["result"]["summary"]["missing"])
-        self.assertEqual(72, payload["result"]["summary"]["skipped"])
+        self.assertEqual(73, payload["result"]["summary"]["skipped"])
         self.assertEqual(0, payload["result"]["summary"]["stale"])
 
     def test_check_reports_stale_when_target_content_differs(self) -> None:

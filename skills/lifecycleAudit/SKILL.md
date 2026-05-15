@@ -44,3 +44,4 @@ Systematic lifecycle state review before any install, update, repair, or factory
 - [ ] `inspect` output has been read this session
 - [ ] `repairReasons` is empty or the user has acknowledged them
 - [ ] `needsMigration` is false or repair has been run
+- [ ] Memory health warnings (`memory_mcp_missing`, `memory_mcp_unregistered`, `memory_db_schema_corrupt`) are noted if present — a missing DB is first-run-safe (info only); missing hook or corrupt schema warrants repair

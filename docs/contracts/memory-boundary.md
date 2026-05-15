@@ -6,7 +6,7 @@ This document defines the boundary between core lifecycle behavior and optional 
 
 This file is normative for Phase 0 memory separation.
 
-See `docs/contracts/memory-v1.md` for the operational v1 scope and routing model.
+See `docs/archive/memory-v1-contract.md` for the archived v1 scope and routing model.
 
 ## Core Rule
 

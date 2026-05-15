@@ -328,3 +328,12 @@ python3 xanadAssistant.py apply \
   lockfile management.
 
 Do not interpret manifests, copy files, or modify `.github/` contents directly.
+
+## Memory
+
+At the start of every lifecycle task, call `memory_dump(agent="xanadLifecycle")`.
+- If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
+- **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
+- **Facts** returned are working context — for any fact you intend to act on, call `mcp_time_elapsed(start=fact.updated_at)` to verify its age.
+
+When you learn something durable about a workspace (install state, known repair paths, workspace-specific conventions), call `memory_set(agent="xanadLifecycle", key=..., value=...)` before finishing.

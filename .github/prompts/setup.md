@@ -28,9 +28,9 @@ package source, fall back to the CLI commands below.
 
 ```
 python3 xanadAssistant.py inspect \
-	--workspace xanadassistant \
-	--package-root <path-to-xanadAssistant-checkout> \
-	--ui agent --json-lines
+  --workspace xanadassistant \
+  --package-root <path-to-xanadAssistant-checkout> \
+  --ui agent --json-lines
 ```
 
 Review `installState`, `manifestSummary`, and any warnings. Ask the user to
@@ -53,24 +53,86 @@ profile selection, run the interview:
 
 ```
 python3 xanadAssistant.py interview \
-	--workspace xanadassistant \
-	--package-root <path-to-xanadAssistant-checkout> \
-	--mode setup --json-lines
+  --workspace xanadassistant \
+  --package-root <path-to-xanadAssistant-checkout> \
+  --mode setup --json-lines
 ```
 
-Collect the user's answers and write them to an answer file, or use
-`--non-interactive` if the defaults are acceptable.
+Parse `result.questions`. For each question, present the `prompt` and `default`
+to the user and ask whether they want to override. Create the answers directory
+and write the collected answers to `.xanadAssistant/tmp/setup-answers.json`.
+Include only keys the user explicitly overrides — omitted keys are filled from
+their declared `default` values by the lifecycle engine.
+
+Each question also carries a `batch` field:
+
+- `setup` — always first; ask `setup.depth` before anything else
+- `simple` — always shown
+- `advanced` — shown when `setup.depth` is `advanced` or `full`
+- `full` — shown only when `setup.depth` is `full`
+
+Use the user's `setup.depth` answer to decide which later questions to show.
+
+**Answer file format:**
+
+```json
+{
+  "setup.depth": "simple",
+  "profile.selected": "balanced",
+  "packs.selected": [],
+  "ownership.agents": "plugin-backed-copilot-format",
+  "ownership.skills": "plugin-backed-copilot-format",
+  "response.style": "balanced",
+  "autonomy.level": "ask-first",
+  "agent.persona": "professional",
+  "testing.philosophy": "always",
+  "mcp.enabled": true,
+  "mcp.servers": []
+}
+```
+
+`packs.selected` accepts one or more pack names as an array. If the user selects
+multiple packs, the plan step will surface any token conflicts that need
+resolution before proceeding.
+
+If the user accepts all defaults, use `--non-interactive` and omit `--answers`.
+
+### 2.5. Resolve pre-existing files (if any)
+
+After the interview, inspect `result.existingFiles` in the interview output.
+If the array is non-empty, present each entry to the user:
+
+- `type: "collision"` — a file that xanadAssistant would overwrite.
+  Available decisions: `keep` (preserve the user's file), `replace` (xanadAssistant wins),
+  `merge` (if `mergeSupported` is true).
+- `type: "unmanaged"` — a file in a managed directory that xanadAssistant does not own.
+  Available decisions: `keep`, `remove`.
+
+Collect the user's per-file decisions and write them to
+`.xanadAssistant/tmp/conflict-resolutions.json` as a flat JSON object
+mapping relative path → decision string:
+
+```json
+{
+  ".github/prompts/my-prompt.md": "keep",
+  ".github/agents/old-agent.md": "remove"
+}
+```
+
+Pass `--resolutions .xanadAssistant/tmp/conflict-resolutions.json` to both
+`plan setup` and `apply` below.  If `existingFiles` is empty, skip this step.
 
 ### 3. Generate a plan
 
 ```
 python3 xanadAssistant.py plan setup \
-	--workspace xanadassistant \
-	--package-root <path-to-xanadAssistant-checkout> \
-	--non-interactive --json-lines
+  --workspace xanadassistant \
+  --package-root <path-to-xanadAssistant-checkout> \
+  --answers .xanadAssistant/tmp/setup-answers.json \
+  --non-interactive --json-lines
 ```
 
-For predecessor `copilot-instructions-template` installs, replace `plan setup`
+For predecessor-managed installs, replace `plan setup`
 with `plan repair`.
 
 If `approvalRequired` is true in the plan payload, summarise the planned writes
@@ -85,20 +147,27 @@ Once the user approves (or `approvalRequired` is false):
 
 ```
 python3 xanadAssistant.py apply \
-	--workspace xanadassistant \
-	--package-root <path-to-xanadAssistant-checkout> \
-	--non-interactive --ui agent --json-lines
+  --workspace xanadassistant \
+  --package-root <path-to-xanadAssistant-checkout> \
+  --answers .xanadAssistant/tmp/setup-answers.json \
+  --non-interactive --ui agent --json-lines
 ```
 
-For predecessor `copilot-instructions-template` installs, replace `apply` with
+For predecessor-managed installs, replace `apply` with
 `repair`.
 
 Check the `validation.status` in the apply result. If it is not `passed`,
 report the error and the `backupPath` to the user.
 
-### 5. Confirm
+### 5. Confirm and clean up
 
 Show the user the Receipt phase output and the path to the generated
 `.github/copilot-version.md` summary.
 
 When MCP is available, prefer `lifecycle_check` for the final confirmation step.
+
+After a successful apply, remove the temporary answers file:
+
+```sh
+rm -rf .xanadAssistant/tmp
+```

@@ -22,7 +22,25 @@ xanadAssistant installs, updates, repairs, and factory-restores a curated set of
 | MCP config | `.vscode/mcp.json` | `local` (merge-safe) |
 | VS Code settings | `.vscode/settings.json` | `local` (merge-safe) |
 
-Optional packs (e.g. `lean`) add further surfaces when selected at setup time.
+Optional packs (e.g. `lean`, `secure`, `tdd`, `docs`) add further surfaces when selected at setup time.
+
+## MCP servers
+
+When hooks are enabled at setup time, xanadAssistant registers these MCP servers in `.vscode/mcp.json`:
+
+| Server | Script | Purpose |
+|---|---|---|
+| `memory` | `memoryMcp.py` | Persistent, scoped SQLite-backed agent memory — advisory facts, authoritative rules, and FTS-indexed diary |
+| `git` | `gitMcp.py` | Local git operations |
+| `github` | `githubMcp.py` | GitHub API operations |
+| `sqlite` | `sqliteMcp.py` | SQLite query access |
+| `time` | `timeMcp.py` | Time and elapsed-time tools |
+| `web` | `webMcp.py` | Web search and fetch |
+| `security` | `securityMcp.py` | Dependency vulnerability queries |
+| `sequential-thinking` | `mcpSequentialThinkingServer.py` | Structured step-by-step reasoning |
+| `xanad-workspace` | `xanadWorkspaceMcp.py` | Workspace lifecycle inspection tools |
+
+All servers use the `stdio` transport via `uvx` and are registered with `WORKSPACE_ROOT` pointing to the workspace folder.
 
 ## Requirements
 
@@ -203,7 +221,7 @@ python3 xanadAssistant.py repair --workspace <path> --package-root <path> --json
 
 ## Architecture
 
-```
+```text
 xanadAssistant.py            # thin entry point
 scripts/lifecycle/
   xanadAssistant.py          # public module and re-export surface
@@ -241,21 +259,34 @@ tests/                        # unittest suite
 | Pack | Status | Description |
 |---|---|---|
 | `lean` | active | Terse workflow helpers and brevity-oriented defaults |
+| `secure` | active | Security-first coding defaults with OWASP Top 10:2025 review and dependency vulnerability scanning |
+| `tdd` | active | Test-driven development defaults — Red-Green-Refactor discipline, test double guidance, and coverage analysis |
+| `oss` | active | Open-source contribution defaults — license compliance, changelog discipline, DCO/semver guidance |
+| `docs` | active | Documentation defaults — Diátaxis-structured drafting, API doc conventions, and prose style guidance |
+| `devops` | active | DevOps defaults — CI/CD pipeline design, container discipline, IaC conventions, and deployment safety review |
+| `mlops` | active | MLOps defaults — experiment tracking, data pipeline discipline, model serving conventions, and drift investigation |
+| `shapeup` | active | Shape Up defaults — pitch writing, cycle execution, betting table process, and scope discipline |
+| `memory` | planned | Durable memory and recall features |
+| `review` | planned | Code review and audit workflows |
+| `research` | planned | Research and synthesis workflows |
+| `workspace-ops` | planned | Workspace automation and maintenance helpers |
 
 ### Profiles
 
 | Profile | Status | Description |
 |---|---|---|
-| `balanced` | active | Standard detail and guidance |
+| `balanced` | active | Balanced detail and guidance for normal interactive work |
 | `lean` | active | Concise output; includes `lean` pack by default |
+| `ultra-lean` | planned | Minimum viable output density for highly structured workflows |
 
-## MCP servers
+## Hook scripts
 
-When hooks are enabled, the following MCP servers are installed into `.github/hooks/scripts/`:
+When hooks are enabled, the following MCP server scripts are installed into `.github/hooks/scripts/`:
 
 | Server | Enabled by default | Description |
 |---|---|---|
 | `xanadWorkspaceMcp.py` | yes | xanadAssistant lifecycle tools (`lifecycle_inspect`, `lifecycle_update`, etc.) |
+| `memoryMcp.py` | yes | Persistent SQLite-backed agent memory — advisory facts, authoritative rules, and FTS-indexed diary |
 | `gitMcp.py` | yes | Full local + remote git workflow (22 tools) |
 | `webMcp.py` | yes | DuckDuckGo search and URL fetch |
 | `timeMcp.py` | yes | Current time, elapsed duration, timezone conversion |

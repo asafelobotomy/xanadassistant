@@ -118,15 +118,16 @@ class XanadWorkspaceMcpToolTests(unittest.TestCase):
             finally:
                 self.mod.WORKSPACE_ROOT = orig
 
-    def test_tools_call_workspace_validate_lockfile(self):
-        req = {"jsonrpc": "2.0", "id": 11, "method": "tools/call",
-               "params": {"name": "workspace_validate_lockfile", "arguments": {}}}
-        resp = self.mod.handle_request(req)
-        self.assertIn("result", resp)
+    def test_workspace_validate_lockfile_fastmcp_returns_json(self):
+        import json
+        result_json = self.mod.workspace_validate_lockfile()
+        result = json.loads(result_json)
+        self.assertIn(result["status"], ("ok", "failed", "unavailable"))
 
-    def test_build_lifecycle_handler_mode_invalid(self):
-        handler_fn = self.mod._build_lifecycle_handler("plan", allow_mode=True, mode_as_flag=True)
-        result = handler_fn({"mode": "invalid_mode"})
+    def test_lifecycle_interview_invalid_mode_returns_unavailable(self):
+        import json
+        result_json = self.mod.lifecycle_interview(mode="invalid_mode")
+        result = json.loads(result_json)
         self.assertEqual("unavailable", result["status"])
 
 

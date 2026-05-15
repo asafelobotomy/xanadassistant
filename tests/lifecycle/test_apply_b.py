@@ -77,7 +77,7 @@ class ApplyTests(XanadTestBase):
         self.assertEqual("phase", events[0]["type"])
         self.assertEqual("Preflight", events[0]["phase"])
         self.assertEqual("inspect-summary", events[1]["type"])
-        self.assertEqual("question", events[2]["type"])
+        self.assertEqual("question", next(e["type"] for e in events if e["type"] == "question"))
         self.assertEqual("phase", events[-3]["type"])
         self.assertEqual("Plan", events[-3]["phase"])
         self.assertEqual("plan-summary", events[-2]["type"])

@@ -8,7 +8,7 @@ This file is normative for the first executable slice of the tooling MCP.
 
 ## Transport
 
-V1 uses NDJSON stdio transport: one JSON object per line, `\n` terminated, with no Content-Length headers. The server echoes the client's offered `protocolVersion` (VS Code Insiders 1.120 negotiates `2025-11-25`). Tool names must use the `[a-z0-9_-]` charset only; dots are not valid. Implemented protocol handlers: `tools/list`, `tools/call`, `prompts/list` (returns empty list), `resources/list` (empty), `resources/templates/list` (empty), `logging/setLevel` (no-op), `notifications/*` (no-op).
+V1 transport is delegated to FastMCP via `uvx --from "mcp[cli]" mcp run`. Tool names must use the `[a-z0-9_-]` charset only; dots are not valid. The tool naming, I/O, and security contracts in this document remain normative.
 
 ## V1 Goal
 
@@ -153,6 +153,12 @@ The following tools from the original deferred list remain unimplemented:
 
 - `package_generate` — requires contributor-repo assets not available in consumer workspaces
 - `package_check_manifest_freshness` — same constraint as `package_generate`
+
+## xanadMemory Companion Server
+
+`memoryMcp.py` (`xanadMemory`) is a managed companion server providing persistent, scoped, SQLite-backed agent memory — advisory facts, authoritative rules, and FTS-indexed diary. It ships as `.github/hooks/scripts/memoryMcp.py` and is registered as the `memory` server in `.vscode/mcp.json`.
+
+Transport: stdio via `uvx --from "mcp[cli]" mcp run`. DB: `WORKSPACE_ROOT/.github/xanadAssistant/memory/memory.db`. Security assumptions follow the `tool-mcp-boundary.md` companion server contract.
 
 ## Security Rules
 

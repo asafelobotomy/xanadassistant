@@ -17,7 +17,7 @@ This file is normative for feature placement and anti-bloat boundaries.
 `pack`
 
 - Optional capability module.
-- Adds discrete behavior such as memory, review, research, or workspace operations.
+- Adds discrete behavior such as tdd workflows, security tooling, or documentation guidelines.
 - Must not be required for the lifecycle engine to install, update, repair, or restore the package safely.
 
 `profile`
@@ -52,7 +52,7 @@ This file is normative for feature placement and anti-bloat boundaries.
 Initial examples derived from the lifecycle plan:
 
 - `core`: lifecycle engine, manifests, lockfile, planning, apply, validation, branded agent UI
-- `pack`: memory, review, research, workspace-ops
+- `pack`: tdd, lean, secure, docs, mlops (see `template/setup/pack-registry.json` for the full list)
 - `profile`: balanced, lean, ultra-lean
 - `catalog`: machine-readable discovery of commands, packs, profiles, ownership modes, and compatibility targets
 

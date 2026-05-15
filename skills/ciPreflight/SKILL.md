@@ -27,6 +27,12 @@ knowledge of the project's specific tooling or conventions.
 
 ## Steps
 
+### 0. Check memory cache
+
+Call `memory_get(agent="shared", key="ci.commands")`.
+- If it returns a cached command list (not a "No active fact" message), skip Steps 1–4 and proceed directly to Step 5 with those commands.
+- If it returns unavailable or "No active fact", continue to Step 1.
+
 ### 1. Discover CI workflow files
 
 Use the `codebase` tool (or run `ls .github/workflows/` with `runCommands`) to
@@ -84,6 +90,10 @@ tool:
 | `Cargo.toml` | `cargo test` |
 | `Gemfile` with rspec | `bundle exec rspec` |
 
+Once you have a command list (from Step 1–2 or fallback detection), call
+`memory_set(agent="shared", key="ci.commands", value=<command list as JSON string>)`
+so future preflight runs skip discovery.
+
 ### 5. Order checks cheapest-first
 
 Group extracted commands into tiers and run in this order, stopping at the
@@ -133,3 +143,5 @@ Return:
 - [ ] Stale artifacts repaired and restaged before re-running the failing check
 - [ ] `Debugger` delegated to for test/lint failures, not ad-hoc guesses
 - [ ] Summary returned with pass / block / residual-risk outcome
+- [ ] `memory_get(agent="shared", key="ci.commands")` checked before re-scanning workflow files
+- [ ] `memory_set(agent="shared", key="ci.commands", ...)` called after discovering commands

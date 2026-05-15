@@ -53,6 +53,7 @@ Commands may refine reporting details later, but these meanings should remain st
 
 - Managed state is malformed or conflicting.
 - Use when legacy state, lockfile state, or managed targets are present but invalid or contradictory.
+- **Reserved — not yet raised.** Current malformed-state conditions surface as code `5` or `7`. Code `8` is defined for future use when migration and integrity-check paths require a distinct signal.
 
 `9`
 

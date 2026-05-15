@@ -1,104 +1,42 @@
-# xanadAssistant — Developer Instructions
+# xanadassistant — Copilot Instructions
 
-> Role: Developer on this repo — lifecycle engine, schema contracts, test suite, and Copilot surface files.
->
-> **Every session:** test narrowly during intermediate phases; run the full suite at task completion. The manifest is generated — never hand-edit it. Read a file before modifying it.
+> This project uses **xanadAssistant** to manage its Copilot surface files (agents, skills, hooks, prompts).
+> Lifecycle authority: `xanadAssistant.py` — use the `xanadLifecycle` agent for all xanadAssistant operations.
 
 ## My Role
 
-I work **on** xanadAssistant — building and maintaining the lifecycle engine, schemas, and Copilot surface files (agents, skills, hooks, prompts, instructions). The agents, skills, hooks, and prompts in this repo are delivered verbatim to consumer workspaces. There is no developer-only vs consumer-only split for those surfaces — they are the same files. The instructions file uses token substitution: `template/copilot-instructions.md` carries `{{}}` tokens resolved at consumer install time; this file has them resolved to xanadAssistant's own values.
-
-## Architecture
-
-| Path | Role |
-|------|------|
-| `xanadAssistant.py` | Root entry point (thin wrapper) |
-| `scripts/lifecycle/xanadAssistant.py` | Thin dispatcher; re-exports all public symbols |
-| `scripts/lifecycle/_xanad/` | Lifecycle engine package (small focused submodules, each ≤250 lines) |
-| `template/setup/install-policy.json` | Source of truth for what gets installed |
-| `template/setup/install-manifest.json` | **Generated** — never edit by hand; run `python3 scripts/generate.py` |
-| `template/setup/catalog.json` | **Generated** — never edit by hand |
-| `template/copilot-instructions.md` | Consumer instructions template (`{{}}` tokens) |
-| `agents/` | Agents → consumer's `.github/agents/` |
-| `skills/` | Skills → consumer's `.github/skills/` |
-| `hooks/scripts/` | Hook scripts → consumer's `.github/hooks/scripts/` |
-| `template/prompts/` | Prompts → consumer's `.github/prompts/` |
-| `docs/contracts/` | Frozen contracts: CLI surface, lifecycle protocol, exit codes, schemas |
-| `tests/` | Unittest suite; network-gated coverage requires `XANAD_NETWORK_TESTS=1` |
+I work **in** xanadassistant — implementing features, reviewing code, running tests, and maintaining the project's Copilot surface via xanadAssistant. Changes to agents, skills, hooks, and prompts go through `xanadAssistant.py update` rather than direct file edits to `.github/`.
 
 ## Key Commands
 
 | Task | Command |
 |------|---------|
 | Run tests | `python3 -m unittest discover -s tests -p 'test_*.py'` |
-| LOC gate | `python3 scripts/check_loc.py` |
-| Regenerate manifest + catalog | `python3 scripts/generate.py` |
-| Freshness check | `python3 -m scripts.lifecycle.check_manifest_freshness --package-root . --policy template/setup/install-policy.json --manifest template/setup/install-manifest.json --catalog template/setup/catalog.json` |
-| Inspect (this workspace) | `python3 xanadAssistant.py inspect --workspace . --package-root . --json` |
-| Check (this workspace) | `python3 xanadAssistant.py check --workspace . --package-root . --json` |
-| Plan setup | `python3 xanadAssistant.py plan setup --workspace <path> --package-root . --json --non-interactive` |
+| Inspect Copilot install state | `python3 <xanad-root>/xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` |
+| Check for repair needs | `python3 <xanad-root>/xanadAssistant.py check --workspace . --package-root <xanad-root> --json` |
 
-## Coding Conventions
+## Lifecycle Operations
 
-- Language: **Python 3** · stdlib only · no third-party runtime deps
-- Engine: single file `scripts/lifecycle/xanadAssistant.py`
-- Hook scripts: `set -euo pipefail`; JSON in on stdin → JSON on stdout
-- Tests: `unittest`; fixtures inline in test methods; no external test data files
-- No silent error swallowing — raise or emit structured error events
-- Read before modifying — never edit a file not opened this session
+Use the **xanadLifecycle** agent for all xanadAssistant operations. Trigger phrases:
 
-## PDCA + Test Scope
+| Trigger phrase | Operation |
+|---|---|
+| `"set up xanadAssistant"` | First-time install |
+| `"update xanadAssistant"` | Pull latest agents, skills, hooks, prompts |
+| `"run lifecycle check"` | Inspect + check; surface repair reasons |
+| `"repair install"` | Fix stale or broken managed files |
+| `"factory restore"` | Reset to clean managed state |
 
-Plan → Do → Check → Act on every non-trivial change.
+Available prompts: `/setup` (install or refresh), `/bootstrap` (cold-start from bare workspace), `/update` (pull latest package files).
 
-| Tier | Use when |
-|------|---------|
-| `PathTargeted` | Default — run the specific test module for changed code |
-| `AffectedSuite` | Shared helpers, schema changes, contract surfaces |
-| `FullSuite` | Task completion, multi-module changes, before push |
-
-Targeted example: `python3 -m unittest tests.lifecycle.test_inspect_check`
-
-## Critical Rules
-
-- `template/setup/install-manifest.json` is generated — never edit by hand
-- `template/copilot-instructions.md` must contain `{{}}` tokens — do not resolve them in the template
-- This file must contain **zero** `{{}}` tokens
-- `agents/`, `skills/`, `hooks/scripts/`, `template/prompts/` are consumer-facing — changes here are delivered to consumers
-- Contracts in `docs/contracts/` are frozen — require explicit discussion to change
-
-## Operating Modes
-
-**Implement** (default): plan → implement → test.
-**Review**: read-only; state findings before proposing fixes.
-**Refactor**: no behaviour changes; tests pass before and after.
-**Planning**: produce task breakdown before writing code.
-
-## Memory
-
-Use memory as optional recall, not as lifecycle authority.
-
-- Put current task notes and temporary reminders in `/memories/session/`.
-- Put personal cross-repo preferences in `/memories/`.
-- Put in-flight repo facts in `/memories/repo/` first.
-- Promote only validated, durable repo facts into `docs/memory.md`.
-- Keep durable memory short and source-backed; contracts, tests, and canonical code win if memory drifts.
-
-## Skills and Agents
-
-- `lifecycleAudit` skill — use before any lifecycle operation on this workspace
-- `commitPreflight` skill — repo-local git preflight for this workspace
-- `techDebtAudit` skill — repo-local maintainability audit for this workspace
-- `Cleaner` agent — prune stale artefacts, caches, archives, and dead files; requires approval gate before any tracked deletion
-- `Debugger` agent — diagnose failures and isolate root causes before implementation
-- `Planner` agent — produce scoped execution plans for multi-step work before implementation
-- `Researcher` agent — gather source-backed external constraints before implementation or review
-- `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
-- `xanadLifecycle` agent — delegate all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
-- `AGENTS.md` — canonical repo-local routing table for agent selection, handoffs, and lifecycle trigger phrases
-- Trigger phrases: `"inspect workspace"`, `"run lifecycle check"`, `"repair install"`, `"update xanadAssistant"`, `"factory restore"`
-- Available prompts: `/setup` (install or refresh this workspace), `/update` (pull latest package files for this workspace)
-- If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`, treat the workspace as a predecessor `copilot-instructions-template` migration and route it through `repair` or `update` rather than ad hoc cleanup.
+Do not edit files under `.github/agents/`, `.github/skills/`, `.github/hooks/`, or `.github/prompts/` directly — these are managed by xanadAssistant. Use the `lifecycleAudit` skill to review state before proposing any lifecycle operation.
+When the workspace-local `xanadTools` MCP server is available and can resolve a
+local xanadAssistant package root or a supported remote source, setup-oriented
+lifecycle operations may use its `lifecycle.*` tools instead of shelling out directly.
+If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`,
+the workspace is being migrated from `copilot-instructions-template`; use `repair`
+or `update` so xanadAssistant can archive predecessor-owned files and install the
+current bundle atomically.
 
 ## Agent Routing
 
@@ -106,7 +44,6 @@ Route specialist work to the matching agent before acting directly. If a task ha
 
 | Work type | Required agent |
 |---|---|
-| Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `Cleaner` |
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
 | Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
 | Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |
@@ -115,3 +52,47 @@ Route specialist work to the matching agent before acting directly. If a task ha
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
 | xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanadLifecycle` |
+
+## Coding Conventions
+
+- Language: **(not detected)** · Package manager: **(not detected)**
+- **Testing**: Always — write tests alongside every code change.
+- Read before modifying — never edit a file not opened this session
+- No silent error swallowing
+
+## PDCA + Test Scope
+
+Plan → Do → Check → Act on every non-trivial change.
+
+- Default: run the narrowest test suite covering changed paths
+- Broaden to the full suite at task completion and before merging
+
+## Operating Modes
+
+**Implement** (default): plan → implement → test.
+**Review**: read-only; state findings before proposing fixes.
+**Refactor**: no behaviour changes; tests pass before and after.
+**Response style**: Balanced — code with brief explanation. · **Ambiguity**: Ask first — always confirm before acting on ambiguity. · **Tone**: Professional — concise, neutral, precise.
+
+## Memory
+
+Use memory as optional recall, not as lifecycle authority.
+
+### Memory MCP server
+
+When hooks are enabled, a `memory` MCP server is available. Each specialist agent's instruction file defines when and how to use it. The pattern used by every agent is:
+
+1. Call `memory_dump(agent="xanadLifecycle")` at the start of each task to load rules and cached facts.
+2. Follow all returned **rules** unconditionally for the rest of the task.
+3. For any **fact** you intend to act on, call `mcp_time_elapsed(start=fact.updated_at)` to verify its age.
+4. When you discover something durable about this workspace, call `memory_set(agent=..., key=..., value=...)` before finishing.
+5. If the `memory` server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
+
+## Skills and Agents
+
+- `lifecycleAudit` skill — loaded on demand; run before any lifecycle operation
+- `Debugger` agent — diagnose failures and isolate root causes before implementation
+- `Planner` agent — produce scoped execution plans for multi-step work before implementation
+- `Researcher` agent — gather source-backed external constraints before implementation or review
+- `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
+- `xanadLifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests

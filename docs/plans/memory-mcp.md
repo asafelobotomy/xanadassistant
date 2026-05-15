@@ -22,6 +22,9 @@ Build a FastMCP-based Memory MCP server (`hooks/scripts/memoryMcp.py`) that give
 | Rules | Authoritative — agents MUST follow returned rules |
 | Pattern | FastMCP (`@mcp.tool()`) — same as `sqliteMcp.py` |
 | Workspace root | `WORKSPACE_ROOT` env var; raise `ValueError` if unset |
+| Error surfacing | Surface MCP failure once as visible note in response text; continue silently for remainder of task |
+| `memory_list` cross-agent | Explicit opt-in `include_agents` list (same semantics as `memory_get`); default `None` = agent's own keys only |
+| Lifecycle check depth | Deep — verify file present + MCP registered + open DB and validate all three schema tables exist |
 
 ---
 
@@ -64,6 +67,10 @@ CREATE TABLE IF NOT EXISTS agent_diary (
     tags        TEXT NOT NULL DEFAULT '',   -- comma-separated
     recorded_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );
+
+-- Standalone FTS5 index for diary_search (dual-write at insert; delete at prune)
+CREATE VIRTUAL TABLE IF NOT EXISTS agent_diary_fts
+    USING fts5(id UNINDEXED, agent, scope, branch, entry, tags);
 ```
 
 ---
@@ -110,11 +117,15 @@ CREATE TABLE IF NOT EXISTS agent_diary (
     tags       TEXT NOT NULL DEFAULT '',          -- comma-separated
     recorded_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );
+
+-- Standalone FTS5 index for diary_search (dual-write at insert; delete at prune)
+CREATE VIRTUAL TABLE IF NOT EXISTS agent_diary_fts
+    USING fts5(id UNINDEXED, agent, scope, branch, entry, tags);
 ```
 
 ### Tool count impact
 
-Adds `memory_invalidate`, `diary_add`, `diary_get` → **12 tools total** (up from 9). Still well within the 400-line hard limit.
+Adds `memory_invalidate`, `diary_add`, `diary_get`, `diary_search` → **13 tools total** (up from 9). Still well within the 400-line hard limit.
 
 ---
 
@@ -150,7 +161,7 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 
 ---
 
-## 12 Tools
+## 13 Tools
 
 ### Advisory memory
 
@@ -158,7 +169,7 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 |---|---|---|
 | `memory_set` | `(agent, key, value, scope='workspace', confidence=1.0, source='agent-discovered', ttl_days=None, valid_from=None, valid_until=None)` | Upsert into advisory_memory; computes `expires_at` from `ttl_days` via stdlib |
 | `memory_get` | `(agent, key, scope='workspace', include_agents=None)` | Single lookup; falls back to `agent='shared'`; `include_agents` for explicit cross-agent peek |
-| `memory_list` | `(agent, scope='workspace', include_shared=True)` | All active (non-invalidated) keys for agent+scope |
+| `memory_list` | `(agent, scope='workspace', include_shared=True, include_agents=None)` | All active (non-invalidated) keys for agent+scope; `include_agents` explicit opt-in list for cross-agent key union |
 | `memory_remove` | `(agent, key, scope='workspace')` | Hard delete one entry |
 | `memory_invalidate` | `(agent, key, scope='workspace')` | Soft-delete: sets `invalidated_at`; row kept for audit; excluded from dump/list |
 | `memory_dump` | `(agent)` | Session wake-up: rules first → recent facts (<24h) → older by confidence → shared facts; each fact includes `updated_at`, `expires_at`, `valid_from`, `valid_until` |
@@ -178,6 +189,7 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 |---|---|---|
 | `diary_add` | `(agent, entry, scope='workspace', tags='')` | Append a chronological decision/action entry |
 | `diary_get` | `(agent, scope='workspace', limit=20, tag=None)` | Retrieve recent diary entries, newest first |
+| `diary_search` | `(agent, query, scope='workspace', limit=20, include_agents=None)` | FTS5 full-text search across `entry` and `tags`; default calling agent only; `include_agents` to widen scope |
 
 **Allowlists** (validate on entry, raise `ValueError` if invalid):
 - `scope`: `{'workspace', 'project', 'branch', 'session'}`
@@ -188,11 +200,8 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 
 ## Phases
 
-### Phase 0 — Interview Question (optional, lower priority)
-- File: `scripts/lifecycle/_xanad/_interview_questions.py`
-- Add `memory_gitignore` question to `personalisation_questions()`
-- `batch='advanced'`, `default='yes'`, `required=False`
-- Apply step: if yes, add `.github/xanadAssistant/memory/` to `.gitignore`
+### Phase 0 — Interview Question (deferred to Phase 7)
+See Phase 7 below.
 
 ### Phase 1 — MCP Server (START HERE)
 - File: `hooks/scripts/memoryMcp.py`
@@ -210,7 +219,9 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 
 ### Phase 3 — Agent Instructions
 - Files: all consumer agents in `agents/`
-- Each agent: add session-start `memory_dump` call + rule-following note + `memory_set` for discovered facts
+- All agents receive both rule-following language and fact-recording instructions (Option A: unconditional)
+- Each agent: always call `memory_dump` at session start → follow all returned rules → call `memory_set` for discovered facts
+- Error handling: if any memory MCP call fails, include one visible note in the response ("⚠️ Memory MCP unavailable: [reason]"), then continue silently for the rest of the task
 - Agents: commit, debugger, deps, docs, explore, planner, researcher, review, cleaner
 
 ### Phase 4 — ciPreflight Skill Update
@@ -219,13 +230,24 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 - At start: check `memory_get(agent='shared', key='ci.commands')` before re-scanning
 
 ### Phase 5 — Tests
-- File: `tests/hooks/test_memory_mcp.py` (new dir `tests/hooks/`)
-- Classes: `MemorySetGetTests`, `MemoryBranchScopeTests` (mock `_current_branch`), `MemoryRulesTests`, `MemoryDumpTests`, `MemoryPruneTests`, `SecurityTests`
+- File: `tests/hooks/test_memory_mcp.py` (`tests/hooks/` and `__init__.py` already exist — no action needed)
+- Classes: `MemorySetGetTests`, `MemoryBranchScopeTests` (mock `_current_branch`), `MemoryRulesTests`, `MemoryDumpTests`, `MemoryPruneTests`, `DiaryTests` (add/get basic), `DiaryFTS5Tests` (FTS5 full-text + `include_agents` widening), `MemoryListIncludeAgentsTests`, `SecurityTests`
 - Use `tempfile.mkdtemp()` for DB; patch `WORKSPACE_ROOT`
 
-### Phase 6 — Manifest Regeneration + Full Suite
+### Phase 6 — Lifecycle Engine + Manifest Regeneration + Full Suite
+- Add memory health check to lifecycle `inspect`/`check`:
+  - Verify `memoryMcp.py` is present in the install
+  - Verify `"memory"` entry is registered in `template/vscode/mcp.json`
+  - Open `.github/xanadAssistant/memory/memory.db` and validate all three schema tables exist (`advisory_memory`, `rules`, `agent_diary`)
+  - Missing DB file → warning only (first-run state is valid); corrupt schema → error
 - `python3 scripts/generate.py`
 - `python3 -m unittest discover -s tests -p 'test_*.py'`
+
+### Phase 7 — Interview Question (was Phase 0)
+- File: `scripts/lifecycle/_xanad/_interview_questions.py`
+- Add `memory_gitignore` question to `personalisation_questions()`
+- `batch='advanced'`, `default='yes'`, `required=False`
+- Apply step: if yes, add `.github/xanadAssistant/memory/` to `.gitignore`
 
 ---
 
@@ -252,15 +274,16 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 
 ## Open Questions / Refinements Needed
 
-- [ ] Phase 3 wording: how prescriptive should agent instructions be?
-  - Option A: always call `memory_dump` at start unconditionally
-  - Option B: call only if memory MCP is connected (softer)
-- [ ] Phase 0 priority: implement now or defer until Phase 1-6 are done?
+- [x] Phase 3 wording: Option A — always call `memory_dump` at start unconditionally; surface MCP failure once as visible note then continue silently
+- [x] Phase 0 priority: deferred to Phase 7 (post Phase 1–6)
 - [x] `memory_dump` return format: JSON object `{facts: [...], rules: [...]}` — each fact includes `updated_at`, `expires_at`, `valid_from`, `valid_until`; ordered by wake-up priority (rules → recent → older → shared)
 - [x] `memory_prune`: on-demand only; hard expiry (`expires_at`) handled by SQL predicate, not auto-called on connect
 - [x] Time MCP integration: agent-side only — agents call `elapsed()` at read time; server uses Python stdlib for TTL computation
-- [ ] Which agents get rule-following language vs just fact-recording? (all vs subset)
-- [ ] `tests/hooks/` — new directory; check if `__init__.py` needed
+- [x] Which agents get rule-following language: all agents receive both rule-following and fact-recording instructions
+- [x] `tests/hooks/` — directory and `__init__.py` already exist; no action needed
+- [x] `memory_list` cross-agent: explicit opt-in `include_agents` list, default `None` = agent's own keys only
+- [x] `diary_search`: FTS5 standalone virtual table (`agent_diary_fts`); dual-write at insert, delete at prune; optional `include_agents` to widen scope
+- [x] Lifecycle check depth: deep — file present + MCP registered + DB schema table validation; missing DB = warning (first-run state), not blocking error
 
 ---
 

@@ -16,6 +16,11 @@
   "chat.autopilot.enabled": true,
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "python.testing.unittestEnabled": true,
-  "python.testing.unittestArgs": ["-v", "--start-dir", "tests"],
-  "python.testing.pytestEnabled": false
+  "python.testing.unittestArgs": [
+    "-v",
+    "--start-dir",
+    "tests"
+  ],
+  "python.testing.pytestEnabled": false,
+  "chat.agent.maxRequests": 128
 }

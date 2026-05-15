@@ -254,5 +254,86 @@ class MergeJsonObjectFileJsoncTests(unittest.TestCase):
             self.assertIn("existing.key", result)
 
 
+# ---------------------------------------------------------------------------
+# _execute_apply.py — _apply_memory_gitignore
+# ---------------------------------------------------------------------------
+
+class ApplyMemoryGitignoreTests(unittest.TestCase):
+    def setUp(self):
+        from scripts.lifecycle._xanad._execute_apply import _apply_memory_gitignore
+        self._fn = _apply_memory_gitignore
+
+    def test_does_nothing_when_answer_is_false(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._fn(workspace, {"memory.gitignore": False})
+            self.assertFalse((workspace / ".gitignore").exists())
+
+    def test_does_nothing_when_answer_is_absent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._fn(workspace, {})
+            self.assertFalse((workspace / ".gitignore").exists())
+
+    def test_creates_gitignore_when_absent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            self._fn(workspace, {"memory.gitignore": True})
+            content = (workspace / ".gitignore").read_text(encoding="utf-8")
+            self.assertIn(".github/xanadAssistant/memory/", content)
+
+    def test_appends_to_existing_gitignore(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            (workspace / ".gitignore").write_text("node_modules/\n", encoding="utf-8")
+            self._fn(workspace, {"memory.gitignore": True})
+            content = (workspace / ".gitignore").read_text(encoding="utf-8")
+            self.assertIn("node_modules/", content)
+            self.assertIn(".github/xanadAssistant/memory/", content)
+
+    def test_does_not_duplicate_entry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            (workspace / ".gitignore").write_text(".github/xanadAssistant/memory/\n", encoding="utf-8")
+            self._fn(workspace, {"memory.gitignore": True})
+            content = (workspace / ".gitignore").read_text(encoding="utf-8")
+            self.assertEqual(content.count(".github/xanadAssistant/memory/"), 1)
+
+    def test_adds_entry_when_only_in_a_comment(self):
+        """A commented-out entry must not suppress the real gitignore entry."""
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            (workspace / ".gitignore").write_text(
+                "# .github/xanadAssistant/memory/\nnode_modules/\n", encoding="utf-8"
+            )
+            self._fn(workspace, {"memory.gitignore": True})
+            content = (workspace / ".gitignore").read_text(encoding="utf-8")
+            lines = [ln.strip() for ln in content.splitlines()]
+            self.assertIn(".github/xanadAssistant/memory/", lines)
+
+    def test_does_not_duplicate_entry_without_trailing_slash(self):
+        """Entry without trailing slash counts as already present."""
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            (workspace / ".gitignore").write_text(
+                ".github/xanadAssistant/memory\n", encoding="utf-8"
+            )
+            self._fn(workspace, {"memory.gitignore": True})
+            content = (workspace / ".gitignore").read_text(encoding="utf-8")
+            self.assertEqual(content.count(".github/xanadAssistant/memory"), 1)
+
+
+class MemoryGitignoreQuestionTests(unittest.TestCase):
+    def test_question_is_present_with_correct_shape(self):
+        from scripts.lifecycle._xanad._interview_questions import personalisation_questions
+        questions = personalisation_questions()
+        q = next((q for q in questions if q["id"] == "memory.gitignore"), None)
+        self.assertIsNotNone(q, "memory.gitignore question missing from personalisation_questions")
+        self.assertEqual(q["kind"], "confirm")
+        self.assertEqual(q["batch"], "advanced")
+        self.assertFalse(q["required"])
+        self.assertTrue(q["default"])
+
+
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

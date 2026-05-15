@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import importlib.util
-import io
 import json
 import os
 import sqlite3
@@ -205,122 +204,33 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
         self.assertIsNone(cli)
         self.assertIsNotNone(reason)
 
-    def test_handle_request_initialize(self):
-        req = {"jsonrpc": "2.0", "id": 1, "method": "initialize",
-               "params": {"protocolVersion": "2025-11-25"}}
-        resp = self.mod.handle_request(req)
-        self.assertIsNotNone(resp)
-        self.assertIn("result", resp)
-        self.assertIn("serverInfo", resp["result"])
+    def test_fastmcp_instance(self):
+        from mcp.server.fastmcp import FastMCP
+        self.assertIsInstance(self.mod.mcp, FastMCP)
 
-    def test_handle_request_ping(self):
-        req = {"jsonrpc": "2.0", "id": 2, "method": "ping", "params": {}}
-        resp = self.mod.handle_request(req)
-        self.assertEqual({}, resp["result"])
+    def test_fastmcp_tool_count(self):
+        tools = self.mod.mcp._tool_manager._tools
+        self.assertEqual(13, len(tools))
 
-    def test_handle_request_tools_list(self):
-        req = {"jsonrpc": "2.0", "id": 3, "method": "tools/list", "params": {}}
-        resp = self.mod.handle_request(req)
-        self.assertIn("tools", resp["result"])
-        self.assertGreater(len(resp["result"]["tools"]), 0)
+    def test_fastmcp_workspace_tool_names(self):
+        tools = self.mod.mcp._tool_manager._tools
+        for name in ("workspace_show_key_commands", "workspace_run_tests", "workspace_run_check_loc", "workspace_validate_lockfile", "workspace_show_install_state"):
+            self.assertIn(name, tools)
 
-    def test_handle_request_prompts_list(self):
-        req = {"jsonrpc": "2.0", "id": 4, "method": "prompts/list", "params": {}}
-        resp = self.mod.handle_request(req)
-        self.assertEqual([], resp["result"]["prompts"])
+    def test_fastmcp_lifecycle_tool_names(self):
+        tools = self.mod.mcp._tool_manager._tools
+        for name in ("lifecycle_inspect", "lifecycle_check", "lifecycle_interview", "lifecycle_plan_setup", "lifecycle_apply", "lifecycle_update", "lifecycle_repair", "lifecycle_factory_restore"):
+            self.assertIn(name, tools)
 
-    def test_handle_request_resources_list(self):
-        req = {"jsonrpc": "2.0", "id": 5, "method": "resources/list", "params": {}}
-        resp = self.mod.handle_request(req)
-        self.assertEqual([], resp["result"]["resources"])
+    def test_fastmcp_workspace_show_key_commands_returns_json(self):
+        import json
+        result = json.loads(self.mod.workspace_show_key_commands())
+        self.assertIn("status", result)
 
-    def test_handle_request_resources_templates_list(self):
-        req = {"jsonrpc": "2.0", "id": 6, "method": "resources/templates/list", "params": {}}
-        resp = self.mod.handle_request(req)
-        self.assertEqual([], resp["result"]["resourceTemplates"])
-
-    def test_handle_request_logging_set_level(self):
-        req = {"jsonrpc": "2.0", "id": 7, "method": "logging/setLevel", "params": {"level": "info"}}
-        resp = self.mod.handle_request(req)
-        self.assertEqual({}, resp["result"])
-
-    def test_handle_request_notifications_initialized(self):
-        req = {"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}}
-        resp = self.mod.handle_request(req)
-        self.assertIsNone(resp)
-
-    def test_handle_request_unknown_notification_returns_none(self):
-        req = {"method": "notifications/progress", "params": {}}
-        resp = self.mod.handle_request(req)
-        self.assertIsNone(resp)
-
-    def test_handle_request_unknown_method_returns_error(self):
-        req = {"jsonrpc": "2.0", "id": 8, "method": "unknown/method", "params": {}}
-        resp = self.mod.handle_request(req)
-        self.assertIn("error", resp)
-
-    def test_handle_request_unknown_method_no_id_returns_none(self):
-        req = {"method": "unknown/method", "params": {}}
-        resp = self.mod.handle_request(req)
-        self.assertIsNone(resp)
-
-    def test_handle_request_tools_call_unknown_tool(self):
-        req = {"jsonrpc": "2.0", "id": 9, "method": "tools/call",
-               "params": {"name": "nonexistent_tool", "arguments": {}}}
-        resp = self.mod.handle_request(req)
-        self.assertIn("error", resp)
-        self.assertIn("Unknown tool", resp["error"]["message"])
-
-    def test_handle_request_tools_call_bad_arguments(self):
-        req = {"jsonrpc": "2.0", "id": 10, "method": "tools/call",
-               "params": {"name": "workspace_validate_lockfile", "arguments": "not-a-dict"}}
-        resp = self.mod.handle_request(req)
-        self.assertIn("error", resp)
-
-    def test_read_message_valid(self):
-        data = json.dumps({"method": "ping"}) + "\n"
-        stream = io.BytesIO(data.encode())
-        result = self.mod.read_message(stream)
-        self.assertEqual({"method": "ping"}, result)
-
-    def test_read_message_empty_stream(self):
-        stream = io.BytesIO(b"")
-        result = self.mod.read_message(stream)
-        self.assertIsNone(result)
-
-    def test_read_message_skips_blank_lines(self):
-        data = b"\n\n" + json.dumps({"method": "ping"}).encode() + b"\n"
-        stream = io.BytesIO(data)
-        result = self.mod.read_message(stream)
-        self.assertEqual({"method": "ping"}, result)
-
-    def test_write_message(self):
-        buf = io.BytesIO()
-        self.mod.write_message(buf, {"id": 1, "result": {}})
-        buf.seek(0)
-        data = json.loads(buf.read())
-        self.assertEqual(1, data["id"])
-
-    def test_lifecycle_input_schema_basic(self):
-        schema = self.mod._lifecycle_input_schema()
-        self.assertEqual("object", schema["type"])
-        self.assertIn("packageRoot", schema["properties"])
-
-    def test_lifecycle_input_schema_with_extra(self):
-        schema = self.mod._lifecycle_input_schema({"mode": {"type": "string"}})
-        self.assertIn("mode", schema["properties"])
-
-    def test_success_response(self):
-        r = self.mod.success_response(1, {"ok": True})
-        self.assertEqual("2.0", r["jsonrpc"])
-        self.assertEqual(1, r["id"])
-        self.assertEqual({"ok": True}, r["result"])
-
-    def test_error_response(self):
-        r = self.mod.error_response(None, -32601, "Method not found")
-        self.assertEqual("2.0", r["jsonrpc"])
-        self.assertIsNone(r["id"])
-        self.assertEqual(-32601, r["error"]["code"])
+    def test_fastmcp_lifecycle_interview_invalid_mode_returns_unavailable(self):
+        import json
+        result = json.loads(self.mod.lifecycle_interview(mode="not-valid"))
+        self.assertEqual("unavailable", result["status"])
 
 
 

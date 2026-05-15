@@ -2,5 +2,9 @@
 {"type":"inspect-summary","command":"plan","sequence":2,"installState":"stale","legacyVersionFile":true,"lockfile":false}
 {"type":"question","command":"plan","sequence":3,"id":"ownership.hooks","kind":"choice","prompt":"How should hooks be owned?","required":true,"options":["local","plugin-backed-copilot-format"],"recommended":"local"}
 {"type":"phase","command":"plan","sequence":4,"phase":"Plan"}
-{"type":"plan-summary","command":"plan","sequence":5,"mode":"setup","approvalRequired":true,"backupRequired":true,"writes":{"add":12,"replace":0,"merge":2,"archiveRetired":0}}
+{"type":"plan-summary","command":"plan","sequence":5,"mode":"setup","approvalRequired":true,"backupRequired":true,"backupPlan":{"path":".xanadAssistant/backups/20260515T120000"},"plannedLockfile":{"status":"installed","selectedPacks":["lean"]},"writes":{"add":12,"replace":0,"merge":2,"archiveRetired":0},"conflicts":{"total":0},"questionsResolved":true,"conflictDetails":[]}
 {"type":"receipt","command":"plan","sequence":6,"status":"approval-required"}
+{"type":"check-summary","command":"check","sequence":2,"status":"clean","summary":{"total":91,"clean":91,"missing":0,"stale":0,"malformed":0,"retired":0,"skipped":0,"unmanaged":0,"unknown":0},"unmanagedFiles":[]}
+{"type":"warning","command":"inspect","sequence":2,"code":"memory_db_missing","message":"Memory DB not yet initialised (first-run state is valid).","details":{"path":".github/xanadAssistant/memory/memory.db","severity":"info"}}
+{"type":"apply-report","command":"apply","sequence":2,"backup":{"path":".xanadAssistant/backups/20260515T120000","files":3},"writes":{"written":12,"skipped":0,"merged":2},"retired":[],"lockfile":{"written":true},"summary":"Applied 12 writes and merged 2 files.","validation":{"status":"ok"}}
+{"type":"error","command":"unknown","sequence":1,"code":"not_implemented","message":"Command 'unknown' is not implemented.","details":{}}

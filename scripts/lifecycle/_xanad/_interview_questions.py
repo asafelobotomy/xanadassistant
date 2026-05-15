@@ -65,6 +65,16 @@ def personalisation_questions() -> list[dict]:
                 {"id": "skip", "label": "Skip", "description": "Do not write or suggest tests unless asked"},
             ],
         },
+        {
+            "id": "memory.gitignore",
+            "kind": "confirm",
+            "batch": "advanced",
+            "prompt": "Add the memory database to .gitignore?",
+            "required": False,
+            "default": True,
+            "recommended": True,
+            "reason": "Keeps agent memory local to this machine and out of version control.",
+        },
     ]
 
 

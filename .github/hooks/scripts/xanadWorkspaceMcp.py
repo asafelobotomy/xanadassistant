@@ -9,7 +9,9 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).parent))
 from _xanad_mcp_source import parse_github_source, resolve_github_release, resolve_github_ref
-from mcp.server.fastmcp import FastMCP
+PROTOCOL_VERSION = "2025-11-25"
+SERVER_NAME = "xanadTools"
+SERVER_VERSION = "0.1.0"
 DEFAULT_CACHE_ROOT = Path.home() / ".xanadAssistant" / "pkg-cache"
 WORKSPACE_ROOT_UNAVAILABLE = "The MCP server is not installed in a workspace root."
 WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
@@ -136,6 +138,40 @@ def run_argv(argv: list[str], *, parse_payload: bool = False) -> dict:
     if payload is not None:
         result["payload"] = payload
     return result
+def _lifecycle_kwargs(arguments: dict) -> dict[str, object | None]: return {"package_root_arg": arguments.get("packageRoot"), "source_arg": arguments.get("source"), "version_arg": arguments.get("version"), "ref_arg": arguments.get("ref")}
+LIFECYCLE_MODE_VALUES = ["setup", "update", "repair", "factory-restore"]
+LIFECYCLE_SOURCE_PROPERTIES = {
+    "packageRoot": {"type": "string"},
+    "source": {"type": "string"},
+    "version": {"type": "string"},
+    "ref": {"type": "string"},
+}
+def _lifecycle_input_schema(extra_properties: dict[str, dict] | None = None) -> dict:
+    properties = dict(LIFECYCLE_SOURCE_PROPERTIES)
+    if extra_properties: properties.update(extra_properties)
+    return {"type": "object", "properties": properties, "additionalProperties": False}
+def _build_lifecycle_handler(cli_command: str, *, fixed_mode: str | None = None, allow_mode: bool = False, mode_as_flag: bool = False, allow_answers: bool = False, allow_non_interactive: bool = False, allow_dry_run: bool = False):
+    def handler(arguments: dict) -> dict:
+        kwargs: dict[str, object | None] = dict(_lifecycle_kwargs(arguments))
+        if allow_mode:
+            mode = arguments.get("mode", "setup")
+            if mode not in set(LIFECYCLE_MODE_VALUES):
+                return build_tool_result(status="unavailable", summary="mode must be one of setup, update, repair, or factory-restore.")
+            kwargs["mode"] = mode
+            kwargs["mode_as_flag"] = mode_as_flag
+        elif fixed_mode is not None:
+            kwargs["mode"] = fixed_mode
+        if allow_answers:
+            kwargs["answers_path"] = arguments.get("answersPath")
+        if allow_non_interactive:
+            kwargs["non_interactive"] = arguments.get("nonInteractive")
+        if allow_dry_run:
+            kwargs["dry_run"] = arguments.get("dryRun")
+        return run_lifecycle_command(cli_command, **kwargs)
+    return handler
+EMPTY_INPUT_SCHEMA = {"type": "object", "properties": {}, "additionalProperties": False}
+WORKSPACE_RUN_TESTS_INPUT_SCHEMA = {"type": "object", "properties": {"scope": {"type": "string", "enum": ["default", "full"]}, "extraArgs": {"type": "array", "items": {"type": "string"}}}, "additionalProperties": False}
+def _tool_spec(title: str, description: str, input_schema: dict, handler) -> dict: return {"title": title, "description": description, "inputSchema": input_schema, "handler": handler}
 def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None = None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None, mode: str | None = None, mode_as_flag: bool = False, answers_path: object | None = None, non_interactive: object | None = None, dry_run: object | None = None) -> dict:
     if not workspace_root_valid():
         return build_tool_result(status="unavailable", summary="The MCP server is not installed in a workspace root.")
@@ -214,77 +250,99 @@ def tool_workspace_show_install_state(arguments: dict) -> dict:
         return result
     sub = payload.get("result", {})
     return {"status": "ok", "summary": result["summary"], "installState": sub.get("installState"), "drift": sub.get("drift")}
-mcp = FastMCP("xanadTools")
-
-@mcp.tool()
-def workspace_show_key_commands() -> str:
-    """Return the commands declared in .github/copilot-instructions.md."""
-    return json.dumps(tool_workspace_show_key_commands({}), indent=2, sort_keys=True)
-
-@mcp.tool()
-def workspace_run_tests(scope: str = "default", extra_args: list[str] | None = None) -> str:
-    """Run the workspace test command declared in .github/copilot-instructions.md."""
-    return json.dumps(tool_workspace_run_tests({"scope": scope, "extraArgs": extra_args or []}), indent=2, sort_keys=True)
-
-@mcp.tool()
-def workspace_run_check_loc() -> str:
-    """Run the repo-local LOC gate when this workspace defines one."""
-    return json.dumps(tool_workspace_run_check_loc({}), indent=2, sort_keys=True)
-
-@mcp.tool()
-def workspace_validate_lockfile() -> str:
-    """Check that .github/xanadAssistant-lock.json exists and contains the required top-level keys."""
-    return json.dumps(tool_workspace_validate_lockfile({}), indent=2, sort_keys=True)
-
-@mcp.tool()
-def workspace_show_install_state() -> str:
-    """Return the current installState and drift summary from a lifecycle check without the full check payload."""
-    return json.dumps(tool_workspace_show_install_state({}), indent=2, sort_keys=True)
-
-_LIFECYCLE_MODES = frozenset(["setup", "update", "repair", "factory-restore"])
-_INVALID_MODE_MSG = "mode must be one of setup, update, repair, or factory-restore."
-
-@mcp.tool()
-def lifecycle_inspect(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None) -> str:
-    """Run xanadAssistant inspect for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("inspect", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref), indent=2, sort_keys=True)
-
-@mcp.tool()
-def lifecycle_check(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None) -> str:
-    """Run xanadAssistant check for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("check", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref), indent=2, sort_keys=True)
-
-@mcp.tool()
-def lifecycle_interview(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, mode: str = "setup") -> str:
-    """Run xanadAssistant interview for the current workspace. mode must be one of: setup, update, repair, factory-restore."""
-    if mode not in _LIFECYCLE_MODES:
-        return json.dumps(build_tool_result(status="unavailable", summary=_INVALID_MODE_MSG), indent=2, sort_keys=True)
-    return json.dumps(run_lifecycle_command("interview", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, mode=mode, mode_as_flag=True), indent=2, sort_keys=True)
-
-@mcp.tool()
-def lifecycle_plan_setup(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None) -> str:
-    """Run xanadAssistant plan setup for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("plan", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, mode="setup", answers_path=answersPath, non_interactive=nonInteractive), indent=2, sort_keys=True)
-
-@mcp.tool()
-def lifecycle_apply(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> str:
-    """Apply a previously computed lifecycle plan to the current workspace."""
-    return json.dumps(run_lifecycle_command("apply", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive, dry_run=dryRun), indent=2, sort_keys=True)
-
-@mcp.tool()
-def lifecycle_update(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> str:
-    """Run xanadAssistant update for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("update", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive, dry_run=dryRun), indent=2, sort_keys=True)
-
-@mcp.tool()
-def lifecycle_repair(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None) -> str:
-    """Run xanadAssistant repair for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("repair", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive), indent=2, sort_keys=True)
-
-@mcp.tool()
-def lifecycle_factory_restore(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, nonInteractive: bool | None = None) -> str:
-    """Run xanadAssistant factory-restore for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("factory-restore", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, non_interactive=nonInteractive), indent=2, sort_keys=True)
-
+LIFECYCLE_TOOL_ENTRIES = {
+    f"lifecycle_{name}": _tool_spec(
+        title,
+        f"Run xanadAssistant {command_text} for the current workspace using a local package root.",
+        _lifecycle_input_schema(extra_properties),
+        _build_lifecycle_handler(cli_command, **handler_kwargs),
+    )
+    for name, title, command_text, cli_command, extra_properties, handler_kwargs in (
+        ("inspect", "Inspect Lifecycle State", "inspect", "inspect", None, {}),
+        ("check", "Check Lifecycle State", "check", "check", None, {}),
+        ("interview", "Interview For Lifecycle Mode", "interview", "interview", {"mode": {"type": "string", "enum": LIFECYCLE_MODE_VALUES}}, {"allow_mode": True, "mode_as_flag": True}),
+        ("plan_setup", "Plan Setup", "plan setup", "plan", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}}, {"fixed_mode": "setup", "allow_answers": True, "allow_non_interactive": True}),
+        ("apply", "Apply Setup", "apply", "apply", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}, "dryRun": {"type": "boolean"}}, {"allow_answers": True, "allow_non_interactive": True, "allow_dry_run": True}),
+        ("update", "Update Install", "update", "update", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}, "dryRun": {"type": "boolean"}}, {"allow_answers": True, "allow_non_interactive": True, "allow_dry_run": True}),
+        ("repair", "Repair Install", "repair", "repair", {"answersPath": {"type": "string"}, "nonInteractive": {"type": "boolean"}}, {"allow_answers": True, "allow_non_interactive": True}),
+        ("factory_restore", "Factory Restore", "factory-restore", "factory-restore", {"nonInteractive": {"type": "boolean"}}, {"allow_non_interactive": True}),
+    )
+}
+TOOLS = {
+    "workspace_show_key_commands": _tool_spec("Show Key Commands", "Return the commands declared in .github/copilot-instructions.md.", EMPTY_INPUT_SCHEMA, tool_workspace_show_key_commands),
+    "workspace_run_tests": _tool_spec("Run Workspace Tests", "Run the workspace test command declared in .github/copilot-instructions.md.", WORKSPACE_RUN_TESTS_INPUT_SCHEMA, tool_workspace_run_tests),
+    "workspace_run_check_loc": _tool_spec("Run LOC Gate", "Run the repo-local LOC gate when this workspace defines one.", EMPTY_INPUT_SCHEMA, tool_workspace_run_check_loc),
+    "workspace_validate_lockfile": _tool_spec("Validate Lockfile", "Check that .github/xanadAssistant-lock.json exists and contains the required top-level keys.", EMPTY_INPUT_SCHEMA, tool_workspace_validate_lockfile),
+    "workspace_show_install_state": _tool_spec("Show Install State", "Return the current installState and drift summary from a lifecycle check without the full check payload.", EMPTY_INPUT_SCHEMA, tool_workspace_show_install_state),
+    **LIFECYCLE_TOOL_ENTRIES,
+}
+def success_response(message_id: int | str, result: dict) -> dict:
+    return {"jsonrpc": "2.0", "id": message_id, "result": result}
+def error_response(message_id: int | str | None, code: int, message: str) -> dict:
+    return {"jsonrpc": "2.0", "id": message_id, "error": {"code": code, "message": message}}
+def handle_request(request: dict) -> dict | None:
+    message_id = request.get("id")
+    method = request.get("method")
+    params = request.get("params", {})
+    if method == "initialize":
+        client_version = params.get("protocolVersion", PROTOCOL_VERSION)
+        return success_response(message_id, {"protocolVersion": client_version, "capabilities": {"tools": {}}, "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION}})
+    if method == "notifications/initialized":
+        return None
+    if method == "ping":
+        return success_response(message_id, {})
+    if method == "tools/list":
+        tools = [{"name": name, "title": spec["title"], "description": spec["description"], "inputSchema": spec["inputSchema"]} for name, spec in TOOLS.items()]
+        return success_response(message_id, {"tools": tools})
+    if method == "tools/call":
+        name = params.get("name")
+        arguments = params.get("arguments", {})
+        if name not in TOOLS:
+            return error_response(message_id, -32602, f"Unknown tool: {name}")
+        if not isinstance(arguments, dict):
+            return error_response(message_id, -32602, "Tool arguments must be an object.")
+        result = TOOLS[name]["handler"](arguments)
+        return success_response(message_id, {"content": [{"type": "text", "text": json.dumps(result, indent=2, sort_keys=True)}], "structuredContent": result, "isError": result.get("status") == "failed"})
+    if method == "prompts/list":
+        return success_response(message_id, {"prompts": []})
+    if method == "resources/list":
+        return success_response(message_id, {"resources": []})
+    if method == "resources/templates/list":
+        return success_response(message_id, {"resourceTemplates": []})
+    if method == "logging/setLevel":
+        return success_response(message_id, {})
+    if method and method.startswith("notifications/"):
+        return None
+    if message_id is None:
+        return None
+    return error_response(message_id, -32601, f"Method not found: {method}")
+def read_message(stream) -> dict | None:
+    while True:
+        line = stream.readline()
+        if not line:
+            return None
+        line = line.strip()
+        if not line:
+            continue
+        return json.loads(line.decode("utf-8"))
+def write_message(stream, payload: dict) -> None:
+    body = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    stream.write(body)
+    stream.write(b"\n")
+    stream.flush()
+def main() -> int:  # pragma: no cover
+    input_stream = sys.stdin.buffer
+    output_stream = sys.stdout.buffer
+    while True:
+        try:
+            request = read_message(input_stream)
+            if request is None:
+                break
+            response = handle_request(request)
+        except Exception as exc:  # pragma: no cover - defensive protocol guard
+            response = error_response(None, -32603, f"Internal error: {exc}")
+        if response is not None:
+            write_message(output_stream, response)
+    return 0
 if __name__ == "__main__":  # pragma: no cover
-    mcp.run()
+    raise SystemExit(main())

@@ -2,8 +2,18 @@
   "servers": {
     "xanadTools": {
       "type": "stdio",
-      "command": "${workspaceFolder}/.github/hooks/scripts/xanadWorkspaceMcp.py",
-      "args": []
+      "command": "uvx",
+      "env": {
+        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
+        "TMPDIR": "${userHome}/.cache/uv"
+      },
+      "args": [
+        "--from",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "${workspaceFolder}/.github/hooks/scripts/xanadWorkspaceMcp.py"
+      ]
     },
     "git": {
       "type": "stdio",
@@ -51,6 +61,22 @@
         "mcp",
         "run",
         "${workspaceFolder}/.github/hooks/scripts/timeMcp.py"
+      ]
+    },
+    "memory": {
+      "type": "stdio",
+      "command": "uvx",
+      "env": {
+        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
+        "TMPDIR": "${userHome}/.cache/uv",
+        "WORKSPACE_ROOT": "${workspaceFolder}"
+      },
+      "args": [
+        "--from",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "${workspaceFolder}/.github/hooks/scripts/memoryMcp.py"
       ]
     },
     "security": {

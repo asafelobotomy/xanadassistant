@@ -2,3 +2,5 @@ __pycache__/
 sandbox/
 results/
 *.py[cod]
+.github/xanadAssistant/memory/
+.xanadAssistant/

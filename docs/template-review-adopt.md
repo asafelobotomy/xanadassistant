@@ -11,7 +11,7 @@ skill, workflow, instruction, and contract files.
 | ID | Decision | Canonical references | Notes |
 |---|---|---|---|
 | A1 | Attention-budget gate adopted | `scripts/check_attention_budget.py`, `.github/workflows/ci.yml` | Enforced as a repo-local budget check rather than a one-off shell snippet. |
-| A6 | Durable memory routing adopted | `docs/memory.md`, `.github/copilot-instructions.md`, `template/copilot-instructions.md` | Durable repo facts promote into `docs/memory.md`; `/memories/repo/` remains the in-flight inbox. |
+| A6 | Memory MCP server adopted | `hooks/scripts/memoryMcp.py`, `.github/copilot-instructions.md`, `template/copilot-instructions.md` | Persistent agent memory via SQLite MCP server; replaces the `docs/memory.md` file-based approach. |
 | A8 | `commitPreflight` adopted as repo-local maintainer skill | `.github/skills/commitPreflight/SKILL.md` | Adapted for repo-specific commands and generated-artifact checks; not consumer-delivered. |
 | A9 | `techDebtAudit` adopted as repo-local maintainer skill | `.github/skills/techDebtAudit/SKILL.md` | Narrowed to repo-native signals such as LOC, regression, freshness, and debt markers. |
 | A10 | `Cleaner` adopted as consumer-delivered agent | `agents/cleaner.agent.md` | Adapted: removed mcp-servers/handoffs/Codex models; Audit → Review; Code dropped; diary refs removed. |
@@ -57,5 +57,5 @@ Prefer adaptation when a feature depends on:
 | Pulse / heartbeat session tracking | Too heavy for current single-repo needs. |
 | `routing-manifest.json` | Agent frontmatter plus `AGENTS.md` already define routing. |
 | Multi-plugin-format manifests | Not needed for the current CLI- and manifest-driven architecture. |
-| Separate `SOUL.md` / `USER.md` durable memory files | One git-tracked `docs/memory.md` is sufficient for now. |
+| Separate `SOUL.md` / `USER.md` durable memory files | Memory MCP server (`memoryMcp.py`) provides structured, scoped agent memory; no additional markdown files needed. |
 | Starter kits | Only relevant if xanadassistant later ships broader stack-specific content. |

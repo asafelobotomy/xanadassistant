@@ -18,6 +18,22 @@ from scripts.lifecycle._xanad._plan_b import build_plan_result
 from scripts.lifecycle._xanad._source import build_source_summary
 
 
+def _apply_memory_gitignore(workspace: Path, setup_answers: dict) -> None:
+    """Append .github/xanadAssistant/memory/ to .gitignore if memory.gitignore is enabled."""
+    if not setup_answers.get("memory.gitignore"):
+        return
+    entry = ".github/xanadAssistant/memory/"
+    gitignore_path = workspace / ".gitignore"
+    if gitignore_path.exists():
+        content = gitignore_path.read_text(encoding="utf-8")
+        lines = [ln.strip() for ln in content.splitlines()]
+        if entry in lines or entry.rstrip("/") in lines:
+            return
+        gitignore_path.write_text(content.rstrip("\n") + "\n" + entry + "\n", encoding="utf-8")
+    else:
+        gitignore_path.write_text(entry + "\n", encoding="utf-8")
+
+
 def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, dry_run: bool = False) -> dict:
     manifest = load_manifest(package_root, load_json(package_root / DEFAULT_POLICY_PATH)) or {"managedFiles": []}
     manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
@@ -182,6 +198,8 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
     summary_path.write_text(
         build_copilot_version_summary(planned_lockfile["contents"], manifest), encoding="utf-8",
     )
+
+    _apply_memory_gitignore(workspace, planned_lockfile["contents"].get("setupAnswers", {}))
 
     validation = _check.build_check_result(workspace, package_root)
     if validation["status"] != "clean":

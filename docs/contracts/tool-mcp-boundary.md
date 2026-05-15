@@ -45,9 +45,9 @@ Recommended first domains:
 
 ## V1 Server Shape
 
-The initial shape is one workspace-local stdio MCP server (`xanadTools`), managed by the lifecycle engine and referenced from `.vscode/mcp.json`. Companion servers (`xanadGit`, `xanadWeb`, `xanadTime`, `xanadSecurity`, `xanadSQLite`, `xanadGitHub`, `xanadSequentialThinking`) are shipped alongside it and registered in the same MCP config.
+The initial shape is one workspace-local stdio MCP server (`xanadTools`), managed by the lifecycle engine and referenced from `.vscode/mcp.json`. Companion servers (`xanadGit`, `xanadWeb`, `xanadTime`, `xanadSecurity`, `xanadSQLite`, `xanadGitHub`, `xanadSequentialThinking`, `xanadMemory`) are shipped alongside it and registered in the same MCP config.
 
-The `xanadTools` initial tool set is:
+The complete `xanadTools` tool set is (see `tool-mcp-v1.md` for V1 vs Extended delivery history):
 
 - `lifecycle_inspect`
 - `lifecycle_check`
