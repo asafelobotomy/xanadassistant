@@ -98,13 +98,13 @@ def mcp_servers_question() -> dict:
             {
                 "id": "sqlite",
                 "label": "SQLite",
-                "description": "Query and inspect local SQLite databases (read-only by default).",
+                "description": "Query and inspect workspace-local SQLite databases (read-only only).",
             },
         ],
         "recommended": [],
         "default": [],
         "reason": (
-            "The git, web, time, and security servers are always enabled when MCP is on. "
+            "The memory, git, web, time, and security servers are always enabled when MCP is on. "
             "GitHub (requires GITHUB_TOKEN) and SQLite (workspace-specific) ship disabled "
             "by default in .vscode/mcp.json. Select them here to enable, or toggle the "
             '"disabled" flag directly in .vscode/mcp.json at any time.'
@@ -125,11 +125,11 @@ def mcp_question() -> dict:
         "recommended": True,
         "reason": (
             "Enabling MCP installs all hook scripts and .vscode/mcp.json atomically. "
-            "Always-on servers: xanadWorkspaceMcp.py (lifecycle), gitMcp.py (git), "
+            "Always-on servers: xanadWorkspaceMcp.py (lifecycle), memoryMcp.py (persistent SQLite-backed agent memory under .github/xanadAssistant/memory), gitMcp.py (git), "
             "webMcp.py (search + fetch), timeMcp.py (time/duration), "
             "securityMcp.py (OSV + deps.dev), mcpSequentialThinkingServer.py (reasoning). "
             "Optional servers (disabled by default): githubMcp.py (GitHub REST API, requires GITHUB_TOKEN), "
-            "sqliteMcp.py (local SQLite databases). "
+            "sqliteMcp.py (workspace-local SQLite inspection). "
             "Outbound access is governed by each server at call time."
         ),
         "requiredFor": ["mcp-config"],

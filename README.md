@@ -33,7 +33,7 @@ When hooks are enabled at setup time, xanadAssistant registers these MCP servers
 | `memory` | `memoryMcp.py` | Persistent, scoped SQLite-backed agent memory — advisory facts, authoritative rules, and FTS-indexed diary |
 | `git` | `gitMcp.py` | Local git operations |
 | `github` | `githubMcp.py` | GitHub API operations |
-| `sqlite` | `sqliteMcp.py` | SQLite query access |
+| `sqlite` | `sqliteMcp.py` | Workspace-local SQLite read-only query access |
 | `time` | `timeMcp.py` | Time and elapsed-time tools |
 | `web` | `webMcp.py` | Web search and fetch |
 | `security` | `securityMcp.py` | Dependency vulnerability queries |
@@ -293,7 +293,7 @@ When hooks are enabled, the following MCP server scripts are installed into `.gi
 | `securityMcp.py` | yes | OSV vulnerability lookup and deps.dev health check |
 | `mcpSequentialThinkingServer.py` | yes | Sequential reasoning bridge |
 | `githubMcp.py` | no | GitHub REST API (repos, issues, PRs, Actions, code search) |
-| `sqliteMcp.py` | no | Query and inspect local SQLite databases |
+| `sqliteMcp.py` | no | Query and inspect workspace-local SQLite databases (read-only) |
 
 ## Lockfile
 
@@ -305,7 +305,7 @@ Each managed workspace maintains `.github/xanadAssistant-lock.json` recording th
 2. `template/setup/install-manifest.json` and `catalog.json` are generated — run `python3 scripts/generate.py` after any policy or template content change.
 3. `template/copilot-instructions.md` must retain `{{}}` tokens — do not resolve them in the template.
 4. Contracts in `docs/contracts/` are frozen — changes require explicit discussion.
-5. Engine modules under `scripts/lifecycle/_xanad/` must stay ≤ 250 lines each; hook scripts ≤ 380 lines (warning), 400 lines (hard limit).
+5. Engine modules under `scripts/lifecycle/_xanad/` must stay ≤ 250 lines each; hook scripts use the warning and hard-limit budgets enforced by `scripts/check_loc.py` (default 250 warning / 400 hard, with documented per-file overrides).
 6. No third-party runtime dependencies — stdlib only.
 
 ## License

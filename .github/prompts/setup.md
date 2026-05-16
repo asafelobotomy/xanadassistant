@@ -38,7 +38,7 @@ confirm the target workspace path if it is not clear from context.
 
 When `mcp.enabled` is true, the plan should also install the local hook scripts.
 Expect entries under `.github/hooks/scripts/` plus `.vscode/mcp.json` to appear
-in the planned writes; at minimum, `xanadWorkspaceMcp.py` and
+in the planned writes; at minimum, `xanadWorkspaceMcp.py`, `memoryMcp.py`, and
 `mcpSequentialThinkingServer.py` should be present.
 
 If the warnings include `package_name_mismatch` or `successor_cleanup_required`,

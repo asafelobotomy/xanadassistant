@@ -535,7 +535,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:4bf52fa4b1e4b13c6251bdcf6c0d65133f61e5f0b3c7835e757e33b5eb038499"
+      "hash": "sha256:07a87f1a084258e3770e8feb94078d7ae66d08fa3773fd8d3805f0c2127dea36"
     },
     {
       "id": "tdd-hooks.tddTestRunner.py",
@@ -587,7 +587,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:f230ca9d091127e6947b562b81f37da43f4f238c9aacfb74eddb94a254bcc908"
+      "hash": "sha256:5087f42fe78012aeeeb7a8ba9dbbade5469ef6220fb8b57292a5625d0890a32b"
     },
     {
       "id": "hook-scripts.xanadWorkspaceMcp.py",
@@ -878,7 +878,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:89e5f3e6be81e9b781839d17116c6c1570a3225d42d314ed13845f772e8b732d"
+      "hash": "sha256:9fcb2f63d134575f9471fef97ddf3dd8332bdc9361cbdc5efa600bd447a14a9f"
     },
     {
       "id": "shapeup-prompts.shapeup-kickoff.prompt.md",

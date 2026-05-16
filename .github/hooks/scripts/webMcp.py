@@ -14,8 +14,8 @@ Design
   A soft rate-limit of 20 searches/minute guards against accidental hammering.
 - Fetch uses httpx for robust HTTP handling and markdownify for high-quality
   HTML→Markdown conversion that preserves headers, links, and code blocks.
-- SSRF mitigation: loopback, RFC-1918, link-local, and cloud-metadata address
-  ranges are blocked on all fetch calls before a connection is opened.
+- SSRF mitigation: any destination that is not globally routable is blocked on
+    all fetch calls before a connection is opened.
 
 Dependencies (injected via --with at startup, not installed globally):
     httpx, markdownify, beautifulsoup4
@@ -48,35 +48,28 @@ except ImportError as _exc:  # pragma: no cover
 
 mcp = FastMCP("xanadWeb")
 
-# ---------------------------------------------------------------------------
-# SSRF block list
-# ---------------------------------------------------------------------------
-
-_BLOCKED: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = [
-    ipaddress.ip_network("0.0.0.0/8"),       # "this" network (incl. 0.0.0.0)
-    ipaddress.ip_network("127.0.0.0/8"),     # loopback
-    ipaddress.ip_network("::1/128"),          # IPv6 loopback
-    ipaddress.ip_network("::ffff:0:0/96"),    # IPv4-mapped IPv6
-    ipaddress.ip_network("10.0.0.0/8"),       # RFC-1918 class A
-    ipaddress.ip_network("172.16.0.0/12"),    # RFC-1918 class B
-    ipaddress.ip_network("192.168.0.0/16"),   # RFC-1918 class C
-    ipaddress.ip_network("169.254.0.0/16"),   # link-local / cloud metadata
-    ipaddress.ip_network("fe80::/10"),        # IPv6 link-local
-    ipaddress.ip_network("fd00::/8"),         # IPv6 ULA
-    ipaddress.ip_network("100.64.0.0/10"),    # CGNAT / shared address space
-]
-
 
 _DNS_TIMEOUT = 5.0  # seconds — cap on pre-flight DNS resolution in _guard_ssrf
 
 
-def _guard_ssrf(url: str) -> None:
-    """Raise ValueError if url resolves to a blocked network range.
+def _normalize_ip(addr: ipaddress._BaseAddress) -> ipaddress._BaseAddress:
+    if isinstance(addr, ipaddress.IPv6Address) and addr.ipv4_mapped is not None:
+        return addr.ipv4_mapped
+    return addr
 
-    All A and AAAA records are checked against _BLOCKED; the first blocked
-    address found raises immediately.  DNS resolution runs in a background
-    thread with a hard timeout (_DNS_TIMEOUT) to prevent a slow resolver
-    from stalling the MCP server.
+
+def _is_public_address(addr: ipaddress._BaseAddress) -> bool:
+    normalized = _normalize_ip(addr)
+    return normalized.is_global
+
+
+def _guard_ssrf(url: str) -> None:
+    """Raise ValueError if url resolves to a non-public network destination.
+
+    All A and AAAA records are resolved and normalized; the first address that
+    is not globally routable raises immediately. DNS resolution runs in a
+    background thread with a hard timeout (_DNS_TIMEOUT) to prevent a slow
+    resolver from stalling the MCP server.
 
     Note: This is a pre-flight check (TOCTOU window exists).  True DNS
     rebinding requires attacker-controlled DNS TTL, which is outside the
@@ -102,12 +95,12 @@ def _guard_ssrf(url: str) -> None:
             addr = ipaddress.ip_address(addr_str)
         except ValueError:
             continue
-        for net in _BLOCKED:
-            if addr in net:
-                raise ValueError(
-                    f"Fetch blocked: {host!r} resolves to {addr}, "
-                    f"which is in the blocked range {net}."
-                )
+        normalized = _normalize_ip(addr)
+        if not _is_public_address(normalized):
+            raise ValueError(
+                f"Fetch blocked: {host!r} resolves to {addr}, "
+                "which is not a public routable address."
+            )
 
 
 def _ssrf_redirect_hook(response: "httpx.Response") -> None:  # type: ignore[name-defined]
@@ -258,13 +251,13 @@ def fetch(
 ) -> str:  # pragma: no cover
     """Fetch a URL and return its content as Markdown (or raw text).
 
-    Internal and private network addresses are blocked.  Downloads are
-    capped at 10 MB before decoding.  For long pages, use start_index to
+    Non-public or otherwise non-globally-routable destinations are blocked.
+    Downloads are capped at 10 MB before decoding. For long pages, use start_index to
     paginate: the response appends a structured comment with the next
     start_index when more content is available.
 
     Args:
-        url: The URL to fetch (http/https only; internal addresses blocked).
+        url: The URL to fetch (http/https only; non-public destinations blocked).
         max_length: Max characters to return per call (default 5000).
         start_index: Character offset for pagination (default 0, clamped to >= 0).
         raw: When True, skip HTML-to-Markdown conversion (default False).

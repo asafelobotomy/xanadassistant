@@ -60,14 +60,16 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # memoryMcp.py covers 13 tools across advisory facts, authoritative rules, and
     # FTS-indexed agent diary — all delivered as a single file to consumer workspaces.
     # Splitting the MCP server would require import machinery unavailable there.
-    "hooks/scripts/memoryMcp.py": 700,
+    # The current audited implementation plus validation guards fit within a small
+    # extension of the prior ceiling without changing the single-file delivery model.
+    "hooks/scripts/memoryMcp.py": 720,
     # githubMcp.py covers a full GitHub REST API surface (auth, repos, issues, PRs,
     # releases, Actions) as a single file delivered verbatim to consumer workspaces.
     # Splitting the MCP server would require import machinery unavailable in those
     # workspaces, so a higher hard ceiling is appropriate here.
     "hooks/scripts/githubMcp.py": 450,
     # Managed copies (.github/) — mirrors of the above; same ceilings apply.
-    ".github/hooks/scripts/memoryMcp.py": 700,
+    ".github/hooks/scripts/memoryMcp.py": 720,
     ".github/hooks/scripts/githubMcp.py": 450,
 }
 
