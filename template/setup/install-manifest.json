@@ -64,7 +64,7 @@
         "{{pack:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:c9ad92df47346265cd93becd8fbf421f4f602ac20ab2f530f54800d92c9d6558"
+      "hash": "sha256:db04a9bb47f13dd8f9fffeb4b10bbcb7c577a69a69ec29b2345a619b3a922541"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -338,7 +338,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:35b9cc9e307c3a861b29d7fba0a9fd7491a1ae6e31affc9690ae89df37aad7ea"
+      "hash": "sha256:9fa507b2cfa95e1f2bffe25a8923ccb84779edcff5c6018ac86736046eee3e5b"
     },
     {
       "id": "hook-scripts.githubMcp.py",

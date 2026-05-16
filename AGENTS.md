@@ -45,6 +45,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 - `Researcher` stays read-only and returns source-backed findings, constraints, and recommended next steps.
 - `Organise` stays structural-only — no semantic implementation unless explicitly widened by the caller.
 - `Deps` may delegate to `Researcher` for replacement-candidate research, `Explore` for local import/usage inventory, and `Review` for security findings that require deeper analysis.
+- `Commit` may delegate to `Explore` for scope lookup before staging, `Review` for pre-commit diff review, and `Debugger` for unexpected git failures.
 - `Docs` may delegate to `Researcher` for external references, `Explore` for local accuracy checks, `Review` for doc quality, and `Planner` when the documentation scope is broad.
 - Do not introduce a separate routing manifest. Agent frontmatter plus this file is the routing authority.
 
@@ -67,6 +68,9 @@ Use these patterns when a task crosses specialist boundaries but should still st
 | `Researcher` | `Docs` | Source-backed findings should become maintained repo documentation instead of remaining a one-off summary |
 | `Docs` | `Researcher` | Documentation accuracy depends on current external references or upstream behavior |
 | `Docs` | `Review` | The document needs a final correctness and coverage pass before it is considered complete |
+| `Commit` | `Explore` | Scope of staged changes is unclear before committing |
+| `Commit` | `Review` | User requests a diff review before the commit is made |
+| `Commit` | `Debugger` | A git command fails unexpectedly and the cause is unclear |
 | `xanadLifecycle` | `Debugger` | `inspect`, `check`, `plan`, `apply`, `update`, or `repair` results are surprising or failing and the control path is unclear |
 | `xanadLifecycle` | `Planner` | Repair, update, migration, or factory-restore work needs phased remediation before execution |
 

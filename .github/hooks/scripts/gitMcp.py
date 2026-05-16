@@ -214,10 +214,14 @@ def git_reset(repo_path: str) -> str:
 def git_commit(repo_path: str, message: str) -> str:
     """Record staged changes as a new commit.
 
+    The message string is passed directly to subprocess (not via a shell), so
+    embedded newlines (``\\n``) are preserved as-is — multi-paragraph messages
+    work without a temp file.
+
     Args:
         repo_path: Absolute path to the git repository.
-        message: Commit message (subject line; include a blank line +
-                 body in the string for multi-paragraph messages).
+        message: Commit message. Use a blank line between subject and body
+                 for multi-paragraph messages (e.g. "subject\\n\\nbody").
     """
     if not message.strip(): raise ValueError("Commit message must not be empty.")
     return _run_flags(repo_path, ["commit"], ["-m", message], [])

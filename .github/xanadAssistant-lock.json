@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:98eb317734ff289b49a6bb50213e1a84b9d7827e22790f2310d21ffc08583829"
+    "hash": "sha256:596fd2f300b603965c0995502b872092e1d47bcf73bad95a3f6283b80682c8d8"
   },
   "timestamps": {
-    "appliedAt": "2026-05-16T16:06:12Z",
-    "updatedAt": "2026-05-16T16:06:12Z"
+    "appliedAt": "2026-05-16T16:40:22Z",
+    "updatedAt": "2026-05-16T16:40:22Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -45,7 +45,24 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [],
+  "files": [
+    {
+      "id": "core-instructions.copilot-instructions.md",
+      "target": ".github/copilot-instructions.md",
+      "sourceHash": "sha256:00a70cda64a777927e9f5016274a26299f390f824ece84b5fa7cf33c50090b31",
+      "installedHash": "sha256:43ed1c42f5cb211aa39fadcf500317d18695fda99193f535d0add40f2cdc6226",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.gitMcp.py",
+      "target": ".github/hooks/scripts/gitMcp.py",
+      "sourceHash": "sha256:9fa507b2cfa95e1f2bffe25a8923ccb84779edcff5c6018ac86736046eee3e5b",
+      "installedHash": "sha256:9fa507b2cfa95e1f2bffe25a8923ccb84779edcff5c6018ac86736046eee3e5b",
+      "ownershipMode": "local",
+      "status": "applied"
+    }
+  ],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -123,5 +140,8 @@
   ],
   "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {}
+  "unknownValues": {},
+  "lastBackup": {
+    "path": ".xanadAssistant/backups/2026-05-16T16-40-22Z"
+  }
 }
