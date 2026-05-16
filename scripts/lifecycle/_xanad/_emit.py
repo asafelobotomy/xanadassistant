@@ -96,7 +96,7 @@ def emit_json_lines(payload: dict) -> None:
         ]
 
     for warning in payload.get("warnings", []):
-        events.insert(2, {
+        events.insert(1, {
             "type": "warning", "command": payload["command"], "sequence": -1,  # renumbered below
             "code": warning["code"], "message": warning["message"],
             "details": warning.get("details", {}),

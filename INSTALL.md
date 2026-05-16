@@ -3,7 +3,7 @@
 xanadAssistant installs a curated set of GitHub Copilot surface files — agents,
 skills, prompts, hooks, and instructions — into any VS Code workspace.
 
-Requirements: Python 3.10+, stdlib only, internet access.
+Requirements: Python 3.10+ for the lifecycle core, internet access, and `uvx`-managed MCP runtime dependencies when hook-enabled installs are used.
 
 ---
 
@@ -138,7 +138,7 @@ Write your per-file decisions to `.xanadAssistant/tmp/conflict-resolutions.json`
 ```
 
 Then pass `--resolutions .xanadAssistant/tmp/conflict-resolutions.json` to
-both the `plan setup` and `apply` commands below.
+the `plan setup` command below.
 Skip this step entirely when `existingFiles` is empty.
 
 ### Step 4 — Generate the plan
@@ -147,6 +147,7 @@ Skip this step entirely when `existingFiles` is empty.
 python3 xanadBootstrap.py plan setup \
   --workspace . \
   --answers .xanadAssistant/tmp/setup-answers.json \
+  --plan-out .xanadAssistant/tmp/setup-plan.json \
   --non-interactive --json
 ```
 
@@ -158,8 +159,8 @@ writes for the user and ask for confirmation before continuing.
 ```sh
 python3 xanadBootstrap.py apply \
   --workspace . \
-  --answers .xanadAssistant/tmp/setup-answers.json \
-  --non-interactive --json
+  --plan .xanadAssistant/tmp/setup-plan.json \
+  --json
 ```
 
 Check `validation.status` in the response. If it is not `passed`, report the
@@ -182,17 +183,20 @@ factory-restore).
 
 > **Note:** The Copilot agent method above is the recommended path. Use this only when Copilot agent mode is unavailable.
 
-One-step install using defaults:
+Two-step install using defaults:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py | python3 - apply --workspace . --non-interactive --json
+curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py -o xanadBootstrap.py
+python3 xanadBootstrap.py plan setup --workspace . --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
+python3 xanadBootstrap.py apply --workspace . --plan .xanadAssistant/tmp/setup-plan.json --json
 ```
 
 Or download-then-run for a pinned release:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py -o xanadBootstrap.py
-python3 xanadBootstrap.py apply --workspace . --version v1.0.0 --non-interactive --json
+python3 xanadBootstrap.py plan setup --workspace . --version v1.0.0 --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
+python3 xanadBootstrap.py apply --workspace . --plan .xanadAssistant/tmp/setup-plan.json --json
 ```
 
 ---

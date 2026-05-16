@@ -324,7 +324,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:9fa507b2cfa95e1f2bffe25a8923ccb84779edcff5c6018ac86736046eee3e5b"
+      "hash": "sha256:e40ee0b26c1f5dd8e1b4dd02f46530ed30eb980013b1b3d568d2fa9449f6c0d5"
     },
     {
       "id": "hook-scripts.githubMcp.py",
@@ -377,7 +377,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:5de9d02f38090e8dd74263acddf5474ff74640c7dd3c864cc6f44928bb420122"
+      "hash": "sha256:81cf45d9c6b8243b4a8a68be9af7c8eab9e98b22539cceb61e164bc2b4b16700"
     },
     {
       "id": "hook-scripts.mcpSequentialThinkingServer.py",
@@ -500,7 +500,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:d316042e23eb4ac028bc06141e1799915eae7bacc97970c7421d1183914f5eb3"
+      "hash": "sha256:997282954de3cdcdee5fcefcbcd1dbfe7dcfafb93a4709cf4f99a5a0f8f4318d"
     },
     {
       "id": "shapeup-hooks.shapeupScopeCheck.py",
@@ -1247,7 +1247,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:131ab4f0897f530989e8ec1e4549e3f06c740fb0b73c874b66170cb4848b4dea"
+      "hash": "sha256:db38c7a6aa8bdeac89ce057ff889193e45682515be3fd44ea0facc5e53e42efe"
     },
     {
       "id": "mlops-skills.mlopsDataPipelines.SKILL.md",

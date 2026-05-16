@@ -90,6 +90,7 @@ Machine I/O:
 - `--dry-run`
 - `--answers`
 - `--resolutions`
+- `--plan`
 - `--plan-out`
 - `--report-out`
 - `--log-file`
@@ -148,7 +149,13 @@ Presentation:
 `--resolutions`
 
 - Supplies a pre-recorded conflict-resolution file.
-- Used by `apply`, `update`, and `repair` to resolve decisions about pre-existing files.
+- Used by `plan`, `update`, and `repair` to resolve decisions about pre-existing files.
+- `apply` must reject this flag because conflict decisions are already frozen into the serialized plan.
+
+`--plan`
+
+- Supplies a previously generated serialized lifecycle plan.
+- Required by `apply`.
 
 `--plan-out`
 

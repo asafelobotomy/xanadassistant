@@ -65,14 +65,16 @@ def build_conflict_questions(pack_conflicts: list[dict]) -> list[dict]:
     for conflict in pack_conflicts:
         questions.append({
             "id": conflict["questionId"],
-            "label": f"Conflict: {conflict['token']}",
-            "description": (
+            "kind": "choice",
+            "prompt": (
                 f"Multiple selected packs define '{conflict['token']}'. "
                 "Choose which pack's value to use."
             ),
-            "type": "choice",
             "options": list(conflict["packs"]),
+            "recommended": conflict["packs"][0],
+            "default": conflict["packs"][0],
             "required": True,
+            "batch": "simple",
         })
     return questions
 

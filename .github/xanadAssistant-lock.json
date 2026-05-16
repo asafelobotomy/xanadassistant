@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:5a39ec66f19f020e7ac4c14d1f49e7e20acf89beecbf575ca2c830ffb25b0c3d"
+    "hash": "sha256:152b4a4e8a26e8ce28d08e3d85b50c26472575187469a2014e70c5f06f62b4a4"
   },
   "timestamps": {
-    "appliedAt": "2026-05-16T21:26:06Z",
-    "updatedAt": "2026-05-16T21:26:06Z"
+    "appliedAt": "2026-05-16T22:14:57Z",
+    "updatedAt": "2026-05-16T22:14:57Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -26,7 +26,7 @@
     "vscode-settings": "local"
   },
   "setupAnswers": {
-    "setup.depth": "full",
+    "setup.depth": "simple",
     "profile.selected": "balanced",
     "packs.selected": [],
     "mcp.enabled": true,

@@ -45,7 +45,7 @@ All servers use the `stdio` transport via `uvx` and are registered with `WORKSPA
 ## Requirements
 
 - Python 3.10+
-- stdlib only — no third-party runtime dependencies
+- The lifecycle core is stdlib-only; hook-enabled MCP use relies on `mcp[cli]`, and `webMcp.py` also uses uvx-managed `httpx`, `markdownify`, and `beautifulsoup4`
 
 ## Quick install
 
@@ -79,7 +79,11 @@ Then in Copilot chat: **@xanadLifecycle Setup xanadAssistant**
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py \
-  | python3 - apply --workspace . --non-interactive --json
+  -o xanadBootstrap.py
+python3 xanadBootstrap.py plan setup --workspace . --non-interactive \
+  --plan-out .xanadAssistant/tmp/setup-plan.json --json
+python3 xanadBootstrap.py apply --workspace . \
+  --plan .xanadAssistant/tmp/setup-plan.json --json
 ```
 
 For a guided setup with interview and options, see [INSTALL.md](INSTALL.md).
@@ -119,6 +123,9 @@ All commands accept `--json` for a single structured JSON response or `--json-li
 ```sh
 # Run all tests
 python3 -m unittest discover -s tests -p 'test_*.py'
+
+# Run the maintained pre-merge drift gates in repo order
+python3 scripts/drift_preflight.py
 
 # LOC gate
 python3 scripts/check_loc.py
@@ -305,7 +312,8 @@ Each managed workspace maintains `.github/xanadAssistant-lock.json` recording th
 3. `template/copilot-instructions.md` must retain `{{}}` tokens — do not resolve them in the template.
 4. Contracts in `docs/contracts/` are frozen — changes require explicit discussion.
 5. Engine modules under `scripts/lifecycle/_xanad/` must stay ≤ 250 lines each; hook scripts use the warning and hard-limit budgets enforced by `scripts/check_loc.py` (default 250 warning / 400 hard, with documented per-file overrides).
-6. No third-party runtime dependencies — stdlib only.
+6. Keep the lifecycle core stdlib-only; document any hook-runtime MCP dependencies explicitly.
+7. Use [docs/maintenance-drift.md](docs/maintenance-drift.md) as the maintainer policy for drift control; CI and local pre-merge checks should go through `python3 scripts/drift_preflight.py`.
 
 ## License
 

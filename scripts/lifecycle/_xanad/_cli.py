@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from functools import partial
 
 
 def add_common_arguments(parser: argparse.ArgumentParser) -> None:
@@ -22,8 +23,9 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="xanadAssistant lifecycle tool.")
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    parser_class = partial(argparse.ArgumentParser, allow_abbrev=False)
+    parser = parser_class(description="xanadAssistant lifecycle tool.")
+    subparsers = parser.add_subparsers(dest="command", required=True, parser_class=parser_class)
 
     inspect_parser = subparsers.add_parser("inspect", help="Inspect workspace state.")
     add_common_arguments(inspect_parser)
@@ -41,7 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     plan_parser = subparsers.add_parser("plan", help="Generate a lifecycle plan.")
-    plan_subparsers = plan_parser.add_subparsers(dest="mode", required=True)
+    plan_subparsers = plan_parser.add_subparsers(dest="mode", required=True, parser_class=parser_class)
     for mode in ("setup", "update", "repair", "factory-restore"):
         mode_parser = plan_subparsers.add_parser(mode, help=f"Generate a {mode} plan.")
         add_common_arguments(mode_parser)
@@ -49,5 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
     for command in ("apply", "update", "repair", "factory-restore"):
         command_parser = subparsers.add_parser(command, help=f"{command} workspace state.")
         add_common_arguments(command_parser)
+        if command == "apply":
+            command_parser.add_argument("--plan", default=None, help="Path to a serialized lifecycle plan to apply.")
 
     return parser

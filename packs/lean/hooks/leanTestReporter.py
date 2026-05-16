@@ -71,7 +71,7 @@ def _extract_pytest(output: str) -> tuple[list[str], str]:
     summary_match = re.search(r"\d+ (failed|passed|error).+", output)
     summary = summary_match.group(0) if summary_match else ""
     # Count totals
-    counts = {k: 0 for k in ("failed", "passed", "error", "warning")}
+    counts = {k: 0 for k in ("failed", "passed", "error", "warning", "skipped")}
     for key in counts:
         m = re.search(rf"(\d+) {key}", output)
         if m:
@@ -79,7 +79,7 @@ def _extract_pytest(output: str) -> tuple[list[str], str]:
     total = sum(counts.values())
     summary = (
         f"Ran: {total} — failed: {counts['failed']}, "
-        f"passed: {counts['passed']}, skipped: 0"
+        f"passed: {counts['passed']}, skipped: {counts['skipped']}"
     )
     return blocks, summary
 

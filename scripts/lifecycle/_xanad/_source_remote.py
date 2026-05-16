@@ -58,7 +58,7 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
         raise LifecycleCommandError(
             "source_resolution_failure",
             f"Failed to download GitHub release {owner}/{repo}@{version}: {exc}",
-            5,
+            3,
             {"url": url, "version": version, "error": str(exc)},
         ) from exc
     finally:
@@ -96,7 +96,7 @@ def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Pat
         raise LifecycleCommandError(
             "source_resolution_failure",
             f"Failed to resolve GitHub ref {owner}/{repo}@{ref}: {stderr_text}",
-            5,
+            3,
             {"url": clone_url, "ref": ref},
         ) from exc
     return cache_dir

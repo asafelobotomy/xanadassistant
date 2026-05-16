@@ -80,6 +80,16 @@ def _run(repo_path: str, *args: str, timeout: int = 30) -> str:
     return _run_flags(repo_path, list(args), [], [], timeout=timeout)
 
 
+def _validate_user_arg(arg: str) -> str:
+    """Return a user-supplied git argument after rejecting flag-like values."""
+    if arg.startswith("-"):
+        raise ValueError(
+            f"Argument {arg!r} looks like a flag.  "
+            "Pass options through dedicated parameters, not raw strings."
+        )
+    return arg
+
+
 # ---------------------------------------------------------------------------
 # Local — inspection
 # ---------------------------------------------------------------------------
@@ -274,6 +284,8 @@ def git_tag(
         message: When provided, creates an annotated tag; otherwise lightweight.
         ref: Commit, branch, or tag to tag; defaults to HEAD.
     """
+    name = _validate_user_arg(name)
+    ref = _validate_user_arg(ref)
     return (_run_flags(repo_path, ["tag"], ["-a", name, "-m", message], [ref])
             if message else _run(repo_path, "tag", name, ref))
 

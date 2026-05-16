@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Check maintainer doc attention budgets
-        run: python3 scripts/check_attention_budget.py
+        run: python3 scripts/drift_preflight.py --check attention-budget
 
   loc-gate:
     name: LOC Gate
@@ -30,7 +30,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Check line-count limits
-        run: python3 scripts/check_loc.py
+        run: python3 scripts/drift_preflight.py --check loc
 
   test:
     name: Unit Tests
@@ -43,7 +43,7 @@ jobs:
       - name: Install test dependencies
         run: pip install -r requirements-dev.txt
       - name: Run unit tests
-        run: python3 -m unittest discover -s tests -p 'test_*.py'
+        run: python3 scripts/drift_preflight.py --check tests
 
   freshness:
     name: Derived Artifact Freshness
@@ -54,9 +54,4 @@ jobs:
         with:
           python-version: "3.11"
       - name: Check manifest and catalog freshness
-        run: |
-          python3 -m scripts.lifecycle.check_manifest_freshness \
-            --package-root . \
-            --policy template/setup/install-policy.json \
-            --manifest template/setup/install-manifest.json \
-            --catalog template/setup/catalog.json
+        run: python3 scripts/drift_preflight.py --check freshness

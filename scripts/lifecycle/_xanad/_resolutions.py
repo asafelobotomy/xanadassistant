@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
+
+from scripts.lifecycle._xanad._errors import LifecycleCommandError
 
 
 def load_resolutions(path: str | None) -> dict[str, str]:
@@ -15,13 +16,26 @@ def load_resolutions(path: str | None) -> dict[str, str]:
     try:
         data = json.loads(file_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as exc:
-        sys.exit(f"[xanadAssistant] Cannot parse resolutions file {path!r}: {exc}")
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            f"Cannot parse resolutions file {path!r}: {exc}",
+            4,
+            {"path": path, "error": str(exc)},
+        ) from exc
     if not isinstance(data, dict):
-        sys.exit(f"[xanadAssistant] Resolutions file must be a JSON object: {path!r}")
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            f"Resolutions file must be a JSON object: {path!r}",
+            4,
+            {"path": path},
+        )
     for k, v in data.items():
         if not isinstance(k, str) or not isinstance(v, str):
-            sys.exit(
-                f"[xanadAssistant] Resolutions file keys and values must be strings: {path!r}"
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                f"Resolutions file keys and values must be strings: {path!r}",
+                4,
+                {"path": path},
             )
     return data
 

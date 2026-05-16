@@ -84,8 +84,8 @@ Collect decisions and write to `.xanadAssistant/tmp/conflict-resolutions.json`:
 }
 ```
 
-Pass `--resolutions .xanadAssistant/tmp/conflict-resolutions.json` to both
-`plan setup` and `apply` below.  Skip this step if `existingFiles` is empty.
+Pass `--resolutions .xanadAssistant/tmp/conflict-resolutions.json` to
+`plan setup` below.  Skip this step if `existingFiles` is empty.
 
 ### 3 — Plan
 
@@ -93,6 +93,7 @@ Pass `--resolutions .xanadAssistant/tmp/conflict-resolutions.json` to both
 python3 xanadBootstrap.py plan setup \
   --workspace . \
   --answers .xanadAssistant/tmp/setup-answers.json \
+  --plan-out .xanadAssistant/tmp/setup-plan.json \
   --non-interactive --json
 ```
 
@@ -104,8 +105,8 @@ the user before proceeding.
 ```sh
 python3 xanadBootstrap.py apply \
   --workspace . \
-  --answers .xanadAssistant/tmp/setup-answers.json \
-  --non-interactive --json
+  --plan .xanadAssistant/tmp/setup-plan.json \
+  --json
 ```
 
 Check `validation.status`. If it is not `passed`, report the error and

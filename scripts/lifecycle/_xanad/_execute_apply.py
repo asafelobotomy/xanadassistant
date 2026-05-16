@@ -1,220 +1,299 @@
 from __future__ import annotations
 
 import json
-import shutil
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
-import scripts.lifecycle._xanad._check as _check
-
-from scripts.lifecycle._xanad._apply import (
-    apply_chmod_rule, build_copilot_version_summary, generate_apply_timestamps,
-    materialize_apply_timestamp, merge_json_object_file, merge_markdown_file,
-    render_entry_bytes,
-)
+from scripts.lifecycle._xanad._apply_executor import execute_apply_plan
 from scripts.lifecycle._xanad._errors import DEFAULT_POLICY_PATH, LifecycleCommandError
-from scripts.lifecycle._xanad._inspect import collect_unmanaged_files
 from scripts.lifecycle._xanad._loader import load_json, load_manifest
+from scripts.lifecycle._xanad._merge import sha256_json
+from scripts.lifecycle._xanad._migration import CURRENT_PACKAGE_NAME
 from scripts.lifecycle._xanad._plan_b import build_plan_result
 from scripts.lifecycle._xanad._source import build_source_summary
 
 
-def _apply_memory_gitignore(workspace: Path, setup_answers: dict) -> None:
-    """Append .github/xanadAssistant/memory/ to .gitignore if memory.gitignore is enabled."""
-    if not setup_answers.get("memory.gitignore"):
-        return
-    entry = ".github/xanadAssistant/memory/"
-    gitignore_path = workspace / ".gitignore"
-    if gitignore_path.exists():
-        content = gitignore_path.read_text(encoding="utf-8")
-        lines = [ln.strip() for ln in content.splitlines()]
-        if entry in lines or entry.rstrip("/") in lines:
-            return
-        gitignore_path.write_text(content.rstrip("\n") + "\n" + entry + "\n", encoding="utf-8")
-    else:
-        gitignore_path.write_text(entry + "\n", encoding="utf-8")
+def _validate_relative_plan_path(path_value: object, field: str) -> str:
+    if not isinstance(path_value, str) or not path_value:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file contains an invalid path field.",
+            4,
+            {"field": field, "value": path_value},
+        )
+
+    path = PurePosixPath(path_value)
+    if path.is_absolute() or ".." in path.parts:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file path fields must stay within the workspace.",
+            4,
+            {"field": field, "value": path_value},
+        )
+    return path.as_posix()
 
 
-def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, dry_run: bool = False) -> dict:
-    manifest = load_manifest(package_root, load_json(package_root / DEFAULT_POLICY_PATH)) or {"managedFiles": []}
-    manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
-    actions = plan_payload["result"].get("actions", [])
-    backup_plan = plan_payload["result"].get("backupPlan", {})
-    planned_lockfile = json.loads(json.dumps(plan_payload["result"]["plannedLockfile"]))
-    factory_restore = bool(plan_payload["result"].get("factoryRestore", False))
-    apply_timestamp, path_timestamp = generate_apply_timestamps()
+def validate_apply_plan_paths(plan_payload: dict, package_root: Path) -> None:
+    result = plan_payload["result"]
+    planned_lockfile = result["plannedLockfile"]
+    lockfile_path = _validate_relative_plan_path(planned_lockfile.get("path"), "result.plannedLockfile.path")
+    if lockfile_path != ".github/xanadAssistant-lock.json":
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan lockfile path does not match the lifecycle contract.",
+            4,
+            {"planned": lockfile_path, "current": ".github/xanadAssistant-lock.json"},
+        )
 
-    if dry_run:
-        plan_writes = plan_payload["result"].get("writes", {})
-        skipped_count = len(plan_payload["result"].get("skippedActions", []))
-        return {
-            "backup": {"created": False, "path": None},
-            "writes": {
-                "added": plan_writes.get("add", 0), "replaced": plan_writes.get("replace", 0),
-                "merged": plan_writes.get("merge", 0),
-                "retiredArchived": plan_writes.get("archiveRetired", 0),
-                "deleted": plan_writes.get("deleted", 0),
-                "retiredReported": 0, "skipped": skipped_count,
-            },
-            "retired": [],
-            "lockfile": {"written": False, "path": planned_lockfile["path"]},
-            "summary": {"written": False, "path": ".github/copilot-version.md"},
-            "validation": {"status": "skipped"},
-            "dryRun": True,
-        }
+    managed_targets: dict[str, str] | None = None
+    retired_targets: dict[str, str] | None = None
+    action_targets: set[str] = set()
 
-    backup_root = materialize_apply_timestamp(backup_plan.get("root"), path_timestamp)
+    def ensure_manifest_targets() -> tuple[dict[str, str], dict[str, str]]:
+        nonlocal managed_targets, retired_targets
+        if managed_targets is None or retired_targets is None:
+            manifest = load_manifest(package_root, load_json(package_root / DEFAULT_POLICY_PATH)) or {
+                "managedFiles": [],
+                "retiredFiles": [],
+            }
+            managed_targets = {entry["id"]: entry["target"] for entry in manifest.get("managedFiles", [])}
+            retired_targets = {entry["id"]: entry["target"] for entry in manifest.get("retiredFiles", [])}
+        return managed_targets, retired_targets
+
+    for index, action in enumerate(result.get("actions", [])):
+        if not isinstance(action, dict):
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan file contains an invalid action record.",
+                4,
+                {"index": index},
+            )
+
+        action_type = action.get("action")
+        target = _validate_relative_plan_path(action.get("target"), f"result.actions[{index}].target")
+        action_targets.add(target)
+        action_id = action.get("id")
+
+        if action_type in {"add", "replace", "merge"}:
+            current_managed_targets, _ = ensure_manifest_targets()
+            if current_managed_targets.get(action_id) != target:
+                raise LifecycleCommandError(
+                    "contract_input_failure",
+                    "Plan action target does not match the current manifest entry.",
+                    4,
+                    {"id": action_id, "planned": target, "current": current_managed_targets.get(action_id)},
+                )
+        elif action_type == "delete":
+            if action_id != f"delete:{target}":
+                raise LifecycleCommandError(
+                    "contract_input_failure",
+                    "Plan delete action does not match its target path.",
+                    4,
+                    {"id": action_id, "target": target},
+                )
+        elif action_type == "archive-retired":
+            _, current_retired_targets = ensure_manifest_targets()
+            retired_target = current_retired_targets.get(action_id)
+            if retired_target is not None and retired_target != target:
+                raise LifecycleCommandError(
+                    "contract_input_failure",
+                    "Plan retired-file target does not match the current manifest entry.",
+                    4,
+                    {"id": action_id, "planned": target, "current": retired_target},
+                )
+            if retired_target is None and action_id != f"migration.cleanup.{target}":
+                raise LifecycleCommandError(
+                    "contract_input_failure",
+                    "Plan archive-retired action is not recognized for the current workspace.",
+                    4,
+                    {"id": action_id, "target": target},
+                )
+        else:
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan file contains an unsupported action type.",
+                4,
+                {"id": action_id, "action": action_type},
+            )
+
+    backup_plan = result.get("backupPlan", {})
+    backup_root = backup_plan.get("root")
     if backup_root is not None:
-        (workspace / backup_root).mkdir(parents=True, exist_ok=True)
+        backup_root = _validate_relative_plan_path(backup_root, "result.backupPlan.root")
+        if not backup_root.startswith(".xanadAssistant/backups/"):
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan backup root does not match the lifecycle contract.",
+                4,
+                {"planned": backup_root},
+            )
 
-    for backup_target in backup_plan.get("targets", []):
-        source_path = workspace / backup_target["target"]
-        if not source_path.exists():
-            continue
-        backup_path = materialize_apply_timestamp(backup_target["backupPath"], path_timestamp)
-        if backup_path is None:
-            continue
-        destination = workspace / backup_path
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, destination)
+    archive_root = backup_plan.get("archiveRoot")
+    if archive_root is not None:
+        archive_root = _validate_relative_plan_path(archive_root, "result.backupPlan.archiveRoot")
 
-    if factory_restore:
-        managed_targets = {entry["target"] for entry in manifest.get("managedFiles", [])}
-        unmanaged_files = collect_unmanaged_files(workspace, manifest, managed_targets)
-        for relative_path in unmanaged_files:
-            source_path = workspace / relative_path
-            if backup_root is not None and source_path.exists():
-                backup_path = workspace / backup_root / relative_path
-                backup_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(source_path, backup_path)
-            if source_path.exists():
-                source_path.unlink()
+    for index, entry in enumerate(backup_plan.get("targets", [])):
+        target = _validate_relative_plan_path(entry.get("target"), f"result.backupPlan.targets[{index}].target")
+        backup_path = _validate_relative_plan_path(entry.get("backupPath"), f"result.backupPlan.targets[{index}].backupPath")
+        if target not in action_targets:
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan backup target is not referenced by the serialized action set.",
+                4,
+                {"target": target},
+            )
+        if backup_root is not None and not backup_path.startswith(f"{backup_root}/"):
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan backup path does not stay under the declared backup root.",
+                4,
+                {"target": target, "backupPath": backup_path, "backupRoot": backup_root},
+            )
 
-    archive_targets_map = {
-        entry["target"]: entry["archivePath"]
-        for entry in backup_plan.get("archiveTargets", [])
-    }
-    retired_records: list[dict] = []
-    writes = {
-        "added": 0, "replaced": 0, "merged": 0,
-        "retiredArchived": 0, "retiredReported": 0,
-        "deleted": 0,
-        "skipped": len(plan_payload["result"].get("skippedActions", [])),
-    }
-    _new_paths: list[Path] = []
+    for index, entry in enumerate(backup_plan.get("archiveTargets", [])):
+        target = _validate_relative_plan_path(entry.get("target"), f"result.backupPlan.archiveTargets[{index}].target")
+        archive_path = _validate_relative_plan_path(entry.get("archivePath"), f"result.backupPlan.archiveTargets[{index}].archivePath")
+        if target not in action_targets:
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan archive target is not referenced by the serialized action set.",
+                4,
+                {"target": target},
+            )
+        if archive_root is not None and not archive_path.startswith(f"{archive_root}/"):
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan archive path does not stay under the declared archive root.",
+                4,
+                {"target": target, "archivePath": archive_path, "archiveRoot": archive_root},
+            )
+
+
+def load_apply_plan(plan_path: str | None, workspace: Path) -> dict:
+    if not plan_path:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Apply requires --plan pointing to a serialized lifecycle plan.",
+            4,
+            {"workspace": str(workspace)},
+        )
+
+    path = Path(plan_path).resolve()
+    if not path.is_file():
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            f"Plan file does not exist: {path}",
+            4,
+            {"path": str(path)},
+        )
 
     try:
-        for action in actions:
-            if action["action"] == "archive-retired":
-                target_path = workspace / action["target"]
-                if action.get("strategy", "archive-retired") == "report-retired":
-                    retired_records.append({"target": action["target"], "action": "reported"})
-                    writes["retiredReported"] += 1
-                else:
-                    archive_path_str = archive_targets_map.get(action["target"])
-                    if archive_path_str is not None:
-                        archive_dest = workspace / archive_path_str
-                        archive_dest.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.move(str(target_path), archive_dest)
-                    elif target_path.exists():
-                        target_path.unlink()
-                    retired_records.append({
-                        "target": action["target"], "action": "archived",
-                        "archivePath": archive_path_str,
-                    })
-                    writes["retiredArchived"] += 1
-                continue
-            if action["action"] == "delete":
-                target_path = workspace / action["target"]
-                if not target_path.exists():
-                    continue
-                if backup_root is not None:
-                    backup_dest = workspace / backup_root / action["target"]
-                    backup_dest.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(target_path, backup_dest)
-                target_path.unlink()
-                writes["deleted"] += 1
-                continue
-            if action["action"] == "merge" and action["strategy"] not in {"merge-json-object", "preserve-marked-markdown-blocks"}:
-                raise LifecycleCommandError(
-                    "apply_failure", "Merge actions are not implemented in the current apply slice.", 9,
-                    {"target": action["target"], "strategy": action["strategy"]},
-                )
-
-            manifest_entry = manifest_entries.get(action["id"])
-            if manifest_entry is None:
-                raise LifecycleCommandError(
-                    "apply_failure", "Plan references a managed entry missing from the manifest.", 9,
-                    {"id": action["id"]},
-                )
-
-            target_path = workspace / action["target"]
-            target_path.parent.mkdir(parents=True, exist_ok=True)
-
-            if action["action"] == "merge":
-                if action["strategy"] == "merge-json-object":
-                    merge_json_object_file(target_path, package_root, manifest_entry)
-                else:
-                    merge_markdown_file(target_path, package_root, manifest_entry, action.get("tokenValues", {}))
-                writes["merged"] += 1
-                continue
-
-            target_path.write_bytes(render_entry_bytes(package_root, manifest_entry, action.get("tokenValues", {})))
-            apply_chmod_rule(target_path, manifest_entry.get("chmod", "none"))
-            if action["action"] == "add":
-                writes["added"] += 1
-                _new_paths.append(target_path)
-            elif action["action"] == "replace":
-                writes["replaced"] += 1
-    except LifecycleCommandError:
-        for _p in _new_paths:
-            _p.unlink(missing_ok=True)
-        raise
-    except Exception as exc:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
         raise LifecycleCommandError(
-            "apply_failure",
-            f"Workspace write failed mid-apply, partial state may exist: {exc}",
-            9,
-            {"backupPath": str(backup_root) if backup_root is not None else None},
+            "contract_input_failure",
+            f"Cannot parse plan file {path!r}: {exc}",
+            4,
+            {"path": str(path), "error": str(exc)},
         ) from exc
 
-    planned_lockfile["contents"]["timestamps"] = {
-        "appliedAt": apply_timestamp, "updatedAt": apply_timestamp,
-    }
-    if "lastBackup" in planned_lockfile["contents"]:
-        planned_lockfile["contents"]["lastBackup"]["path"] = materialize_apply_timestamp(
-            planned_lockfile["contents"]["lastBackup"]["path"], path_timestamp,
-        )
-
-    lockfile_path = workspace / planned_lockfile["path"]
-    if backup_root is not None and lockfile_path.exists():
-        lockfile_backup = workspace / backup_root / planned_lockfile["path"]
-        lockfile_backup.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(lockfile_path, lockfile_backup)
-    lockfile_path.parent.mkdir(parents=True, exist_ok=True)
-    lockfile_path.write_text(json.dumps(planned_lockfile["contents"], indent=2) + "\n", encoding="utf-8")
-
-    summary_path = workspace / ".github" / "copilot-version.md"
-    summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary_path.write_text(
-        build_copilot_version_summary(planned_lockfile["contents"], manifest), encoding="utf-8",
-    )
-
-    _apply_memory_gitignore(workspace, planned_lockfile["contents"].get("setupAnswers", {}))
-
-    validation = _check.build_check_result(workspace, package_root)
-    if validation["status"] != "clean":
+    if not isinstance(payload, dict):
         raise LifecycleCommandError(
-            "apply_failure", "Applied workspace did not validate cleanly.", 9,
-            {"backupPath": backup_root, "summary": validation["result"]["summary"]},
+            "contract_input_failure",
+            "Plan file must contain a JSON object payload.",
+            4,
+            {"path": str(path)},
         )
 
-    return {
-        "backup": {"created": backup_root is not None, "path": backup_root},
-        "writes": writes, "retired": retired_records,
-        "lockfile": {"written": True, "path": planned_lockfile["path"]},
-        "summary": {"written": True, "path": ".github/copilot-version.md"},
-        "validation": {"status": "passed"},
-    }
+    if payload.get("command") != "plan" or not isinstance(payload.get("result"), dict):
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file is not a valid serialized lifecycle plan.",
+            4,
+            {"path": str(path)},
+        )
+
+    if payload.get("workspace") != str(workspace):
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file workspace does not match the apply target workspace.",
+            4,
+            {"path": str(path), "planWorkspace": payload.get("workspace"), "workspace": str(workspace)},
+        )
+
+    mode = payload.get("mode")
+    if mode not in {"setup", "update", "repair", "factory-restore"}:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file has an unsupported lifecycle mode.",
+            4,
+            {"path": str(path), "mode": mode},
+        )
+
+    if payload.get("result", {}).get("plannedLockfile") is None:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file is incomplete and cannot be applied.",
+            4,
+            {"path": str(path)},
+        )
+
+    planned_lockfile = payload["result"].get("plannedLockfile")
+    if not isinstance(planned_lockfile, dict):
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file has an invalid planned lockfile payload.",
+            4,
+            {"path": str(path)},
+        )
+
+    if not isinstance(planned_lockfile.get("path"), str) or not isinstance(planned_lockfile.get("contents"), dict):
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file is missing required planned lockfile fields.",
+            4,
+            {"path": str(path)},
+        )
+
+    return payload
+
+
+def validate_apply_plan_package(plan_payload: dict, package_root: Path) -> None:
+    planned_lockfile = plan_payload["result"]["plannedLockfile"]["contents"]
+    planned_package = planned_lockfile.get("package", {})
+    planned_manifest = planned_lockfile.get("manifest", {})
+
+    if planned_package.get("name") not in {None, CURRENT_PACKAGE_NAME}:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan package name does not match the current lifecycle package.",
+            4,
+            {"planned": planned_package.get("name"), "current": CURRENT_PACKAGE_NAME},
+        )
+
+    current_source = build_source_summary(package_root)
+    for field in ("source", "ref", "version"):
+        planned_value = planned_package.get(field)
+        current_value = current_source.get(field)
+        if planned_value is not None and current_value is not None and planned_value != current_value:
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan package source does not match the current apply package source.",
+                4,
+                {"field": field, "planned": planned_value, "current": current_value},
+            )
+
+    current_manifest = load_manifest(package_root, load_json(package_root / DEFAULT_POLICY_PATH)) or {"managedFiles": []}
+    current_manifest_hash = sha256_json(current_manifest)
+    if planned_manifest.get("hash") != current_manifest_hash:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan manifest hash does not match the current apply package state.",
+            4,
+            {
+                "plannedManifestHash": planned_manifest.get("hash"),
+                "currentManifestHash": current_manifest_hash,
+            },
+        )
 
 
 def build_execution_result(
@@ -244,8 +323,33 @@ def build_execution_result(
 def build_apply_result(
     workspace: Path, package_root: Path, answers_path: str | None,
     non_interactive: bool, dry_run: bool = False, resolutions_path: str | None = None,
+    plan_path: str | None = None,
 ) -> dict:
-    return build_execution_result(
-        "apply", "setup", workspace, package_root, answers_path, non_interactive,
-        dry_run=dry_run, resolutions_path=resolutions_path,
-    )
+    if resolutions_path is not None:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Apply does not accept --resolutions; conflict decisions must be recorded in the serialized plan.",
+            4,
+            {"argument": "--resolutions"},
+        )
+    plan_payload = load_apply_plan(plan_path, workspace)
+    validate_apply_plan_paths(plan_payload, package_root)
+    validate_apply_plan_package(plan_payload, package_root)
+    if plan_payload["result"].get("conflictDetails"):
+        raise LifecycleCommandError(
+            "approval_or_answers_required",
+            "Pack token conflicts must be resolved before applying.",
+            6,
+            {"questionIds": [c["questionId"] for c in plan_payload["result"]["conflictDetails"]]},
+        )
+    apply_result = execute_apply_plan(workspace, package_root, plan_payload, dry_run=dry_run)
+    return {
+        "command": "apply",
+        "mode": plan_payload["mode"],
+        "workspace": str(workspace),
+        "source": build_source_summary(package_root),
+        "status": "ok",
+        "warnings": plan_payload.get("warnings", []),
+        "errors": [],
+        "result": apply_result,
+    }

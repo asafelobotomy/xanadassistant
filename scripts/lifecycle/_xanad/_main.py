@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from scripts.lifecycle._xanad._execute_apply import build_apply_result, build_execution_result
+from scripts.lifecycle._xanad._execute_apply import build_apply_result, build_execution_result, load_apply_plan
 from scripts.lifecycle._xanad._check import build_check_result
 from scripts.lifecycle._xanad._cli import build_parser
 from scripts.lifecycle._xanad._errors import LifecycleCommandError, _State
@@ -29,6 +29,7 @@ def _run_execution_command(
     command: str,
     mode: str,
 ) -> int:
+    error_mode = mode
     try:
         if command == "apply":
             payload = build_apply_result(
@@ -38,7 +39,9 @@ def _run_execution_command(
                 args.non_interactive,
                 dry_run=args.dry_run,
                 resolutions_path=getattr(args, "resolutions", None),
+                plan_path=getattr(args, "plan", None),
             )
+            error_mode = payload.get("mode")
         else:
             payload = build_execution_result(
                 command,
@@ -51,6 +54,13 @@ def _run_execution_command(
                 resolutions_path=getattr(args, "resolutions", None),
             )
     except LifecycleCommandError as error:
+        if command == "apply":
+            plan_path = getattr(args, "plan", None)
+            if plan_path:
+                try:
+                    error_mode = load_apply_plan(plan_path, workspace).get("mode")
+                except LifecycleCommandError:
+                    error_mode = None
         payload, exit_code = build_error_payload(
             command,
             workspace,
@@ -58,7 +68,7 @@ def _run_execution_command(
             error.code,
             error.message,
             error.exit_code,
-            mode=mode,
+            mode=error_mode,
             details=error.details,
         )
         _attach_output_path(args.report_out, payload, "reportOut")
@@ -190,7 +200,7 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
         return 0 if not payload["errors"] else 4
 
     if args.command == "apply":
-        return _run_execution_command(args, workspace, package_root, use_json_lines, "apply", "setup")
+        return _run_execution_command(args, workspace, package_root, use_json_lines, "apply", None)
 
     if args.command == "update":
         return _run_execution_command(args, workspace, package_root, use_json_lines, "update", "update")

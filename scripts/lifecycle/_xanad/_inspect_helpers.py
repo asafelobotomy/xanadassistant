@@ -122,7 +122,7 @@ def collect_unmanaged_files(workspace: Path, manifest: dict | None, managed_targ
         base_dir = workspace / candidate
         if not base_dir.exists() or not base_dir.is_dir():
             continue
-        for file_path in sorted(path for path in base_dir.rglob("*") if path.is_file()):
+        for file_path in sorted(path for path in base_dir.rglob("*") if path.is_file() and "__pycache__" not in path.parts):
             relative = file_path.relative_to(workspace).as_posix()
             if relative in managed_targets or relative in retired_targets:
                 continue
@@ -143,7 +143,9 @@ def collect_successor_migration_files(
         return []
 
     predecessor_package = get_predecessor_package_name(lockfile_state)
-    predecessor_markers = predecessor_package is not None or legacy_version_state.get("present", False)
+    predecessor_markers = predecessor_package is not None
+    if not predecessor_markers and legacy_version_state.get("present") and not lockfile_state.get("present"):
+        predecessor_markers = True
     if not predecessor_markers:
         marker_paths = [workspace / ".github" / "hooks" / "copilot-hooks.json", workspace / ".mcp.json", workspace / ".copilot" / "workspace"]
         predecessor_markers = any(path.exists() for path in marker_paths)
