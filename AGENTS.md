@@ -10,7 +10,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `Cleaner` | yes | Pruning stale artefacts, caches, archives, and dead files; tightening repository hygiene without changing behaviour |
 | `Commit` | yes | Git status, staging, commit messages, commits, pushes, pulls, rebases, branches, tags, releases, and PR work |
 | `Deps` | yes | Scanning workspace dependencies, auditing installed packages, checking for vulnerabilities, suggesting updates or alternatives, and installing/updating/repairing/removing packages |
-| `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, and architecture lookup |
+| `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, architecture lookup, dependency tracing, example search, and repository structure questions |
 | `Review` | yes | Code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, and test coverage review |
 | `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, and `factory-restore` for xanadAssistant-managed surfaces |
 | `Triage` | no | First-pass complexity classification — determines whether a task needs a direct answer, targeted edit, single agent, or multi-agent plan |

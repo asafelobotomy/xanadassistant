@@ -136,7 +136,7 @@
         "{{pack:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:a386f952a8af01692a6578ec552b07f3ced94e58cb650af780bdae351fe2dd4f"
+      "hash": "sha256:f617c74b6ffc4a151da4d5db27926f3593ddea8d00b6e508da833032af3557a0"
     },
     {
       "id": "agents.organise.agent.md",
