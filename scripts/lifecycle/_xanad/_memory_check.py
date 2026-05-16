@@ -11,12 +11,40 @@ _MEMORY_DB = ".github/xanadAssistant/memory/memory.db"
 _REQUIRED_TABLES = frozenset({"advisory_memory", "rules", "agent_diary"})
 
 
-def check_memory_health(workspace: Path) -> list[dict]:
+def _memory_checks_enabled(
+    workspace: Path,
+    *,
+    setup_answers: dict | None = None,
+    mcp_enabled: bool | None = None,
+) -> bool:
+    if isinstance(setup_answers, dict):
+        if setup_answers.get("hooks.enabled") is False or setup_answers.get("mcp.enabled") is False:
+            return False
+        if setup_answers.get("hooks.enabled") is True or setup_answers.get("mcp.enabled") is True:
+            return True
+
+    if mcp_enabled is False:
+        return False
+    if mcp_enabled is True:
+        return True
+
+    return any((workspace / rel_path).exists() for rel_path in (_MEMORY_HOOK, _MEMORY_MCP_JSON, _MEMORY_DB))
+
+
+def check_memory_health(
+    workspace: Path,
+    *,
+    setup_answers: dict | None = None,
+    mcp_enabled: bool | None = None,
+) -> list[dict]:
     """Return warning dicts for any memory MCP health issues found in *workspace*.
 
     Callers extend the ``collect_context`` warnings list with the returned value.
     """
     warnings: list[dict] = []
+
+    if not _memory_checks_enabled(workspace, setup_answers=setup_answers, mcp_enabled=mcp_enabled):
+        return warnings
 
     # 1. memoryMcp.py installed
     if not (workspace / _MEMORY_HOOK).exists():

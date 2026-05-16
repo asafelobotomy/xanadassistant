@@ -53,7 +53,7 @@ Input schema:
 - `scope`: optional enum: `default`, `full`
 - `extraArgs`: optional string array, default empty
 
-Behavior: read the `Run tests` command from the instructions file; execute in the workspace root; reject if absent; reject if `extraArgs` would require shell interpolation rather than argv-safe extension.
+Behavior: read the `Run tests` command from the instructions file; execute in the workspace root; return `unavailable` if the command is absent or unresolved (for example `(not detected)`); reject if `extraArgs` would require shell interpolation rather than argv-safe extension.
 
 Output: `status` (`ok`, `failed`, `unavailable`), `command`, `exitCode`, `summary`, `stdoutTail`, `stderrTail`.
 
@@ -143,7 +143,7 @@ Run `xanadAssistant.py factory-restore --json`. No additional inputs beyond the 
 
 ### `workspace_show_install_state`
 
-Return the parsed lockfile contents for the workspace. Input: no arguments beyond optional `packageRoot`.
+Return the current lifecycle install state for the workspace without the full `check` payload. Input: no arguments beyond optional `packageRoot`. Output should include `installState` and the lifecycle `status` (`clean` or `drift`).
 
 ### `workspace_validate_lockfile`
 

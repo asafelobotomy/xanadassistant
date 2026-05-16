@@ -104,7 +104,13 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
             "details": {"targets": successor_migration_targets},
         })
 
-    warnings.extend(check_memory_health(workspace))
+    warnings.extend(
+        check_memory_health(
+            workspace,
+            setup_answers=lockfile_state.get("setupAnswers"),
+            mcp_enabled=lockfile_state.get("mcpEnabled"),
+        )
+    )
 
     return {
         "policy": policy,

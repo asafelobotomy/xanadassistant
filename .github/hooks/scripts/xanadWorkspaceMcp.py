@@ -19,6 +19,7 @@ _NEW_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanadAssistant-lock.json"
 _LEGACY_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanad-assistant-lock.json"
 WORKSPACE_LOCKFILE_PATH = _NEW_LOCKFILE if _NEW_LOCKFILE.exists() else _LEGACY_LOCKFILE
 SHELL_METACHARACTERS = ["|", "&", ";", ">", "<", "\n", "\r", "`", "$((", "$(", "${"]
+UNRESOLVED_COMMAND_VALUES = frozenset({"(not detected)", "not detected"})
 def workspace_root_valid() -> bool: return (WORKSPACE_ROOT / ".github").is_dir()
 def parse_key_commands(instructions_path: Path) -> list[dict[str, str]]:
     if not instructions_path.exists():
@@ -39,8 +40,11 @@ def parse_key_commands(instructions_path: Path) -> list[dict[str, str]]:
             continue
         commands.append({"label": columns[0], "command": columns[1].strip("`")})
     return commands
+def is_unresolved_command(command: str | None) -> bool:
+    return command is None or not command.strip() or command.strip().lower() in UNRESOLVED_COMMAND_VALUES
 def resolve_key_command(label: str) -> str | None:
-    return next((entry["command"] for entry in parse_key_commands(WORKSPACE_INSTRUCTIONS_PATH) if entry["label"] == label), None)
+    command = next((entry["command"] for entry in parse_key_commands(WORKSPACE_INSTRUCTIONS_PATH) if entry["label"] == label), None)
+    return None if is_unresolved_command(command) else command
 def read_lockfile() -> dict | None:
     try:
         return json.loads(WORKSPACE_LOCKFILE_PATH.read_text(encoding="utf-8")) if WORKSPACE_LOCKFILE_PATH.exists() else None
@@ -214,7 +218,7 @@ def tool_workspace_show_install_state(arguments: dict) -> dict:
     if payload is None:
         return result
     sub = payload.get("result", {})
-    return {"status": "ok", "summary": result["summary"], "installState": sub.get("installState"), "drift": sub.get("drift")}
+    return {"status": "ok", "summary": result["summary"], "installState": sub.get("installState"), "drift": payload.get("status")}
 class ToolResult(BaseModel):
     """Flexible structured-output wrapper for FastMCP tools."""
     model_config = ConfigDict(extra="allow")
