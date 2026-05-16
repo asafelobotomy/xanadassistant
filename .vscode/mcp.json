@@ -2,8 +2,18 @@
   "servers": {
     "xanadTools": {
       "type": "stdio",
-      "command": "${workspaceFolder}/.github/hooks/scripts/xanadWorkspaceMcp.py",
-      "args": []
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "${workspaceFolder}/.github/hooks/scripts/xanadWorkspaceMcp.py"
+      ],
+      "env": {
+        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
+        "TMPDIR": "${userHome}/.cache/uv"
+      }
     },
     "git": {
       "type": "stdio",

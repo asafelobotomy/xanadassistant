@@ -1,8 +1,7 @@
-# Developer / test dependencies for xanadAssistant.
+# Developer dependencies for xanadAssistant.
 #
 # The lifecycle engine (xanadAssistant.py, scripts/lifecycle/) is stdlib-only
 # and has no runtime dependencies.  These packages are required only to:
-#   - run the test suite (tests/)
 #   - run hook scripts locally (hooks/scripts/)
 #
 # Hook scripts are normally invoked via:

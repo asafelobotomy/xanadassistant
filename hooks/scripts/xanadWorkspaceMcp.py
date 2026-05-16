@@ -6,6 +6,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
+from pydantic import BaseModel, ConfigDict
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).parent))
 from _xanad_mcp_source import parse_github_source, resolve_github_release, resolve_github_ref
@@ -214,77 +215,82 @@ def tool_workspace_show_install_state(arguments: dict) -> dict:
         return result
     sub = payload.get("result", {})
     return {"status": "ok", "summary": result["summary"], "installState": sub.get("installState"), "drift": sub.get("drift")}
+class ToolResult(BaseModel):
+    """Flexible structured-output wrapper for FastMCP tools."""
+    model_config = ConfigDict(extra="allow")
+
 mcp = FastMCP("xanadTools")
 
 @mcp.tool()
-def workspace_show_key_commands() -> str:
+def workspace_show_key_commands() -> ToolResult:
     """Return the commands declared in .github/copilot-instructions.md."""
-    return json.dumps(tool_workspace_show_key_commands({}), indent=2, sort_keys=True)
+    return ToolResult.model_validate(tool_workspace_show_key_commands({}))
 
 @mcp.tool()
-def workspace_run_tests(scope: str = "default", extra_args: list[str] | None = None) -> str:
+def workspace_run_tests(scope: str = "default", extraArgs: list[str] | None = None) -> ToolResult:
     """Run the workspace test command declared in .github/copilot-instructions.md."""
-    return json.dumps(tool_workspace_run_tests({"scope": scope, "extraArgs": extra_args or []}), indent=2, sort_keys=True)
+    return ToolResult.model_validate(tool_workspace_run_tests({"scope": scope, "extraArgs": extraArgs or []}))
 
 @mcp.tool()
-def workspace_run_check_loc() -> str:
+def workspace_run_check_loc() -> ToolResult:
     """Run the repo-local LOC gate when this workspace defines one."""
-    return json.dumps(tool_workspace_run_check_loc({}), indent=2, sort_keys=True)
+    return ToolResult.model_validate(tool_workspace_run_check_loc({}))
 
 @mcp.tool()
-def workspace_validate_lockfile() -> str:
+def workspace_validate_lockfile() -> ToolResult:
     """Check that .github/xanadAssistant-lock.json exists and contains the required top-level keys."""
-    return json.dumps(tool_workspace_validate_lockfile({}), indent=2, sort_keys=True)
+    return ToolResult.model_validate(tool_workspace_validate_lockfile({}))
 
 @mcp.tool()
-def workspace_show_install_state() -> str:
+def workspace_show_install_state() -> ToolResult:
     """Return the current installState and drift summary from a lifecycle check without the full check payload."""
-    return json.dumps(tool_workspace_show_install_state({}), indent=2, sort_keys=True)
+    return ToolResult.model_validate(tool_workspace_show_install_state({}))
 
 _LIFECYCLE_MODES = frozenset(["setup", "update", "repair", "factory-restore"])
 _INVALID_MODE_MSG = "mode must be one of setup, update, repair, or factory-restore."
 
 @mcp.tool()
-def lifecycle_inspect(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None) -> str:
+def lifecycle_inspect(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None) -> ToolResult:
     """Run xanadAssistant inspect for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("inspect", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref), indent=2, sort_keys=True)
+    return ToolResult.model_validate(run_lifecycle_command("inspect", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref))
 
 @mcp.tool()
-def lifecycle_check(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None) -> str:
+def lifecycle_check(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None) -> ToolResult:
     """Run xanadAssistant check for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("check", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref), indent=2, sort_keys=True)
+    return ToolResult.model_validate(run_lifecycle_command("check", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref))
 
 @mcp.tool()
-def lifecycle_interview(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, mode: str = "setup") -> str:
+def lifecycle_interview(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, mode: str = "setup") -> ToolResult:
     """Run xanadAssistant interview for the current workspace. mode must be one of: setup, update, repair, factory-restore."""
     if mode not in _LIFECYCLE_MODES:
-        return json.dumps(build_tool_result(status="unavailable", summary=_INVALID_MODE_MSG), indent=2, sort_keys=True)
-    return json.dumps(run_lifecycle_command("interview", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, mode=mode, mode_as_flag=True), indent=2, sort_keys=True)
+        return ToolResult.model_validate(build_tool_result(status="unavailable", summary=_INVALID_MODE_MSG))
+    return ToolResult.model_validate(run_lifecycle_command("interview", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, mode=mode, mode_as_flag=True))
 
 @mcp.tool()
-def lifecycle_plan_setup(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None) -> str:
+def lifecycle_plan_setup(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None) -> ToolResult:
     """Run xanadAssistant plan setup for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("plan", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, mode="setup", answers_path=answersPath, non_interactive=nonInteractive), indent=2, sort_keys=True)
+    return ToolResult.model_validate(run_lifecycle_command("plan", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, mode="setup", answers_path=answersPath, non_interactive=nonInteractive))
 
 @mcp.tool()
-def lifecycle_apply(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> str:
+def lifecycle_apply(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> ToolResult:
     """Apply a previously computed lifecycle plan to the current workspace."""
-    return json.dumps(run_lifecycle_command("apply", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive, dry_run=dryRun), indent=2, sort_keys=True)
+    return ToolResult.model_validate(run_lifecycle_command("apply", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive, dry_run=dryRun))
 
 @mcp.tool()
-def lifecycle_update(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> str:
+def lifecycle_update(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> ToolResult:
     """Run xanadAssistant update for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("update", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive, dry_run=dryRun), indent=2, sort_keys=True)
+    return ToolResult.model_validate(run_lifecycle_command("update", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive, dry_run=dryRun))
 
 @mcp.tool()
-def lifecycle_repair(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None) -> str:
+def lifecycle_repair(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None) -> ToolResult:
     """Run xanadAssistant repair for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("repair", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive), indent=2, sort_keys=True)
+    return ToolResult.model_validate(run_lifecycle_command("repair", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive))
 
 @mcp.tool()
-def lifecycle_factory_restore(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, nonInteractive: bool | None = None) -> str:
+def lifecycle_factory_restore(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, nonInteractive: bool | None = None) -> ToolResult:
     """Run xanadAssistant factory-restore for the current workspace using a local package root."""
-    return json.dumps(run_lifecycle_command("factory-restore", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, non_interactive=nonInteractive), indent=2, sort_keys=True)
+    return ToolResult.model_validate(run_lifecycle_command("factory-restore", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, non_interactive=nonInteractive))
+
 
 if __name__ == "__main__":  # pragma: no cover
     mcp.run()

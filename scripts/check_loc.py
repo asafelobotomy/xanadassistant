@@ -35,10 +35,14 @@ WARN_LIMIT_OVERRIDES = {
     # Consumer workspaces receive these hooks as single files, so they need a little
     # more room than the default warning budget while still honoring the hard limit.
     "hooks/scripts/memoryMcp.py": 600,
-    "hooks/scripts/xanadWorkspaceMcp.py": 380,
-    "hooks/scripts/mcpSequentialThinkingServer.py": 260,
+    "hooks/scripts/xanadWorkspaceMcp.py": 300,
     "hooks/scripts/gitMcp.py": 380,
     "hooks/scripts/githubMcp.py": 450,  # matches hard limit override
+    # ── Managed copies (.github/) — mirrors of the above; same ceilings apply ─────
+    ".github/hooks/scripts/memoryMcp.py": 600,
+    ".github/hooks/scripts/xanadWorkspaceMcp.py": 300,
+    ".github/hooks/scripts/gitMcp.py": 380,
+    ".github/hooks/scripts/githubMcp.py": 450,  # matches hard limit override
 
     # ── Pack hooks (consumer-facing single-file scripts) ──────────────────────────
     "packs/secure/hooks/secureOsv.py": 300,
@@ -50,41 +54,7 @@ WARN_LIMIT_OVERRIDES = {
     "scripts/lifecycle/_xanad/_interview.py": 300,
     "scripts/lifecycle/_xanad/_plan_b.py": 300,
 
-    # ── Developer sandbox ────────────────────────────────────────────────────────
-    # Grows with each new workspace template; not a consumer surface.
-    "scripts/sandbox.py": 450,
-    # Pack workspace templates; _apply_in_ws + 17 template functions.
-    "scripts/_sandbox_pack_workspaces.py": 300,
-    # Core agent workspace templates; grows with each new scenario group.
-    "scripts/_sandbox_core_workspaces.py": 380,    # Manifest generator grows as new surfaces and rules are added.
-    # Benchmark module; grows with new timing utilities and workspace harness.
-    "scripts/_sandbox_benchmark.py": 280,
     "scripts/lifecycle/generate_manifest.py": 300,
-
-    # ── Hook test modules ────────────────────────────────────────────────────────
-    "tests/hooks/test_github_mcp_unit.py": 380,
-    "tests/hooks/test_xanad_workspace_mcp_coverage2_unit.py": 300,
-    "tests/hooks/test_xanad_workspace_mcp_unit.py": 380,
-
-    # ── Lifecycle test modules ───────────────────────────────────────────────────
-    "tests/lifecycle/test_apply_unit.py": 300,
-    "tests/lifecycle/test_coverage_gaps.py": 380,
-    "tests/lifecycle/test_execute_apply_b_unit.py": 300,
-    "tests/lifecycle/test_execute_apply_unit.py": 320,
-    "tests/lifecycle/test_inspect_check.py": 380,
-    "tests/lifecycle/test_lifecycle_emit_progress_unit.py": 400,
-    "tests/lifecycle/test_lifecycle_unit.py": 320,
-    "tests/lifecycle/test_pack_e2e_a.py": 380,
-    "tests/lifecycle/test_plan_actions_unit.py": 320,
-    "tests/lifecycle/test_plan_lifecycle_a.py": 380,
-    "tests/lifecycle/test_plan_result_unit.py": 380,
-    "tests/lifecycle/test_plan_seed_unit.py": 300,
-    "tests/lifecycle/test_plan_setup.py": 380,
-    "tests/lifecycle/test_plan_unit.py": 380,
-    "tests/lifecycle/test_workspace_scan_unit.py": 300,
-
-    # ── Manifest test modules ────────────────────────────────────────────────────
-    "tests/manifest/test_generate_manifest_unit.py": 300,
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # memoryMcp.py covers 13 tools across advisory facts, authoritative rules, and
@@ -96,8 +66,9 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Splitting the MCP server would require import machinery unavailable in those
     # workspaces, so a higher hard ceiling is appropriate here.
     "hooks/scripts/githubMcp.py": 450,
-    # sandbox.py grows with each new workspace scenario (32 templates + commands).
-    "scripts/sandbox.py": 450,
+    # Managed copies (.github/) — mirrors of the above; same ceilings apply.
+    ".github/hooks/scripts/memoryMcp.py": 700,
+    ".github/hooks/scripts/githubMcp.py": 450,
 }
 
 

@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:5ed33faa80443b39c42acda5177fc2e9a22ff201335bac269458172582230c6c"
+    "hash": "sha256:44f7a0e16556fc3f3fca0fc6117b87d88afd45f29d747177fa05494535c9389f"
   },
   "timestamps": {
-    "appliedAt": "2026-05-15T08:39:56Z",
-    "updatedAt": "2026-05-15T08:39:56Z"
+    "appliedAt": "2026-05-15T20:19:26Z",
+    "updatedAt": "2026-05-15T20:19:26Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -52,6 +52,7 @@
     ".github/agents/debugger.agent.md",
     ".github/agents/deps.agent.md",
     ".github/agents/docs.agent.md",
+    ".github/agents/evaljudge.agent.md",
     ".github/agents/explore.agent.md",
     ".github/agents/organise.agent.md",
     ".github/agents/planner.agent.md",
@@ -123,20 +124,7 @@
     ".github/skills/testDoubles/SKILL.md",
     ".github/skills/threatModel/SKILL.md"
   ],
-  "retiredManagedFiles": [
-    {
-      "id": "migration.cleanup..github/skills/commitPreflight/SKILL.md",
-      "action": "archived",
-      "target": ".github/skills/commitPreflight/SKILL.md",
-      "archivePath": ".xanadAssistant/archive/.github/skills/commitPreflight/SKILL.md"
-    },
-    {
-      "id": "migration.cleanup..github/skills/techDebtAudit/SKILL.md",
-      "action": "archived",
-      "target": ".github/skills/techDebtAudit/SKILL.md",
-      "archivePath": ".xanadAssistant/archive/.github/skills/techDebtAudit/SKILL.md"
-    }
-  ],
+  "retiredManagedFiles": [],
   "consumerResolutions": {
     ".github/skills/commitPreflight/SKILL.md": "keep",
     ".github/skills/techDebtAudit/SKILL.md": "keep",
@@ -145,6 +133,6 @@
   },
   "unknownValues": {},
   "lastBackup": {
-    "path": ".xanadAssistant/backups/2026-05-15T08-39-56Z"
+    "path": ".xanadAssistant/backups/2026-05-15T20-19-26Z"
   }
 }
