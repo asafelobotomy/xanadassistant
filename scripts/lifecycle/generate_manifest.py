@@ -122,6 +122,44 @@ def validate_unmanaged_sources(package_root: Path, policy: dict) -> None:
         raise ValueError(f"Managed source files lack policy coverage: {joined}")
 
 
+def _derive_pack_dir_surfaces(package_root: Path, pack_id: str) -> set[str]:
+    pack_root = package_root / "packs" / pack_id
+    surfaces: set[str] = set()
+    for surface_kind in ("skills", "prompts", "hooks"):
+        if (pack_root / surface_kind).is_dir():
+            surfaces.add(f"{pack_id}-{surface_kind}")
+    return surfaces
+
+
+def _derive_policy_pack_surfaces(policy: dict, pack_id: str) -> set[str]:
+    expected_source_root = f"{pack_id}-pack"
+    surfaces: set[str] = set()
+    for surface_name, source_spec in policy.get("surfaceSources", {}).items():
+        if source_spec.get("sourceRoot") == expected_source_root and source_spec.get("layer") == "pack":
+            surfaces.add(surface_name)
+    return surfaces
+
+
+def validate_pack_registry(package_root: Path, policy: dict, pack_registry: dict) -> None:
+    mismatches: list[str] = []
+
+    for pack in pack_registry.get("packs", []):
+        if pack.get("status") != "active":
+            continue
+        pack_id = pack["id"]
+        registry_surfaces = set(pack.get("surfaces", []))
+        dir_surfaces = _derive_pack_dir_surfaces(package_root, pack_id)
+        policy_surfaces = _derive_policy_pack_surfaces(policy, pack_id)
+
+        if registry_surfaces != dir_surfaces or registry_surfaces != policy_surfaces:
+            mismatches.append(
+                f"{pack_id}: registry={sorted(registry_surfaces)} dir={sorted(dir_surfaces)} policy={sorted(policy_surfaces)}"
+            )
+
+    if mismatches:
+        raise ValueError("Pack registry surfaces are inconsistent: " + "; ".join(mismatches))
+
+
 def generate_manifest(package_root: Path, policy: dict) -> dict:
     validate_policy(policy)
     validate_surface_sources(package_root, policy)
@@ -237,13 +275,17 @@ def main() -> int:
     manifest_out = args.manifest_out
 
     policy = load_json(policy_path)
+    pack_registry = None
+    if policy.get("generationSettings", {}).get("derivedArtifactStrategy", {}).get("catalog") == "generated-from-policy-and-registries":
+        pack_registry = load_optional_registry(package_root / "template/setup/pack-registry.json")
+        validate_pack_registry(package_root, policy, pack_registry)
     manifest = generate_manifest(package_root, policy)
     output_path = package_root / (manifest_out or policy.get("generationSettings", {}).get("manifestOutput", "template/setup/install-manifest.json"))
     write_manifest(output_path, manifest)
 
     catalog_strategy = policy.get("generationSettings", {}).get("derivedArtifactStrategy", {}).get("catalog")
     if catalog_strategy == "generated-from-policy-and-registries":
-        pack_registry = load_optional_registry(package_root / "template/setup/pack-registry.json")
+        assert pack_registry is not None
         profile_registry = load_optional_registry(package_root / "template/setup/profile-registry.json")
         catalog = generate_catalog(policy, pack_registry, profile_registry)
         catalog_path = package_root / "template/setup/catalog.json"

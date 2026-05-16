@@ -50,7 +50,7 @@
         "tdd",
         "coverage"
       ],
-      "surfaces": ["tdd-skills", "tdd-prompts"]
+      "surfaces": ["tdd-skills", "tdd-prompts", "tdd-hooks"]
     },
     {
       "id": "oss",
