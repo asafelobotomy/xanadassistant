@@ -79,7 +79,6 @@
     "vscode-settings": "core"
   },
   "packs": [
-    "memory",
     "lean",
     "secure",
     "tdd",

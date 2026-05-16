@@ -3,8 +3,10 @@
 Use this prompt when the user asks to update xanadAssistant or pull the latest
 agents, skills, hooks, and prompts into the active repository.
 
-Target workspace: xanadassistant
+Target workspace: xanadassistant (display name)
 Selected profile: balanced
+
+Use `.` as the workspace path in CLI examples below when running from the target repository root.
 
 ## Workflow
 
@@ -21,7 +23,7 @@ Fall back to the CLI commands below if MCP is unavailable.
 
 ```
 python3 xanadAssistant.py inspect \
-  --workspace xanadassistant \
+  --workspace . \
   --package-root <path-to-xanadAssistant-checkout> \
   --ui agent --json-lines
 ```
@@ -39,7 +41,7 @@ the update:
 
 ```
 python3 xanadAssistant.py interview \
-  --workspace xanadassistant \
+  --workspace . \
   --package-root <path-to-xanadAssistant-checkout> \
   --mode update --json-lines
 ```
@@ -51,7 +53,7 @@ Collect answers and write only the overridden keys to
 
 ```
 python3 xanadAssistant.py update \
-  --workspace xanadassistant \
+  --workspace . \
   --package-root <path-to-xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 ```

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.1.0",
-  "packageVersion": "0.1.0",
+  "packageVersion": "0.1.1",
   "policySchemaVersion": "0.1.0",
   "sourceRoots": {
     "template": "template",
@@ -98,7 +98,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:badaafe8ff315c797d960931533f807a5331a45942c77b9ba8e4708dd69e78e7"
+      "hash": "sha256:8a48283e5ceec3d8cc4ac18af02a3a120a09fcc4f1c0181c05533c87d7e72484"
     },
     {
       "id": "agents.docs.agent.md",
@@ -254,7 +254,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:00a70cda64a777927e9f5016274a26299f390f824ece84b5fa7cf33c50090b31"
+      "hash": "sha256:c060e2735985a3764b426d8a453cc0972067e74caedf1540866ac30b686772b0"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -656,7 +656,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:ba576c4c639fef48dd27650ea54213d21dc7cc1e36ebb56664463f140cf3a7d7"
+      "hash": "sha256:f7976b1084f3adf6bdc8c1a9f8b619cde720885ce83d2d48d748270143d3e14e"
     },
     {
       "id": "devops-prompts.devops-incident.prompt.md",
@@ -878,7 +878,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:9fcb2f63d134575f9471fef97ddf3dd8332bdc9361cbdc5efa600bd447a14a9f"
+      "hash": "sha256:2c23ffbd7cb6125ac146db6ef7dfd1733af8c75e82c7ac9846391f701fb521c9"
     },
     {
       "id": "shapeup-prompts.shapeup-kickoff.prompt.md",
@@ -981,7 +981,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:2e09d11a9798de83439fac4b089006f4726eb0cdeb3f13b2e85335853c587505"
+      "hash": "sha256:5828cda6afe7e05b946b54dfd3d05152297414584bf0e1b3e46db2172b00c3f8"
     },
     {
       "id": "skills.ciPreflight.SKILL.md",
@@ -997,7 +997,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:e89b632a793b991e0d4d60b976182dbf326e0546266c889f81f7e9dca96e8048"
+      "hash": "sha256:235e2c51a050a6bcfb619684ee74eaee3dc993bb03476f7fca2025ebbf00cd49"
     },
     {
       "id": "secure-skills.dependencyAudit.SKILL.md",
@@ -1015,7 +1015,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:e0ea1f69e02bca4f8c8c0d3ef5845cca018b3842585c51e9b639cb6542fc5a5a"
+      "hash": "sha256:2454ce0eab7558c38f30309f1b1b33b9f1bedad77ebd3979a26af6541cfe744d"
     },
     {
       "id": "devops-skills.devopsCiCd.SKILL.md",
@@ -1355,7 +1355,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:9e97622e217c3c3fb12daa9054430346094c5535d755685c62def769af725c0d"
+      "hash": "sha256:852e74d7c63707e0ccad321ca892fd33c75353740adc4a2677e01ca4aaa31b80"
     },
     {
       "id": "oss-skills.ossContributing.SKILL.md",
@@ -1373,7 +1373,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:327abcbbda03017b07d5faee7ffa4627ea1d889cc3b3e57b70aeb19ffb042b3e"
+      "hash": "sha256:851779b9a8588f0efb3d525b4a14c0f01dbbe76f07c5af63d67379c6823d7143"
     },
     {
       "id": "oss-skills.ossLicensing.SKILL.md",
@@ -1391,7 +1391,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:c6b56086b9f0186e64096b0c302bb2cc0d59271e25389f0d0b728695ef41c267"
+      "hash": "sha256:0b6d85b5b2341128f1da5d8332595b00a6a35101f3e5ed7afda6553c3dcc183b"
     },
     {
       "id": "secure-skills.secretScanning.SKILL.md",
@@ -1517,7 +1517,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:31d1554c6f04ec6683f4a624a62b646ee1d5eb3831406f0f34cc849f6b7529b8"
+      "hash": "sha256:8aa473e7775cc17362f236aa5132f8e927dd269de67504facf4c45199fda01f6"
     },
     {
       "id": "tdd-skills.testArchitecture.SKILL.md",

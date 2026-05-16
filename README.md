@@ -266,7 +266,6 @@ tests/                        # unittest suite
 | `devops` | active | DevOps defaults — CI/CD pipeline design, container discipline, IaC conventions, and deployment safety review |
 | `mlops` | active | MLOps defaults — experiment tracking, data pipeline discipline, model serving conventions, and drift investigation |
 | `shapeup` | active | Shape Up defaults — pitch writing, cycle execution, betting table process, and scope discipline |
-| `memory` | planned | Durable memory and recall features |
 | `review` | planned | Code review and audit workflows |
 | `research` | planned | Research and synthesis workflows |
 | `workspace-ops` | planned | Workspace automation and maintenance helpers |

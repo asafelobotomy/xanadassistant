@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:b9c148ff879d5ce16f7a4f83353297b39fc5bd09b5375b0298cf8c8f83752e10"
+    "hash": "sha256:bf3caaf435dd2f35333acf117d146f1e25fc630fe34e350be1628ce3511f79d1"
   },
   "timestamps": {
-    "appliedAt": "2026-05-16T19:42:03Z",
-    "updatedAt": "2026-05-16T19:42:03Z"
+    "appliedAt": "2026-05-16T20:38:00Z",
+    "updatedAt": "2026-05-16T20:38:00Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -45,16 +45,7 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [
-    {
-      "id": "hook-scripts.memoryMcp.py",
-      "target": ".github/hooks/scripts/memoryMcp.py",
-      "sourceHash": "sha256:513f04fbc6d89102863367e259401cf1b4ea438ad8aad526f8f4d650689d4c48",
-      "installedHash": "sha256:513f04fbc6d89102863367e259401cf1b4ea438ad8aad526f8f4d650689d4c48",
-      "ownershipMode": "local",
-      "status": "applied"
-    }
-  ],
+  "files": [],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -130,23 +121,7 @@
     ".github/skills/testDoubles/SKILL.md",
     ".github/skills/threatModel/SKILL.md"
   ],
-  "retiredManagedFiles": [
-    {
-      "id": "migration.cleanup..github/hooks/scripts/__pycache__/sqliteMcp.cpython-314.pyc",
-      "action": "archived",
-      "target": ".github/hooks/scripts/__pycache__/sqliteMcp.cpython-314.pyc",
-      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/__pycache__/sqliteMcp.cpython-314.pyc"
-    },
-    {
-      "id": "migration.cleanup..github/hooks/scripts/__pycache__/webMcp.cpython-314.pyc",
-      "action": "archived",
-      "target": ".github/hooks/scripts/__pycache__/webMcp.cpython-314.pyc",
-      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/__pycache__/webMcp.cpython-314.pyc"
-    }
-  ],
+  "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {},
-  "lastBackup": {
-    "path": ".xanadAssistant/backups/2026-05-16T19-42-03Z"
-  }
+  "unknownValues": {}
 }

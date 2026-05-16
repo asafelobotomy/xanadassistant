@@ -12,19 +12,6 @@
   ],
   "packs": [
     {
-      "id": "memory",
-      "name": "Memory",
-      "summary": "Optional durable memory and recall features.",
-      "status": "planned",
-      "optional": true,
-      "dependencies": [],
-      "discoveryTags": [
-        "memory",
-        "local-first"
-      ],
-      "surfaces": []
-    },
-    {
       "id": "lean",
       "name": "Lean",
       "summary": "Optional terse workflow helpers and brevity-oriented defaults.",
