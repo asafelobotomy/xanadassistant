@@ -3,8 +3,8 @@ name: Planner
 description: "Use when: breaking down complex work into scoped execution plans, file lists, risks, verification steps, or phased remediation before implementation."
 argument-hint: "Describe the planning target: rollout, refactor, migration, remediation, or a multi-file implementation."
 model:
-  - Claude Sonnet 4.6
   - GPT-5.4
+  - Claude Sonnet 4.6
 tools: [agent, codebase, search, runCommands]
 agents: [Explore, Debugger, Review, Researcher, Docs]
 user-invocable: false

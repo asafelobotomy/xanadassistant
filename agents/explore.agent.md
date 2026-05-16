@@ -3,9 +3,9 @@ name: Explore
 description: "Use when: broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, dependency tracing, example search, or repository structure questions."
 argument-hint: "Describe the exploration target and desired thoroughness: quick, medium, or thorough."
 model:
-  - Claude Haiku 4.5
-  - Claude Sonnet 4.6
   - GPT-5.4 mini
+  - Claude Sonnet 4.6
+  - Claude Haiku 4.5
 tools: [agent, codebase, search, runCommands]
 user-invocable: true
 agents: []

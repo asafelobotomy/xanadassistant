@@ -3,8 +3,8 @@ name: Debugger
 description: "Use when: diagnosing failures, isolating root causes, triaging regressions, reproducing broken behavior, or narrowing the minimal fix path before implementation."
 argument-hint: "Describe the debugging target: failing test, broken command, unexpected behavior, or unclear lifecycle state."
 model:
-  - Claude Sonnet 4.6
   - GPT-5.4
+  - Claude Sonnet 4.6
 tools: [agent, codebase, search, runCommands]
 agents: [Explore, Review, Planner, Researcher]
 user-invocable: false

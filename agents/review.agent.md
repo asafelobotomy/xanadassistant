@@ -3,8 +3,8 @@ name: Review
 description: "Use when: code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, or test coverage review."
 argument-hint: "Describe the review scope: file path, PR, diff, or review focus."
 model:
-  - Claude Sonnet 4.6
   - GPT-5.4
+  - Claude Sonnet 4.6
 tools: [agent, codebase, search, runCommands]
 agents: [Explore, Debugger, Planner, Researcher]
 user-invocable: true

@@ -106,6 +106,19 @@ Use these patterns when a task crosses specialist boundaries but should still st
 
 Natural-language requests to add a convention or preference to instructions, such as `Remember this for next time` or `Add this to your instructions`, are not lifecycle operations.
 
+## Model Selection
+
+Each agent's frontmatter lists models in preference order. The first entry is the default; subsequent entries are fallbacks. Fallback ordering follows **closer task-fit before lighter-but-less-capable models** — prefer the next model that still matches the work profile over the cheapest available option.
+
+| Default model | Agents | Rationale |
+|---|---|---|
+| `Claude Sonnet 4.6` | Cleaner, Commit, Deps, Docs, Organise, Researcher, xanadLifecycle | General-purpose procedural work — instruction-following, structured output, multi-step execution. GitHub Copilot guidance recommends Sonnet-class models as the baseline for agentic tasks. |
+| `GPT-5.4` | Debugger, Planner, Review | Deep-reasoning tasks — root-cause isolation, multi-file planning, architectural and security review. GPT-5.4's reasoning depth pays off where correctness matters more than speed. |
+| `GPT-5.4 mini` | Explore | Codebase exploration and grep-style tooling. GitHub explicitly recommends a mini-class model here: fast symbol and file traversal does not require deep reasoning, and the lighter model keeps exploration loops responsive. |
+| `Claude Haiku 4.5` | Triage | Classification-only first-pass routing. Haiku 4.5 is fast and lightweight — appropriate when the task is a binary complexity judgment rather than implementation. |
+
+Update this table whenever an agent's default model changes.
+
 ## Follow-up Adoption Work
 
 The ranked review of additional template-repo agents that are still not adopted lives in `docs/template-review-adopt.md`.
