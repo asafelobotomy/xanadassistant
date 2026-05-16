@@ -82,7 +82,7 @@
         "{{pack:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:bb73903668e63157de356a937b0e2e506c0ccd3d2ebec57668f4346ec80c83c6"
+      "hash": "sha256:db383a798db33b86ba072d57ac224d021baef8d9e883d139911d9729a681f10c"
     },
     {
       "id": "agents.deps.agent.md",

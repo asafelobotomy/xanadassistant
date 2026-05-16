@@ -14,7 +14,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `Review` | yes | Code review, architecture review, security review, maintainability review, and regression-risk review |
 | `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, and `factory-restore` for xanadAssistant-managed surfaces |
 | `Triage` | no | First-pass complexity classification — determines whether a task needs a direct answer, targeted edit, single agent, or multi-agent plan |
-| `Debugger` | no | Root-cause diagnosis, failing tests, broken commands, unclear behavior reproduction, and minimal fix-path isolation |
+| `Debugger` | no | Root-cause diagnosis, failing tests, regression triage, broken commands, unclear behavior reproduction, and minimal fix-path isolation |
 | `Organise` | no | Subagent-only structural worker — moving files, regrouping folders, fixing caller paths after a file move |
 | `Planner` | no | Complex multi-step planning, phased rollout, migration planning, and scoped execution plans before implementation |
 | `Researcher` | no | External documentation, upstream behavior, GitHub-source research, and source-backed comparisons before implementation |
@@ -40,7 +40,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 - `xanadLifecycle` may delegate to `Explore` for repo inventory, `Debugger` for failing lifecycle behavior, and `Planner` for phased remediation.
 - `Cleaner` may delegate to `Review` for security-sensitive or policy-owned files, `Organise` when cleanup turns into file moves or reshaping, `Docs` when cleanup changes maintenance guidance or user-facing references, and `Commit` when the approved scope is ready to stage.
 - `Review` may delegate to `Explore` for inventory, `Debugger` for concrete reproduction, `Planner` for remediation planning, and `Researcher` for current external constraints.
-- `Debugger` stays read-only and returns diagnosis, evidence, and the minimal next fix step.
+- `Debugger` stays read-only and returns diagnosis, evidence, and the minimal next fix step. It may delegate to `Explore` when the failure spans unfamiliar files and a read-only inventory is needed first, and to `Review` when the likely cause involves a contract boundary, security posture, or architecture assumption.
 - `Planner` stays read-only and returns an executable plan with file list, risks, and verification.
 - `Researcher` stays read-only and returns source-backed findings, constraints, and recommended next steps.
 - `Organise` stays structural-only — no semantic implementation unless explicitly widened by the caller.
@@ -61,6 +61,8 @@ Use these patterns when a task crosses specialist boundaries but should still st
 | `Review` | `Debugger` | A finding depends on reproducing a failure or isolating a concrete regression before the review is credible |
 | `Review` | `Planner` | Findings imply a phased remediation path rather than a single local fix |
 | `Review` | `Researcher` | The review depends on current upstream docs, release behavior, or external contract constraints |
+| `Debugger` | `Explore` | The failure spans unfamiliar files and a read-only inventory is needed before root-cause isolation |
+| `Debugger` | `Review` | The likely cause involves a contract boundary, security posture, or architecture assumption requiring structured review |
 | `Debugger` | `Planner` | Root cause is known, but the fix spans multiple files or needs staged verification |
 | `Debugger` | `Researcher` | The failure appears to depend on current upstream behavior or source-specific constraints |
 | `Planner` | `Researcher` | The plan depends on external docs, MCP behavior, GitHub-source semantics, or version-specific rules |
