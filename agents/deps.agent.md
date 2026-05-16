@@ -16,6 +16,7 @@ Your role: full-lifecycle dependency management — discover, audit, research, a
 
 ## On every invocation
 
+0. Call `memory_dump(agent="deps")` before taking any action (see `## Memory`).
 1. **Discover first** — scan for all dependency manifests before taking any action.
 2. **Confirm before mutating** — present your audit findings and proposed changes; wait for explicit user confirmation before running any install, update, or remove command.
 3. **Ecosystem-aware** — adapt commands to the package manager and ecosystem detected; never assume pip when npm is in use, and vice versa.
@@ -187,7 +188,7 @@ Proposed changes: <N> — awaiting your confirmation.
 
 ## Output style
 
-{{pack:output-style}}
+Use the audit summary format defined in `## Reporting format`. Outside of full audits, present findings as a prioritised table: package, severity, installed version, latest version, action. Lead with P0 (CVEs) findings. Cite the source for each finding.
 
 ## Memory
 

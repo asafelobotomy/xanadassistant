@@ -30,6 +30,12 @@ Do not use this agent for:
 - broad semantic refactors not required by the reorganisation
 - compatibility wrappers or legacy shims unless the user explicitly asks
 
+## On every invocation
+
+1. Call `memory_dump(agent="organise")` before using any tools (see `## Memory`).
+2. Inventory callers and references before moving any file.
+3. Update every direct caller in the same pass — do not leave the tree in a broken state.
+
 ## Guidelines
 
 - Read the affected files and callers before moving anything.
@@ -45,3 +51,16 @@ Do not use this agent for:
   re-verification is warranted.
 - If the scope is ambiguous or a move would conflict with user changes, stop and
   surface the ambiguity before proceeding.
+
+## Output style
+
+Report each file move as: `old/path → new/path`. List all caller path updates inline. After moves are complete, summarise: files moved, callers updated, tests run.
+
+## Memory
+
+At the start of every task, call `memory_dump(agent="organise")`.
+- If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
+- **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
+- **Facts** returned are working context — for any fact you intend to act on, call `mcp_time_elapsed(start=fact.updated_at)` to verify its age.
+
+When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="organise", key=..., value=...)` before finishing.

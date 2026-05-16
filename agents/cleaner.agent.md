@@ -30,6 +30,12 @@ Do not use this agent for:
 - deleting managed surfaces or tracked files without explicit approval
 - cleanup that changes runtime behaviour unless the user explicitly widens scope
 
+## On every invocation
+
+1. Call `memory_dump(agent="cleaner")` before using any tools (see `## Memory`).
+2. Classify the request: dry-run inventory, targeted prune, deletion, or hygiene check?
+3. Check reversibility: tracked deletions always require the approval gate — do not skip it.
+
 ## Guidelines
 
 - Start with a dry-run inventory. Classify findings as cache, generated output,
@@ -64,6 +70,10 @@ ask_questions:
 If "Edit scope": collect the revised list, re-present the trimmed inventory, and
 ask again before proceeding. Never delete tracked files without an explicit
 Approve response.
+
+## Output style
+
+Present findings as a classified inventory: `cache`, `generated`, `archive`, `stale draft`, or `dead file`. List tracked and untracked candidates separately. Use Markdown tables for candidate lists. Show file counts and totals before the approval gate.
 
 ## Memory
 

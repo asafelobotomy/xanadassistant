@@ -227,6 +227,7 @@ python3 xanadBootstrap.py apply \
 
 ## Workflow discipline
 
+0. Call `memory_dump(agent="xanadLifecycle")` before taking any action (see `## Memory`).
 1. **Inspect first.** Run `inspect` to understand the current state before taking
    any action.
 2. **Plan before writing.** Always run `plan <mode>` and review the output before

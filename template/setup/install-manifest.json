@@ -45,7 +45,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:03017a0e7b201872f8470685c6416e50a615810c8dc5e036fb1c79ed2218f7ce"
+      "hash": "sha256:89bfafe5167840a8f85c39db98164768275f4811df695dce5187e93e3ed26b63"
     },
     {
       "id": "agents.commit.agent.md",
@@ -96,11 +96,9 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [
-        "{{pack:output-style}}"
-      ],
+      "tokens": [],
       "chmod": "none",
-      "hash": "sha256:f86b18cbfcf275bc98f37b29f596197986f636221421fd75df837ca62410a091"
+      "hash": "sha256:badaafe8ff315c797d960931533f807a5331a45942c77b9ba8e4708dd69e78e7"
     },
     {
       "id": "agents.docs.agent.md",
@@ -114,11 +112,9 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [
-        "{{pack:output-style}}"
-      ],
+      "tokens": [],
       "chmod": "none",
-      "hash": "sha256:34148cb406b9a49196c501d679cc06e555c4b417b56fea81d7080169b8a322e1"
+      "hash": "sha256:9aafcb8daf6df85b7fe852e6ad6f2a05514dbcd1ce5fc628ac857f01f9dbba2c"
     },
     {
       "id": "agents.explore.agent.md",
@@ -152,7 +148,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:10fbed591038c9ce31c86fde1e5528c2d2dce8fe5fc21ec5e056ceab87d305ee"
+      "hash": "sha256:c8cb74e73e86fd5baab0e8fb23fff040c3a48a88e50c9e8d0178643b093b1e92"
     },
     {
       "id": "agents.planner.agent.md",
@@ -166,11 +162,9 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [
-        "{{pack:plan-format}}"
-      ],
+      "tokens": [],
       "chmod": "none",
-      "hash": "sha256:20ad2876a42f2361be37f4888cdd1b5c66b82bc9b4f62bee51bb32c802142c3e"
+      "hash": "sha256:b5e74a75ff7222a39131e388515382370c3888886cb5d220fb8a6368995c675a"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -184,11 +178,9 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [
-        "{{pack:output-style}}"
-      ],
+      "tokens": [],
       "chmod": "none",
-      "hash": "sha256:173bd22355f08eb5784a7f08538f2968693dedef7bf2639eb22743f46e6f0197"
+      "hash": "sha256:19df00ba5a923273448c34013fe7e7e85231f7a72c26b39efbea0a6b1a99b367"
     },
     {
       "id": "agents.review.agent.md",
@@ -220,15 +212,9 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [
-        "{{pack:blocker-discipline}}",
-        "{{pack:context-hygiene}}",
-        "{{pack:reasoning-mode}}",
-        "{{pack:scope-discipline}}",
-        "{{pack:step-size}}"
-      ],
+      "tokens": [],
       "chmod": "none",
-      "hash": "sha256:732175cb28008dd8bb02417cd22c8247d61c64db78b37b002232cf0ca4515a67"
+      "hash": "sha256:d72c8f16f634994c130b569c83fbcf0852644cc4bef29811a173bdb1bd25d8e7"
     },
     {
       "id": "agents.xanadLifecycle.agent.md",
@@ -244,7 +230,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:1439875b4c24e47ba5d373f9a28b20e61d80c5b293d574f242df752c59f2f93a"
+      "hash": "sha256:c31c980b393bf5520d0bf9842a684ba74f2e9d9efab0a0955c58133b977eb31f"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
