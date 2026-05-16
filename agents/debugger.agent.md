@@ -4,7 +4,7 @@ description: "Use when: diagnosing failures, isolating root causes, triaging reg
 argument-hint: "Describe the debugging target: failing test, broken command, unexpected behavior, or unclear lifecycle state."
 model:
   - Claude Sonnet 4.6
-  - GPT-5
+  - GPT-5.4
 tools: [agent, codebase, search, runCommands]
 agents: [Explore, Review, Planner, Researcher]
 user-invocable: false

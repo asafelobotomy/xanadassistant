@@ -4,7 +4,7 @@ description: "Use when: a subagent needs to perform structural work — moving f
 argument-hint: "Describe what to reorganise — e.g. move scripts into logical directories, fix paths after a file move, or normalise folder layout."
 model:
   - Claude Sonnet 4.6
-  - GPT-5
+  - GPT-5.4
 tools: [agent, editFiles, runCommands, codebase, search]
 agents: [Explore, Docs]
 user-invocable: false

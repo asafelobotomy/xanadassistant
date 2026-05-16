@@ -5,7 +5,6 @@ argument-hint: "Describe the task you want classified: what it does, what it tou
 model:
   - Claude Haiku 4.5
   - GPT-5.4 mini
-  - GPT-5 mini
 tools: [agent, codebase]
 agents: [Planner]
 user-invocable: false

@@ -4,7 +4,7 @@ description: "Use when: pruning stale artefacts, caches, archives, and dead file
 argument-hint: "Say what to clean — e.g. 'clean up repo clutter', 'remove stale files', 'prune caches and archives', or 'tidy old artefacts'."
 model:
   - Claude Sonnet 4.6
-  - GPT-5
+  - GPT-5.4
 tools: [agent, editFiles, runCommands, codebase, search, askQuestions]
 agents: [Review, Organise, Docs, Commit]
 user-invocable: true

@@ -5,7 +5,7 @@ argument-hint: "Describe the exploration target and desired thoroughness: quick,
 model:
   - Claude Haiku 4.5
   - Claude Sonnet 4.6
-  - GPT-5 mini
+  - GPT-5.4 mini
 tools: [agent, codebase, search, runCommands]
 user-invocable: true
 agents: []

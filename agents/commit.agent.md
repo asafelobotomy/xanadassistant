@@ -4,7 +4,7 @@ description: "Use when: git status, staging files, unstaging files, commit messa
 argument-hint: "Describe the git task: commit, push, preflight, PR, branch, tag, stash, rebase, or release notes."
 model:
   - Claude Sonnet 4.6
-  - GPT-5
+  - GPT-5.4
 tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions]
 agents: [Explore, Review, Debugger]
 user-invocable: true

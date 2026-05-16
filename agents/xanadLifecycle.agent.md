@@ -4,7 +4,7 @@ description: "Use when: set up xanadAssistant, inspect workspace, run lifecycle 
 argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, apply, update, repair, or factory restore."
 model:
   - Claude Sonnet 4.6
-  - GPT-5
+  - GPT-5.4
 tools: [agent, codebase, search, runCommands, askQuestions]
 agents: [Explore, Debugger, Planner]
 user-invocable: true
