@@ -12,6 +12,7 @@ I work **in** xanadassistant — implementing features, reviewing code, running 
 | Task | Command |
 |------|---------|
 | Run tests | `(not detected)` |
+| LOC gate | `python3 scripts/check_loc.py` |
 | Inspect Copilot install state | `python3 <xanad-root>/xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` |
 | Check for repair needs | `python3 <xanad-root>/xanadAssistant.py check --workspace . --package-root <xanad-root> --json` |
 

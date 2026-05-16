@@ -5,7 +5,7 @@ description: "Use when: running pre-commit or pre-push CI-equivalent checks in a
 
 # CI Preflight
 
-> Skill metadata: version "1.0"; tags [commit, preflight, ci, workflow, generic]; recommended tools [codebase, runCommands, editFiles, askQuestions].
+> Skill metadata: version "1.1"; tags [commit, preflight, ci, workflow, generic]; recommended tools [file_search, read_file, grep_search, run_in_terminal, vscode_askQuestions].
 
 Discover and execute a workspace's CI checks locally before commit or push,
 using workspace tools to read actual workflow definitions rather than assuming
@@ -27,25 +27,18 @@ knowledge of the project's specific tooling or conventions.
 
 ## Steps
 
-### 0. Check memory cache
+### 0. Discover CI workflow files
 
-Call `memory_get(agent="shared", key="ci.commands")`.
-- If it returns a cached command list (not a "No active fact" message), skip Steps 1–4 and proceed directly to Step 5 with those commands.
-- If it returns unavailable or "No active fact", continue to Step 1.
+Use workspace file search tools to list files under `.github/workflows/`.
 
-### 1. Discover CI workflow files
-
-Use the `codebase` tool (or run `ls .github/workflows/` with `runCommands`) to
-list all files under `.github/workflows/`.
-
-For each file found, read its full contents with the `codebase` tool.
+For each file found, read its full contents with file-reading tools.
 
 **Keep** a file if its `on:` key includes `push` or `pull_request`.
 **Skip** a file that only triggers on `schedule`, `workflow_dispatch`,
 `release`, or deployment events — those require infrastructure or secrets that
 cannot be reproduced locally.
 
-### 2. Extract locally-executable run steps
+### 1. Extract locally-executable run steps
 
 For each kept workflow file, collect every `jobs.<id>.steps[]` entry that has
 a `run:` key.
@@ -63,9 +56,9 @@ a `run:` key.
 invocation that operates on local files (e.g. `python3 ...`, `npm test`,
 `make check`, `go test ./...`, `cargo test`, `./gradlew test`).
 
-### 3. Scope to staged changes
+### 2. Scope to staged changes
 
-Run `git diff --cached --name-only` with `runCommands` to get the staged file
+Run `git diff --cached --name-only` with a terminal tool to get the staged file
 list.
 
 Narrow the extracted check list by that scope:
@@ -74,11 +67,11 @@ Narrow the extracted check list by that scope:
 - Keep any check whose scope cannot be narrowed (e.g. a global lint or a
   manifest freshness gate that affects the whole repo)
 
-### 4. Fall back to project-structure detection
+### 3. Fall back to project-structure detection
 
-If Step 2 found no usable run steps (no workflow files, or all steps were
-excluded), detect the test runner from workspace files using the `codebase`
-tool:
+If Step 1 found no usable run steps (no workflow files, or all steps were
+excluded), detect the verification command from workspace files using workspace
+search and file-reading tools:
 
 | Signal file or folder | Inferred command |
 |---|---|
@@ -90,11 +83,10 @@ tool:
 | `Cargo.toml` | `cargo test` |
 | `Gemfile` with rspec | `bundle exec rspec` |
 
-Once you have a command list (from Step 1–2 or fallback detection), call
-`memory_set(agent="shared", key="ci.commands", value=<command list as JSON string>)`
-so future preflight runs skip discovery.
+If fallback detection still finds nothing credible, stop and report that no
+locally-executable CI-equivalent command could be derived from the workspace.
 
-### 5. Order checks cheapest-first
+### 4. Order checks cheapest-first
 
 Group extracted commands into tiers and run in this order, stopping at the
 first blocker before running later tiers:
@@ -109,21 +101,21 @@ first blocker before running later tiers:
 When tier assignment is ambiguous, prefer the order commands appear in the
 workflow file — the project author likely ordered them by cost already.
 
-### 6. Execute and handle each result
+### 5. Execute and handle each result
 
-Run each command with `runCommands`. For each result:
+Run each command with a terminal tool. For each result:
 
 | Outcome | Action |
 |---|---|
 | Exit 0 | Continue to the next check |
-| Stale generated artifact (exit nonzero + recognisable regen command in output) | Re-run the generator with `runCommands`, re-stage outputs with `editFiles`, re-run the check |
-| Unit or lint test failure | Delegate to `Debugger` with the exact failure output and staged file list; apply the minimal fix returned; re-run the failing check |
-| Budget / LOC / format violation | Surface the exact violation output to the user; ask: fix now, or accept residual risk before proceeding |
+| Stale generated artifact (exit nonzero + recognisable regen command in output) | Re-run the generator, explicitly `git add` regenerated outputs, then re-run the check |
+| Unit or lint failure | Delegate to `Debugger` with the exact failure output and staged file list; apply the minimal fix returned; re-run the failing check |
+| Budget / LOC / format violation | Surface the exact violation output to the user; ask whether to fix now or accept residual risk before proceeding |
 | Template-safety violation (unresolved `{{}}` tokens in a template file) | Block — do not commit until resolved |
 | Step requires secrets or infra (detected mid-run) | Skip; note in summary — not a blocker |
-| Any other nonzero exit | Surface exact stdout + stderr; use `askQuestions` to ask the user how to proceed |
+| Any other nonzero exit | Surface exact stdout + stderr; use `vscode_askQuestions` if user input is required |
 
-### 7. Return a summary to the caller
+### 6. Return a summary to the caller
 
 Return:
 - The workflow files read and the commands extracted from them (or "detected
@@ -135,7 +127,7 @@ Return:
 
 ## Verify
 
-- [ ] Workflow files listed and read with a tool — not assumed from memory
+- [ ] Workflow files listed and read with workspace tools — not assumed from memory
 - [ ] Only push/PR-triggered workflows included; others explicitly skipped
 - [ ] Steps requiring secrets or external infra excluded and noted
 - [ ] `git diff --cached --name-only` used to scope checks to staged files
@@ -143,5 +135,3 @@ Return:
 - [ ] Stale artifacts repaired and restaged before re-running the failing check
 - [ ] `Debugger` delegated to for test/lint failures, not ad-hoc guesses
 - [ ] Summary returned with pass / block / residual-risk outcome
-- [ ] `memory_get(agent="shared", key="ci.commands")` checked before re-scanning workflow files
-- [ ] `memory_set(agent="shared", key="ci.commands", ...)` called after discovering commands

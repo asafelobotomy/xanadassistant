@@ -19,7 +19,7 @@ Use this skill when a user asks about OSS licensing: what license to choose, how
 | ISC | Broad | None | Functionally equivalent to MIT; fewer words |
 | AGPL-3.0 | Broad | Network-use copyleft | SaaS: require source disclosure even for hosted use |
 
-**Compatibility note**: GPL-3.0 is incompatible with Apache 2.0. If the project combines Apache-licensed and GPL-licensed code, use AGPL-3.0 or contact a lawyer.
+**Compatibility note**: Apache-2.0 code can be included in a GPL-3.0 project, but GPL-3.0 code cannot be redistributed under Apache-2.0 terms. If a project mixes licenses, verify the redistribution path for the combined work and escalate to counsel for organization-specific policy.
 
 ## LICENSE file
 
@@ -38,7 +38,7 @@ Permission is hereby granted...
 
 ## SPDX identifiers
 
-Add an SPDX identifier to every source file header instead of copying the full license text:
+Add an SPDX identifier to source file headers only when the repository's policy, existing conventions, or contributor requirements call for per-file licensing metadata:
 
 ```python
 # SPDX-License-Identifier: MIT
@@ -54,7 +54,7 @@ The identifier must match the SPDX license list exactly: https://spdx.org/licens
 
 When a project contains files under different licenses:
 
-1. Use SPDX identifiers in each file.
+1. Use SPDX identifiers in each file if the repository already uses per-file license metadata or explicitly requires it.
 2. Add a `LICENSES/` directory containing the full text of each license used.
 3. Reference all licenses in the root `README.md` under a **License** section.
 

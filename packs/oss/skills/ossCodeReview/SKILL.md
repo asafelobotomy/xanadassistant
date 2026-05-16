@@ -17,7 +17,7 @@ Run through all tiers before leaving a verdict.
 | **Tests** | New behavior has tests; tests actually fail before the fix | Yes |
 | **API compatibility** | No unannounced breaking changes to public surface | Yes |
 | **Documentation** | Public API changes are documented; changelog entry present | Yes if API changed |
-| **License & DCO** | All new files have SPDX header; DCO sign-off present if required | Yes if required |
+| **License & DCO** | Repository-specific license obligations are met; DCO sign-off present if required | Yes if required |
 | **Security** | No new injection vectors, hardcoded secrets, or insecure defaults | Yes |
 | **Style** | Matches project conventions; linter clean | Suggest only |
 | **Performance** | No obvious O(n²) regressions in hot paths | Suggest only |

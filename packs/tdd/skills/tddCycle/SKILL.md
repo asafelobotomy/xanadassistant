@@ -1,6 +1,6 @@
 ---
 name: tddCycle
-description: "Red-Green-Refactor cycle discipline — one failing test at a time, minimal implementation, commit on green."
+description: "Red-Green-Refactor cycle discipline — one failing test at a time, minimal implementation, optional commit boundary on green."
 ---
 
 # TDD Cycle
@@ -34,4 +34,4 @@ Apply the Red-Green-Refactor cycle as the fundamental unit of work. Each cycle i
 
 ## Commit discipline
 
-Commit after each complete Red-Green-Refactor cycle. A commit with a failing test is only acceptable if explicitly marked `wip:` and immediately followed by Green.
+Treat a complete Red-Green-Refactor cycle as a natural commit boundary, not an automatic commit requirement. Only make a commit when the user asks for one or the repository workflow explicitly requires it. If local instructions route git actions through a specialist workflow or agent, follow that route instead of committing directly. A commit with a failing test is only acceptable if the user explicitly wants a `wip:` checkpoint and understands the state being recorded.

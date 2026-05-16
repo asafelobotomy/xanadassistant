@@ -41,7 +41,7 @@ Signed-off-by: Name <email@example.com>
 
 Add it automatically with: `git commit --signoff`
 
-Verify with: `git log --oneline | head -5` — confirm each has `(Signed-off-by:)` in the full log.
+Verify with: `git log -n 5 --pretty=full` — confirm each commit message body includes a `Signed-off-by:` trailer.
 
 ## PR checklist (recommend including in PR template)
 

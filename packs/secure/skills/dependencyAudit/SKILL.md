@@ -27,9 +27,11 @@ The hook exposes two tools:
 - Returns: list of OSV IDs, severity (CVSS score and label), fixed-in versions
 
 **`batch_query_lockfile(lockfile_path)`**
-- Accepts: `requirements.txt`, `package.json` (dependencies/devDependencies), `Cargo.toml`, `go.mod`
+- Accepts: `requirements.txt`, `package.json` (dependencies/devDependencies), `Cargo.toml`
 - Parses all pinned dependencies and bulk-queries OSV.dev
 - Returns: structured list of (package, version, vulnerabilities)
+
+For Go dependencies, use `query_package_vulnerabilities` per package/version; the bulk lockfile parser does not currently support `go.mod`.
 
 ## Interpreting results
 

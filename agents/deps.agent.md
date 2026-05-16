@@ -72,7 +72,7 @@ For each declared package, assess:
 
 ### 3a — Vulnerability check
 
-Use `mcp_security_query_osv` if the xanadTools MCP server is connected;
+Use `mcp_security_query_osv` if the security MCP companion is connected;
 otherwise fall back to `pip-audit` (Python), `npm audit` (Node.js), or
 `osv-scanner` (all ecosystems). Query at minimum every package that is:
 - Pinned to a version older than 6 months
@@ -89,7 +89,7 @@ Fix: upgrade to <version>
 
 ### 3b — Health check
 
-Use `mcp_security_query_deps` if the xanadTools MCP server is connected;
+Use `mcp_security_query_deps` if the security MCP companion is connected;
 otherwise fetch package metadata from the ecosystem registry directly
 (`pip index versions`, `npm view`, `cargo search`, etc.) or via `search`.
 Retrieve deps.dev signals for each package:
