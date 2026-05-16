@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:18029b1ebff91f48dcde0f0442090056da59b3ddc2693c043643ab291f066168"
+    "hash": "sha256:b9c148ff879d5ce16f7a4f83353297b39fc5bd09b5375b0298cf8c8f83752e10"
   },
   "timestamps": {
-    "appliedAt": "2026-05-16T19:24:25Z",
-    "updatedAt": "2026-05-16T19:24:25Z"
+    "appliedAt": "2026-05-16T19:42:03Z",
+    "updatedAt": "2026-05-16T19:42:03Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -45,7 +45,16 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [],
+  "files": [
+    {
+      "id": "hook-scripts.memoryMcp.py",
+      "target": ".github/hooks/scripts/memoryMcp.py",
+      "sourceHash": "sha256:513f04fbc6d89102863367e259401cf1b4ea438ad8aad526f8f4d650689d4c48",
+      "installedHash": "sha256:513f04fbc6d89102863367e259401cf1b4ea438ad8aad526f8f4d650689d4c48",
+      "ownershipMode": "local",
+      "status": "applied"
+    }
+  ],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -121,7 +130,23 @@
     ".github/skills/testDoubles/SKILL.md",
     ".github/skills/threatModel/SKILL.md"
   ],
-  "retiredManagedFiles": [],
+  "retiredManagedFiles": [
+    {
+      "id": "migration.cleanup..github/hooks/scripts/__pycache__/sqliteMcp.cpython-314.pyc",
+      "action": "archived",
+      "target": ".github/hooks/scripts/__pycache__/sqliteMcp.cpython-314.pyc",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/__pycache__/sqliteMcp.cpython-314.pyc"
+    },
+    {
+      "id": "migration.cleanup..github/hooks/scripts/__pycache__/webMcp.cpython-314.pyc",
+      "action": "archived",
+      "target": ".github/hooks/scripts/__pycache__/webMcp.cpython-314.pyc",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/__pycache__/webMcp.cpython-314.pyc"
+    }
+  ],
   "consumerResolutions": {},
-  "unknownValues": {}
+  "unknownValues": {},
+  "lastBackup": {
+    "path": ".xanadAssistant/backups/2026-05-16T19-42-03Z"
+  }
 }

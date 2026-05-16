@@ -60,6 +60,42 @@ class MemoryMcpTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "confidence must be between 0.0 and 1.0"):
                     MEMORY_MODULE.memory_set("tester", "repo.confidence", "high", confidence=1.5)
 
+    def test_future_valid_from_hides_fact_from_retrieval(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                MEMORY_MODULE.memory_set(
+                    "tester",
+                    "repo.phase",
+                    "future",
+                    valid_from="2999-01-01T00:00:00Z",
+                )
+
+                get_result = MEMORY_MODULE.memory_get("tester", "repo.phase")
+                list_result = MEMORY_MODULE.memory_list("tester")
+                dump_result = json.loads(MEMORY_MODULE.memory_dump("tester"))
+
+        self.assertIn("No active fact", get_result)
+        self.assertIn("No active facts", list_result)
+        self.assertEqual(dump_result["facts"], [])
+
+    def test_expired_valid_until_hides_fact_from_retrieval(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                MEMORY_MODULE.memory_set(
+                    "tester",
+                    "repo.phase",
+                    "past",
+                    valid_until="2000-01-01T00:00:00Z",
+                )
+
+                get_result = MEMORY_MODULE.memory_get("tester", "repo.phase")
+                list_result = MEMORY_MODULE.memory_list("tester")
+                dump_result = json.loads(MEMORY_MODULE.memory_dump("tester"))
+
+        self.assertIn("No active fact", get_result)
+        self.assertIn("No active facts", list_result)
+        self.assertEqual(dump_result["facts"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

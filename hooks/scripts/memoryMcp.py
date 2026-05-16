@@ -192,6 +192,15 @@ def _prune_extra(agent: str | None, scope: str | None) -> tuple[str, list[Any]]:
     return where, params
 
 
+def _active_fact_where() -> str:
+    return (
+        "  AND invalidated_at IS NULL "
+        "  AND (expires_at IS NULL OR expires_at > strftime('%Y-%m-%dT%H:%M:%SZ','now')) "
+        "  AND (valid_from IS NULL OR valid_from <= strftime('%Y-%m-%dT%H:%M:%SZ','now')) "
+        "  AND (valid_until IS NULL OR valid_until > strftime('%Y-%m-%dT%H:%M:%SZ','now'))"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Advisory memory
 # ---------------------------------------------------------------------------
@@ -256,7 +265,9 @@ def memory_get(
     agent: str, key: str, scope: str = "workspace",
     include_agents: list[str] | None = None,
 ) -> str:
-    """Retrieve one fact; falls back to agent='shared'; cross-agent peek via include_agents.
+    """Retrieve one currently applicable fact.
+
+    Falls back to agent='shared'; cross-agent peek via include_agents.
 
     Args:
         agent: Primary agent identifier.
@@ -281,8 +292,7 @@ def memory_get(
             row = conn.execute(
                 "SELECT * FROM advisory_memory "
                 "WHERE agent=? AND scope=? AND branch=? AND key=? "
-                "  AND invalidated_at IS NULL "
-                "  AND (expires_at IS NULL OR expires_at > strftime('%Y-%m-%dT%H:%M:%SZ','now'))",
+                + _active_fact_where(),
                 (a, scope, branch, key),
             ).fetchone()
             if row:
@@ -297,7 +307,9 @@ def memory_list(
     agent: str, scope: str = "workspace",
     include_shared: bool = True, include_agents: list[str] | None = None,
 ) -> str:
-    """List all active fact keys for agent/scope; cross-agent union via include_agents.
+    """List all currently applicable fact keys for agent/scope.
+
+    Cross-agent union via include_agents.
 
     Args:
         agent: Agent identifier.
@@ -322,8 +334,7 @@ def memory_list(
         rows = conn.execute(
             f"SELECT agent, key, confidence, updated_at FROM advisory_memory "
             f"WHERE agent IN ({ph}) AND scope=? AND branch=? "
-            f"  AND invalidated_at IS NULL "
-            f"  AND (expires_at IS NULL OR expires_at > strftime('%Y-%m-%dT%H:%M:%SZ','now')) "
+            f"{_active_fact_where()} "
             f"ORDER BY agent, key",
             (*agents, scope, branch),
         ).fetchall()
@@ -399,6 +410,7 @@ def memory_dump(agent: str) -> str:
     Order: rules → agent facts (recent <24h first, then older; both sorted by
     confidence descending) → shared facts (same order within each tier).
     Each fact includes updated_at, expires_at, valid_from, valid_until.
+    Facts are returned only when they are currently applicable.
 
     Args:
         agent: Agent identifier.
@@ -420,8 +432,10 @@ def memory_dump(agent: str) -> str:
                    updated_at, expires_at, valid_from, valid_until
             FROM advisory_memory
             WHERE agent IN (?, ?) AND branch IN (?, ?)
-              AND invalidated_at IS NULL
-              AND (expires_at IS NULL OR expires_at > strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+                            AND invalidated_at IS NULL
+                            AND (expires_at IS NULL OR expires_at > strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+                            AND (valid_from IS NULL OR valid_from <= strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+                            AND (valid_until IS NULL OR valid_until > strftime('%Y-%m-%dT%H:%M:%SZ','now'))
             ORDER BY
                 CASE WHEN agent=? THEN 0 ELSE 1 END,
                 CASE WHEN updated_at >= strftime('%Y-%m-%dT%H:%M:%SZ',

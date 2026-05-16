@@ -59,7 +59,16 @@ def check_memory_health(
 
     # 2. "memory" server registered in .vscode/mcp.json
     mcp_path = workspace / _MEMORY_MCP_JSON
-    if mcp_path.exists():
+    if not mcp_path.exists():
+        warnings.append({
+            "code": "memory_mcp_unregistered",
+            "message": (
+                "'.vscode/mcp.json' is missing, so the 'memory' server cannot be registered. "
+                "Run 'repair' or 'update' to restore it."
+            ),
+            "details": {"path": _MEMORY_MCP_JSON, "severity": "warning"},
+        })
+    else:
         try:
             mcp_config = json.loads(mcp_path.read_text(encoding="utf-8"))
             servers = mcp_config.get("servers", mcp_config.get("mcpServers", {}))

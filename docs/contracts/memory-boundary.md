@@ -16,6 +16,8 @@ The lifecycle engine must not depend on optional memory infrastructure to inspec
 
 Durable or advanced memory behavior should live outside the mandatory lifecycle core and should be modeled as an optional capability pack unless later contracts justify a smaller shared primitive.
 
+The current package includes a small built-in memory companion server when MCP is enabled. That built-in server is permitted as a convenience layer, but it remains non-authoritative: lifecycle correctness must not depend on its presence, contents, or initialization state.
+
 ## Separation Requirements
 
 - Core lifecycle state belongs in machine-readable lifecycle artifacts such as policy, manifest, plan files, reports, and lockfile.
@@ -31,5 +33,6 @@ Durable or advanced memory behavior should live outside the mandatory lifecycle 
 
 ## Installation Rule
 
-- A default install must work without the memory pack.
+- A default install must work without any optional memory pack.
+- The built-in memory companion may be installed by default when MCP is enabled, but setup, update, repair, restore, inspect, and check must remain correct if that companion is absent, disabled, empty, expired, or rebuilt.
 - Enabling a memory-related pack may change available features, but not the correctness of setup, update, repair, or restore.
