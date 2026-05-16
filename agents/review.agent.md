@@ -4,7 +4,6 @@ description: "Use when: code review, PR review, diff review, architecture review
 argument-hint: "Describe the review scope: file path, PR, diff, or review focus."
 model:
   - Claude Sonnet 4.6
-  - Claude Opus 4.7
   - GPT-5.4
 tools: [agent, codebase, search, runCommands]
 agents: [Explore, Debugger, Planner, Researcher]

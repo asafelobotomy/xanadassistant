@@ -164,7 +164,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:b5e74a75ff7222a39131e388515382370c3888886cb5d220fb8a6368995c675a"
+      "hash": "sha256:849fe11e29265847fa3b7644f1911bddd95183afa6db00d8f721f3b35074c77b"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -198,7 +198,7 @@
         "{{pack:review-depth}}"
       ],
       "chmod": "none",
-      "hash": "sha256:765dc3fd2f46f302bb1d64337e326e98a5cac28e91b494303f5f2f8eb5cef9b6"
+      "hash": "sha256:07fc8d9f5f08ddda4a57282846769ba6bef13843e365f13b51641544be63c636"
     },
     {
       "id": "agents.triage.agent.md",
