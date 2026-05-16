@@ -268,7 +268,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:2b2230febb73e087fae0aca4f302e45033d22b8e7c1ce2b422284484c828e320"
+      "hash": "sha256:00a70cda64a777927e9f5016274a26299f390f824ece84b5fa7cf33c50090b31"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -618,7 +618,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:de617765f428a99e013771b5c4fc91d5ec8bdc5f0db0f10fae1fa7149cb3c900"
+      "hash": "sha256:8ce3e28974b9b70985c8815ca52c96b799755adfbf6812bc022efa8eba4914c6"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -1620,7 +1620,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:13353c498bb641fcc1aed5313d50c1be607293183a59ba295b45a990a2ac5409"
+      "hash": "sha256:b3e0ebd31e69a1f0b3b5f25d70fbfc89a0ae498ba62fa769fe4ca3299d4335c0"
     },
     {
       "id": "vscode-settings.settings.json",

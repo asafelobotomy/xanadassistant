@@ -2,17 +2,17 @@
   "schemaVersion": "0.1.0",
   "package": {
     "name": "xanadAssistant",
-    "packageRoot": "/home/solon/Documents/git/repos/xanadassistant",
+    "packageRoot": "/mnt/SteamLibrary/git/xanadassistant",
     "source": "github:asafelobotomy/xanadassistant",
     "ref": "main"
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:44f7a0e16556fc3f3fca0fc6117b87d88afd45f29d747177fa05494535c9389f"
+    "hash": "sha256:98eb317734ff289b49a6bb50213e1a84b9d7827e22790f2310d21ffc08583829"
   },
   "timestamps": {
-    "appliedAt": "2026-05-15T20:19:26Z",
-    "updatedAt": "2026-05-15T20:19:26Z"
+    "appliedAt": "2026-05-16T16:06:12Z",
+    "updatedAt": "2026-05-16T16:06:12Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -52,7 +52,6 @@
     ".github/agents/debugger.agent.md",
     ".github/agents/deps.agent.md",
     ".github/agents/docs.agent.md",
-    ".github/agents/evaljudge.agent.md",
     ".github/agents/explore.agent.md",
     ".github/agents/organise.agent.md",
     ".github/agents/planner.agent.md",
@@ -70,8 +69,6 @@
     ".github/hooks/scripts/secureOsv.py",
     ".github/hooks/scripts/shapeupScopeCheck.py",
     ".github/hooks/scripts/tddTestRunner.py",
-    ".github/instructions/scripts.instructions.md",
-    ".github/instructions/tests.instructions.md",
     ".github/prompts/devops-incident.prompt.md",
     ".github/prompts/devops-pipeline.prompt.md",
     ".github/prompts/docs-draft.prompt.md",
@@ -125,14 +122,6 @@
     ".github/skills/threatModel/SKILL.md"
   ],
   "retiredManagedFiles": [],
-  "consumerResolutions": {
-    ".github/skills/commitPreflight/SKILL.md": "keep",
-    ".github/skills/techDebtAudit/SKILL.md": "keep",
-    ".github/instructions/scripts.instructions.md": "keep",
-    ".github/instructions/tests.instructions.md": "keep"
-  },
-  "unknownValues": {},
-  "lastBackup": {
-    "path": ".xanadAssistant/backups/2026-05-15T20-19-26Z"
-  }
+  "consumerResolutions": {},
+  "unknownValues": {}
 }

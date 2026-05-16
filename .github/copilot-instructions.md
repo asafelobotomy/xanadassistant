@@ -11,7 +11,7 @@ I work **in** xanadassistant — implementing features, reviewing code, running 
 
 | Task | Command |
 |------|---------|
-
+| Run tests | `(not detected)` |
 | Inspect Copilot install state | `python3 <xanad-root>/xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` |
 | Check for repair needs | `python3 <xanad-root>/xanadAssistant.py check --workspace . --package-root <xanad-root> --json` |
 
@@ -56,18 +56,22 @@ Route specialist work to the matching agent before acting directly. If a task ha
 ## Coding Conventions
 
 - Language: **(not detected)** · Package manager: **(not detected)**
+- **Testing**: Always — write tests alongside every code change.
 - Read before modifying — never edit a file not opened this session
 - No silent error swallowing
 
-## PDCA
+## PDCA + Test Scope
 
 Plan → Do → Check → Act on every non-trivial change.
 
+- Default: run the narrowest test suite covering changed paths
+- Broaden to the full suite at task completion and before merging
+
 ## Operating Modes
 
-**Implement** (default): plan → implement → verify.
+**Implement** (default): plan → implement → test.
 **Review**: read-only; state findings before proposing fixes.
-**Refactor**: no behaviour changes; verify before and after.
+**Refactor**: no behaviour changes; tests pass before and after.
 **Response style**: Balanced — code with brief explanation. · **Ambiguity**: Ask first — always confirm before acting on ambiguity. · **Tone**: Professional — concise, neutral, precise.
 
 ## Memory

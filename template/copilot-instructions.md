@@ -44,7 +44,9 @@ Route specialist work to the matching agent before acting directly. If a task ha
 
 | Work type | Required agent |
 |---|---|
+| Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `Cleaner` |
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
+| Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, or installing/updating/removing packages | `Deps` |
 | Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
 | Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |
 | Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
@@ -91,8 +93,13 @@ When hooks are enabled, a `memory` MCP server is available. Each specialist agen
 ## Skills and Agents
 
 - `lifecycleAudit` skill — loaded on demand; run before any lifecycle operation
+- `Cleaner` agent — prune stale artefacts, caches, archives, and dead files
+- `Commit` agent — git operations, commit messages, staging, push, pull, PR work
 - `Debugger` agent — diagnose failures and isolate root causes before implementation
+- `Deps` agent — scan dependencies, audit packages, check for vulnerabilities, install/update/remove
+- `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
+- `Explore` agent — broad read-only codebase exploration and architecture lookup
 - `Planner` agent — produce scoped execution plans for multi-step work before implementation
 - `Researcher` agent — gather source-backed external constraints before implementation or review
-- `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
+- `Review` agent — code, architecture, security, and regression-risk review
 - `xanadLifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
