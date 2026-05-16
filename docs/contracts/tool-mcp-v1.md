@@ -94,6 +94,8 @@ All five lifecycle tools share the same input schema and resolution rules.
 2. `.github/xanadAssistant-lock.json` `package.packageRoot`
 3. `source` + `version`/`ref` from tool input or lockfile `package` block
 
+If the caller explicitly passes `packageRoot` and that path is invalid, return `unavailable` instead of falling back to later resolution steps.
+
 For GitHub sources, use the package cache when present; otherwise download the release tarball or perform a shallow clone into the cache. Return `unavailable` when no usable local package root or supported remote source can be resolved safely.
 
 **Shared output fields:** `status` (`ok`, `failed`, `unavailable`), `command`, `exitCode`, `payload` (parsed lifecycle JSON), `summary`.

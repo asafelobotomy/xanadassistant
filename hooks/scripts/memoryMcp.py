@@ -31,6 +31,7 @@ Transport: stdio  |  Run: uvx --from "mcp[cli]" mcp run <this-file>
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import sqlite3
@@ -162,6 +163,20 @@ def _chk_branch(v: str | None) -> None:
         raise ValueError(f"branch must be alphanumeric with ._/-; got {v!r}")
 
 
+def _chk_confidence(v: float) -> float:
+    try:
+        confidence = float(v)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"confidence must be numeric; got {v!r}") from exc
+    if not math.isfinite(confidence) or not 0.0 <= confidence <= 1.0:
+        raise ValueError(f"confidence must be between 0.0 and 1.0; got {v!r}")
+    return confidence
+
+
+def _advisory_branch(scope: str, root: str) -> str:
+    return _current_branch(root) if scope == "branch" else ""
+
+
 def _rows(rows: list[sqlite3.Row]) -> list[dict[str, Any]]:
     return [dict(zip(r.keys(), tuple(r))) for r in rows]
 
@@ -205,7 +220,8 @@ def memory_set(
     _chk_agent(agent)
     _chk_scope(scope)
     root = _workspace_root()
-    branch = _current_branch(root)
+    branch = _advisory_branch(scope, root)
+    confidence = _chk_confidence(confidence)
     expires_at: str | None = None
     if ttl_days is not None:
         expires_at = (
@@ -251,7 +267,7 @@ def memory_get(
     _chk_agent(agent)
     _chk_scope(scope)
     root = _workspace_root()
-    branch = _current_branch(root)
+    branch = _advisory_branch(scope, root)
     agents = [agent]
     for a in (include_agents or []):
         _chk_agent(a)
@@ -292,7 +308,7 @@ def memory_list(
     _chk_agent(agent)
     _chk_scope(scope)
     root = _workspace_root()
-    branch = _current_branch(root)
+    branch = _advisory_branch(scope, root)
     agents = [agent]
     if include_shared and "shared" not in agents:
         agents.append("shared")
@@ -332,7 +348,7 @@ def memory_remove(agent: str, key: str, scope: str = "workspace") -> str:
     """
     _chk_agent(agent)
     _chk_scope(scope)
-    branch = _current_branch(_workspace_root())
+    branch = _advisory_branch(scope, _workspace_root())
     conn = _get_conn()
     try:
         cur = conn.execute(
@@ -357,7 +373,7 @@ def memory_invalidate(agent: str, key: str, scope: str = "workspace") -> str:
     """
     _chk_agent(agent)
     _chk_scope(scope)
-    branch = _current_branch(_workspace_root())
+    branch = _advisory_branch(scope, _workspace_root())
     conn = _get_conn()
     try:
         cur = conn.execute(

@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:a7d64cf8b92701b945cfba1e0c02ba46ed0db500731dee3d23a655fd56a672a1"
+    "hash": "sha256:3e7cd764ae3eaf6f98559372f8129a0caa504b78144543e1f461baa07d022c8e"
   },
   "timestamps": {
-    "appliedAt": "2026-05-16T17:39:28Z",
-    "updatedAt": "2026-05-16T17:39:28Z"
+    "appliedAt": "2026-05-16T18:26:45Z",
+    "updatedAt": "2026-05-16T18:26:45Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -45,16 +45,7 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [
-    {
-      "id": "hook-scripts.xanadWorkspaceMcp.py",
-      "target": ".github/hooks/scripts/xanadWorkspaceMcp.py",
-      "sourceHash": "sha256:2032c5d94201badf77ccd4c7e63bced34f4ad56c4e8ca55717394d7f97bd59a9",
-      "installedHash": "sha256:2032c5d94201badf77ccd4c7e63bced34f4ad56c4e8ca55717394d7f97bd59a9",
-      "ownershipMode": "local",
-      "status": "applied"
-    }
-  ],
+  "files": [],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -130,23 +121,7 @@
     ".github/skills/testDoubles/SKILL.md",
     ".github/skills/threatModel/SKILL.md"
   ],
-  "retiredManagedFiles": [
-    {
-      "id": "migration.cleanup..github/hooks/scripts/__pycache__/webMcp.cpython-314.pyc",
-      "action": "archived",
-      "target": ".github/hooks/scripts/__pycache__/webMcp.cpython-314.pyc",
-      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/__pycache__/webMcp.cpython-314.pyc"
-    },
-    {
-      "id": "migration.cleanup..github/hooks/scripts/__pycache__/xanadWorkspaceMcp.cpython-314.pyc",
-      "action": "archived",
-      "target": ".github/hooks/scripts/__pycache__/xanadWorkspaceMcp.cpython-314.pyc",
-      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/__pycache__/xanadWorkspaceMcp.cpython-314.pyc"
-    }
-  ],
+  "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {},
-  "lastBackup": {
-    "path": ".xanadAssistant/backups/2026-05-16T17-39-28Z"
-  }
+  "unknownValues": {}
 }

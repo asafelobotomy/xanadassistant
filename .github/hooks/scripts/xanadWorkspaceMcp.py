@@ -13,7 +13,18 @@ from _xanad_mcp_source import parse_github_source, resolve_github_release, resol
 from mcp.server.fastmcp import FastMCP
 DEFAULT_CACHE_ROOT = Path.home() / ".xanadAssistant" / "pkg-cache"
 WORKSPACE_ROOT_UNAVAILABLE = "The MCP server is not installed in a workspace root."
-WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
+
+
+def discover_workspace_root(script_path: Path) -> Path:
+    resolved = script_path.resolve()
+    for candidate in resolved.parents:
+        if (candidate / ".github").is_dir():
+            return candidate
+    fallback_index = min(3, len(resolved.parents) - 1)
+    return resolved.parents[fallback_index]
+
+
+WORKSPACE_ROOT = discover_workspace_root(Path(__file__))
 WORKSPACE_INSTRUCTIONS_PATH = WORKSPACE_ROOT / ".github" / "copilot-instructions.md"
 _NEW_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanadAssistant-lock.json"
 _LEGACY_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanad-assistant-lock.json"
@@ -57,6 +68,8 @@ def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: 
         if not isinstance(package_root_arg, str) or not package_root_arg.strip():
             return None, "packageRoot must be a non-empty string when provided."
         package_root = Path(package_root_arg).expanduser().resolve()
+        if not package_root.exists():
+            return None, f"Explicit packageRoot does not exist: {package_root_arg}"
     else:
         package_root_value = package_block.get("packageRoot") if isinstance(package_block, dict) else None
         if isinstance(package_root_value, str) and package_root_value.strip():

@@ -31,6 +31,12 @@ MANAGED_MCP_MODULE = load_mcp_module(
 
 
 class XanadWorkspaceMcpTests(unittest.TestCase):
+    def test_source_and_managed_modules_resolve_repo_workspace_root(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+
+        self.assertEqual(SOURCE_MCP_MODULE.WORKSPACE_ROOT, repo_root)
+        self.assertEqual(MANAGED_MCP_MODULE.WORKSPACE_ROOT, repo_root)
+
     def test_workspace_run_tests_returns_unavailable_for_placeholder_command(self) -> None:
         instructions = """## Key Commands
 
@@ -76,6 +82,26 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
                 self.assertEqual(result["status"], "ok")
                 self.assertEqual(result["installState"], "installed")
                 self.assertEqual(result["drift"], "drift")
+
+    def test_explicit_invalid_package_root_does_not_fall_back(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        missing_root = str(repo_root / "missing-package-root-do-not-create")
+
+        for module in (SOURCE_MCP_MODULE, MANAGED_MCP_MODULE):
+            with self.subTest(module=module.__name__):
+                with mock.patch.object(
+                    module,
+                    "read_lockfile",
+                    return_value={"package": {"source": "github:owner/repo", "ref": "main"}},
+                ), mock.patch.object(
+                    module,
+                    "parse_github_source",
+                    side_effect=AssertionError("should not resolve a fallback source"),
+                ):
+                    package_root, reason = module.resolve_lifecycle_package_root(missing_root)
+
+                self.assertIsNone(package_root)
+                self.assertIn("does not exist", reason)
 
 
 if __name__ == "__main__":
