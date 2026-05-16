@@ -3,8 +3,10 @@
 Use this prompt when the user asks to install or refresh xanadAssistant in the
 active repository.
 
-Target workspace: {{WORKSPACE_NAME}}
+Target workspace: {{WORKSPACE_NAME}} (display name)
 Selected profile: {{XANAD_PROFILE}}
+
+Use `.` as the workspace path in CLI examples below when running from the target repository root.
 
 ## Workflow
 
@@ -28,7 +30,7 @@ package source, fall back to the CLI commands below.
 
 ```
 python3 xanadAssistant.py inspect \
-  --workspace {{WORKSPACE_NAME}} \
+  --workspace . \
   --package-root <path-to-xanadAssistant-checkout> \
   --ui agent --json-lines
 ```
@@ -53,7 +55,7 @@ profile selection, run the interview:
 
 ```
 python3 xanadAssistant.py interview \
-  --workspace {{WORKSPACE_NAME}} \
+  --workspace . \
   --package-root <path-to-xanadAssistant-checkout> \
   --mode setup --json-lines
 ```
@@ -126,7 +128,7 @@ Pass `--resolutions .xanadAssistant/tmp/conflict-resolutions.json` to both
 
 ```
 python3 xanadAssistant.py plan setup \
-  --workspace {{WORKSPACE_NAME}} \
+  --workspace . \
   --package-root <path-to-xanadAssistant-checkout> \
   --answers .xanadAssistant/tmp/setup-answers.json \
   --non-interactive --json-lines
@@ -147,7 +149,7 @@ Once the user approves (or `approvalRequired` is false):
 
 ```
 python3 xanadAssistant.py apply \
-  --workspace {{WORKSPACE_NAME}} \
+  --workspace . \
   --package-root <path-to-xanadAssistant-checkout> \
   --answers .xanadAssistant/tmp/setup-answers.json \
   --non-interactive --ui agent --json-lines

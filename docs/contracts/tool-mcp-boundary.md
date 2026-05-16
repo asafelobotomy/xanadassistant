@@ -31,7 +31,7 @@ Bad `xanadTools` tools simply proxy generic host capabilities such as:
 - generic web fetch
 - generic git command passthrough
 
-Those capabilities should remain native agent tools or domain-specific companion servers (e.g. `xanadWeb`, `xanadGit`) unless a narrower xanadAssistant-owned contract is required. Companion servers (`gitMcp.py`, `webMcp.py`, etc.) are separately scoped and security-reviewed under the tool-mcp-v1 contract — this Core Rule governs the `xanadTools` server only.
+Those capabilities should remain native agent tools or domain-specific companion servers (e.g. the registered `web` and `git` servers) unless a narrower xanadAssistant-owned contract is required. Companion servers (`gitMcp.py`, `webMcp.py`, etc.) are separately scoped and security-reviewed under the tool-mcp-v1 contract — this Core Rule governs the `xanadTools` server only.
 
 ## Scope Rule
 
@@ -45,7 +45,7 @@ Recommended first domains:
 
 ## V1 Server Shape
 
-The initial shape is one workspace-local stdio MCP server (`xanadTools`), managed by the lifecycle engine and referenced from `.vscode/mcp.json`. Companion servers (`xanadGit`, `xanadWeb`, `xanadTime`, `xanadSecurity`, `xanadSQLite`, `xanadGitHub`, `xanadSequentialThinking`, `xanadMemory`) are shipped alongside it and registered in the same MCP config.
+The initial shape is one workspace-local stdio MCP server (`xanadTools`), managed by the lifecycle engine and referenced from `.vscode/mcp.json`. Companion servers are shipped alongside it and registered in the same MCP config under the IDs `git`, `web`, `time`, `memory`, `security`, `github`, `sqlite`, and `sequential-thinking`. Internal FastMCP server names may differ from those registered config IDs.
 
 The complete `xanadTools` tool set is (see `tool-mcp-v1.md` for V1 vs Extended delivery history):
 

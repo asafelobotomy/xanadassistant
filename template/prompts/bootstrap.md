@@ -118,5 +118,5 @@ rm xanadBootstrap.py
 rm -rf .xanadAssistant/tmp
 ```
 
-The install is complete. Use `#xanadLifecycle` for all future lifecycle
+The install is complete. Use `@xanadLifecycle` for all future lifecycle
 operations (update, repair, factory-restore).

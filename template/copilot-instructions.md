@@ -86,7 +86,7 @@ When hooks are enabled, a `memory` MCP server is available. Each specialist agen
 
 1. Call `memory_dump(agent="<agent-name>")` at the start of each task to load rules and cached facts.
 2. Follow all returned **rules** unconditionally for the rest of the task.
-3. For any **fact** you intend to act on, call `mcp_time_elapsed(start=fact.updated_at)` to verify its age.
+3. For any **fact** you intend to act on, call `elapsed(start=fact.updated_at)` to verify its age.
 4. When you discover something durable about this workspace, call `memory_set(agent="<agent-name>", key=..., value=...)` before finishing.
 5. If the `memory` server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 

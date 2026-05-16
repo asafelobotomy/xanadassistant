@@ -12,10 +12,15 @@ skill, workflow, instruction, and contract files.
 |---|---|---|---|
 | A1 | Attention-budget gate adopted | `scripts/check_attention_budget.py`, `.github/workflows/ci.yml` | Enforced as a repo-local budget check rather than a one-off shell snippet. |
 | A6 | Memory MCP server adopted | `hooks/scripts/memoryMcp.py`, `.github/copilot-instructions.md`, `template/copilot-instructions.md` | Persistent agent memory via SQLite MCP server; replaces the `docs/memory.md` file-based approach. |
-| A8 | `commitPreflight` adopted as repo-local maintainer skill | `.github/skills/commitPreflight/SKILL.md` | Adapted for repo-specific commands and generated-artifact checks; not consumer-delivered. |
-| A9 | `techDebtAudit` adopted as repo-local maintainer skill | `.github/skills/techDebtAudit/SKILL.md` | Narrowed to repo-native signals such as LOC, regression, freshness, and debt markers. |
 | A10 | `Cleaner` adopted as consumer-delivered agent | `agents/cleaner.agent.md` | Adapted: removed mcp-servers/handoffs/Codex models; Audit → Review; Code dropped; diary refs removed. |
 | A11 | `Organise` adopted as consumer-delivered subagent | `agents/organise.agent.md` | Adapted: same model/key cleanup; user-invocable remains false; Code dropped. |
+
+## Retired
+
+| ID | Decision | Canonical references | Notes |
+|---|---|---|---|
+| A8 | `commitPreflight` retired | none — removed from repo-local maintainer surfaces | Previously adopted as a maintainer-only skill, then removed during repo cleanup. |
+| A9 | `techDebtAudit` retired | none — removed from repo-local maintainer surfaces | Previously adopted as a maintainer-only skill, then removed during repo cleanup. |
 
 ## Deferred
 

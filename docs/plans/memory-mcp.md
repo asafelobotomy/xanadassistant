@@ -143,7 +143,7 @@ Instead, time awareness is split across two layers:
 
 ### Agent side — time MCP for reasoning
 - `memory_dump` returns `updated_at` in every fact object so agents can reason about age.
-- Agent instructions (Phase 3) tell agents: after calling `memory_dump`, call `mcp_time_elapsed(start=fact.updated_at)` for any fact they intend to act on.
+- Agent instructions (Phase 3) tell agents: after calling `memory_dump`, call `elapsed(start=fact.updated_at)` for any fact they intend to act on.
 - Facts older than **7 days** should be treated as potentially stale and re-verified before use.
 - Facts with `expires_at` set should be checked against `current_time()` — if expired but not yet pruned, treat as invalid.
 
