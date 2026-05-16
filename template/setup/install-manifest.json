@@ -206,7 +206,7 @@
         "{{pack:review-depth}}"
       ],
       "chmod": "none",
-      "hash": "sha256:bf55d2ed6af5bf660983046d7e5c56e59c5afa77b66acc88485ae19f9aaec455"
+      "hash": "sha256:fb030a71ed32f5b1b654ed69659cae0890f95cd22da6b660af830e37f5695f22"
     },
     {
       "id": "agents.triage.agent.md",

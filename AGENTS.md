@@ -11,7 +11,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `Commit` | yes | Git status, staging, commit messages, commits, pushes, pulls, rebases, branches, tags, releases, and PR work |
 | `Deps` | yes | Scanning workspace dependencies, auditing installed packages, checking for vulnerabilities, suggesting updates or alternatives, and installing/updating/repairing/removing packages |
 | `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, and architecture lookup |
-| `Review` | yes | Code review, architecture review, security review, maintainability review, and regression-risk review |
+| `Review` | yes | Code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, and test coverage review |
 | `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, and `factory-restore` for xanadAssistant-managed surfaces |
 | `Triage` | no | First-pass complexity classification — determines whether a task needs a direct answer, targeted edit, single agent, or multi-agent plan |
 | `Debugger` | no | Root-cause diagnosis, failing tests, regression triage, broken commands, unclear behavior reproduction, and minimal fix-path isolation |
@@ -58,6 +58,7 @@ Use these patterns when a task crosses specialist boundaries but should still st
 | `Cleaner` | `Review` | Cleanup touches security-sensitive files, managed surfaces, or policy-owned content |
 | `Cleaner` | `Organise` | Cleanup turns into file moves, path repair, or repository reshaping |
 | `Cleaner` | `Docs` | Cleanup changes archive conventions, maintenance guidance, or user-facing references |
+| `Review` | `Explore` | Inventory of unfamiliar files or symbols is needed before the review can proceed |
 | `Review` | `Debugger` | A finding depends on reproducing a failure or isolating a concrete regression before the review is credible |
 | `Review` | `Planner` | Findings imply a phased remediation path rather than a single local fix |
 | `Review` | `Researcher` | The review depends on current upstream docs, release behavior, or external contract constraints |
