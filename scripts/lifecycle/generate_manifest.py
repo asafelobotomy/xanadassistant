@@ -125,8 +125,8 @@ def validate_unmanaged_sources(package_root: Path, policy: dict) -> None:
 def _derive_pack_dir_surfaces(package_root: Path, pack_id: str) -> set[str]:
     pack_root = package_root / "packs" / pack_id
     surfaces: set[str] = set()
-    for surface_kind in ("skills", "prompts", "hooks"):
-        if (pack_root / surface_kind).is_dir():
+    for directory_name, surface_kind in (("skills", "skills"), ("prompts", "prompts"), ("mcp", "hooks")):
+        if (pack_root / directory_name).is_dir():
             surfaces.add(f"{pack_id}-{surface_kind}")
     return surfaces
 

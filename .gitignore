@@ -1,6 +1,10 @@
 __pycache__/
+.pytest_cache/
 sandbox/
 results/
 *.py[cod]
+.coverage
+.coverage.*
+htmlcov/
 .github/xanadAssistant/memory/
 .xanadAssistant/

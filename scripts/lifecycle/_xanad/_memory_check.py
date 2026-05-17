@@ -5,7 +5,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-_MEMORY_HOOK = ".github/hooks/scripts/memoryMcp.py"
+_MEMORY_HOOK = ".github/mcp/scripts/memoryMcp.py"
 _MEMORY_MCP_JSON = ".vscode/mcp.json"
 _MEMORY_DB = ".github/xanadAssistant/memory/memory.db"
 _REQUIRED_TABLES = frozenset({"advisory_memory", "rules", "agent_diary"})

@@ -60,7 +60,8 @@ def migrate_lockfile_shape(data: dict) -> dict:
         migrated["selectedPacks"] = []
     if not isinstance(migrated.get("files"), list):
         migrated["files"] = []
-    migrated.setdefault("unknownValues", {})
+    if not isinstance(migrated.get("unknownValues"), dict):
+        migrated["unknownValues"] = {}
     if isinstance(existing_package_name, str) and existing_package_name != CURRENT_PACKAGE_NAME:
         migrated["unknownValues"].setdefault("migratedFromPackageName", existing_package_name)
     migrated.setdefault("skippedManagedFiles", [])

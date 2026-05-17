@@ -8,7 +8,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/xanadWorkspaceMcp.py"
+        "${workspaceFolder}/.github/mcp/scripts/xanadWorkspaceMcp.py"
       ],
       "env": {
         "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
@@ -27,7 +27,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/gitMcp.py"
+        "${workspaceFolder}/.github/mcp/scripts/gitMcp.py"
       ]
     },
     "web": {
@@ -48,7 +48,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/webMcp.py"
+        "${workspaceFolder}/.github/mcp/scripts/webMcp.py"
       ]
     },
     "time": {
@@ -63,7 +63,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/timeMcp.py"
+        "${workspaceFolder}/.github/mcp/scripts/timeMcp.py"
       ]
     },
     "security": {
@@ -78,7 +78,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/securityMcp.py"
+        "${workspaceFolder}/.github/mcp/scripts/securityMcp.py"
       ]
     },
     "github": {
@@ -94,7 +94,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/githubMcp.py"
+        "${workspaceFolder}/.github/mcp/scripts/githubMcp.py"
       ],
       "disabled": true
     },
@@ -110,7 +110,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/sqliteMcp.py"
+        "${workspaceFolder}/.github/mcp/scripts/sqliteMcp.py"
       ],
       "disabled": true
     },
@@ -126,7 +126,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/mcpSequentialThinkingServer.py"
+        "${workspaceFolder}/.github/mcp/scripts/sequentialThinkingMcp.py"
       ]
     },
     "memory": {
@@ -142,7 +142,7 @@
         "mcp[cli]",
         "mcp",
         "run",
-        "${workspaceFolder}/.github/hooks/scripts/memoryMcp.py"
+        "${workspaceFolder}/.github/mcp/scripts/memoryMcp.py"
       ]
     }
   }

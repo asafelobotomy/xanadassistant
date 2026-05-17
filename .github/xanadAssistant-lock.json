@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:152b4a4e8a26e8ce28d08e3d85b50c26472575187469a2014e70c5f06f62b4a4"
+    "hash": "sha256:dbb7e0a29368ded827173864b128e2070469bea3573457145cc6dbfbb5962d37"
   },
   "timestamps": {
-    "appliedAt": "2026-05-16T22:14:57Z",
-    "updatedAt": "2026-05-16T22:14:57Z"
+    "appliedAt": "2026-05-17T01:34:28Z",
+    "updatedAt": "2026-05-17T01:34:28Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -45,7 +45,112 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [],
+  "files": [
+    {
+      "id": "core-instructions.copilot-instructions.md",
+      "target": ".github/copilot-instructions.md",
+      "sourceHash": "sha256:8e027962684e198e7b07fa5a7227067ae94381b7072d9c540831b433482f8c07",
+      "installedHash": "sha256:7a6ef2ba53f783a7bdb2fdc3979a88ddbee7fd5de8aa98590210445c8c6e4c49",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts._xanad_mcp_source.py",
+      "target": ".github/mcp/scripts/_xanad_mcp_source.py",
+      "sourceHash": "sha256:2b51ff482fb5d677c52b1106ae3d3d2bcd01ab2fb03492ecf04c0242b2cc687d",
+      "installedHash": "sha256:2b51ff482fb5d677c52b1106ae3d3d2bcd01ab2fb03492ecf04c0242b2cc687d",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.gitMcp.py",
+      "target": ".github/mcp/scripts/gitMcp.py",
+      "sourceHash": "sha256:56bf33638ecc5f6b4934f59356817804d5011eb8ba605d2597bc21df54cb717f",
+      "installedHash": "sha256:56bf33638ecc5f6b4934f59356817804d5011eb8ba605d2597bc21df54cb717f",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.githubMcp.py",
+      "target": ".github/mcp/scripts/githubMcp.py",
+      "sourceHash": "sha256:92ab6859508af79020293f58c95277500729d5d134f3b381b05345a0dabe48cf",
+      "installedHash": "sha256:92ab6859508af79020293f58c95277500729d5d134f3b381b05345a0dabe48cf",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.memoryMcp.py",
+      "target": ".github/mcp/scripts/memoryMcp.py",
+      "sourceHash": "sha256:05c9e6424d6f2fb6afc4939618bd9c890fc90ca0bdc544281d56bd1f6f4107ff",
+      "installedHash": "sha256:05c9e6424d6f2fb6afc4939618bd9c890fc90ca0bdc544281d56bd1f6f4107ff",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.securityMcp.py",
+      "target": ".github/mcp/scripts/securityMcp.py",
+      "sourceHash": "sha256:997282954de3cdcdee5fcefcbcd1dbfe7dcfafb93a4709cf4f99a5a0f8f4318d",
+      "installedHash": "sha256:997282954de3cdcdee5fcefcbcd1dbfe7dcfafb93a4709cf4f99a5a0f8f4318d",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.sequentialThinkingMcp.py",
+      "target": ".github/mcp/scripts/sequentialThinkingMcp.py",
+      "sourceHash": "sha256:c86580e46c4d0a2867c5870f8e67bac978949bb388a30107c3e5a9ad9f883748",
+      "installedHash": "sha256:c86580e46c4d0a2867c5870f8e67bac978949bb388a30107c3e5a9ad9f883748",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.sqliteMcp.py",
+      "target": ".github/mcp/scripts/sqliteMcp.py",
+      "sourceHash": "sha256:07a87f1a084258e3770e8feb94078d7ae66d08fa3773fd8d3805f0c2127dea36",
+      "installedHash": "sha256:07a87f1a084258e3770e8feb94078d7ae66d08fa3773fd8d3805f0c2127dea36",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.timeMcp.py",
+      "target": ".github/mcp/scripts/timeMcp.py",
+      "sourceHash": "sha256:c0d97b640fdfc2db84f5048c49d0b6c9090d6e9848abdbea9fa5dc1f806d7de5",
+      "installedHash": "sha256:c0d97b640fdfc2db84f5048c49d0b6c9090d6e9848abdbea9fa5dc1f806d7de5",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.webMcp.py",
+      "target": ".github/mcp/scripts/webMcp.py",
+      "sourceHash": "sha256:5087f42fe78012aeeeb7a8ba9dbbade5469ef6220fb8b57292a5625d0890a32b",
+      "installedHash": "sha256:5087f42fe78012aeeeb7a8ba9dbbade5469ef6220fb8b57292a5625d0890a32b",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "hook-scripts.xanadWorkspaceMcp.py",
+      "target": ".github/mcp/scripts/xanadWorkspaceMcp.py",
+      "sourceHash": "sha256:4d30fb1053fcd46429d1a1a19a5fe96d2b2f172d9692d05654102a6cd82da1bb",
+      "installedHash": "sha256:4d30fb1053fcd46429d1a1a19a5fe96d2b2f172d9692d05654102a6cd82da1bb",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "prompts.setup.md",
+      "target": ".github/prompts/setup.md",
+      "sourceHash": "sha256:2d4193fd4c0a618ac01a36e1be0d3de727e38077a743d71c6756039421764115",
+      "installedHash": "sha256:f8c229e6f093f1d47727f6aa45d4b9a658b422b4473ed21c3aaac9e2f282eff2",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "mcp-config.mcp.json",
+      "target": ".vscode/mcp.json",
+      "sourceHash": "sha256:c7d06824e1934a3a239218004f094d165e0b0c67b706cc8f864e41b191f40aea",
+      "installedHash": "sha256:10381ef420f854840249f8899e23b77145ab33134a47142e6922dd2ce6adced1",
+      "ownershipMode": "local",
+      "status": "applied"
+    }
+  ],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -59,16 +164,16 @@
     ".github/agents/review.agent.md",
     ".github/agents/triage.agent.md",
     ".github/agents/xanadLifecycle.agent.md",
-    ".github/hooks/scripts/devopsEnvCheck.py",
-    ".github/hooks/scripts/docsLinkCheck.py",
-    ".github/hooks/scripts/leanContextBudget.py",
-    ".github/hooks/scripts/leanTestReporter.py",
-    ".github/hooks/scripts/mlopsModelCheck.py",
-    ".github/hooks/scripts/ossGitLog.py",
-    ".github/hooks/scripts/ossLicenseCheck.py",
-    ".github/hooks/scripts/secureOsv.py",
-    ".github/hooks/scripts/shapeupScopeCheck.py",
-    ".github/hooks/scripts/tddTestRunner.py",
+    ".github/mcp/scripts/devopsEnvCheck.py",
+    ".github/mcp/scripts/docsLinkCheck.py",
+    ".github/mcp/scripts/leanContextBudget.py",
+    ".github/mcp/scripts/leanTestReporter.py",
+    ".github/mcp/scripts/mlopsModelCheck.py",
+    ".github/mcp/scripts/ossGitLog.py",
+    ".github/mcp/scripts/ossLicenseCheck.py",
+    ".github/mcp/scripts/secureOsv.py",
+    ".github/mcp/scripts/shapeupScopeCheck.py",
+    ".github/mcp/scripts/tddTestRunner.py",
     ".github/prompts/devops-incident.prompt.md",
     ".github/prompts/devops-pipeline.prompt.md",
     ".github/prompts/docs-draft.prompt.md",
@@ -121,7 +226,71 @@
     ".github/skills/testDoubles/SKILL.md",
     ".github/skills/threatModel/SKILL.md"
   ],
-  "retiredManagedFiles": [],
+  "retiredManagedFiles": [
+    {
+      "id": "retired.hook-scripts.consumer-target._xanad_mcp_source.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/_xanad_mcp_source.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/_xanad_mcp_source.py"
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.gitMcp.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/gitMcp.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/gitMcp.py"
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.githubMcp.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/githubMcp.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/githubMcp.py"
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.memoryMcp.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/memoryMcp.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/memoryMcp.py"
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.securityMcp.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/securityMcp.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/securityMcp.py"
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.sequentialThinkingMcp.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/sequentialThinkingMcp.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/sequentialThinkingMcp.py"
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.sqliteMcp.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/sqliteMcp.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/sqliteMcp.py"
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.timeMcp.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/timeMcp.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/timeMcp.py"
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.webMcp.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/webMcp.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/webMcp.py"
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.xanadWorkspaceMcp.py",
+      "action": "archived",
+      "target": ".github/hooks/scripts/xanadWorkspaceMcp.py",
+      "archivePath": ".xanadAssistant/archive/.github/hooks/scripts/xanadWorkspaceMcp.py"
+    }
+  ],
   "consumerResolutions": {},
-  "unknownValues": {}
+  "unknownValues": {},
+  "lastBackup": {
+    "path": ".xanadAssistant/backups/2026-05-17T01-34-28Z"
+  }
 }

@@ -13,6 +13,7 @@ _SUCCESSOR_MIGRATION_ROOTS = (
     ".github/skills",
     ".github/prompts",
     ".github/instructions",
+    ".github/mcp",
     ".github/hooks",
     ".copilot/workspace",
 )

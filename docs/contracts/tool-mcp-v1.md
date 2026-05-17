@@ -16,7 +16,7 @@ Ship one small first-party MCP server that is useful in consumer workspaces with
 
 ## Controlling Constraint
 
-The managed MCP server script is installed into the consumer workspace as a local file under `.github/hooks/scripts/`.
+The managed MCP server script is installed into the consumer workspace as a local file under `.github/mcp/scripts/`.
 
 That script must not assume that:
 
@@ -158,7 +158,7 @@ The following tools from the original deferred list remain unimplemented:
 
 ## xanadMemory Companion Server
 
-`memoryMcp.py` (`xanadMemory`) is a managed companion server providing persistent, scoped, SQLite-backed agent memory — advisory facts, authoritative rules, and FTS-indexed diary. It ships as `.github/hooks/scripts/memoryMcp.py` and is registered as the `memory` server in `.vscode/mcp.json`.
+`memoryMcp.py` (`xanadMemory`) is a managed companion server providing persistent, scoped, SQLite-backed agent memory — advisory facts, authoritative rules, and FTS-indexed diary. It ships as `.github/mcp/scripts/memoryMcp.py` and is registered as the `memory` server in `.vscode/mcp.json`.
 
 Transport: stdio via `uvx --from "mcp[cli]" mcp run`. DB: `WORKSPACE_ROOT/.github/xanadAssistant/memory/memory.db`. Security assumptions follow the `tool-mcp-boundary.md` companion server contract.
 

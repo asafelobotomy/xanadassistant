@@ -47,7 +47,7 @@
     "devops-pack": "packs/devops",
     "mlops-pack": "packs/mlops",
     "shapeup-pack": "packs/shapeup",
-    "hooks": "hooks"
+    "mcp": "mcp"
   },
   "surfaceSources": {
     "core-instructions": {
@@ -81,7 +81,7 @@
       "layer": "pack"
     },
     "hook-scripts": {
-      "sourceRoot": "hooks",
+      "sourceRoot": "mcp",
       "path": "scripts",
       "kind": "directory",
       "layer": "core"
@@ -100,7 +100,7 @@
     },
     "lean-hooks": {
       "sourceRoot": "lean-pack",
-      "path": "hooks",
+      "path": "mcp",
       "kind": "directory",
       "layer": "pack"
     },
@@ -118,7 +118,7 @@
     },
     "secure-hooks": {
       "sourceRoot": "secure-pack",
-      "path": "hooks",
+      "path": "mcp",
       "kind": "directory",
       "layer": "pack"
     },
@@ -136,7 +136,7 @@
     },
     "tdd-hooks": {
       "sourceRoot": "tdd-pack",
-      "path": "hooks",
+      "path": "mcp",
       "kind": "directory",
       "layer": "pack"
     },
@@ -154,7 +154,7 @@
     },
     "oss-hooks": {
       "sourceRoot": "oss-pack",
-      "path": "hooks",
+      "path": "mcp",
       "kind": "directory",
       "layer": "pack"
     },
@@ -172,7 +172,7 @@
     },
     "docs-hooks": {
       "sourceRoot": "docs-pack",
-      "path": "hooks",
+      "path": "mcp",
       "kind": "directory",
       "layer": "pack"
     },
@@ -190,7 +190,7 @@
     },
     "devops-hooks": {
       "sourceRoot": "devops-pack",
-      "path": "hooks",
+      "path": "mcp",
       "kind": "directory",
       "layer": "pack"
     },
@@ -208,7 +208,7 @@
     },
     "mlops-hooks": {
       "sourceRoot": "mlops-pack",
-      "path": "hooks",
+      "path": "mcp",
       "kind": "directory",
       "layer": "pack"
     },
@@ -226,7 +226,7 @@
     },
     "shapeup-hooks": {
       "sourceRoot": "shapeup-pack",
-      "path": "hooks",
+      "path": "mcp",
       "kind": "directory",
       "layer": "pack"
     },
@@ -274,7 +274,7 @@
       "surface": "prompts"
     },
     "lean-hooks": {
-      "targetRoot": ".github/hooks/scripts",
+      "targetRoot": ".github/mcp/scripts",
       "surface": "hooks"
     },
     "secure-skills": {
@@ -286,7 +286,7 @@
       "surface": "prompts"
     },
     "secure-hooks": {
-      "targetRoot": ".github/hooks/scripts",
+      "targetRoot": ".github/mcp/scripts",
       "surface": "hooks"
     },
     "tdd-skills": {
@@ -298,7 +298,7 @@
       "surface": "prompts"
     },
     "tdd-hooks": {
-      "targetRoot": ".github/hooks/scripts",
+      "targetRoot": ".github/mcp/scripts",
       "surface": "hooks"
     },
     "oss-skills": {
@@ -310,7 +310,7 @@
       "surface": "prompts"
     },
     "oss-hooks": {
-      "targetRoot": ".github/hooks/scripts",
+      "targetRoot": ".github/mcp/scripts",
       "surface": "hooks"
     },
     "docs-skills": {
@@ -322,7 +322,7 @@
       "surface": "prompts"
     },
     "docs-hooks": {
-      "targetRoot": ".github/hooks/scripts",
+      "targetRoot": ".github/mcp/scripts",
       "surface": "hooks"
     },
     "devops-skills": {
@@ -334,7 +334,7 @@
       "surface": "prompts"
     },
     "devops-hooks": {
-      "targetRoot": ".github/hooks/scripts",
+      "targetRoot": ".github/mcp/scripts",
       "surface": "hooks"
     },
     "mlops-skills": {
@@ -346,7 +346,7 @@
       "surface": "prompts"
     },
     "mlops-hooks": {
-      "targetRoot": ".github/hooks/scripts",
+      "targetRoot": ".github/mcp/scripts",
       "surface": "hooks"
     },
     "shapeup-skills": {
@@ -358,11 +358,11 @@
       "surface": "prompts"
     },
     "shapeup-hooks": {
-      "targetRoot": ".github/hooks/scripts",
+      "targetRoot": ".github/mcp/scripts",
       "surface": "hooks"
     },
     "hook-scripts": {
-      "targetRoot": ".github/hooks/scripts",
+      "targetRoot": ".github/mcp/scripts",
       "surface": "hooks"
     },
     "mcp-config": {
@@ -676,56 +676,203 @@
         "target": ".github/hooks/scripts/xanad-workspace-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/hooks/scripts/xanadWorkspaceMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/xanadWorkspaceMcp.py — standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.git-mcp.py",
         "target": ".github/hooks/scripts/git-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/hooks/scripts/gitMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/gitMcp.py — standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.github-mcp.py",
         "target": ".github/hooks/scripts/github-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/hooks/scripts/githubMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/githubMcp.py — standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.mcp-sequential-thinking-server.py",
         "target": ".github/hooks/scripts/mcp-sequential-thinking-server.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/hooks/scripts/mcpSequentialThinkingServer.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/mcpSequentialThinkingServer.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.mcpSequentialThinkingServer.py",
+        "target": ".github/hooks/scripts/mcpSequentialThinkingServer.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.1",
+        "notes": "Renamed to .github/mcp/scripts/sequentialThinkingMcp.py — standardized to the repo's Mcp suffix naming."
       },
       {
         "id": "retired.hook-scripts.security-mcp.py",
         "target": ".github/hooks/scripts/security-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/hooks/scripts/securityMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/securityMcp.py — standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.sqlite-mcp.py",
         "target": ".github/hooks/scripts/sqlite-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/hooks/scripts/sqliteMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/sqliteMcp.py — standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.time-mcp.py",
         "target": ".github/hooks/scripts/time-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/hooks/scripts/timeMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/timeMcp.py — standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.web-mcp.py",
         "target": ".github/hooks/scripts/web-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/hooks/scripts/webMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/webMcp.py — standardized to camelCase naming."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target._xanad_mcp_source.py",
+        "target": ".github/hooks/scripts/_xanad_mcp_source.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/_xanad_mcp_source.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.devopsEnvCheck.py",
+        "target": ".github/hooks/scripts/devopsEnvCheck.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/devopsEnvCheck.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.docsLinkCheck.py",
+        "target": ".github/hooks/scripts/docsLinkCheck.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/docsLinkCheck.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.gitMcp.py",
+        "target": ".github/hooks/scripts/gitMcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/gitMcp.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.githubMcp.py",
+        "target": ".github/hooks/scripts/githubMcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/githubMcp.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.leanContextBudget.py",
+        "target": ".github/hooks/scripts/leanContextBudget.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/leanContextBudget.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.leanTestReporter.py",
+        "target": ".github/hooks/scripts/leanTestReporter.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/leanTestReporter.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.memoryMcp.py",
+        "target": ".github/hooks/scripts/memoryMcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/memoryMcp.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.mlopsModelCheck.py",
+        "target": ".github/hooks/scripts/mlopsModelCheck.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/mlopsModelCheck.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.ossGitLog.py",
+        "target": ".github/hooks/scripts/ossGitLog.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/ossGitLog.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.ossLicenseCheck.py",
+        "target": ".github/hooks/scripts/ossLicenseCheck.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/ossLicenseCheck.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.secureOsv.py",
+        "target": ".github/hooks/scripts/secureOsv.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/secureOsv.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.securityMcp.py",
+        "target": ".github/hooks/scripts/securityMcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/securityMcp.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.sequentialThinkingMcp.py",
+        "target": ".github/hooks/scripts/sequentialThinkingMcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/sequentialThinkingMcp.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.shapeupScopeCheck.py",
+        "target": ".github/hooks/scripts/shapeupScopeCheck.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/shapeupScopeCheck.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.sqliteMcp.py",
+        "target": ".github/hooks/scripts/sqliteMcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/sqliteMcp.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.tddTestRunner.py",
+        "target": ".github/hooks/scripts/tddTestRunner.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/tddTestRunner.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.timeMcp.py",
+        "target": ".github/hooks/scripts/timeMcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/timeMcp.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.webMcp.py",
+        "target": ".github/hooks/scripts/webMcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/webMcp.py during consumer target normalization."
+      },
+      {
+        "id": "retired.hook-scripts.consumer-target.xanadWorkspaceMcp.py",
+        "target": ".github/hooks/scripts/xanadWorkspaceMcp.py",
+        "defaultAction": "archive-retired",
+        "retiredIn": "0.1.2",
+        "notes": "Moved to .github/mcp/scripts/xanadWorkspaceMcp.py during consumer target normalization."
       },
       {
         "id": "retired.skills.lean-output.SKILL.md",

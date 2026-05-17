@@ -31,22 +31,22 @@ WARN_LIMIT_OVERRIDES = {
     # Agent definitions are long-form instruction documents; they grow with features.
     "agents/xanadLifecycle.agent.md": 320,
 
-    # ── Consumer hook scripts (single-file delivery) ──────────────────────────────
-    # Consumer workspaces receive these hooks as single files, so they need a little
+    # ── Consumer MCP scripts (single-file delivery) ───────────────────────────────
+    # Consumer workspaces receive these MCP servers as single files, so they need a little
     # more room than the default warning budget while still honoring the hard limit.
-    "hooks/scripts/memoryMcp.py": 600,
-    "hooks/scripts/xanadWorkspaceMcp.py": 300,
-    "hooks/scripts/gitMcp.py": 380,
-    "hooks/scripts/githubMcp.py": 450,  # matches hard limit override
+    "mcp/scripts/memoryMcp.py": 600,
+    "mcp/scripts/xanadWorkspaceMcp.py": 300,
+    "mcp/scripts/gitMcp.py": 380,
+    "mcp/scripts/githubMcp.py": 450,  # matches hard limit override
     # ── Managed copies (.github/) — mirrors of the above; same ceilings apply ─────
-    ".github/hooks/scripts/memoryMcp.py": 600,
-    ".github/hooks/scripts/xanadWorkspaceMcp.py": 300,
-    ".github/hooks/scripts/gitMcp.py": 380,
-    ".github/hooks/scripts/githubMcp.py": 450,  # matches hard limit override
+    ".github/mcp/scripts/memoryMcp.py": 600,
+    ".github/mcp/scripts/xanadWorkspaceMcp.py": 300,
+    ".github/mcp/scripts/gitMcp.py": 380,
+    ".github/mcp/scripts/githubMcp.py": 450,  # matches hard limit override
 
-    # ── Pack hooks (consumer-facing single-file scripts) ──────────────────────────
-    "packs/secure/hooks/secureOsv.py": 300,
-    "packs/shapeup/hooks/shapeupScopeCheck.py": 300,
+    # ── Pack MCP scripts (consumer-facing single-file scripts) ────────────────────
+    "packs/secure/mcp/secureOsv.py": 300,
+    "packs/shapeup/mcp/shapeupScopeCheck.py": 300,
 
     # ── Lifecycle engine submodules ───────────────────────────────────────────────
     # Each submodule is intentionally scoped; these grew slightly beyond 250 while
@@ -62,15 +62,15 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Splitting the MCP server would require import machinery unavailable there.
     # The current audited implementation plus validation guards fit within a small
     # extension of the prior ceiling without changing the single-file delivery model.
-    "hooks/scripts/memoryMcp.py": 730,
+    "mcp/scripts/memoryMcp.py": 730,
     # githubMcp.py covers a full GitHub REST API surface (auth, repos, issues, PRs,
     # releases, Actions) as a single file delivered verbatim to consumer workspaces.
     # Splitting the MCP server would require import machinery unavailable in those
     # workspaces, so a higher hard ceiling is appropriate here.
-    "hooks/scripts/githubMcp.py": 450,
+    "mcp/scripts/githubMcp.py": 450,
     # Managed copies (.github/) — mirrors of the above; same ceilings apply.
-    ".github/hooks/scripts/memoryMcp.py": 730,
-    ".github/hooks/scripts/githubMcp.py": 450,
+    ".github/mcp/scripts/memoryMcp.py": 730,
+    ".github/mcp/scripts/githubMcp.py": 450,
 }
 
 

@@ -14,7 +14,7 @@
     "devops-pack": "packs/devops",
     "mlops-pack": "packs/mlops",
     "shapeup-pack": "packs/shapeup",
-    "hooks": "hooks"
+    "mcp": "mcp"
   },
   "generationSettings": {
     "manifestSchemaVersion": "0.1.0",
@@ -254,357 +254,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:c060e2735985a3764b426d8a453cc0972067e74caedf1540866ac30b686772b0"
-    },
-    {
-      "id": "hook-scripts._xanad_mcp_source.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/_xanad_mcp_source.py",
-      "target": ".github/hooks/scripts/_xanad_mcp_source.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:15a29220113857c93e3f54dbd12e4bf02ed39c644bcd3f15a6e0b4ce5074b879"
-    },
-    {
-      "id": "devops-hooks.devopsEnvCheck.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/devops/hooks/devopsEnvCheck.py",
-      "target": ".github/hooks/scripts/devopsEnvCheck.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=devops",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:5132c42269a71ea90ede2e692582b346c5d90b30d0fdda48c5e70f3760187aad"
-    },
-    {
-      "id": "docs-hooks.docsLinkCheck.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/docs/hooks/docsLinkCheck.py",
-      "target": ".github/hooks/scripts/docsLinkCheck.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=docs",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:a1d94883dd6052c8ce20cf4431d974d867b20fc6220de37f7d4a1e945a7823d7"
-    },
-    {
-      "id": "hook-scripts.gitMcp.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/gitMcp.py",
-      "target": ".github/hooks/scripts/gitMcp.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:e40ee0b26c1f5dd8e1b4dd02f46530ed30eb980013b1b3d568d2fa9449f6c0d5"
-    },
-    {
-      "id": "hook-scripts.githubMcp.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/githubMcp.py",
-      "target": ".github/hooks/scripts/githubMcp.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:0f398faae76958a141586b7199d330696a268e8707c28e53d4862f2657da7fbe"
-    },
-    {
-      "id": "lean-hooks.leanContextBudget.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/lean/hooks/leanContextBudget.py",
-      "target": ".github/hooks/scripts/leanContextBudget.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=lean",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:083ad74792fd7a17d239494126bd05e40737aca103f9ecd19ae922cc437113e8"
-    },
-    {
-      "id": "lean-hooks.leanTestReporter.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/lean/hooks/leanTestReporter.py",
-      "target": ".github/hooks/scripts/leanTestReporter.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=lean",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:81cf45d9c6b8243b4a8a68be9af7c8eab9e98b22539cceb61e164bc2b4b16700"
-    },
-    {
-      "id": "hook-scripts.mcpSequentialThinkingServer.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/mcpSequentialThinkingServer.py",
-      "target": ".github/hooks/scripts/mcpSequentialThinkingServer.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:c86580e46c4d0a2867c5870f8e67bac978949bb388a30107c3e5a9ad9f883748"
-    },
-    {
-      "id": "hook-scripts.memoryMcp.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/memoryMcp.py",
-      "target": ".github/hooks/scripts/memoryMcp.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:513f04fbc6d89102863367e259401cf1b4ea438ad8aad526f8f4d650689d4c48"
-    },
-    {
-      "id": "mlops-hooks.mlopsModelCheck.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/mlops/hooks/mlopsModelCheck.py",
-      "target": ".github/hooks/scripts/mlopsModelCheck.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=mlops",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:13f36ecc4efaee268daff977723a12d87eb2cfaea97c4540748308df887eb751"
-    },
-    {
-      "id": "oss-hooks.ossGitLog.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/oss/hooks/ossGitLog.py",
-      "target": ".github/hooks/scripts/ossGitLog.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=oss",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:194d5503fdb3bb1a56c2b177e04ed50a506d042fe96087930737bb45ac922e79"
-    },
-    {
-      "id": "oss-hooks.ossLicenseCheck.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/oss/hooks/ossLicenseCheck.py",
-      "target": ".github/hooks/scripts/ossLicenseCheck.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=oss",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:d7589632ab5ab3dcb215382fefe2c0a18c7db0cb446cf5b2338b70e993357d37"
-    },
-    {
-      "id": "secure-hooks.secureOsv.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/secure/hooks/secureOsv.py",
-      "target": ".github/hooks/scripts/secureOsv.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=secure",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:cef23b09ccea8dabbd167100aea29f6274e78379bf4f5a1f958a50755191574b"
-    },
-    {
-      "id": "hook-scripts.securityMcp.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/securityMcp.py",
-      "target": ".github/hooks/scripts/securityMcp.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:997282954de3cdcdee5fcefcbcd1dbfe7dcfafb93a4709cf4f99a5a0f8f4318d"
-    },
-    {
-      "id": "shapeup-hooks.shapeupScopeCheck.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/shapeup/hooks/shapeupScopeCheck.py",
-      "target": ".github/hooks/scripts/shapeupScopeCheck.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=shapeup",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:e360aca1d3856c8ad1e5e90e1eabf0b089833c172da716e8e516ba74f8bc8147"
-    },
-    {
-      "id": "hook-scripts.sqliteMcp.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/sqliteMcp.py",
-      "target": ".github/hooks/scripts/sqliteMcp.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:07a87f1a084258e3770e8feb94078d7ae66d08fa3773fd8d3805f0c2127dea36"
-    },
-    {
-      "id": "tdd-hooks.tddTestRunner.py",
-      "surface": "hooks",
-      "layer": "pack",
-      "source": "packs/tdd/hooks/tddTestRunner.py",
-      "target": ".github/hooks/scripts/tddTestRunner.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "packs.selected=tdd",
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "none",
-      "hash": "sha256:9a20136073185fa6e820a715d959411c9efce3cc0572f2bb8a49f8647fefaf17"
-    },
-    {
-      "id": "hook-scripts.timeMcp.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/timeMcp.py",
-      "target": ".github/hooks/scripts/timeMcp.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:c0d97b640fdfc2db84f5048c49d0b6c9090d6e9848abdbea9fa5dc1f806d7de5"
-    },
-    {
-      "id": "hook-scripts.webMcp.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/webMcp.py",
-      "target": ".github/hooks/scripts/webMcp.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:5087f42fe78012aeeeb7a8ba9dbbade5469ef6220fb8b57292a5625d0890a32b"
-    },
-    {
-      "id": "hook-scripts.xanadWorkspaceMcp.py",
-      "surface": "hooks",
-      "layer": "core",
-      "source": "hooks/scripts/xanadWorkspaceMcp.py",
-      "target": ".github/hooks/scripts/xanadWorkspaceMcp.py",
-      "ownership": [
-        "local"
-      ],
-      "strategy": "replace-verbatim",
-      "requiredWhen": [
-        "hooks.enabled"
-      ],
-      "tokens": [],
-      "chmod": "executable",
-      "hash": "sha256:be28fd67fe641e4a5fbd3585caafc893c62550b2f68b7c183c0a5dd75176604d"
+      "hash": "sha256:8e027962684e198e7b07fa5a7227067ae94381b7072d9c540831b433482f8c07"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -644,6 +294,356 @@
       "hash": "sha256:99c1cda791d7774a900b386b9cc9d34f95fc8f702f291332bb58e87995f1df36"
     },
     {
+      "id": "hook-scripts._xanad_mcp_source.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/_xanad_mcp_source.py",
+      "target": ".github/mcp/scripts/_xanad_mcp_source.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:2b51ff482fb5d677c52b1106ae3d3d2bcd01ab2fb03492ecf04c0242b2cc687d"
+    },
+    {
+      "id": "devops-hooks.devopsEnvCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/devops/mcp/devopsEnvCheck.py",
+      "target": ".github/mcp/scripts/devopsEnvCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=devops",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:5132c42269a71ea90ede2e692582b346c5d90b30d0fdda48c5e70f3760187aad"
+    },
+    {
+      "id": "docs-hooks.docsLinkCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/docs/mcp/docsLinkCheck.py",
+      "target": ".github/mcp/scripts/docsLinkCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=docs",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:a1d94883dd6052c8ce20cf4431d974d867b20fc6220de37f7d4a1e945a7823d7"
+    },
+    {
+      "id": "hook-scripts.gitMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/gitMcp.py",
+      "target": ".github/mcp/scripts/gitMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:56bf33638ecc5f6b4934f59356817804d5011eb8ba605d2597bc21df54cb717f"
+    },
+    {
+      "id": "hook-scripts.githubMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/githubMcp.py",
+      "target": ".github/mcp/scripts/githubMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:92ab6859508af79020293f58c95277500729d5d134f3b381b05345a0dabe48cf"
+    },
+    {
+      "id": "lean-hooks.leanContextBudget.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/lean/mcp/leanContextBudget.py",
+      "target": ".github/mcp/scripts/leanContextBudget.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=lean",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:083ad74792fd7a17d239494126bd05e40737aca103f9ecd19ae922cc437113e8"
+    },
+    {
+      "id": "lean-hooks.leanTestReporter.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/lean/mcp/leanTestReporter.py",
+      "target": ".github/mcp/scripts/leanTestReporter.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=lean",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:81cf45d9c6b8243b4a8a68be9af7c8eab9e98b22539cceb61e164bc2b4b16700"
+    },
+    {
+      "id": "hook-scripts.memoryMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/memoryMcp.py",
+      "target": ".github/mcp/scripts/memoryMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:05c9e6424d6f2fb6afc4939618bd9c890fc90ca0bdc544281d56bd1f6f4107ff"
+    },
+    {
+      "id": "mlops-hooks.mlopsModelCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/mlops/mcp/mlopsModelCheck.py",
+      "target": ".github/mcp/scripts/mlopsModelCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=mlops",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:13f36ecc4efaee268daff977723a12d87eb2cfaea97c4540748308df887eb751"
+    },
+    {
+      "id": "oss-hooks.ossGitLog.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/oss/mcp/ossGitLog.py",
+      "target": ".github/mcp/scripts/ossGitLog.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:194d5503fdb3bb1a56c2b177e04ed50a506d042fe96087930737bb45ac922e79"
+    },
+    {
+      "id": "oss-hooks.ossLicenseCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/oss/mcp/ossLicenseCheck.py",
+      "target": ".github/mcp/scripts/ossLicenseCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=oss",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:d7589632ab5ab3dcb215382fefe2c0a18c7db0cb446cf5b2338b70e993357d37"
+    },
+    {
+      "id": "secure-hooks.secureOsv.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/secure/mcp/secureOsv.py",
+      "target": ".github/mcp/scripts/secureOsv.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=secure",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:cef23b09ccea8dabbd167100aea29f6274e78379bf4f5a1f958a50755191574b"
+    },
+    {
+      "id": "hook-scripts.securityMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/securityMcp.py",
+      "target": ".github/mcp/scripts/securityMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:997282954de3cdcdee5fcefcbcd1dbfe7dcfafb93a4709cf4f99a5a0f8f4318d"
+    },
+    {
+      "id": "hook-scripts.sequentialThinkingMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/sequentialThinkingMcp.py",
+      "target": ".github/mcp/scripts/sequentialThinkingMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:c86580e46c4d0a2867c5870f8e67bac978949bb388a30107c3e5a9ad9f883748"
+    },
+    {
+      "id": "shapeup-hooks.shapeupScopeCheck.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/shapeup/mcp/shapeupScopeCheck.py",
+      "target": ".github/mcp/scripts/shapeupScopeCheck.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=shapeup",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:e360aca1d3856c8ad1e5e90e1eabf0b089833c172da716e8e516ba74f8bc8147"
+    },
+    {
+      "id": "hook-scripts.sqliteMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/sqliteMcp.py",
+      "target": ".github/mcp/scripts/sqliteMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:07a87f1a084258e3770e8feb94078d7ae66d08fa3773fd8d3805f0c2127dea36"
+    },
+    {
+      "id": "tdd-hooks.tddTestRunner.py",
+      "surface": "hooks",
+      "layer": "pack",
+      "source": "packs/tdd/mcp/tddTestRunner.py",
+      "target": ".github/mcp/scripts/tddTestRunner.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "packs.selected=tdd",
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:9a20136073185fa6e820a715d959411c9efce3cc0572f2bb8a49f8647fefaf17"
+    },
+    {
+      "id": "hook-scripts.timeMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/timeMcp.py",
+      "target": ".github/mcp/scripts/timeMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:c0d97b640fdfc2db84f5048c49d0b6c9090d6e9848abdbea9fa5dc1f806d7de5"
+    },
+    {
+      "id": "hook-scripts.webMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/webMcp.py",
+      "target": ".github/mcp/scripts/webMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:5087f42fe78012aeeeb7a8ba9dbbade5469ef6220fb8b57292a5625d0890a32b"
+    },
+    {
+      "id": "hook-scripts.xanadWorkspaceMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/xanadWorkspaceMcp.py",
+      "target": ".github/mcp/scripts/xanadWorkspaceMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:4d30fb1053fcd46429d1a1a19a5fe96d2b2f172d9692d05654102a6cd82da1bb"
+    },
+    {
       "id": "prompts.bootstrap.md",
       "surface": "prompts",
       "layer": "core",
@@ -656,7 +656,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:f7976b1084f3adf6bdc8c1a9f8b619cde720885ce83d2d48d748270143d3e14e"
+      "hash": "sha256:fa4db42ab6fb3dede0a41f118001129b1d5fa995e3816509a985a5d7603b3fd4"
     },
     {
       "id": "devops-prompts.devops-incident.prompt.md",
@@ -878,7 +878,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:2c23ffbd7cb6125ac146db6ef7dfd1733af8c75e82c7ac9846391f701fb521c9"
+      "hash": "sha256:2d4193fd4c0a618ac01a36e1be0d3de727e38077a743d71c6756039421764115"
     },
     {
       "id": "shapeup-prompts.shapeup-kickoff.prompt.md",
@@ -1606,7 +1606,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:b3e0ebd31e69a1f0b3b5f25d70fbfc89a0ae498ba62fa769fe4ca3299d4335c0"
+      "hash": "sha256:c7d06824e1934a3a239218004f094d165e0b0c67b706cc8f864e41b191f40aea"
     },
     {
       "id": "vscode-settings.settings.json",
@@ -1658,56 +1658,203 @@
       "target": ".github/hooks/scripts/xanad-workspace-mcp.py",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/hooks/scripts/xanadWorkspaceMcp.py \u2014 standardized to camelCase naming."
+      "notes": "Renamed to .github/mcp/scripts/xanadWorkspaceMcp.py \u2014 standardized to camelCase naming."
     },
     {
       "id": "retired.hook-scripts.git-mcp.py",
       "target": ".github/hooks/scripts/git-mcp.py",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/hooks/scripts/gitMcp.py \u2014 standardized to camelCase naming."
+      "notes": "Renamed to .github/mcp/scripts/gitMcp.py \u2014 standardized to camelCase naming."
     },
     {
       "id": "retired.hook-scripts.github-mcp.py",
       "target": ".github/hooks/scripts/github-mcp.py",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/hooks/scripts/githubMcp.py \u2014 standardized to camelCase naming."
+      "notes": "Renamed to .github/mcp/scripts/githubMcp.py \u2014 standardized to camelCase naming."
     },
     {
       "id": "retired.hook-scripts.mcp-sequential-thinking-server.py",
       "target": ".github/hooks/scripts/mcp-sequential-thinking-server.py",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/hooks/scripts/mcpSequentialThinkingServer.py \u2014 standardized to camelCase naming."
+      "notes": "Renamed to .github/mcp/scripts/mcpSequentialThinkingServer.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.mcpSequentialThinkingServer.py",
+      "target": ".github/hooks/scripts/mcpSequentialThinkingServer.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.1",
+      "notes": "Renamed to .github/mcp/scripts/sequentialThinkingMcp.py \u2014 standardized to the repo's Mcp suffix naming."
     },
     {
       "id": "retired.hook-scripts.security-mcp.py",
       "target": ".github/hooks/scripts/security-mcp.py",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/hooks/scripts/securityMcp.py \u2014 standardized to camelCase naming."
+      "notes": "Renamed to .github/mcp/scripts/securityMcp.py \u2014 standardized to camelCase naming."
     },
     {
       "id": "retired.hook-scripts.sqlite-mcp.py",
       "target": ".github/hooks/scripts/sqlite-mcp.py",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/hooks/scripts/sqliteMcp.py \u2014 standardized to camelCase naming."
+      "notes": "Renamed to .github/mcp/scripts/sqliteMcp.py \u2014 standardized to camelCase naming."
     },
     {
       "id": "retired.hook-scripts.time-mcp.py",
       "target": ".github/hooks/scripts/time-mcp.py",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/hooks/scripts/timeMcp.py \u2014 standardized to camelCase naming."
+      "notes": "Renamed to .github/mcp/scripts/timeMcp.py \u2014 standardized to camelCase naming."
     },
     {
       "id": "retired.hook-scripts.web-mcp.py",
       "target": ".github/hooks/scripts/web-mcp.py",
       "defaultAction": "archive-retired",
       "retiredIn": "0.1.0",
-      "notes": "Renamed to .github/hooks/scripts/webMcp.py \u2014 standardized to camelCase naming."
+      "notes": "Renamed to .github/mcp/scripts/webMcp.py \u2014 standardized to camelCase naming."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target._xanad_mcp_source.py",
+      "target": ".github/hooks/scripts/_xanad_mcp_source.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/_xanad_mcp_source.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.devopsEnvCheck.py",
+      "target": ".github/hooks/scripts/devopsEnvCheck.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/devopsEnvCheck.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.docsLinkCheck.py",
+      "target": ".github/hooks/scripts/docsLinkCheck.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/docsLinkCheck.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.gitMcp.py",
+      "target": ".github/hooks/scripts/gitMcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/gitMcp.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.githubMcp.py",
+      "target": ".github/hooks/scripts/githubMcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/githubMcp.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.leanContextBudget.py",
+      "target": ".github/hooks/scripts/leanContextBudget.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/leanContextBudget.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.leanTestReporter.py",
+      "target": ".github/hooks/scripts/leanTestReporter.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/leanTestReporter.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.memoryMcp.py",
+      "target": ".github/hooks/scripts/memoryMcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/memoryMcp.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.mlopsModelCheck.py",
+      "target": ".github/hooks/scripts/mlopsModelCheck.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/mlopsModelCheck.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.ossGitLog.py",
+      "target": ".github/hooks/scripts/ossGitLog.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/ossGitLog.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.ossLicenseCheck.py",
+      "target": ".github/hooks/scripts/ossLicenseCheck.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/ossLicenseCheck.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.secureOsv.py",
+      "target": ".github/hooks/scripts/secureOsv.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/secureOsv.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.securityMcp.py",
+      "target": ".github/hooks/scripts/securityMcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/securityMcp.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.sequentialThinkingMcp.py",
+      "target": ".github/hooks/scripts/sequentialThinkingMcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/sequentialThinkingMcp.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.shapeupScopeCheck.py",
+      "target": ".github/hooks/scripts/shapeupScopeCheck.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/shapeupScopeCheck.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.sqliteMcp.py",
+      "target": ".github/hooks/scripts/sqliteMcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/sqliteMcp.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.tddTestRunner.py",
+      "target": ".github/hooks/scripts/tddTestRunner.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/tddTestRunner.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.timeMcp.py",
+      "target": ".github/hooks/scripts/timeMcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/timeMcp.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.webMcp.py",
+      "target": ".github/hooks/scripts/webMcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/webMcp.py during consumer target normalization."
+    },
+    {
+      "id": "retired.hook-scripts.consumer-target.xanadWorkspaceMcp.py",
+      "target": ".github/hooks/scripts/xanadWorkspaceMcp.py",
+      "defaultAction": "archive-retired",
+      "retiredIn": "0.1.2",
+      "notes": "Moved to .github/mcp/scripts/xanadWorkspaceMcp.py during consumer target normalization."
     },
     {
       "id": "retired.skills.lean-output.SKILL.md",

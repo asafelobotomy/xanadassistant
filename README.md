@@ -2,7 +2,7 @@
 
 > Lifecycle management for GitHub Copilot surface files in VS Code workspaces.
 
-xanadAssistant installs, updates, repairs, and factory-restores a curated set of Copilot surface files — agents, skills, hooks, prompts, and instructions — into any VS Code workspace.
+xanadAssistant installs, updates, repairs, and factory-restores a curated set of Copilot surface files — agents, skills, MCP scripts, prompts, and instructions — into any VS Code workspace.
 
 - **Managed state** — lockfile tracking with backup before every write
 - **Copilot-native** — driven by the `xanadLifecycle` agent and MCP tools; no manual CLI knowledge needed
@@ -18,7 +18,7 @@ xanadAssistant installs, updates, repairs, and factory-restores a curated set of
 | Prompts | `.github/prompts/` | `local` |
 | Agents | `.github/agents/` | `plugin-backed-copilot-format` |
 | Skills | `.github/skills/` | `plugin-backed-copilot-format` |
-| Hook scripts | `.github/hooks/scripts/` | `local` |
+| MCP scripts | `.github/mcp/scripts/` | `local` |
 | MCP config | `.vscode/mcp.json` | `local` (merge-safe) |
 | VS Code settings | `.vscode/settings.json` | `local` (merge-safe) |
 
@@ -37,7 +37,7 @@ When hooks are enabled at setup time, xanadAssistant registers these MCP servers
 | `time` | `timeMcp.py` | Time and elapsed-time tools |
 | `web` | `webMcp.py` | Web search and fetch |
 | `security` | `securityMcp.py` | Dependency vulnerability queries |
-| `sequential-thinking` | `mcpSequentialThinkingServer.py` | Structured step-by-step reasoning |
+| `sequential-thinking` | `sequentialThinkingMcp.py` | Structured step-by-step reasoning |
 | `xanad-workspace` | `xanadWorkspaceMcp.py` | Workspace lifecycle inspection tools |
 
 All servers use the `stdio` transport via `uvx` and are registered with `WORKSPACE_ROOT` pointing to the workspace folder.
@@ -247,7 +247,7 @@ template/
 agents/                       # → .github/agents/ in consumer workspaces
 skills/                       # → .github/skills/ in consumer workspaces
 packs/                        # optional pack surfaces (e.g. lean)
-hooks/scripts/                # → .github/hooks/scripts/ in consumer workspaces
+mcp/scripts/                  # → .github/mcp/scripts/ in consumer workspaces
 docs/contracts/               # frozen contracts — change requires explicit discussion
 tests/                        # unittest suite
 ```
@@ -285,9 +285,9 @@ tests/                        # unittest suite
 | `lean` | active | Concise output; includes `lean` pack by default |
 | `ultra-lean` | planned | Minimum viable output density for highly structured workflows |
 
-## Hook scripts
+## MCP scripts
 
-When hooks are enabled, the following MCP server scripts are installed into `.github/hooks/scripts/`:
+When hooks are enabled, the following MCP server scripts are installed into `.github/mcp/scripts/`:
 
 | Server | Enabled by default | Description |
 |---|---|---|
@@ -297,7 +297,7 @@ When hooks are enabled, the following MCP server scripts are installed into `.gi
 | `webMcp.py` | yes | DuckDuckGo search and URL fetch |
 | `timeMcp.py` | yes | Current time, elapsed duration, timezone conversion |
 | `securityMcp.py` | yes | OSV vulnerability lookup and deps.dev health check |
-| `mcpSequentialThinkingServer.py` | yes | Sequential reasoning bridge |
+| `sequentialThinkingMcp.py` | yes | Sequential reasoning bridge |
 | `githubMcp.py` | no | GitHub REST API (repos, issues, PRs, Actions, code search) |
 | `sqliteMcp.py` | no | Query and inspect workspace-local SQLite databases (read-only) |
 
@@ -311,7 +311,7 @@ Each managed workspace maintains `.github/xanadAssistant-lock.json` recording th
 2. `template/setup/install-manifest.json` and `catalog.json` are generated — run `python3 scripts/generate.py` after any policy or template content change.
 3. `template/copilot-instructions.md` must retain `{{}}` tokens — do not resolve them in the template.
 4. Contracts in `docs/contracts/` are frozen — changes require explicit discussion.
-5. Engine modules under `scripts/lifecycle/_xanad/` must stay ≤ 250 lines each; hook scripts use the warning and hard-limit budgets enforced by `scripts/check_loc.py` (default 250 warning / 400 hard, with documented per-file overrides).
+5. Engine modules under `scripts/lifecycle/_xanad/` must stay ≤ 250 lines each; MCP scripts use the warning and hard-limit budgets enforced by `scripts/check_loc.py` (default 250 warning / 400 hard, with documented per-file overrides).
 6. Keep the lifecycle core stdlib-only; document any hook-runtime MCP dependencies explicitly.
 7. Use [docs/maintenance-drift.md](docs/maintenance-drift.md) as the maintainer policy for drift control; CI and local pre-merge checks should go through `python3 scripts/drift_preflight.py`.
 

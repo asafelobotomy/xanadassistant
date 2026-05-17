@@ -8,7 +8,7 @@
 
 ## Goal
 
-Build a FastMCP-based Memory MCP server (`hooks/scripts/memoryMcp.py`) that gives agents persistent, scoped, SQLite-backed memory — both advisory (discovered facts) and rule-based (authoritative user directives).
+Build a FastMCP-based Memory MCP server (`mcp/scripts/memoryMcp.py`) that gives agents persistent, scoped, SQLite-backed memory — both advisory (discovered facts) and rule-based (authoritative user directives).
 
 ---
 
@@ -131,7 +131,7 @@ Adds `memory_invalidate`, `diary_add`, `diary_get`, `diary_search` → **13 tool
 
 ## Time MCP Integration
 
-The `time` MCP (`hooks/scripts/timeMcp.py`) provides `current_time`, `elapsed`,
+The `time` MCP (`mcp/scripts/timeMcp.py`) provides `current_time`, `elapsed`,
 `convert_timezone`, and `format_duration`. The memory server does **not** call
 it internally (server-to-server MCP calls are not possible in the stdio model).
 Instead, time awareness is split across two layers:
@@ -204,7 +204,7 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 See Phase 7 below.
 
 ### Phase 1 — MCP Server (START HERE)
-- File: `hooks/scripts/memoryMcp.py`
+- File: `mcp/scripts/memoryMcp.py`
 - ~300 lines, FastMCP, two tables, 9 tools
 - Header docstring listing tools + security notes
 - `_init_db(conn)` called on first `_get_conn()` call
@@ -230,7 +230,7 @@ See Phase 7 below.
 - At start: check `memory_get(agent='shared', key='ci.commands')` before re-scanning
 
 ### Phase 5 — Tests
-- File: `tests/hooks/test_memory_mcp.py` (`tests/hooks/` and `__init__.py` already exist — no action needed)
+- File: `tests/test_memory_mcp.py`
 - Classes: `MemorySetGetTests`, `MemoryBranchScopeTests` (mock `_current_branch`), `MemoryRulesTests`, `MemoryDumpTests`, `MemoryPruneTests`, `DiaryTests` (add/get basic), `DiaryFTS5Tests` (FTS5 full-text + `include_agents` widening), `MemoryListIncludeAgentsTests`, `SecurityTests`
 - Use `tempfile.mkdtemp()` for DB; patch `WORKSPACE_ROOT`
 
@@ -265,7 +265,7 @@ See Phase 7 below.
   "args": [
     "--from", "mcp[cli]",
     "mcp", "run",
-    "${workspaceFolder}/.github/hooks/scripts/memoryMcp.py"
+    "${workspaceFolder}/.github/mcp/scripts/memoryMcp.py"
   ]
 }
 ```
@@ -280,7 +280,7 @@ See Phase 7 below.
 - [x] `memory_prune`: on-demand only; hard expiry (`expires_at`) handled by SQL predicate, not auto-called on connect
 - [x] Time MCP integration: agent-side only — agents call `elapsed()` at read time; server uses Python stdlib for TTL computation
 - [x] Which agents get rule-following language: all agents receive both rule-following and fact-recording instructions
-- [x] `tests/hooks/` — directory and `__init__.py` already exist; no action needed
+- [x] Memory MCP tests landed at `tests/test_memory_mcp.py`
 - [x] `memory_list` cross-agent: explicit opt-in `include_agents` list, default `None` = agent's own keys only
 - [x] `diary_search`: FTS5 standalone virtual table (`agent_diary_fts`); dual-write at insert, delete at prune; optional `include_agents` to widen scope
 - [x] Lifecycle check depth: deep — file present + MCP registered + DB schema table validation; missing DB = warning (first-run state), not blocking error
@@ -289,7 +289,7 @@ See Phase 7 below.
 
 ## Key File References
 
-- Pattern to follow: `hooks/scripts/sqliteMcp.py`
+- Pattern to follow: `mcp/scripts/sqliteMcp.py`
 - Registration: `template/vscode/mcp.json`
 - Consumer agents: `agents/` (8 files)
 - Interview questions: `scripts/lifecycle/_xanad/_interview_questions.py`

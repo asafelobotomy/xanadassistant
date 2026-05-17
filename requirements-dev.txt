@@ -2,7 +2,7 @@
 #
 # The lifecycle engine (xanadAssistant.py, scripts/lifecycle/) is stdlib-only
 # and has no runtime dependencies.  These packages are required only to:
-#   - run hook scripts locally (hooks/scripts/)
+#   - run MCP scripts locally (mcp/scripts/)
 #
 # Hook scripts are normally invoked via:
 #   uvx --from "mcp[cli]" mcp run <hook> [--with httpx --with markdownify --with beautifulsoup4]
