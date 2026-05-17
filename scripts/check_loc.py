@@ -71,6 +71,12 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Managed copies (.github/) — mirrors of the above; same ceilings apply.
     ".github/mcp/scripts/memoryMcp.py": 730,
     ".github/mcp/scripts/githubMcp.py": 450,
+    # test_xanad_workspace_mcp.py covers the full surface of a single MCP server
+    # (workspace root discovery, lockfile validation, lifecycle wrappers, tool
+    # argument checks). Splitting one test class into multiple files without a
+    # shared helper module would produce fragmented fixtures; the class stays
+    # intact under a modest ceiling raise.
+    "tests/mcp_servers/test_xanad_workspace_mcp.py": 500,
 }
 
 

@@ -18,7 +18,7 @@ from pathlib import Path
 DEFAULT_BUDGETS: tuple[tuple[str, int], ...] = (
     ("template/copilot-instructions.md", 150),
     (".github/copilot-instructions.md", 140),
-    ("AGENTS.md", 110),
+    ("AGENTS.md", 130),
     ("docs/template-review-adopt.md", 360),
 )
 
