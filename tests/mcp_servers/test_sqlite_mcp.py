@@ -1,32 +1,15 @@
 from __future__ import annotations
 
-import importlib.util
 import sqlite3
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
 
-def load_sqlite_module(relative_path: str, module_name: str):
-    repo_root = Path(__file__).resolve().parents[2]
-    module_path = repo_root / relative_path
-    scripts_dir = module_path.parent
-    sys.path.insert(0, str(scripts_dir))
-    try:
-        spec = importlib.util.spec_from_file_location(module_name, module_path)
-        if spec is None or spec.loader is None:
-            raise RuntimeError("Failed to load sqliteMcp.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-    finally:
-        sys.path.pop(0)
-
-
-SOURCE_SQLITE_MODULE = load_sqlite_module("mcp/scripts/sqliteMcp.py", "test_sqliteMcp_source")
-MANAGED_SQLITE_MODULE = load_sqlite_module(
-    ".github/mcp/scripts/sqliteMcp.py", "test_sqliteMcp_managed"
+SOURCE_SQLITE_MODULE = load_mcp_script_module("mcp/scripts/sqliteMcp.py", "test_sqliteMcp_source", "sqliteMcp.py")
+MANAGED_SQLITE_MODULE = load_mcp_script_module(
+    ".github/mcp/scripts/sqliteMcp.py", "test_sqliteMcp_managed", "sqliteMcp.py"
 )
 
 

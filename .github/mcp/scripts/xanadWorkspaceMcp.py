@@ -79,9 +79,11 @@ def resolve_key_command(label: str) -> str | None:
     command = next((entry["command"] for entry in parse_key_commands(WORKSPACE_INSTRUCTIONS_PATH) if entry["label"] == label), None)
     return None if is_unresolved_command(command) else command
 def read_lockfile() -> dict | None:
+    if not WORKSPACE_LOCKFILE_PATH.exists():
+        return None
     try:
-        return json.loads(WORKSPACE_LOCKFILE_PATH.read_text(encoding="utf-8")) if WORKSPACE_LOCKFILE_PATH.exists() else None
-    except json.JSONDecodeError:
+        return json.loads(WORKSPACE_LOCKFILE_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, ValueError):
         return None
 def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None) -> tuple[Path | None, str | None]:
     lockfile = read_lockfile()

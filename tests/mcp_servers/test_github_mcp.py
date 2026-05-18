@@ -1,32 +1,14 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
-import sys
 import unittest
-from pathlib import Path
 from unittest import mock
 
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
 
-def load_github_module(relative_path: str, module_name: str):
-    repo_root = Path(__file__).resolve().parents[2]
-    module_path = repo_root / relative_path
-    scripts_dir = module_path.parent
-    sys.path.insert(0, str(scripts_dir))
-    try:
-        spec = importlib.util.spec_from_file_location(module_name, module_path)
-        if spec is None or spec.loader is None:
-            raise RuntimeError("Failed to load githubMcp.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-    finally:
-        sys.path.pop(0)
-
-
-SOURCE_GITHUB_MODULE = load_github_module("mcp/scripts/githubMcp.py", "test_githubMcp_source")
-MANAGED_GITHUB_MODULE = load_github_module(".github/mcp/scripts/githubMcp.py", "test_githubMcp_managed")
+SOURCE_GITHUB_MODULE = load_mcp_script_module("mcp/scripts/githubMcp.py", "test_githubMcp_source", "githubMcp.py")
+MANAGED_GITHUB_MODULE = load_mcp_script_module(".github/mcp/scripts/githubMcp.py", "test_githubMcp_managed", "githubMcp.py")
 
 
 class GitHubMcpTests(unittest.TestCase):

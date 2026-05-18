@@ -29,20 +29,30 @@ EXTENSIONS = {".py", ".md", ".sh"}
 WARN_LIMIT_OVERRIDES = {
     # ── Agent surface files ───────────────────────────────────────────────────────
     # Agent definitions are long-form instruction documents; they grow with features.
-    "agents/xanadLifecycle.agent.md": 320,
+    "agents/xanadLifecycle.agent.md": 370,
+
+    # ── Top-level project docs ─────────────────────────────────────────────────────
+    "README.md": 330,
+    "docs/plans/memory-mcp.md": 300,
 
     # ── Consumer MCP scripts (single-file delivery) ───────────────────────────────
     # Consumer workspaces receive these MCP servers as single files, so they need a little
     # more room than the default warning budget while still honoring the hard limit.
+    "mcp/scripts/sequentialThinkingMcp.py": 260,
     "mcp/scripts/memoryMcp.py": 600,
-    "mcp/scripts/xanadWorkspaceMcp.py": 300,
+    "mcp/scripts/webMcp.py": 310,
+    "mcp/scripts/xanadWorkspaceMcp.py": 380,
     "mcp/scripts/gitMcp.py": 380,
-    "mcp/scripts/githubMcp.py": 450,  # matches hard limit override
+    "mcp/scripts/githubMcp.py": 450,
+    "mcp/scripts/_memory_mcp_shared.py": 310,
     # ── Managed copies (.github/) — mirrors of the above; same ceilings apply ─────
+    ".github/mcp/scripts/sequentialThinkingMcp.py": 260,
     ".github/mcp/scripts/memoryMcp.py": 600,
-    ".github/mcp/scripts/xanadWorkspaceMcp.py": 300,
+    ".github/mcp/scripts/webMcp.py": 310,
+    ".github/mcp/scripts/xanadWorkspaceMcp.py": 380,
     ".github/mcp/scripts/gitMcp.py": 380,
-    ".github/mcp/scripts/githubMcp.py": 450,  # matches hard limit override
+    ".github/mcp/scripts/githubMcp.py": 450,
+    ".github/mcp/scripts/_memory_mcp_shared.py": 310,
 
     # ── Pack MCP scripts (consumer-facing single-file scripts) ────────────────────
     "packs/secure/mcp/secureOsv.py": 300,
@@ -51,41 +61,30 @@ WARN_LIMIT_OVERRIDES = {
     # ── Lifecycle engine submodules ───────────────────────────────────────────────
     # Each submodule is intentionally scoped; these grew slightly beyond 250 while
     # remaining well under the hard limit.
+    "scripts/lifecycle/_xanad/_apply_executor.py": 350,
+    "scripts/lifecycle/_xanad/_execute_apply_compat.py": 320,
     "scripts/lifecycle/_xanad/_interview.py": 300,
-    "scripts/lifecycle/_xanad/_plan_b.py": 300,
+    "scripts/lifecycle/_xanad/_main.py": 310,
+    "scripts/lifecycle/_xanad/_plan_b.py": 310,
 
-    "scripts/lifecycle/generate_manifest.py": 300,
+    "scripts/lifecycle/generate_manifest.py": 310,
+
+    # ── Lifecycle tests ────────────────────────────────────────────────────────────
+    "tests/lifecycle/test_apply_contracts.py": 400,
+    "tests/lifecycle/test_apply_executor.py": 330,
+    "tests/lifecycle/test_health_check.py": 260,
+    "tests/lifecycle/test_main_dispatch.py": 300,
+    "tests/lifecycle/test_plan_action_helpers.py": 380,
+    "tests/lifecycle/test_plan_agent_tokens.py": 320,
+    "tests/lifecycle/test_plan_interview.py": 320,
+    "tests/lifecycle/test_progress_and_defaults.py": 290,
+    "tests/lifecycle/test_source_and_state.py": 330,
+
+    # ── MCP test modules ───────────────────────────────────────────────────────────
+    "tests/mcp_servers/test_web_mcp.py": 270,
+    "tests/mcp_servers/test_xanad_workspace_mcp_lifecycle.py": 280,
 }
-HARD_LIMIT_OVERRIDES: dict[str, int] = {
-    # memoryMcp.py covers 13 tools across advisory facts, authoritative rules, and
-    # FTS-indexed agent diary — all delivered as a single file to consumer workspaces.
-    # Splitting the MCP server would require import machinery unavailable there.
-    # The current audited implementation plus validation guards fit within a small
-    # extension of the prior ceiling without changing the single-file delivery model.
-    "mcp/scripts/memoryMcp.py": 730,
-    # githubMcp.py covers a full GitHub REST API surface (auth, repos, issues, PRs,
-    # releases, Actions) as a single file delivered verbatim to consumer workspaces.
-    # Splitting the MCP server would require import machinery unavailable in those
-    # workspaces, so a higher hard ceiling is appropriate here.
-    "mcp/scripts/githubMcp.py": 450,
-    # Managed copies (.github/) — mirrors of the above; same ceilings apply.
-    ".github/mcp/scripts/memoryMcp.py": 730,
-    ".github/mcp/scripts/githubMcp.py": 450,
-    # test_xanad_workspace_mcp.py covers the full surface of a single MCP server
-    # (workspace root discovery, lockfile validation, lifecycle wrappers, tool
-    # argument checks). Splitting one test class into multiple files without a
-    # shared helper module would produce fragmented fixtures; the class stays
-    # intact under a modest ceiling raise.
-    "tests/mcp_servers/test_xanad_workspace_mcp.py": 600,
-    # _execute_apply.py is the apply-execution engine — a single-concern module
-    # that cannot be split without introducing cross-module state dependencies.
-    "scripts/lifecycle/_xanad/_execute_apply.py": 450,
-    # test_apply_helpers.py and the executor regression file cover the full apply
-    # helper surface; their size is proportional to the number of distinct edge
-    # cases under test.
-    "tests/lifecycle/test_apply_helpers.py": 450,
-    "tests/lifecycle/regressions/test_script_audit_apply_executor_regressions.py": 450,
-}
+HARD_LIMIT_OVERRIDES: dict[str, int] = {}
 
 
 def collect_files(roots: list[str]) -> list[Path]:

@@ -1,32 +1,15 @@
 from __future__ import annotations
 
-import importlib.util
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
 
-def load_source_module(relative_path: str, module_name: str):
-    repo_root = Path(__file__).resolve().parents[2]
-    module_path = repo_root / relative_path
-    scripts_dir = module_path.parent
-    sys.path.insert(0, str(scripts_dir))
-    try:
-        spec = importlib.util.spec_from_file_location(module_name, module_path)
-        if spec is None or spec.loader is None:
-            raise RuntimeError("Failed to load _xanad_mcp_source.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-    finally:
-        sys.path.pop(0)
-
-
-SOURCE_MODULE = load_source_module("mcp/scripts/_xanad_mcp_source.py", "test_xanad_mcp_source_source")
-MANAGED_MODULE = load_source_module(".github/mcp/scripts/_xanad_mcp_source.py", "test_xanad_mcp_source_managed")
+SOURCE_MODULE = load_mcp_script_module("mcp/scripts/_xanad_mcp_source.py", "test_xanad_mcp_source_source", "_xanad_mcp_source.py")
+MANAGED_MODULE = load_mcp_script_module(".github/mcp/scripts/_xanad_mcp_source.py", "test_xanad_mcp_source_managed", "_xanad_mcp_source.py")
 
 
 class XanadMcpSourceTests(unittest.TestCase):

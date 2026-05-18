@@ -298,6 +298,40 @@
       "hash": "sha256:99c1cda791d7774a900b386b9cc9d34f95fc8f702f291332bb58e87995f1df36"
     },
     {
+      "id": "hook-scripts._github_mcp_shared.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/_github_mcp_shared.py",
+      "target": ".github/mcp/scripts/_github_mcp_shared.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:98edb3760f40d3749b98e0718f5ca7546426c3017ea41ce9de1bcca6e0e9f6e8"
+    },
+    {
+      "id": "hook-scripts._memory_mcp_shared.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/_memory_mcp_shared.py",
+      "target": ".github/mcp/scripts/_memory_mcp_shared.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:4ba65a01027b1582fc1e525f030fb476b8ea30882e77286c046d38d42fbb1860"
+    },
+    {
       "id": "hook-scripts._xanad_mcp_source.py",
       "surface": "hooks",
       "layer": "core",
@@ -382,7 +416,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:df6b4480a9bb6e012e9d3bfa7c3fdd725822f2a74473df8bdf3ddb68c8086cb3"
+      "hash": "sha256:3b2ed50ebd04bf4640518c1c513469c9c1579578195cb47232762b3aba3873b3"
     },
     {
       "id": "lean-hooks.leanContextBudget.py",
@@ -435,7 +469,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:05c9e6424d6f2fb6afc4939618bd9c890fc90ca0bdc544281d56bd1f6f4107ff"
+      "hash": "sha256:0a2c9743523af81841d5db7a0fb92c4fb9bb789654287899210addb232cfce94"
     },
     {
       "id": "mlops-hooks.mlopsModelCheck.py",
@@ -645,7 +679,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:c691b48ab650bdc22ccf294b15250a86362639c1e3c1f4f0bf2168ff843618cb"
+      "hash": "sha256:5f4ea843df7ba960320d36b872ca5fe685184b0fc7507c57646ced40071da0e0"
     },
     {
       "id": "prompts.bootstrap.md",

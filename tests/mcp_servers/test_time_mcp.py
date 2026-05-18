@@ -1,29 +1,11 @@
 from __future__ import annotations
 
-import importlib.util
-import sys
 import unittest
-from pathlib import Path
 
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
 
-def load_time_module(relative_path: str, module_name: str):
-    repo_root = Path(__file__).resolve().parents[2]
-    module_path = repo_root / relative_path
-    scripts_dir = module_path.parent
-    sys.path.insert(0, str(scripts_dir))
-    try:
-        spec = importlib.util.spec_from_file_location(module_name, module_path)
-        if spec is None or spec.loader is None:
-            raise RuntimeError("Failed to load timeMcp.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-    finally:
-        sys.path.pop(0)
-
-
-SOURCE_TIME_MODULE = load_time_module("mcp/scripts/timeMcp.py", "test_timeMcp_source")
-MANAGED_TIME_MODULE = load_time_module(".github/mcp/scripts/timeMcp.py", "test_timeMcp_managed")
+SOURCE_TIME_MODULE = load_mcp_script_module("mcp/scripts/timeMcp.py", "test_timeMcp_source", "timeMcp.py")
+MANAGED_TIME_MODULE = load_mcp_script_module(".github/mcp/scripts/timeMcp.py", "test_timeMcp_managed", "timeMcp.py")
 
 
 class TimeMcpTests(unittest.TestCase):
