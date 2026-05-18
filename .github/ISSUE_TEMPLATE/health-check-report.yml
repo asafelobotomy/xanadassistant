@@ -1,13 +1,13 @@
-name: Workspace Audit Report
-description: "Automated xanadAssistant workspace audit report submitted by the xanadLifecycle agent."
-title: "[Audit] xanadAssistant <version> — <status>"
+name: Workspace Health Check Report
+description: "Automated xanadAssistant workspace health check report submitted by the xanadLifecycle agent."
+title: "[Health Check] xanadAssistant <version> — <status>"
 labels:
-  - audit-report
+  - health-check-report
 body:
   - type: markdown
     attributes:
       value: |
-        > Audit reports are typically submitted automatically by the `xanadLifecycle` agent.
+        > Health check reports are typically submitted automatically by the `xanadLifecycle` agent.
         > If submitting manually, fill in the required fields below.
   - type: input
     id: version
@@ -54,15 +54,15 @@ body:
     id: label
     attributes:
       label: Workspace Label
-      description: Optional alias provided via --label when running the audit command.
+      description: Optional alias provided via --label when running the health-check command.
       placeholder: "e.g. my-project"
     validations:
       required: false
   - type: textarea
     id: full_report
     attributes:
-      label: Full Audit Report (JSON)
-      description: Paste the `result` block from `xanadAssistant audit --json` output here.
+      label: Full Health Check Report (JSON)
+      description: Paste the `result` block from `xanadAssistant health-check --json` output here.
       render: json
     validations:
       required: false

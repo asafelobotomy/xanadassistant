@@ -1,4 +1,4 @@
-"""Workspace audit — collect xanadAssistant lifecycle state for reporting.
+"""Workspace health check — collect xanadAssistant lifecycle state for reporting.
 
 Collects only fields that pertain to the xanadAssistant installation itself.
 No workspace file contents, project names, git state, or absolute paths are
@@ -15,7 +15,7 @@ from scripts.lifecycle._xanad._check import build_check_result
 from scripts.lifecycle._xanad._inspect import collect_context
 from scripts.lifecycle._xanad._source import build_source_summary
 
-AUDIT_SCHEMA_VERSION = "1"
+HEALTH_CHECK_SCHEMA_VERSION = "1"
 _SAFE_SOURCE_PREFIXES = ("github:", "pypi:")
 
 
@@ -101,7 +101,7 @@ def _format_issue_body(report: dict) -> str:
     summary_str = "  ".join(f"{k}: {v}" for k, v in summary.items() if v)
 
     return (
-        "## xanadAssistant Workspace Audit Report\n\n"
+        "## xanadAssistant Workspace Health Check Report\n\n"
         f"**Generated:** {report.get('generatedAt')}{label_line}\n\n"
         "### Package\n\n"
         "| Field | Value |\n|---|---|\n"
@@ -126,14 +126,14 @@ def _format_issue_body(report: dict) -> str:
         "| Field | Value |\n|---|---|\n"
         f"| Platform | `{system.get('platform') or 'unknown'}` |\n"
         f"| Python | `{system.get('python') or 'unknown'}` |\n\n"
-        "### Audit Metadata\n\n"
+        "### Health Check Metadata\n\n"
         "| Field | Value |\n|---|---|\n"
-        f"| Schema Version | `{report.get('auditSchemaVersion')}` |\n"
+        f"| Schema Version | `{report.get('healthCheckSchemaVersion')}` |\n"
         f"| Manifest Hash | `{install.get('manifestHash') or 'unknown'}` |\n"
     )
 
 
-def build_audit_report(workspace: Path, package_root: Path, label: str | None = None) -> dict:
+def build_health_check_report(workspace: Path, package_root: Path, label: str | None = None) -> dict:
     """Collect xanadAssistant lifecycle state for this workspace.
 
     Returns a dict suitable for JSON serialisation and GitHub issue submission.
@@ -154,7 +154,7 @@ def build_audit_report(workspace: Path, package_root: Path, label: str | None = 
     )
 
     report: dict = {
-        "auditSchemaVersion": AUDIT_SCHEMA_VERSION,
+        "healthCheckSchemaVersion": HEALTH_CHECK_SCHEMA_VERSION,
         "generatedAt": (
             datetime.now(timezone.utc)
             .replace(microsecond=0)
@@ -175,17 +175,17 @@ def build_audit_report(workspace: Path, package_root: Path, label: str | None = 
         },
     }
     status = check_data.get("status") or "unknown"
-    report["issueTitle"] = f"[Audit] xanadAssistant {pkg_version} — {status}"
+    report["issueTitle"] = f"[Health Check] xanadAssistant {pkg_version} — {status}"
     report["issueBody"] = _format_issue_body(report)
-    report["issueLabels"] = ["audit-report"]
+    report["issueLabels"] = ["health-check-report"]
     return report
 
 
-def build_audit_result(workspace: Path, package_root: Path, label: str | None = None) -> dict:
-    """Return a lifecycle-standard command payload for the audit command."""
-    report = build_audit_report(workspace, package_root, label=label)
+def build_health_check_result(workspace: Path, package_root: Path, label: str | None = None) -> dict:
+    """Return a lifecycle-standard command payload for the health-check command."""
+    report = build_health_check_report(workspace, package_root, label=label)
     return {
-        "command": "audit",
+        "command": "health-check",
         "workspace": str(workspace),
         "source": build_source_summary(package_root),
         "status": "ok",

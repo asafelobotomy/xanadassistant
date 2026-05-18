@@ -218,15 +218,15 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
             "factory-restore",
         )
 
-    if args.command == "audit":
-        from scripts.lifecycle._xanad._audit import build_audit_result
+    if args.command == "health-check":
+        from scripts.lifecycle._xanad._health_check import build_health_check_result
         try:
-            payload = build_audit_result(
+            payload = build_health_check_result(
                 workspace, package_root, label=getattr(args, "label", None)
             )
         except LifecycleCommandError as error:
             payload, exit_code = build_error_payload(
-                "audit", workspace, package_root,
+                "health-check", workspace, package_root,
                 error.code, error.message, error.exit_code, details=error.details,
             )
             emit_payload(payload, args.ui, use_json_lines)

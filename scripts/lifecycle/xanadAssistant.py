@@ -46,7 +46,7 @@ from scripts.lifecycle._xanad._inspect import (
     classify_manifest_entries, collect_unmanaged_files,
 )
 from scripts.lifecycle._xanad._check import build_check_result
-from scripts.lifecycle._xanad._audit import build_audit_report, build_audit_result
+from scripts.lifecycle._xanad._health_check import build_health_check_report, build_health_check_result
 from scripts.lifecycle._xanad._interview import (
     build_interview_questions, build_interview_result, build_error_payload,
     load_answers, validate_answer_value, resolve_question_answers,
