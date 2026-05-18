@@ -129,10 +129,25 @@ class MainDispatchTests(unittest.TestCase):
         self.assertEqual(exit_code, 4)
         self.assertTrue(emit_payload.called)
 
-    def test_main_dispatches_setup_apply_and_handles_source_resolution_failure(self) -> None:
+    def test_main_dispatches_setup_retires_apply_and_handles_source_resolution_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plan_path = Path(tmpdir) / "plan.json"
-            plan_path.write_text("{}", encoding="utf-8")
+            plan_path.write_text(
+                json.dumps(
+                    {
+                        "command": "plan",
+                        "mode": "setup",
+                        "workspace": tmpdir,
+                        "result": {
+                            "plannedLockfile": {
+                                "path": ".github/xanadAssistant-lock.json",
+                                "contents": {},
+                            }
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
 
             with mock.patch(
                 "scripts.lifecycle._xanad._main.resolve_effective_package_root",
@@ -148,15 +163,18 @@ class MainDispatchTests(unittest.TestCase):
 
             with mock.patch(
                 "scripts.lifecycle._xanad._main.resolve_effective_package_root",
-                return_value=self._resolved_package_root(tmpdir),
+                side_effect=AssertionError("apply should be retired before package-root resolution"),
             ), mock.patch(
                 "scripts.lifecycle._xanad._main._run_execution_command",
-                return_value=0,
-            ) as run_exec:
-                exit_code = main(["apply", "--workspace", tmpdir, "--package-root", tmpdir, "--plan", str(plan_path)])
+                side_effect=AssertionError("apply should not dispatch to execution"),
+            ), mock.patch("scripts.lifecycle._xanad._main.emit_payload") as emit_payload:
+                exit_code = main(["apply", "--workspace", tmpdir, "--plan", str(plan_path)])
 
-            self.assertEqual(exit_code, 0)
-            self.assertTrue(run_exec.called)
+            self.assertEqual(exit_code, 4)
+            payload = emit_payload.call_args.args[0]
+            self.assertEqual(payload["command"], "apply")
+            self.assertEqual(payload["mode"], "setup")
+            self.assertEqual(payload["errors"][0]["code"], "retired_command")
 
             with mock.patch(
                 "scripts.lifecycle._xanad._main.resolve_effective_package_root",

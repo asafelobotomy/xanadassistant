@@ -99,7 +99,8 @@ Initial Phase 0 protocol examples should cover these event types:
 `apply-report`
 
 - Reports executed writes, backup location, lockfile writes, validation results, and retired-file actions.
-- Phase 1 keeps this event type for both `setup` and `apply`; the top-level `command` field identifies which public executor ran.
+- Used by the `setup` executor for serialized setup-plan application.
+- Retired-command tombstones such as `apply` do not emit `apply-report`.
 
 `receipt`
 

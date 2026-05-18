@@ -22,7 +22,6 @@ The lifecycle engine must expose these commands:
 - `plan repair`
 - `plan factory-restore`
 - `setup`
-- `apply`
 - `check`
 - `update`
 - `repair`
@@ -45,7 +44,7 @@ The lifecycle engine must expose these commands:
 `plan <mode>`
 
 - Computes a no-write lifecycle plan for `setup`, `update`, `repair`, or `factory-restore`.
-- Produces machine-readable output suitable for later `setup` or `apply`.
+- Produces machine-readable output suitable for later `setup` when the mode is `setup`, or for review before the matching top-level write command.
 - Must not write managed files to the workspace.
 
 `setup`
@@ -53,13 +52,6 @@ The lifecycle engine must expose these commands:
 - Applies a previously generated serialized `setup` plan.
 - Creates a backup before the first managed write.
 - Produces a machine-readable report and writes installed state when successful.
-
-`apply`
-
-- Applies a previously generated serialized plan.
-- Creates a backup before the first managed write.
-- Produces a machine-readable report and writes installed state when successful.
-- Phase 1 compatibility alias for serialized-plan execution; `setup` is the supported public executor for setup plans.
 
 `check`
 
@@ -145,7 +137,7 @@ Presentation:
 
 - Disables interactive prompting.
 - Commands must fail with a stable exit code when required answers are missing.
-- `setup` and `apply` must reject this flag because interactive decisions are already frozen into the serialized plan.
+- `setup` must reject this flag because interactive decisions are already frozen into the serialized plan.
 
 `--dry-run`
 
@@ -154,18 +146,26 @@ Presentation:
 `--answers`
 
 - Supplies machine-readable answers for interview-driven decisions.
-- `setup` and `apply` must reject this flag because answers are resolved before the serialized plan is produced.
+- `setup` must reject this flag because answers are resolved before the serialized plan is produced.
 
 `--resolutions`
 
 - Supplies a pre-recorded conflict-resolution file.
 - Used by `plan`, `update`, and `repair` to resolve decisions about pre-existing files.
-- `apply` must reject this flag because conflict decisions are already frozen into the serialized plan.
+- `setup` must reject this flag because conflict decisions are already frozen into the serialized plan.
 
 `--plan`
 
 - Supplies a previously generated serialized lifecycle plan.
-- Required by `setup` and `apply`.
+- Required by `setup`.
+
+## Retired Commands
+
+`apply`
+
+- Remains parseable only as a retirement tombstone for stale automation.
+- Must fail with code `retired_command` and actionable migration guidance.
+- Use `setup` for serialized setup plans, or the top-level `update`, `repair`, or `factory-restore` commands for those modes.
 
 `--plan-out`
 

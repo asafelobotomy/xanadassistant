@@ -54,7 +54,6 @@ The complete `xanadTools` tool set is (see `tool-mcp-v1.md` for V1 vs Extended d
 - `lifecycle_interview`
 - `lifecycle_plan_setup`
 - `lifecycle_setup`
-- `lifecycle_apply`
 - `lifecycle_update`
 - `lifecycle_repair`
 - `lifecycle_factory_restore`
@@ -103,6 +102,8 @@ Requirements:
 - trust assumptions documented for local and sandboxed execution
 
 If a tool needs network access, that access must be explicit in the server documentation and configuration assumptions.
+
+Retired tool tombstones may remain available only to return stable migration guidance for stale callers; they are not part of the supported MCP surface.
 
 ## Installation Rule
 

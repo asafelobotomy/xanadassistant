@@ -349,7 +349,14 @@ def lifecycle_setup(packageRoot: str | None = None, source: str | None = None, v
 
 @mcp.tool()
 def lifecycle_apply(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, planPath: str | None = None, dryRun: bool | None = None) -> ToolResult:
-    return _lifecycle_tool("apply", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, plan_path=planPath, dry_run=dryRun)
+    del packageRoot, source, version, ref, planPath, dryRun
+    return _tool_result(
+        build_tool_result(
+            status="unavailable",
+            summary="lifecycle_apply is retired. Use lifecycle_setup for serialized setup plans, or use lifecycle_update, lifecycle_repair, or lifecycle_factory_restore for those modes.",
+            command="lifecycle_apply",
+        )
+    )
 
 @mcp.tool()
 def lifecycle_update(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> ToolResult:

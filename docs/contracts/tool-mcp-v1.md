@@ -79,7 +79,7 @@ Output: `status`, `commands` (array of `{label, command}`), `summary`.
 
 ### Lifecycle Tools — Shared Contract
 
-All six lifecycle tools share the same package-resolution rules.
+All supported lifecycle tools share the same package-resolution rules.
 
 **Shared input schema** (all fields optional):
 
@@ -122,17 +122,15 @@ Additional inputs: `planPath` (string path), `dryRun` (boolean).
 
 Run `xanadAssistant.py setup --json` with optional `--plan`, `--dry-run` flags.
 
-### `lifecycle_apply`
-
-Additional inputs: `planPath` (string path), `dryRun` (boolean).
-
-Run `xanadAssistant.py apply --json` with optional `--plan`, `--dry-run` flags.
-
-`lifecycle_apply` remains available as a compatibility alias during Phase 1. New setup flows should use `lifecycle_setup`.
-
 ### `lifecycle_check`
 
 Run `xanadAssistant.py check --json`. No additional inputs beyond the shared schema.
+
+### Retired Tool Tombstones
+
+`lifecycle_apply` is retired from the supported MCP contract.
+
+If a runtime compatibility stub remains present, it must return `unavailable` with migration guidance pointing callers to `lifecycle_setup`, `lifecycle_update`, `lifecycle_repair`, or `lifecycle_factory_restore`.
 
 ## Extended Tools
 

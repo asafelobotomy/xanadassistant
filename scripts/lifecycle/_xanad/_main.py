@@ -91,6 +91,52 @@ def _run_execution_command(
     return 0
 
 
+def _build_retired_apply_payload(args: argparse.Namespace, workspace: Path) -> tuple[dict, int]:
+    mode = None
+    plan_path = getattr(args, "plan", None)
+    if plan_path:
+        try:
+            mode = load_apply_plan(plan_path, workspace).get("mode")
+        except LifecycleCommandError:
+            mode = None
+
+    replacements = {
+        "setup": "setup",
+        "update": "update",
+        "repair": "repair",
+        "factory-restore": "factory-restore",
+    }
+    if mode == "setup":
+        message = "The apply command is retired. Use setup with this serialized setup plan instead."
+    elif mode in {"update", "repair", "factory-restore"}:
+        message = f"The apply command is retired. Use the top-level {mode} command instead of applying a serialized {mode} plan."
+    else:
+        message = "The apply command is retired. Use setup for serialized setup plans, or use the top-level update, repair, or factory-restore commands."
+
+    return (
+        {
+            "command": "apply",
+            "mode": mode,
+            "workspace": str(workspace),
+            "source": {"kind": "retired-command"},
+            "status": "error",
+            "warnings": [],
+            "errors": [
+                {
+                    "code": "retired_command",
+                    "message": message,
+                    "details": {
+                        "retiredCommand": "apply",
+                        "replacementCommands": replacements,
+                    },
+                }
+            ],
+            "result": {},
+        },
+        4,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -138,6 +184,12 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
         return exit_code
 
     use_json_lines = bool(args.json_lines)
+
+    if args.command == "apply":
+        payload, exit_code = _build_retired_apply_payload(args, workspace)
+        _attach_output_path(args.report_out, payload, "reportOut")
+        emit_payload(payload, args.ui, use_json_lines)
+        return exit_code
 
     try:
         package_root, _resolved_source_info = resolve_effective_package_root(
@@ -212,9 +264,6 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
 
     if args.command == "setup":
         return _run_execution_command(args, workspace, package_root, use_json_lines, "setup", None)
-
-    if args.command == "apply":
-        return _run_execution_command(args, workspace, package_root, use_json_lines, "apply", None)
 
     if args.command == "update":
         return _run_execution_command(args, workspace, package_root, use_json_lines, "update", "update")

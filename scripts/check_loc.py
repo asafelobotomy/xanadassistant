@@ -76,7 +76,15 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # argument checks). Splitting one test class into multiple files without a
     # shared helper module would produce fragmented fixtures; the class stays
     # intact under a modest ceiling raise.
-    "tests/mcp_servers/test_xanad_workspace_mcp.py": 500,
+    "tests/mcp_servers/test_xanad_workspace_mcp.py": 600,
+    # _execute_apply.py is the apply-execution engine — a single-concern module
+    # that cannot be split without introducing cross-module state dependencies.
+    "scripts/lifecycle/_xanad/_execute_apply.py": 450,
+    # test_apply_helpers.py and the executor regression file cover the full apply
+    # helper surface; their size is proportional to the number of distinct edge
+    # cases under test.
+    "tests/lifecycle/test_apply_helpers.py": 450,
+    "tests/lifecycle/regressions/test_script_audit_apply_executor_regressions.py": 450,
 }
 
 

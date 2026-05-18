@@ -11,8 +11,8 @@
     "hash": "sha256:7f7e257ac524bfcbb0446a29a446964479e0058cfc3b4eaace75230e0831ce5d"
   },
   "timestamps": {
-    "appliedAt": "2026-05-18T10:55:11Z",
-    "updatedAt": "2026-05-18T10:55:11Z"
+    "appliedAt": "2026-05-18T11:02:34Z",
+    "updatedAt": "2026-05-18T11:02:34Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -50,23 +50,7 @@
       "id": "hook-scripts.xanadWorkspaceMcp.py",
       "target": ".github/mcp/scripts/xanadWorkspaceMcp.py",
       "sourceHash": "sha256:bd342bd4496ac7f189bfc58affb4c7275c3c84449963489e2c0a2509ede5e443",
-      "installedHash": "sha256:bd342bd4496ac7f189bfc58affb4c7275c3c84449963489e2c0a2509ede5e443",
-      "ownershipMode": "local",
-      "status": "applied"
-    },
-    {
-      "id": "prompts.bootstrap.md",
-      "target": ".github/prompts/bootstrap.md",
-      "sourceHash": "sha256:19f6c1174a064f222bdd3f1ef9c2a0385b23130e889831f15f84e7684d74945c",
-      "installedHash": "sha256:19f6c1174a064f222bdd3f1ef9c2a0385b23130e889831f15f84e7684d74945c",
-      "ownershipMode": "local",
-      "status": "applied"
-    },
-    {
-      "id": "prompts.setup.md",
-      "target": ".github/prompts/setup.md",
-      "sourceHash": "sha256:f5cc5c846a2bbe83e0dceaa848b27fd25dbad6ce3a104478fa5085d859a7a2f6",
-      "installedHash": "sha256:b7bb76e927b47d75e0b5e91d6dc76a73861274d0cb200787774d4e15070becd4",
+      "installedHash": "sha256:c691b48ab650bdc22ccf294b15250a86362639c1e3c1f4f0bf2168ff843618cb",
       "ownershipMode": "local",
       "status": "applied"
     }
@@ -150,6 +134,6 @@
   "consumerResolutions": {},
   "unknownValues": {},
   "lastBackup": {
-    "path": ".xanadAssistant/backups/2026-05-18T10-55-11Z"
+    "path": ".xanadAssistant/backups/2026-05-18T11-02-34Z"
   }
 }

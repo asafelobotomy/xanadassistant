@@ -641,7 +641,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:bd342bd4496ac7f189bfc58affb4c7275c3c84449963489e2c0a2509ede5e443"
+      "hash": "sha256:c691b48ab650bdc22ccf294b15250a86362639c1e3c1f4f0bf2168ff843618cb"
     },
     {
       "id": "prompts.bootstrap.md",

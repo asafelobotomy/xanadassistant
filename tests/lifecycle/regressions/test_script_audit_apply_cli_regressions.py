@@ -47,30 +47,28 @@ class ScriptAuditApplyCliRegressionsTests(unittest.TestCase):
 
         self.assertEqual(excinfo.exception.code, 2)
 
-    def test_apply_from_missing_plan_returns_contract_input_failure(self) -> None:
+    def test_apply_from_missing_plan_returns_retired_command(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             package_root = Path(tmpdir)
             workspace = package_root / "workspace"
             workspace.mkdir()
+            stdout = io.StringIO()
 
-            with mock.patch(
-                "scripts.lifecycle._xanad._main.resolve_effective_package_root",
-                return_value=(package_root, {"kind": "package-root", "packageRoot": str(package_root)}),
-            ):
+            with redirect_stdout(stdout):
                 exit_code = main([
                     "apply",
                     "--workspace",
                     str(workspace),
-                    "--package-root",
-                    str(package_root),
                     "--plan",
                     str(package_root / "missing-plan.json"),
                     "--json",
                 ])
 
         self.assertEqual(exit_code, 4)
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(payload["errors"][0]["code"], "retired_command")
 
-    def test_apply_error_payload_uses_mode_from_serialized_plan(self) -> None:
+    def test_apply_retirement_payload_uses_mode_from_serialized_plan(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             package_root = Path(tmpdir)
             workspace = package_root / "workspace"
@@ -103,25 +101,22 @@ class ScriptAuditApplyCliRegressionsTests(unittest.TestCase):
             )
             stdout = io.StringIO()
 
-            with mock.patch(
-                "scripts.lifecycle._xanad._main.resolve_effective_package_root",
-                return_value=(package_root, {"kind": "package-root", "packageRoot": str(package_root)}),
-            ), redirect_stdout(stdout):
+            with redirect_stdout(stdout):
                 exit_code = main([
                     "apply",
                     "--workspace",
                     str(workspace),
-                    "--package-root",
-                    str(package_root),
                     "--plan",
                     str(plan_path),
                     "--json",
                 ])
 
         self.assertEqual(exit_code, 4)
-        self.assertEqual(json.loads(stdout.getvalue())["mode"], "repair")
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(payload["mode"], "repair")
+        self.assertEqual(payload["errors"][0]["code"], "retired_command")
 
-    def test_apply_rejects_malformed_planned_lockfile_payload(self) -> None:
+    def test_apply_retirement_payload_ignores_malformed_plan_payload(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             package_root = Path(tmpdir)
             workspace = package_root / "workspace"
@@ -148,16 +143,11 @@ class ScriptAuditApplyCliRegressionsTests(unittest.TestCase):
             )
             stdout = io.StringIO()
 
-            with mock.patch(
-                "scripts.lifecycle._xanad._main.resolve_effective_package_root",
-                return_value=(package_root, {"kind": "package-root", "packageRoot": str(package_root)}),
-            ), redirect_stdout(stdout):
+            with redirect_stdout(stdout):
                 exit_code = main([
                     "apply",
                     "--workspace",
                     str(workspace),
-                    "--package-root",
-                    str(package_root),
                     "--plan",
                     str(plan_path),
                     "--json",
@@ -166,7 +156,8 @@ class ScriptAuditApplyCliRegressionsTests(unittest.TestCase):
         payload = json.loads(stdout.getvalue())
         self.assertEqual(exit_code, 4)
         self.assertEqual(payload["status"], "error")
-        self.assertEqual(payload["errors"][0]["code"], "contract_input_failure")
+        self.assertEqual(payload["errors"][0]["code"], "retired_command")
+        self.assertIsNone(payload["mode"])
 
     def test_apply_rejects_resolutions_flag(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -208,7 +199,7 @@ class ScriptAuditApplyCliRegressionsTests(unittest.TestCase):
                     workspace,
                     package_root,
                     answers_path=None,
-                    non_interactive=True,
+                    non_interactive=False,
                     resolutions_path=str(Path(tmpdir) / "resolutions.json"),
                     plan_path=str(plan_path),
                 )

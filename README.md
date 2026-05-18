@@ -112,10 +112,11 @@ python3 xanadAssistant.py <command> --workspace <path> --package-root <path> [--
 | `plan repair` | Compute a repair plan without writing anything. |
 | `plan factory-restore` | Compute a full-reset plan without writing anything. |
 | `setup` | Apply a previously computed serialized setup plan. Creates a backup before the first write. |
-| `apply` | Compatibility alias for applying a previously computed serialized plan. |
 | `update` | Inspect + plan + apply in one step. |
 | `repair` | Inspect + repair plan + apply in one step. |
 | `factory-restore` | Backup + purge + reinstall from policy. |
+
+Stale `apply` invocations are retired and return structured migration guidance. Use `setup` for serialized setup plans.
 
 All commands accept `--json` for a single structured JSON response or `--json-lines` for streamed NDJSON events.
 

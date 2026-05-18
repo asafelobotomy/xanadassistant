@@ -49,7 +49,12 @@ def build_parser() -> argparse.ArgumentParser:
         add_common_arguments(mode_parser)
 
     for command in ("setup", "apply", "update", "repair", "factory-restore"):
-        command_parser = subparsers.add_parser(command, help=f"{command} workspace state.")
+        help_text = (
+            "Retired command tombstone; use setup, update, repair, or factory-restore instead."
+            if command == "apply"
+            else f"{command} workspace state."
+        )
+        command_parser = subparsers.add_parser(command, help=help_text)
         add_common_arguments(command_parser)
         if command in {"setup", "apply"}:
             command_parser.add_argument("--plan", default=None, help="Path to a serialized lifecycle plan to apply.")
