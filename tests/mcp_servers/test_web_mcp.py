@@ -18,13 +18,20 @@ class _FakeResponse:
 
 
 class _FakeHttpResponse:
-    def __init__(self, *, text: str = "", headers: dict[str, str] | None = None, chunks: list[bytes] | None = None) -> None:
+    def __init__(self, *, text: str = "", headers: dict[str, str] | None = None, chunks: list[bytes] | None = None, status_code: int = 200) -> None:
         self.text = text
         self.headers = headers or {}
         self._chunks = chunks or []
         self.is_redirect = False
+        self.status_code = status_code
 
     def raise_for_status(self) -> None:
+        if self.status_code >= 400:
+            raise SOURCE_WEB_MODULE.httpx.HTTPStatusError(
+                f"HTTP {self.status_code}",
+                request=SOURCE_WEB_MODULE.httpx.Request("GET", "https://example.com"),
+                response=SOURCE_WEB_MODULE.httpx.Response(self.status_code),
+            )
         return None
 
     def iter_bytes(self, chunk_size: int = 65536):
@@ -40,10 +47,13 @@ class _FakeHttpResponse:
 
 
 class _FakeHttpClient:
-    def __init__(self, *, post_response: _FakeHttpResponse | None = None, stream_response: _FakeHttpResponse | None = None, **kwargs) -> None:
+    def __init__(self, *, post_response: _FakeHttpResponse | None = None, stream_response: _FakeHttpResponse | list[_FakeHttpResponse] | Exception | list[_FakeHttpResponse | Exception] | None = None, get_response: _FakeHttpResponse | None = None, **kwargs) -> None:
         del kwargs
         self._post_response = post_response
         self._stream_response = stream_response
+        self._get_response = get_response
+        self.stream_calls = 0
+        self.get_calls = 0
 
     def __enter__(self):
         return self
@@ -56,12 +66,147 @@ class _FakeHttpClient:
         del url, data
         return self._post_response
 
+    def get(self, url: str):
+        del url
+        self.get_calls += 1
+        return self._get_response
+
     def stream(self, method: str, url: str):
         del method, url
-        return self._stream_response
+        self.stream_calls += 1
+        if isinstance(self._stream_response, list):
+            response = self._stream_response.pop(0)
+        else:
+            response = self._stream_response
+        if isinstance(response, Exception):
+            raise response
+        return response
 
 
 class WebMcpTests(unittest.TestCase):
+    def test_fetch_respects_robots_txt_disallow_rules(self) -> None:
+        robots_text = "User-agent: *\nDisallow: /private\n"
+        for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
+            with self.subTest(module=module.__name__):
+                client = _FakeHttpClient(
+                    get_response=_FakeHttpResponse(text=robots_text, headers={"content-type": "text/plain"}),
+                    stream_response=_FakeHttpResponse(headers={"content-type": "text/plain"}, chunks=[b"ignored"]),
+                )
+                with mock.patch.object(module, "_guard_ssrf", return_value=None), mock.patch.object(module, "_ROBOTS_CACHE", {}, create=True), mock.patch.object(
+                    module.httpx,
+                    "Client",
+                    return_value=client,
+                ):
+                    content = module.fetch("https://example.com/private/page")
+
+                self.assertIn("Fetch disallowed by robots.txt.", content)
+                self.assertIn("https://example.com/robots.txt", content)
+                self.assertEqual(client.stream_calls, 0)
+
+    def test_fetch_classifies_challenge_pages_instead_of_returning_html(self) -> None:
+        challenge_html = "<html><title>Attention Required!</title><body>Verify you are human</body></html>"
+        for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
+            with self.subTest(module=module.__name__):
+                client = _FakeHttpClient(
+                    get_response=_FakeHttpResponse(status_code=404),
+                    stream_response=_FakeHttpResponse(
+                        text=challenge_html,
+                        headers={"content-type": "text/html", "server": "cloudflare", "cf-ray": "abc"},
+                        chunks=[challenge_html.encode("utf-8")],
+                        status_code=403,
+                    ),
+                )
+                with mock.patch.object(module, "_guard_ssrf", return_value=None), mock.patch.object(module, "_ROBOTS_CACHE", {}, create=True), mock.patch.object(
+                    module.httpx,
+                    "Client",
+                    return_value=client,
+                ):
+                    content = module.fetch("https://example.com/protected")
+
+                self.assertIn("Fetch blocked by remote site.", content)
+                self.assertIn("Category: blocked_by_waf", content)
+                self.assertIn("HTTP status: 403", content)
+
+    def test_fetch_retries_transient_failures_before_succeeding(self) -> None:
+        html_bytes = [b"<html><body><p>Recovered</p></body></html>"]
+        for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
+            with self.subTest(module=module.__name__):
+                client = _FakeHttpClient(
+                    get_response=_FakeHttpResponse(status_code=404),
+                    stream_response=[
+                        _FakeHttpResponse(headers={"content-type": "text/html"}, status_code=503, chunks=[b"busy"]),
+                        _FakeHttpResponse(headers={"content-type": "text/html; charset=utf-8"}, chunks=html_bytes),
+                    ],
+                )
+                with mock.patch.object(module, "_guard_ssrf", return_value=None), mock.patch.object(module, "_ROBOTS_CACHE", {}, create=True), mock.patch.object(
+                    module,
+                    "_to_markdown",
+                    return_value="Recovered markdown",
+                ), mock.patch.object(module, "_sleep_before_retry", return_value=None, create=True) as sleep_mock, mock.patch.object(
+                    module.httpx,
+                    "Client",
+                    return_value=client,
+                ):
+                    content = module.fetch("https://example.com/retry", max_length=40)
+
+                self.assertEqual(content, "Recovered markdown")
+                sleep_mock.assert_called_once_with(1)
+                self.assertEqual(client.stream_calls, 2)
+
+    def test_fetch_binary_responses_return_metadata_summary(self) -> None:
+        binary_bytes = [b"\x89PNG\r\n\x1a\n", b"rest"]
+        for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
+            with self.subTest(module=module.__name__):
+                with mock.patch.object(module, "_guard_ssrf", return_value=None), mock.patch.object(
+                    module,
+                    "_ROBOTS_CACHE",
+                    {},
+                    create=True,
+                ), mock.patch.object(
+                    module.httpx,
+                    "Client",
+                    return_value=_FakeHttpClient(
+                        get_response=_FakeHttpResponse(status_code=404),
+                        stream_response=_FakeHttpResponse(
+                            headers={"content-type": "image/png"},
+                            chunks=binary_bytes,
+                        )
+                    ),
+                ):
+                    content = module.fetch("https://example.com/image.png")
+
+                self.assertEqual(
+                    content,
+                    "Non-text content fetched; returning metadata only.\n"
+                    "URL: https://example.com/image.png\n"
+                    "Content-Type: image/png\n"
+                    "Downloaded bytes: 12",
+                )
+
+    def test_search_result_formatting_collapses_whitespace_and_omits_empty_snippets(self) -> None:
+        for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
+            with self.subTest(module=module.__name__):
+                formatted = module._format_search_result(2, "  Example\n Title  ", "https://example.com", "  ")
+                self.assertEqual(formatted, "2. Example Title\n   https://example.com")
+                with_snippet = module._format_search_result(3, "Example", "https://example.com/docs", "  one\n two  ")
+                self.assertEqual(with_snippet, "3. Example\n   https://example.com/docs\n   one two")
+
+    def test_textual_content_type_helper_distinguishes_binary_and_text_payloads(self) -> None:
+        for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
+            with self.subTest(module=module.__name__):
+                self.assertTrue(module._is_textual_content_type("text/plain; charset=utf-8"))
+                self.assertTrue(module._is_textual_content_type("application/json"))
+                self.assertFalse(module._is_textual_content_type("image/png"))
+                self.assertFalse(module._is_textual_content_type("application/pdf"))
+
+    def test_fetch_url_normalization_accepts_bare_domains_and_scheme_relative_urls(self) -> None:
+        for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
+            with self.subTest(module=module.__name__):
+                self.assertEqual(module._normalize_fetch_url("example.com/docs"), "https://example.com/docs")
+                self.assertEqual(module._normalize_fetch_url("//example.com/docs"), "https://example.com/docs")
+                with self.assertRaisesRegex(ValueError, "must not be empty"):
+                    module._normalize_fetch_url("   ")
+
     def test_helper_branches_cover_url_unwrap_and_redirect_rules(self) -> None:
         for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
             with self.subTest(module=module.__name__):
@@ -140,6 +285,26 @@ class WebMcpTests(unittest.TestCase):
                 self.assertIn("https://example.com/a", result)
                 self.assertIn("Snippet B", result)
 
+    def test_web_search_omits_blank_snippet_lines_and_normalizes_whitespace(self) -> None:
+        html = """
+        <div class=\"result\">
+          <div class=\"result__title\"><a href=\"https://example.com/a\">Example\n          A</a></div>
+          <div class=\"result__snippet\">   </div>
+        </div>
+        """
+        for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
+            with self.subTest(module=module.__name__):
+                with mock.patch.object(module, "_limiter") as limiter_mock, mock.patch.object(
+                    module.httpx,
+                    "Client",
+                    return_value=_FakeHttpClient(post_response=_FakeHttpResponse(text=html)),
+                ):
+                    result = module.web_search("needle", max_results=1)
+
+                limiter_mock.check.assert_called_once_with()
+                self.assertIn("1. Example A\n   https://example.com/a", result)
+                self.assertNotIn("\n   \n", result)
+
     def test_fetch_supports_markdown_raw_and_truncation_paths(self) -> None:
         html_bytes = [b"<html><body><h1>Title</h1><p>Paragraph</p></body></html>"]
         raw_bytes = [b"abcdefghi"]
@@ -150,12 +315,18 @@ class WebMcpTests(unittest.TestCase):
 
                 with mock.patch.object(module, "_guard_ssrf", return_value=None), mock.patch.object(
                     module,
+                    "_ROBOTS_CACHE",
+                    {},
+                    create=True,
+                ), mock.patch.object(
+                    module,
                     "_to_markdown",
                     return_value="Converted markdown body",
                 ), mock.patch.object(
                     module.httpx,
                     "Client",
                     return_value=_FakeHttpClient(
+                        get_response=_FakeHttpResponse(status_code=404),
                         stream_response=_FakeHttpResponse(
                             headers={"content-type": "text/html; charset=utf-8"},
                             chunks=html_bytes,
@@ -165,12 +336,43 @@ class WebMcpTests(unittest.TestCase):
                     converted = module.fetch("https://example.com/page", max_length=10)
 
                 self.assertIn("Converted ", converted)
+                self.assertIn("Continue with start_index=10 to read the next 13 character(s).", converted)
                 self.assertIn("next_start_index=10", converted)
 
-                with mock.patch.object(module, "_guard_ssrf", return_value=None), mock.patch.object(
+                with mock.patch.object(module, "_guard_ssrf", return_value=None) as guard_mock, mock.patch.object(
+                    module,
+                    "_ROBOTS_CACHE",
+                    {},
+                    create=True,
+                ), mock.patch.object(
                     module.httpx,
                     "Client",
                     return_value=_FakeHttpClient(
+                        get_response=_FakeHttpResponse(status_code=404),
+                        stream_response=_FakeHttpResponse(
+                            headers={"content-type": "text/plain; charset=utf-8"},
+                            chunks=raw_bytes,
+                        )
+                    ),
+                ):
+                    bare = module.fetch("example.com/raw", max_length=4, raw=True)
+
+                guard_mock.assert_called_once_with("https://example.com/raw")
+                self.assertEqual(
+                    bare,
+                    "abcd\n\nContinue with start_index=4 to read the next 5 character(s).\n<!-- xanad:truncation remaining=5 next_start_index=4 -->",
+                )
+
+                with mock.patch.object(module, "_guard_ssrf", return_value=None), mock.patch.object(
+                    module,
+                    "_ROBOTS_CACHE",
+                    {},
+                    create=True,
+                ), mock.patch.object(
+                    module.httpx,
+                    "Client",
+                    return_value=_FakeHttpClient(
+                        get_response=_FakeHttpResponse(status_code=404),
                         stream_response=_FakeHttpResponse(
                             headers={"content-type": "text/plain; charset=utf-8"},
                             chunks=raw_bytes,
@@ -179,7 +381,10 @@ class WebMcpTests(unittest.TestCase):
                 ):
                     raw = module.fetch("https://example.com/raw", max_length=4, start_index=2, raw=True)
 
-                self.assertEqual(raw, "cdef\n<!-- xanad:truncation remaining=3 next_start_index=6 -->")
+                self.assertEqual(
+                    raw,
+                    "cdef\n\nContinue with start_index=6 to read the next 3 character(s).\n<!-- xanad:truncation remaining=3 next_start_index=6 -->",
+                )
 
     def test_dns_and_rate_limit_helper_branches(self) -> None:
         for module in (SOURCE_WEB_MODULE, MANAGED_WEB_MODULE):
@@ -224,12 +429,18 @@ class WebMcpTests(unittest.TestCase):
 
                 with mock.patch.object(module, "_guard_ssrf", return_value=None), mock.patch.object(
                     module,
+                    "_ROBOTS_CACHE",
+                    {},
+                    create=True,
+                ), mock.patch.object(
+                    module,
                     "_to_markdown",
                     return_value="Doc markdown",
                 ), mock.patch.object(
                     module.httpx,
                     "Client",
                     return_value=_FakeHttpClient(
+                        get_response=_FakeHttpResponse(status_code=404),
                         stream_response=_FakeHttpResponse(
                             headers={"content-type": "text/plain"},
                             chunks=[b"<!DOCTYPE html><html><body>Doc</body></html>"],

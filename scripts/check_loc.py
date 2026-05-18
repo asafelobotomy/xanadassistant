@@ -40,7 +40,7 @@ WARN_LIMIT_OVERRIDES = {
     # more room than the default warning budget while still honoring the hard limit.
     "mcp/scripts/sequentialThinkingMcp.py": 260,
     "mcp/scripts/memoryMcp.py": 600,
-    "mcp/scripts/webMcp.py": 310,
+    "mcp/scripts/webMcp.py": 450,
     "mcp/scripts/xanadWorkspaceMcp.py": 380,
     "mcp/scripts/gitMcp.py": 380,
     "mcp/scripts/githubMcp.py": 450,
@@ -48,7 +48,7 @@ WARN_LIMIT_OVERRIDES = {
     # ── Managed copies (.github/) — mirrors of the above; same ceilings apply ─────
     ".github/mcp/scripts/sequentialThinkingMcp.py": 260,
     ".github/mcp/scripts/memoryMcp.py": 600,
-    ".github/mcp/scripts/webMcp.py": 310,
+    ".github/mcp/scripts/webMcp.py": 450,
     ".github/mcp/scripts/xanadWorkspaceMcp.py": 380,
     ".github/mcp/scripts/gitMcp.py": 380,
     ".github/mcp/scripts/githubMcp.py": 450,
@@ -81,10 +81,19 @@ WARN_LIMIT_OVERRIDES = {
     "tests/lifecycle/test_source_and_state.py": 330,
 
     # ── MCP test modules ───────────────────────────────────────────────────────────
-    "tests/mcp_servers/test_web_mcp.py": 270,
+    "tests/mcp_servers/test_web_mcp.py": 420,
     "tests/mcp_servers/test_xanad_workspace_mcp_lifecycle.py": 280,
 }
-HARD_LIMIT_OVERRIDES: dict[str, int] = {}
+HARD_LIMIT_OVERRIDES: dict[str, int] = {
+    # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.
+    "mcp/scripts/webMcp.py": 510,
+    ".github/mcp/scripts/webMcp.py": 510,
+    # Web MCP test suite: expanded to cover new fetch, retry, and search paths.
+    "tests/mcp_servers/test_web_mcp.py": 470,
+    # Workspace MCP (pre-existing): grew with command hardening.
+    "mcp/scripts/xanadWorkspaceMcp.py": 425,
+    ".github/mcp/scripts/xanadWorkspaceMcp.py": 425,
+}
 
 
 def collect_files(roots: list[str]) -> list[Path]:
