@@ -47,7 +47,7 @@ For each finding, report:
 
 ## Reporting threshold
 
-{{pack:review-depth}}
+{{agent:review:reporting-threshold}}
 
 By default, report all findings at Advisory and above. Prioritise Critical and High. For broad-scope requests, ask the user to narrow the focus before proceeding.
 

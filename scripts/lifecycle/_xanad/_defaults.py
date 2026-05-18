@@ -10,10 +10,18 @@ def derive_effective_plan_defaults(
     manifest: dict | None,
     lockfile_state: dict,
 ) -> tuple[dict, dict]:
-    from scripts.lifecycle._xanad._interview import build_interview_questions, resolve_question_answers
+    from scripts.lifecycle._xanad._interview import build_interview_questions, expand_interview_questions, resolve_question_answers
     from scripts.lifecycle._xanad._plan_a import resolve_ownership_by_surface
 
-    questions = build_interview_questions(policy, metadata, "setup")
+    base_questions = build_interview_questions(policy, metadata, "setup")
+    question_ids = {question["id"] for question in base_questions}
+    seeded_answers = seed_answers_from_install_state("update", base_questions, lockfile_state, {})
+    seeded_answers = seed_answers_from_profile(
+        metadata.get("profileRegistry") or {},
+        seeded_answers,
+        question_ids,
+    )
+    questions = expand_interview_questions(policy, metadata, manifest, "setup", seeded_answers, lockfile_state)
     question_ids = {question["id"] for question in questions}
     seeded_answers = seed_answers_from_install_state("update", questions, lockfile_state, {})
     seeded_answers = seed_answers_from_profile(

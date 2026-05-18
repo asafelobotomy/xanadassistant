@@ -41,7 +41,8 @@ def compare_catalog_to_generated(package_root: Path, policy_rel: str, catalog_re
     current_catalog = load_json(package_root / catalog_rel)
     pack_registry = load_optional_registry(package_root / "template/setup/pack-registry.json")
     profile_registry = load_optional_registry(package_root / "template/setup/profile-registry.json")
-    generated_catalog = generate_catalog(policy, pack_registry, profile_registry)
+    agent_registry = load_optional_registry(package_root / "template/setup/agent-registry.json")
+    generated_catalog = generate_catalog(policy, pack_registry, profile_registry, agent_registry)
     return current_catalog == generated_catalog, current_catalog, generated_catalog
 
 

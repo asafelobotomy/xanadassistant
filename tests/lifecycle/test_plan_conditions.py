@@ -161,3 +161,5 @@ class ConditionsTests(unittest.TestCase):
         self.assertEqual(rendered, f"Hello {workspace.name}")
 
 
+if __name__ == "__main__":
+    unittest.main()

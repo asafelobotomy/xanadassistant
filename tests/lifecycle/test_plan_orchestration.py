@@ -13,7 +13,7 @@ class PlanOrchestrationTests(unittest.TestCase):
     def _base_context(self) -> dict:
         return {
             "policy": {"canonicalSurfaces": [], "tokenRules": [], "retiredFilePolicy": {"archiveRoot": ".xanad/archive"}},
-            "metadata": {"profileRegistry": {"profiles": []}},
+            "metadata": {"profileRegistry": {"profiles": []}, "agentRegistry": {"agents": []}},
             "manifest": {"managedFiles": [], "retiredFiles": []},
             "warnings": [],
             "installState": "installed",
@@ -122,7 +122,110 @@ class PlanOrchestrationTests(unittest.TestCase):
         self.assertEqual(result["status"], "approval-required")
         self.assertEqual(result["result"]["writes"]["add"], 1)
         self.assertEqual(result["result"]["actions"][0]["target"], ".github/prompts/main.prompt.md")
+        self.assertEqual(result["result"]["agentCustomization"], {"availableAgents": [], "installedAgents": []})
         self.assertIn("unknown_answer_ids_ignored", {warning["code"] for warning in result["warnings"]})
+
+    def test_plan_derives_installed_configurable_agents_and_validates_registry_linkage(self) -> None:
+        context = self._base_context()
+        context["metadata"] = {
+            "profileRegistry": {"profiles": []},
+            "agentRegistry": {
+                "agents": [
+                    {
+                        "id": "review",
+                        "name": "Review",
+                        "status": "active",
+                        "manifestEntryId": "agents.review.agent.md",
+                        "customization": {"requiresInstalled": True, "tokenNamespace": "agent:review"},
+                    }
+                ]
+            },
+        }
+        context["manifest"] = {
+            "managedFiles": [
+                {
+                    "id": "agents.review.agent.md",
+                    "surface": "agents",
+                    "target": ".github/agents/review.agent.md",
+                    "ownership": ["local", "plugin-backed-copilot-format"],
+                    "requiredWhen": [],
+                }
+            ],
+            "retiredFiles": [],
+        }
+
+        with mock.patch("scripts.lifecycle._xanad._plan_b.collect_context", return_value=context), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_interview_questions",
+            return_value=[],
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.resolve_question_answers",
+            return_value=({}, [], []),
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.detect_pack_token_conflicts", return_value=[]), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.resolve_ownership_by_surface",
+            return_value={},
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.resolve_token_values", return_value={}), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_setup_plan_actions",
+            return_value=({"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0, "deleted": 0}, [], [], []),
+        ), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.classify_plan_conflicts",
+            return_value=([], []),
+        ), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_token_plan_summary",
+            return_value=[],
+        ), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_backup_plan",
+            return_value={"root": None, "targets": [], "archiveTargets": []},
+        ), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_planned_lockfile",
+            return_value={},
+        ):
+            result = build_plan_result(Path("."), Path("."), "setup", None, False)
+
+        self.assertEqual(result["result"]["agentCustomization"]["availableAgents"][0]["id"], "review")
+        self.assertEqual(result["result"]["agentCustomization"]["installedAgents"][0]["id"], "review")
+
+        context["policy"] = {"canonicalSurfaces": [], "tokenRules": [], "retiredFilePolicy": {"archiveRoot": ".xanad/archive"}, "ownershipDefaults": {"agents": "plugin-backed-copilot-format"}}
+        context["lockfileState"]["ownershipBySurface"] = {"agents": "plugin-backed-copilot-format"}
+        with mock.patch("scripts.lifecycle._xanad._plan_b.collect_context", return_value=context), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_interview_questions",
+            return_value=[],
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.resolve_question_answers",
+            return_value=({}, [], []),
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.detect_pack_token_conflicts", return_value=[]), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.resolve_token_values", return_value={}), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_setup_plan_actions",
+            return_value=({"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0, "deleted": 0}, [], [], []),
+        ), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.classify_plan_conflicts",
+            return_value=([], []),
+        ), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_token_plan_summary",
+            return_value=[],
+        ), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_backup_plan",
+            return_value={"root": None, "targets": [], "archiveTargets": []},
+        ), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_planned_lockfile",
+            return_value={},
+        ):
+            plugin_backed_result = build_plan_result(Path("."), Path("."), "setup", None, False)
+
+        self.assertEqual(plugin_backed_result["result"]["agentCustomization"]["availableAgents"][0]["id"], "review")
+        self.assertEqual(plugin_backed_result["result"]["agentCustomization"]["installedAgents"], [])
+
+        context["metadata"]["agentRegistry"]["agents"][0]["manifestEntryId"] = "agents.missing.agent.md"
+        with mock.patch("scripts.lifecycle._xanad._plan_b.collect_context", return_value=context), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_interview_questions",
+            return_value=[],
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.resolve_question_answers",
+            return_value=({}, [], []),
+        ):
+            with self.assertRaises(LifecycleCommandError) as excinfo:
+                build_plan_result(Path("."), Path("."), "setup", None, False)
+
+        self.assertEqual(excinfo.exception.code, "contract_input_failure")
 
 
 if __name__ == "__main__":

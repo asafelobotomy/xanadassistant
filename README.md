@@ -6,7 +6,7 @@ xanadAssistant installs, updates, repairs, and factory-restores a curated set of
 
 - **Managed state** — lockfile tracking with backup before every write
 - **Copilot-native** — driven by the `xanadLifecycle` agent and MCP tools; no manual CLI knowledge needed
-- **Interview-driven setup** — picks your profile, optional packs, and personalisation before writing anything
+- **Interview-driven setup** — picks your profile, optional packs, personalisation, and installed-agent follow-up knobs before writing anything
 - **Structured output** — full JSON CLI for programmatic use by agents and automations
 
 ## What it manages
@@ -152,9 +152,9 @@ python3 xanadAssistant.py plan setup --workspace <path> --package-root . --json 
 First-time install of all managed surfaces into a workspace that has no existing xanadAssistant install.
 
 1. Run `inspect` — confirms the workspace is in `not-installed` state.
-2. Run `interview` — collects your choices: profile, optional packs, personalisation tokens (response style, autonomy level, agent persona, testing philosophy), and whether to enable MCP hooks.
-3. Run `plan setup` — computes the full write set; no files are written yet; conflicts and backup needs are flagged.
-4. Run `setup` — backs up any pre-existing content, writes all managed files with token substitution, and writes the lockfile recording your answers, hashes, profile, packs, and MCP state.
+2. Run `interview` — collects the base choices: profile, optional packs, personalisation tokens (response style, autonomy level, agent persona, testing philosophy), and whether to enable MCP hooks.
+3. Run `plan setup` — computes the full write set and emits any installed-agent follow-up questions needed for tokenized agent behavior knobs such as Commit, Docs, Explore, Planner, and Review defaults; no files are written yet; conflicts and backup needs are flagged.
+4. Run `setup` — backs up any pre-existing content, writes all managed files with token substitution, and writes the lockfile recording your answers, hashes, profile, packs, MCP state, and agent customization answers for replay.
 
 ```sh
 python3 xanadAssistant.py plan setup --workspace <path> --package-root <path> --json
@@ -171,7 +171,7 @@ python3 xanadAssistant.py setup --workspace <path> --package-root <path> --plan 
 Refresh stale or missing managed files in a workspace that is already installed. Re-reads your existing lockfile so no re-interview is needed.
 
 1. Run `inspect` — confirms install state is `installed` and identifies stale or missing files.
-2. Reads all previous answers (profile, packs, personalisation, MCP state) from the lockfile.
+2. Reads all previous answers (profile, packs, personalisation, MCP state, and agent customization answers) from the lockfile.
 3. Run `plan update` — hashes each managed file; only stale and missing files appear in the write set.
 4. Run the top-level `update` command — it backs up changed files, writes only the stale/missing entries, and updates the lockfile with new hashes.
 
@@ -246,6 +246,7 @@ template/
     catalog.json              # generated — never edit by hand
     pack-registry.json        # available optional packs
     profile-registry.json     # available behavior profiles
+    agent-registry.json       # configurable installed-agent follow-up questions
   vscode/mcp.json             # consumer MCP server config
 agents/                       # → .github/agents/ in consumer workspaces
 skills/                       # → .github/skills/ in consumer workspaces

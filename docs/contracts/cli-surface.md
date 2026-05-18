@@ -38,6 +38,7 @@ The lifecycle engine must expose these commands:
 `interview`
 
 - Emits structured questions required to complete setup or another lifecycle mode.
+- Emits base questions first; later `plan` responses may append installed-agent follow-up questions once the effective install set is known.
 - Must support non-interactive machine consumption.
 - Must not write to the workspace.
 
@@ -45,6 +46,7 @@ The lifecycle engine must expose these commands:
 
 - Computes a no-write lifecycle plan for `setup`, `update`, `repair`, or `factory-restore`.
 - Produces machine-readable output suitable for later `setup` when the mode is `setup`, or for review before the matching top-level write command.
+- May append installed-agent follow-up questions and must preserve their answers into the serialized plan's lockfile state.
 - Must not write managed files to the workspace.
 
 `setup`

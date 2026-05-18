@@ -1,0 +1,230 @@
+{
+  "schemaVersion": "0.1.0",
+  "representation": {
+    "catalogField": "agents",
+    "answerPrefix": "agent",
+    "manifestLinkField": "manifestEntryId"
+  },
+  "agents": [
+    {
+      "id": "commit",
+      "name": "Commit",
+      "summary": "Git lifecycle tasks including staging, commits, and pushes.",
+      "status": "active",
+      "surface": "agents",
+      "manifestEntryId": "agents.commit.agent.md",
+      "customization": {
+        "requiresInstalled": true,
+        "tokenNamespace": "agent:commit",
+        "questions": [
+          {
+            "id": "message-style",
+            "answerKey": "agent.commit.messageStyle",
+            "kind": "choice",
+            "prompt": "How should the Commit agent shape commit messages by default?",
+            "required": false,
+            "fallbackToken": "{{pack:commit-style}}",
+            "options": [
+              {
+                "id": "conventional-with-context",
+                "label": "Conventional with context"
+              },
+              {
+                "id": "conventional-subject-first",
+                "label": "Conventional subject first"
+              }
+            ],
+            "tokens": [
+              "{{agent:commit:message-style}}"
+            ],
+            "render": {
+              "conventional-with-context": "Write commit messages following Conventional Commits 1.0: a descriptive subject line (72 chars or fewer), a blank line, and a body explaining what changed and why when context is not obvious from the diff alone. Mark breaking changes with `!` after the type/scope (e.g. `feat!:`) or with a `BREAKING CHANGE:` footer in the body.",
+              "conventional-subject-first": "Write commit messages using Conventional Commits 1.0 with a precise subject line first. Add a body only when the diff does not already make the rationale obvious. Mark breaking changes with `!` after the type/scope (e.g. `feat!:`) or with a `BREAKING CHANGE:` footer in the body."
+            }
+          },
+          {
+            "id": "secret-guard-mode",
+            "answerKey": "agent.commit.secretGuardMode",
+            "kind": "choice",
+            "prompt": "How strict should the Commit agent be when it detects a probable secret?",
+            "required": false,
+            "fallbackToken": "{{pack:secret-guard}}",
+            "options": [
+              {
+                "id": "surface-and-stop",
+                "label": "Surface and stop"
+              },
+              {
+                "id": "refuse-on-probable-secret",
+                "label": "Refuse on probable secret"
+              }
+            ],
+            "tokens": [
+              "{{agent:commit:secret-guard}}"
+            ],
+            "render": {
+              "surface-and-stop": "Before staging or committing, check for hardcoded credentials, API keys, tokens, or private key material. Surface any probable secret by file and line before proceeding.",
+              "refuse-on-probable-secret": "Before staging or committing, check for hardcoded credentials, API keys, tokens, or private key material. If any probable secret is found, stop the workflow and refuse to proceed until the user removes it or explicitly replaces it with a safe fixture."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "docs",
+      "name": "Docs",
+      "summary": "Documentation drafting and update workflows.",
+      "status": "active",
+      "surface": "agents",
+      "manifestEntryId": "agents.docs.agent.md",
+      "customization": {
+        "requiresInstalled": true,
+        "tokenNamespace": "agent:docs",
+        "questions": [
+          {
+            "id": "output-style",
+            "answerKey": "agent.docs.outputStyle",
+            "kind": "choice",
+            "prompt": "How should the Docs agent shape its writing style by default?",
+            "required": false,
+            "fallbackToken": "{{pack:output-style}}",
+            "options": [
+              {
+                "id": "corpus-match",
+                "label": "Match the surrounding corpus"
+              },
+              {
+                "id": "concise-guides",
+                "label": "Short, instructional guides"
+              }
+            ],
+            "tokens": [
+              "{{agent:docs:output-style}}"
+            ],
+            "render": {
+              "corpus-match": "Use Markdown with clear headers, numbered steps for procedures, and fenced code blocks for commands and examples. Lead with context before detail. Keep examples minimal but runnable. Do not document behaviour that is not yet implemented.",
+              "concise-guides": "Use compact Markdown sections with short headings, imperative steps, and only the minimum runnable examples. Prioritise discoverability and task completion over narrative context. Do not document behaviour that is not yet implemented."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "planner",
+      "name": "Planner",
+      "summary": "Scoped execution planning before implementation.",
+      "status": "active",
+      "surface": "agents",
+      "manifestEntryId": "agents.planner.agent.md",
+      "customization": {
+        "requiresInstalled": true,
+        "tokenNamespace": "agent:planner",
+        "questions": [
+          {
+            "id": "plan-format",
+            "answerKey": "agent.planner.planFormat",
+            "kind": "choice",
+            "prompt": "How detailed should the Planner agent be by default?",
+            "required": false,
+            "fallbackToken": "{{pack:plan-format}}",
+            "options": [
+              {
+                "id": "full-phased",
+                "label": "Full phased plans"
+              },
+              {
+                "id": "tight-phased",
+                "label": "Tighter phased plans"
+              }
+            ],
+            "tokens": [
+              "{{agent:planner:plan-format}}"
+            ],
+            "render": {
+              "full-phased": "Structure plans as numbered phases. For each phase, state: name, affected files, ordered steps, stop condition, and risks. End with the narrowest falsifying check — the command or test that would catch a regression. State assumptions up-front before the phases.",
+              "tight-phased": "Structure plans as short numbered phases. For each phase, state the goal, affected files, concrete steps, and one narrow verification check. Keep assumptions and risks brief unless they materially change execution order."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore",
+      "name": "Explore",
+      "summary": "Fast read-only codebase exploration.",
+      "status": "active",
+      "surface": "agents",
+      "manifestEntryId": "agents.explore.agent.md",
+      "customization": {
+        "requiresInstalled": true,
+        "tokenNamespace": "agent:explore",
+        "questions": [
+          {
+            "id": "output-style",
+            "answerKey": "agent.explore.outputStyle",
+            "kind": "choice",
+            "prompt": "How much context should the Explore agent include by default?",
+            "required": false,
+            "fallbackToken": "{{pack:output-style}}",
+            "options": [
+              {
+                "id": "concise-results",
+                "label": "Concise results"
+              },
+              {
+                "id": "context-rich",
+                "label": "Context-rich results"
+              }
+            ],
+            "tokens": [
+              "{{agent:explore:output-style}}"
+            ],
+            "render": {
+              "concise-results": "Report files found with workspace-relative paths and line numbers. Lead with the best match and keep excerpts short. Use tables only when they materially improve scanability.",
+              "context-rich": "Report files found with workspace-relative paths and line numbers. Use Markdown tables for lists of results. Lead with the most relevant match; group related findings. Keep excerpts short — quote only the lines that answer the question."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "review",
+      "name": "Review",
+      "summary": "Structured code and architecture review.",
+      "status": "active",
+      "surface": "agents",
+      "manifestEntryId": "agents.review.agent.md",
+      "customization": {
+        "requiresInstalled": true,
+        "tokenNamespace": "agent:review",
+        "questions": [
+          {
+            "id": "reporting-threshold",
+            "answerKey": "agent.review.reportingThreshold",
+            "kind": "choice",
+            "prompt": "How aggressive should the Review agent be when reporting findings?",
+            "required": false,
+            "fallbackToken": "{{pack:review-depth}}",
+            "options": [
+              {
+                "id": "advisory-and-up",
+                "label": "Advisory and up"
+              },
+              {
+                "id": "medium-and-up",
+                "label": "Medium and up"
+              }
+            ],
+            "tokens": [
+              "{{agent:review:reporting-threshold}}"
+            ],
+            "render": {
+              "advisory-and-up": "By default, report all findings at Advisory and above. Prioritise Critical and High.",
+              "medium-and-up": "By default, report Medium severity and above. Mention Low or Advisory findings only when they materially affect follow-up risk."
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -35,7 +35,7 @@ Your role: turn medium or large requests into scoped execution plans before impl
 
 ## Plan format
 
-Structure plans as numbered phases. For each phase, state: name, affected files, ordered steps, stop condition, and risks. End with the narrowest falsifying check — the command or test that would catch a regression. State assumptions up-front before the phases.
+{{agent:planner:plan-format}}
 
 ## Memory
 

@@ -51,7 +51,8 @@ def main() -> int:
     if artifact_strategy.get("catalog") == "generated-from-policy-and-registries":
         pack_registry = load_optional_registry(repo_root / "template/setup/pack-registry.json")
         profile_registry = load_optional_registry(repo_root / "template/setup/profile-registry.json")
-        catalog = generate_catalog(policy, pack_registry, profile_registry)
+        agent_registry = load_optional_registry(repo_root / "template/setup/agent-registry.json")
+        catalog = generate_catalog(policy, pack_registry, profile_registry, agent_registry)
         catalog_path = repo_root / "template/setup/catalog.json"
         write_manifest(catalog_path, catalog)
         print(f"catalog  → {catalog_path.relative_to(repo_root)}")

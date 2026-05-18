@@ -41,6 +41,28 @@ class PromptContractTests(unittest.TestCase):
         self.assertNotIn("approved apply through one top-level command", cli_surface)
         self.assertNotIn("Writes a serialized lifecycle plan for later apply.", cli_surface)
 
+    def test_readme_and_protocol_document_agent_follow_up_customization(self) -> None:
+        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        protocol = (REPO_ROOT / "docs" / "contracts" / "lifecycle-protocol.md").read_text(encoding="utf-8")
+
+        self.assertIn("installed-agent follow-up knobs", readme)
+        self.assertIn("agent customization answers", readme)
+        self.assertIn("inspect.result.agentCustomization", protocol)
+        self.assertIn("authoritative replay store", protocol)
+
+    def test_setup_and_bootstrap_prompts_document_agent_follow_up_batch(self) -> None:
+        prompt_paths = [
+            REPO_ROOT / "template" / "prompts" / "bootstrap.md",
+            REPO_ROOT / "template" / "prompts" / "setup.md",
+        ]
+
+        for prompt_path in prompt_paths:
+            with self.subTest(prompt=prompt_path.name):
+                content = prompt_path.read_text(encoding="utf-8")
+                self.assertIn("- `agent`", content)
+                self.assertIn("batch: \"agent\"", content)
+                self.assertIn("rerun `plan setup`", content)
+
 
 class TemplateMcpJsonContractTests(unittest.TestCase):
     """Regression tests for template/vscode/mcp.json contract.

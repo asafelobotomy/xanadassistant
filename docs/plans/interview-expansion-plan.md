@@ -1,6 +1,6 @@
 # Interview Expansion Plan
 
-> Status: Implementation complete through Tier 3-A (committed). Tier 3-B and Tier 4 deferred.
+> Status: Base interview implementation complete; installed-agent follow-up customization now shipped for Commit, Docs, Explore, Planner, and Review. Tier 3-B and Tier 4 remain deferred.
 > Sources: `copilot-instructions-template` interview.md + setup.agent.md + template;
 > GitHub Copilot customization docs; progressive-disclosure UX research.
 
@@ -8,19 +8,20 @@
 
 ## Current State (after implementation)
 
-xanadassistant now delivers 9 interview questions and 9 registered tokens:
+xanadassistant now has a two-stage setup-question flow:
 
-| Answer key | Kind | Resolves |
-| --- | --- | --- |
-| `profile.selected` | choice | `{{XANAD_PROFILE}}` |
-| `packs.selected` | multi-choice | gates `lean-skills` surface |
-| `ownership.agents` | choice | delivery model |
-| `ownership.skills` | choice | delivery model |
-| `response.style` | choice | `{{RESPONSE_STYLE}}` |
-| `autonomy.level` | choice | `{{AUTONOMY_LEVEL}}` |
-| `agent.persona` | choice | `{{AGENT_PERSONA}}` |
-| `testing.philosophy` | choice | `{{TESTING_PHILOSOPHY}}` |
-| `mcp.enabled` | confirm | gates 3-file MCP install |
+1. A base interview covering setup depth, profile, packs, ownership, personalisation, memory/MCP choices, and other core setup answers.
+2. A plan-time follow-up stage that derives `batch: "agent"` questions only for locally installed configurable agents and replays those answers from lockfile `setupAnswers` on later inspect/update/repair flows.
+
+Current shipped configurable agents:
+
+| Agent | Answer keys | Agent tokens | Fallback token(s) |
+| --- | --- | --- | --- |
+| Commit | `agent.commit.messageStyle`, `agent.commit.secretGuardMode` | `{{agent:commit:message-style}}`, `{{agent:commit:secret-guard}}` | `{{pack:commit-style}}`, `{{pack:secret-guard}}` |
+| Docs | `agent.docs.outputStyle` | `{{agent:docs:output-style}}` | `{{pack:output-style}}` |
+| Explore | `agent.explore.outputStyle` | `{{agent:explore:output-style}}` | `{{pack:output-style}}` |
+| Planner | `agent.planner.planFormat` | `{{agent:planner:plan-format}}` | `{{pack:plan-format}}` |
+| Review | `agent.review.reportingThreshold` | `{{agent:review:reporting-threshold}}` | `{{pack:review-depth}}` |
 
 Auto-detected tokens (no questions, scanner runs silently):
 
@@ -58,6 +59,7 @@ Auto-detected tokens (no questions, scanner runs silently):
 | 2-B | ✅ done | `autonomy.level` → `{{AUTONOMY_LEVEL}}` | 1 | 1 |
 | 2-C | ✅ done | `agent.persona` → `{{AGENT_PERSONA}}` | 1 | 1 |
 | 3-A | ✅ done | `testing.philosophy` → `{{TESTING_PHILOSOPHY}}` | 1 | 1 |
+| Agent rollout | ✅ done | Installed-agent follow-up registry, replay, and wrapper-token customization for Commit, Docs, Explore, Planner, and Review | 6 | 6 |
 | 3-B | 🔧 deferred | `loc.thresholds` → `{{LOC_WARN}}` + `{{LOC_HARD}}` | 1 | 2 |
 | 4 | 🔧 future | Additional CIT tokens — see Tier 4 table below | — | — |
 
@@ -87,13 +89,16 @@ Token values: `strict` → 150/300, `standard` → 250/400, `relaxed` → 400/60
 
 ## Progressive Disclosure Structure (current)
 
-**Batch 1 — Essential (5 questions, always asked):**
-`profile.selected` → `packs.selected` → `ownership.agents` + `ownership.skills` → `mcp.enabled`
+**Batch 1 — Setup and core choices:**
+`setup.depth`, then the base profile/pack/ownership/MCP questions appropriate to that depth.
 
-**Batch 2 — Personalisation (4 questions, with recommended defaults):**
-`response.style` → `autonomy.level` → `agent.persona` → `testing.philosophy`
+**Batch 2 — Personalisation:**
+`response.style`, `autonomy.level`, `agent.persona`, `testing.philosophy`, and related optional core preferences.
 
-In `--non-interactive` mode, all questions use their `default` values. The scanner always runs silently.
+**Batch 3 — Agent follow-ups:**
+Plan-time `batch: "agent"` questions emitted only for configurable agents that are actually installed locally after ownership resolution.
+
+In `--non-interactive` mode, base questions use their declared defaults and omitted agent-specific answers fall back to their pack token values. The scanner always runs silently.
 
 ---
 
@@ -142,11 +147,14 @@ In `--non-interactive` mode, all questions use their `default` values. The scann
 | `scripts/lifecycle/_xanad/_plan_utils.py` | 0 |
 | `scripts/lifecycle/_xanad/_workspace_scan.py` (new) | 1-B |
 | `scripts/lifecycle/_xanad/_conditions.py` | 0, 1-B, 2, 3-A |
-| `scripts/lifecycle/_xanad/_interview.py` | 2, 3-A |
+| `scripts/lifecycle/_xanad/_interview.py` | 2, 3-A, agent rollout |
+| `scripts/lifecycle/_xanad/_agent_customization.py` | agent rollout |
 | `template/copilot-instructions.md` | 1-A, 1-B, 2, 3-A |
-| `template/setup/install-policy.json` | 1-B, 2, 3-A |
+| `template/setup/install-policy.json` | 1-B, 2, 3-A, agent rollout |
+| `template/setup/agent-registry.json` | agent rollout |
 | `template/setup/install-manifest.json` (generated) | after each tier |
 | `template/setup/catalog.json` (generated) | after each tier |
-| `tests/_test_base.py` | 1-B, 2, 3-A |
-| `tests/test_plan_setup.py` | 1-A, 2, 3-A |
-| `tests/test_inspect_check.py` | 1-A, 2, 3-A |
+| `tests/lifecycle/test_plan_conditions.py` | agent rollout |
+| `tests/lifecycle/test_plan_migration.py` | agent rollout |
+| `tests/lifecycle/test_plan_orchestration.py` | agent rollout |
+| `tests/lifecycle/test_progress_and_defaults.py` | agent rollout |

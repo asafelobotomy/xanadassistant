@@ -5,6 +5,7 @@ from pathlib import Path
 
 from scripts.lifecycle._manifest_utils import load_json, sha256_file  # noqa: F401 – re-exported
 from scripts.lifecycle._xanad._errors import (
+    DEFAULT_AGENT_REGISTRY_PATH,
     DEFAULT_CATALOG_PATH,
     DEFAULT_LOCK_SCHEMA_PATH,
     DEFAULT_MANIFEST_SCHEMA_PATH,
@@ -74,16 +75,22 @@ def load_contract_artifacts(package_root: Path) -> tuple[dict, dict]:
 
 
 def load_discovery_metadata(package_root: Path) -> tuple[dict, dict]:
+    agent_registry_path = package_root / DEFAULT_AGENT_REGISTRY_PATH
     pack_registry_path = package_root / DEFAULT_PACK_REGISTRY_PATH
     profile_registry_path = package_root / DEFAULT_PROFILE_REGISTRY_PATH
     catalog_path = package_root / DEFAULT_CATALOG_PATH
 
     metadata = {
+        "agentRegistry": load_optional_json(agent_registry_path),
         "packRegistry": load_optional_json(pack_registry_path),
         "profileRegistry": load_optional_json(profile_registry_path),
         "catalog": load_optional_json(catalog_path),
     }
     artifacts = {
+        "agentRegistry": {
+            "path": str(agent_registry_path),
+            "loaded": agent_registry_path.exists(),
+        },
         "packRegistry": {
             "path": str(pack_registry_path),
             "loaded": pack_registry_path.exists(),

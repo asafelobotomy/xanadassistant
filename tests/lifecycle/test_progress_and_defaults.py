@@ -135,6 +135,154 @@ class DefaultsTests(unittest.TestCase):
         self.assertTrue(answers["hooks.enabled"])
         self.assertEqual(ownership, {"agents": "local"})
 
+    def test_derive_effective_plan_defaults_replays_agent_customization_answers(self) -> None:
+        policy = {"canonicalSurfaces": [], "ownershipDefaults": {}}
+        metadata = {
+            "profileRegistry": {"profiles": []},
+            "agentRegistry": {
+                "agents": [
+                    {
+                        "id": "commit",
+                        "status": "active",
+                        "manifestEntryId": "agents.commit.agent.md",
+                        "customization": {
+                            "requiresInstalled": True,
+                            "tokenNamespace": "agent:commit",
+                            "questions": [
+                                {
+                                    "answerKey": "agent.commit.messageStyle",
+                                    "kind": "choice",
+                                    "options": ["conventional-with-context", "conventional-subject-first"],
+                                },
+                                {
+                                    "answerKey": "agent.commit.secretGuardMode",
+                                    "kind": "choice",
+                                    "options": ["surface-and-stop", "refuse-on-probable-secret"],
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        "id": "docs",
+                        "status": "active",
+                        "manifestEntryId": "agents.docs.agent.md",
+                        "customization": {
+                            "tokenNamespace": "agent:docs",
+                            "questions": [
+                                {
+                                    "answerKey": "agent.docs.outputStyle",
+                                    "kind": "choice",
+                                    "options": ["corpus-match", "concise-guides"],
+                                }
+                            ],
+                        },
+                    },
+                    {
+                        "id": "planner",
+                        "status": "active",
+                        "manifestEntryId": "agents.planner.agent.md",
+                        "customization": {
+                            "tokenNamespace": "agent:planner",
+                            "questions": [
+                                {
+                                    "answerKey": "agent.planner.planFormat",
+                                    "kind": "choice",
+                                    "options": ["full-phased", "tight-phased"],
+                                }
+                            ],
+                        },
+                    },
+                    {
+                        "id": "explore",
+                        "status": "active",
+                        "manifestEntryId": "agents.explore.agent.md",
+                        "customization": {
+                            "tokenNamespace": "agent:explore",
+                            "questions": [
+                                {
+                                    "answerKey": "agent.explore.outputStyle",
+                                    "kind": "choice",
+                                    "options": ["concise-results", "context-rich"],
+                                }
+                            ],
+                        },
+                    },
+                    {
+                        "id": "review",
+                        "status": "active",
+                        "manifestEntryId": "agents.review.agent.md",
+                        "customization": {
+                            "tokenNamespace": "agent:review",
+                            "questions": [
+                                {
+                                    "answerKey": "agent.review.reportingThreshold",
+                                    "kind": "choice",
+                                    "options": ["advisory-and-up", "medium-and-up"],
+                                }
+                            ],
+                        },
+                    }
+                ]
+            },
+        }
+        manifest = {
+            "managedFiles": [
+                {
+                    "id": "agents.commit.agent.md",
+                    "surface": "agents",
+                    "ownership": ["local", "plugin-backed-copilot-format"],
+                    "requiredWhen": [],
+                },
+                {
+                    "id": "agents.docs.agent.md",
+                    "surface": "agents",
+                    "ownership": ["local"],
+                    "requiredWhen": [],
+                },
+                {
+                    "id": "agents.planner.agent.md",
+                    "surface": "agents",
+                    "ownership": ["local"],
+                    "requiredWhen": [],
+                },
+                {
+                    "id": "agents.explore.agent.md",
+                    "surface": "agents",
+                    "ownership": ["local"],
+                    "requiredWhen": [],
+                },
+                {
+                    "id": "agents.review.agent.md",
+                    "surface": "agents",
+                    "ownership": ["local"],
+                    "requiredWhen": [],
+                }
+            ]
+        }
+        lockfile_state = {
+            "profile": None,
+            "setupAnswers": {
+                "agent.commit.messageStyle": "conventional-subject-first",
+                "agent.commit.secretGuardMode": "refuse-on-probable-secret",
+                "agent.docs.outputStyle": "concise-guides",
+                "agent.planner.planFormat": "tight-phased",
+                "agent.explore.outputStyle": "concise-results",
+                "agent.review.reportingThreshold": "medium-and-up",
+            },
+            "selectedPacks": [],
+            "mcpEnabled": False,
+        }
+
+        answers, ownership = _defaults.derive_effective_plan_defaults(policy, metadata, manifest, lockfile_state)
+
+        self.assertEqual(answers["agent.commit.messageStyle"], "conventional-subject-first")
+        self.assertEqual(answers["agent.commit.secretGuardMode"], "refuse-on-probable-secret")
+        self.assertEqual(answers["agent.docs.outputStyle"], "concise-guides")
+        self.assertEqual(answers["agent.planner.planFormat"], "tight-phased")
+        self.assertEqual(answers["agent.explore.outputStyle"], "concise-results")
+        self.assertEqual(answers["agent.review.reportingThreshold"], "medium-and-up")
+        self.assertEqual(ownership, {"agents": "local"})
+
 
 if __name__ == "__main__":
     unittest.main()

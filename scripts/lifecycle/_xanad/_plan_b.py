@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scripts.lifecycle._xanad._agent_customization import summarize_agent_customization
 from scripts.lifecycle._xanad._conditions import normalize_plan_answers, resolve_token_values
 from scripts.lifecycle._xanad._errors import LifecycleCommandError, _State
 from scripts.lifecycle._xanad._inspect import collect_context
 from scripts.lifecycle._xanad._interview import (
     build_interview_questions,
+    expand_interview_questions,
     load_answers,
     resolve_question_answers,
 )
@@ -59,6 +61,13 @@ def _conflict_blocked_plan(
     ownership_by_surface = resolve_ownership_by_surface(
         context["policy"], context["manifest"], context["lockfileState"], resolved_answers,
     )
+    agent_customization = summarize_agent_customization(
+        context["policy"],
+        context["metadata"],
+        context["manifest"],
+        context["lockfileState"],
+        resolved_answers,
+    )
     return {
         "command": "plan", "mode": mode, "workspace": str(workspace),
         "source": build_source_summary(package_root),
@@ -82,6 +91,7 @@ def _conflict_blocked_plan(
             "repairReasons": repair_reasons, "retired": [],
             "questionsResolved": False,
             "resolvedAnswers": resolved_answers, "questions": questions,
+            "agentCustomization": agent_customization,
         },
     }
 
@@ -124,13 +134,31 @@ def build_plan_result(
             {"installState": context["installState"]},
         )
 
-    questions = build_interview_questions(context["policy"], context["metadata"], mode)
-    question_ids = {q["id"] for q in questions}
+    base_questions = build_interview_questions(context["policy"], context["metadata"], mode)
     raw_answers = load_answers(answers_path)
+    base_question_ids = {q["id"] for q in base_questions}
+    answers = seed_answers_from_install_state(mode, base_questions, context["lockfileState"], raw_answers)
+    answers = seed_answers_from_profile(context["metadata"].get("profileRegistry") or {}, answers, base_question_ids)
+    questions = expand_interview_questions(
+        context["policy"],
+        context["metadata"],
+        context["manifest"],
+        mode,
+        answers,
+        context["lockfileState"],
+    )
+    question_ids = {q["id"] for q in questions}
     answers = seed_answers_from_install_state(mode, questions, context["lockfileState"], raw_answers)
     answers = seed_answers_from_profile(context["metadata"].get("profileRegistry") or {}, answers, question_ids)
     resolved_answers, unresolved, unknown_answer_ids = resolve_question_answers(questions, answers)
     resolved_answers = normalize_plan_answers(context["policy"], resolved_answers)
+    agent_customization = summarize_agent_customization(
+        context["policy"],
+        context["metadata"],
+        context["manifest"],
+        context["lockfileState"],
+        resolved_answers,
+    )
 
     # Prescan: detect pre-existing files and load consumer per-file resolutions.
     _res_warnings: list[dict] = []
@@ -186,7 +214,13 @@ def build_plan_result(
     ownership_by_surface = resolve_ownership_by_surface(
         context["policy"], context["manifest"], context["lockfileState"], resolved_answers,
     )
-    token_values = resolve_token_values(context["policy"], workspace, resolved_answers, package_root=package_root)
+    token_values = resolve_token_values(
+        context["policy"],
+        workspace,
+        resolved_answers,
+        package_root=package_root,
+        metadata=context["metadata"],
+    )
 
     writes, actions, skipped_actions, retired_targets = build_setup_plan_actions(
         workspace, package_root, context["manifest"], ownership_by_surface,
@@ -266,6 +300,7 @@ def build_plan_result(
             "questionsResolved": not unresolved,
             "resolvedAnswers": resolved_answers,
             "questions": questions,
+            "agentCustomization": agent_customization,
             "existingFiles": existing_files,
             "consumerResolutions": resolutions,
         },

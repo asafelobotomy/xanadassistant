@@ -33,6 +33,48 @@ _TESTING_PHILOSOPHY_LABELS: dict[str, str] = {
 _SCAN_TOKENS: frozenset[str] = frozenset({"{{PRIMARY_LANGUAGE}}", "{{PACKAGE_MANAGER}}", "{{TEST_COMMAND}}"})
 
 
+def _resolve_agent_rendered_value(question: dict, resolved_answers: dict, token_values: dict[str, str]) -> str | None:
+    answer_key = question.get("answerKey")
+    if not isinstance(answer_key, str) or not answer_key:
+        return None
+
+    if answer_key not in resolved_answers:
+        fallback_token = question.get("fallbackToken")
+        if isinstance(fallback_token, str):
+            return token_values.get(fallback_token)
+        return None
+
+    answer_value = resolved_answers.get(answer_key)
+    render_map = question.get("render")
+    if isinstance(render_map, dict) and isinstance(answer_value, str):
+        rendered = render_map.get(answer_value)
+        if isinstance(rendered, str):
+            return rendered
+
+    if isinstance(answer_value, bool):
+        return "true" if answer_value else "false"
+    if isinstance(answer_value, list):
+        return ", ".join(str(item) for item in answer_value)
+    if answer_value is None:
+        return None
+    return str(answer_value)
+
+
+def _apply_agent_token_values(metadata: dict | None, resolved_answers: dict, token_values: dict[str, str]) -> None:
+    agent_registry = (metadata or {}).get("agentRegistry") or {}
+    for agent in agent_registry.get("agents", []):
+        if agent.get("status") != "active":
+            continue
+        customization = agent.get("customization") or {}
+        for question in customization.get("questions") or []:
+            rendered_value = _resolve_agent_rendered_value(question, resolved_answers, token_values)
+            if rendered_value is None:
+                continue
+            for token in question.get("tokens") or []:
+                if isinstance(token, str) and token:
+                    token_values[token] = rendered_value
+
+
 def parse_condition_literal(value: str) -> object:
     normalized = value.strip()
     lower = normalized.lower()
@@ -71,7 +113,11 @@ def normalize_plan_answers(policy: dict, resolved_answers: dict) -> dict:
 
 
 def resolve_token_values(
-    policy: dict, workspace: Path, resolved_answers: dict, package_root: Path | None = None
+    policy: dict,
+    workspace: Path,
+    resolved_answers: dict,
+    package_root: Path | None = None,
+    metadata: dict | None = None,
 ) -> dict[str, str]:
     token_values: dict[str, str] = {}
 
@@ -130,6 +176,7 @@ def resolve_token_values(
             resolved_answers.get("packs.selected") or [],
             resolved_token_conflicts or None,
         ))
+    _apply_agent_token_values(metadata, resolved_answers, token_values)
     return token_values
 
 

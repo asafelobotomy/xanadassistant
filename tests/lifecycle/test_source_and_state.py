@@ -13,6 +13,7 @@ from scripts.lifecycle._xanad import _source
 from scripts.lifecycle._xanad import _source_remote
 from scripts.lifecycle._xanad import _state
 from scripts.lifecycle._xanad._errors import (
+    DEFAULT_AGENT_REGISTRY_PATH,
     DEFAULT_CATALOG_PATH,
     DEFAULT_PACK_REGISTRY_PATH,
     DEFAULT_POLICY_PATH,
@@ -61,6 +62,7 @@ class LoaderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             for path, payload in (
+                (DEFAULT_AGENT_REGISTRY_PATH, {"agents": []}),
                 (DEFAULT_PACK_REGISTRY_PATH, {"packs": []}),
                 (DEFAULT_PROFILE_REGISTRY_PATH, {"profiles": []}),
                 (DEFAULT_CATALOG_PATH, {"entries": []}),
@@ -71,7 +73,9 @@ class LoaderTests(unittest.TestCase):
 
             metadata, artifacts = _loader.load_discovery_metadata(root)
 
+        self.assertEqual(metadata["agentRegistry"], {"agents": []})
         self.assertEqual(metadata["packRegistry"], {"packs": []})
+        self.assertTrue(artifacts["agentRegistry"]["loaded"])
         self.assertTrue(artifacts["catalog"]["loaded"])
 
 

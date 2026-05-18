@@ -36,11 +36,11 @@ Your role: manage the full git lifecycle — staging, committing, pushing, pulli
 
 ## Message conventions
 
-{{pack:commit-style}}
+{{agent:commit:message-style}}
 
 ## Secret guard
 
-{{pack:secret-guard}}
+{{agent:commit:secret-guard}}
 
 ## CI preflight
 

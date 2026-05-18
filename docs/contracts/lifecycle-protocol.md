@@ -123,6 +123,30 @@ A `question` event should include:
 - `recommended` when there is a preferred value
 - `default` when a default is safe and meaningful
 
+Agent-specific follow-up questions are additive to the base question flow.
+When emitted, they must use stable answer ids and remain valid in `setupAnswers` replay.
+
+## Inspect And Plan Additions
+
+`inspect.result.agentCustomization`
+
+- Additive metadata describing configurable active agents.
+- Must include `availableAgents` and `installedAgents` arrays when present.
+
+`plan.result.questions`
+
+- May contain both base interview questions and installed-agent follow-up questions.
+- Agent follow-up questions must use stable ids because their answers are persisted in the lockfile.
+
+`plan.result.agentCustomization`
+
+- Mirrors the inspect-time configurable-agent summary for the resolved plan answers.
+
+## Lockfile Replay Contract
+
+`setupAnswers` remains the authoritative replay store for interview and agent-customization answers.
+Update, repair, factory-restore, inspect, and drift checks must be able to re-derive token values from those stored answers without re-asking the user.
+
 ## Warning And Error Contract
 
 Warning and error objects should include:

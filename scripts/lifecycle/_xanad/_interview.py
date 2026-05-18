@@ -3,10 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.lifecycle._xanad._agent_customization import build_agent_customization_questions
+from scripts.lifecycle._xanad._conditions import normalize_plan_answers
 from scripts.lifecycle._xanad._errors import LifecycleCommandError
 from scripts.lifecycle._xanad._inspect import collect_context
 from scripts.lifecycle._xanad._interview_questions import mcp_question, mcp_servers_question, personalisation_questions
 from scripts.lifecycle._xanad._loader import load_json
+from scripts.lifecycle._xanad._plan_c import seed_answers_from_install_state, seed_answers_from_profile
 from scripts.lifecycle._xanad._prescan import scan_consumer_kept_updates, scan_existing_copilot_files
 from scripts.lifecycle._xanad._source import build_source_summary
 
@@ -90,9 +93,47 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
     return questions
 
 
+def expand_interview_questions(
+    policy: dict,
+    metadata: dict,
+    manifest: dict | None,
+    mode: str,
+    seeded_answers: dict | None = None,
+    lockfile_state: dict | None = None,
+) -> list[dict]:
+    questions = build_interview_questions(policy, metadata, mode)
+    if manifest is None:
+        return questions
+
+    resolved_answers, _, _ = resolve_question_answers(questions, seeded_answers or {})
+    resolved_answers = normalize_plan_answers(policy, resolved_answers)
+    return questions + build_agent_customization_questions(
+        policy,
+        metadata,
+        manifest,
+        lockfile_state or {},
+        resolved_answers,
+    )
+
+
 def build_interview_result(workspace: Path, package_root: Path, mode: str) -> dict:
     context = collect_context(workspace, package_root)
-    questions = build_interview_questions(context["policy"], context["metadata"], mode)
+    base_questions = build_interview_questions(context["policy"], context["metadata"], mode)
+    question_ids = {question["id"] for question in base_questions}
+    seeded_answers = seed_answers_from_install_state(mode, base_questions, context["lockfileState"], {})
+    seeded_answers = seed_answers_from_profile(
+        context["metadata"].get("profileRegistry") or {},
+        seeded_answers,
+        question_ids,
+    )
+    questions = expand_interview_questions(
+        context["policy"],
+        context["metadata"],
+        context["manifest"],
+        mode,
+        seeded_answers,
+        context["lockfileState"],
+    )
 
     if mode == "setup":
         existing_files = scan_existing_copilot_files(workspace, context["manifest"])

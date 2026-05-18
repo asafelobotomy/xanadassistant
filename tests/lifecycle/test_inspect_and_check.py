@@ -80,7 +80,7 @@ class InspectTests(unittest.TestCase):
                 return_value=({"tokenRules": []}, {"manifest": {"loaded": False, "path": "template/setup/install-manifest.json"}}),
             ), mock.patch(
                 "scripts.lifecycle._xanad._inspect.load_discovery_metadata",
-                return_value=({}, {}),
+                return_value=({"agentRegistry": {"agents": [{"id": "review", "name": "Review", "status": "active", "manifestEntryId": "agents.review.agent.md", "customization": {"tokenNamespace": "agent:review"}}]}}, {}),
             ), mock.patch(
                 "scripts.lifecycle._xanad._inspect.load_manifest",
                 return_value=None,
@@ -135,6 +135,8 @@ class InspectTests(unittest.TestCase):
             "message": "Generated manifest not found at package root.",
             "details": {"path": "template/setup/install-manifest.json"},
         }])
+        self.assertEqual(context["agentCustomization"]["availableAgents"][0]["id"], "review")
+        self.assertEqual(context["agentCustomization"]["installedAgents"], [])
         self.assertEqual(context["defaultPlanAnswers"], {"resolvedTokenConflicts.voice": "docs"})
         self.assertEqual(context["manifestSummary"], {"declared": 0})
 
@@ -146,6 +148,7 @@ class InspectTests(unittest.TestCase):
             "git": {"present": True, "dirty": False},
             "artifacts": {},
             "metadataArtifacts": {},
+            "agentCustomization": {"availableAgents": [{"id": "review"}], "installedAgents": [{"id": "review"}]},
             "existingSurfaces": {"agents": {"count": 1}},
             "legacyVersionState": {"present": False},
             "lockfileState": {"present": True},
@@ -156,6 +159,7 @@ class InspectTests(unittest.TestCase):
             result = _inspect.build_inspect_result(Path("/workspace"), Path("/package"))
 
         self.assertEqual(result["command"], "inspect")
+        self.assertEqual(result["result"]["agentCustomization"]["installedAgents"][0]["id"], "review")
         self.assertEqual(result["result"]["manifestSummary"]["declared"], 1)
 
 

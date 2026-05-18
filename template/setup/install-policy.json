@@ -599,6 +599,36 @@
       "required": false
     },
     {
+      "token": "{{agent:commit:message-style}}",
+      "description": "Commit agent message style. Falls back to the active pack commit-style guidance when no agent-specific answer is recorded.",
+      "required": false
+    },
+    {
+      "token": "{{agent:commit:secret-guard}}",
+      "description": "Commit agent secret-guard mode. Falls back to the active pack secret-guard guidance when no agent-specific answer is recorded.",
+      "required": false
+    },
+    {
+      "token": "{{agent:docs:output-style}}",
+      "description": "Docs agent writing style. Falls back to the active pack output-style guidance when no agent-specific answer is recorded.",
+      "required": false
+    },
+    {
+      "token": "{{agent:planner:plan-format}}",
+      "description": "Planner agent plan format. Falls back to the active pack plan-format guidance when no agent-specific answer is recorded.",
+      "required": false
+    },
+    {
+      "token": "{{agent:explore:output-style}}",
+      "description": "Explore agent output style. Falls back to the active pack output-style guidance when no agent-specific answer is recorded.",
+      "required": false
+    },
+    {
+      "token": "{{agent:review:reporting-threshold}}",
+      "description": "Review agent reporting threshold. Falls back to the pack review depth when no agent-specific answer is recorded.",
+      "required": false
+    },
+    {
       "token": "{{pack:scope-discipline}}",
       "description": "Scope boundary rule. Resolved from selected pack; defaults to answering the request with appropriate context.",
       "required": false

@@ -59,7 +59,7 @@ class GenerateScriptTests(unittest.TestCase):
                 "scripts.generate.write_manifest"
             ) as write_manifest, mock.patch(
                 "scripts.generate.load_optional_registry",
-                side_effect=[{"packs": []}, {"profiles": []}],
+                side_effect=[{"packs": []}, {"profiles": []}, {"agents": []}],
             ), mock.patch(
                 "scripts.generate.generate_catalog",
                 return_value={"entries": []},
@@ -69,6 +69,7 @@ class GenerateScriptTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertTrue(generate_manifest.called)
         self.assertTrue(generate_catalog.called)
+        self.assertEqual(generate_catalog.call_args.args[3], {"agents": []})
         self.assertEqual(write_manifest.call_count, 2)
         self.assertIn("manifest", stdout.getvalue())
         self.assertIn("catalog", stdout.getvalue())

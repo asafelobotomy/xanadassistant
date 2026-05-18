@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scripts.lifecycle._xanad._agent_customization import summarize_agent_customization
 from scripts.lifecycle._xanad._conditions import resolve_token_values
 from scripts.lifecycle._xanad._defaults import derive_effective_plan_defaults
 from scripts.lifecycle._xanad._inspect_helpers import (
@@ -42,7 +43,20 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
         for token_name, winning_pack in resolved_conflicts.items():
             if isinstance(winning_pack, str):
                 default_answers[f"resolvedTokenConflicts.{token_name}"] = winning_pack
-    token_values = resolve_token_values(policy, workspace, default_answers, package_root=package_root)
+    agent_customization = summarize_agent_customization(
+        policy,
+        metadata,
+        manifest,
+        lockfile_state,
+        default_answers,
+    )
+    token_values = resolve_token_values(
+        policy,
+        workspace,
+        default_answers,
+        package_root=package_root,
+        metadata=metadata,
+    )
     manifest_with_status = annotate_manifest_entries(
         workspace, package_root, manifest, ownership_by_surface, default_answers, token_values,
         consumer_resolutions=lockfile_state.get("consumerResolutions", {}),
@@ -129,6 +143,7 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
         "manifestSummary": manifest_summary,
         "defaultPlanAnswers": default_answers,
         "defaultOwnershipBySurface": ownership_by_surface,
+        "agentCustomization": agent_customization,
         "successorMigrationTargets": successor_migration_targets,
         "warnings": warnings,
     }
@@ -149,6 +164,7 @@ def build_inspect_result(workspace: Path, package_root: Path) -> dict:
             "git": context["git"],
             "contracts": context["artifacts"],
             "discoveryMetadata": context["metadataArtifacts"],
+            "agentCustomization": context["agentCustomization"],
             "existingSurfaces": context["existingSurfaces"],
             "legacyVersionState": context["legacyVersionState"],
             "lockfileState": context["lockfileState"],

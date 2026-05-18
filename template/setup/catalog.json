@@ -19,7 +19,7 @@
       "category": "planning"
     },
     {
-      "id": "apply",
+      "id": "setup",
       "category": "write"
     },
     {
@@ -95,5 +95,12 @@
     "balanced",
     "lean",
     "ultra-lean"
+  ],
+  "agents": [
+    "commit",
+    "docs",
+    "planner",
+    "explore",
+    "review"
   ]
 }

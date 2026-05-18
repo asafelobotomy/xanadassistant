@@ -235,14 +235,14 @@ def generate_manifest(package_root: Path, policy: dict) -> dict:
     }
 
 
-def generate_catalog(policy: dict, pack_registry: dict, profile_registry: dict) -> dict:
-    """Generate catalog.json from policy, pack registry, and profile registry."""
+def generate_catalog(policy: dict, pack_registry: dict, profile_registry: dict, agent_registry: dict) -> dict:
+    """Generate catalog.json from policy and discovery registries."""
     command_categories = {
         "inspect": "read-only",
         "interview": "read-only",
         "check": "read-only",
         "plan": "planning",
-        "apply": "write",
+        "setup": "write",
         "update": "write",
         "repair": "write",
         "factory-restore": "write",
@@ -251,6 +251,7 @@ def generate_catalog(policy: dict, pack_registry: dict, profile_registry: dict) 
     surface_layers = {name: spec.get("layer", "core") for name, spec in surface_sources.items()}
     packs = [pack["id"] for pack in pack_registry.get("packs", [])]
     profiles = [profile["id"] for profile in profile_registry.get("profiles", [])]
+    agents = [agent["id"] for agent in agent_registry.get("agents", []) if agent.get("status") == "active"]
 
     return {
         "schemaVersion": "0.1.0",
@@ -265,6 +266,7 @@ def generate_catalog(policy: dict, pack_registry: dict, profile_registry: dict) 
         "surfaceLayers": surface_layers,
         "packs": packs,
         "profiles": profiles,
+        "agents": agents,
     }
 
 
@@ -276,9 +278,11 @@ def main() -> int:
 
     policy = load_json(policy_path)
     pack_registry = None
+    agent_registry = {}
     if policy.get("generationSettings", {}).get("derivedArtifactStrategy", {}).get("catalog") == "generated-from-policy-and-registries":
         pack_registry = load_optional_registry(package_root / "template/setup/pack-registry.json")
         validate_pack_registry(package_root, policy, pack_registry)
+        agent_registry = load_optional_registry(package_root / "template/setup/agent-registry.json")
     manifest = generate_manifest(package_root, policy)
     output_path = package_root / (manifest_out or policy.get("generationSettings", {}).get("manifestOutput", "template/setup/install-manifest.json"))
     write_manifest(output_path, manifest)
@@ -287,7 +291,7 @@ def main() -> int:
     if catalog_strategy == "generated-from-policy-and-registries":
         assert pack_registry is not None
         profile_registry = load_optional_registry(package_root / "template/setup/profile-registry.json")
-        catalog = generate_catalog(policy, pack_registry, profile_registry)
+        catalog = generate_catalog(policy, pack_registry, profile_registry, agent_registry)
         catalog_path = package_root / "template/setup/catalog.json"
         write_manifest(catalog_path, catalog)
 

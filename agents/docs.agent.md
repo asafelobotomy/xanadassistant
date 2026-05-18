@@ -33,7 +33,7 @@ Your role: write and update documentation that explains how the current project 
 
 ## Output style
 
-Use Markdown with clear headers, numbered steps for procedures, and fenced code blocks for commands and examples. Lead with context before detail. Keep examples minimal but runnable. Do not document behaviour that is not yet implemented.
+{{agent:docs:output-style}}
 
 ## Memory
 

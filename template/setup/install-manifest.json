@@ -60,11 +60,11 @@
       "strategy": "token-replace",
       "requiredWhen": [],
       "tokens": [
-        "{{pack:commit-style}}",
-        "{{pack:secret-guard}}"
+        "{{agent:commit:message-style}}",
+        "{{agent:commit:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:b4665d04d5f2401576e6992503b76d886bad45b91d6e515ef13d916cc7f29ce5"
+      "hash": "sha256:b1d26247184fbe5c33c1b6636eebf4a12e97d2c801ab3cca0b2ad48967ace7d4"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -112,9 +112,11 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{agent:docs:output-style}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:ba4aebcb2ecb67ec4e34749269f066d536927a139eebedf5b5f6ee5acef61e41"
+      "hash": "sha256:1287ecf7e8cf04816ac99b6863f0fae6bab88d350036ab7348db3f5a4c004618"
     },
     {
       "id": "agents.explore.agent.md",
@@ -129,10 +131,10 @@
       "strategy": "token-replace",
       "requiredWhen": [],
       "tokens": [
-        "{{pack:output-style}}"
+        "{{agent:explore:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:166790b658dc7a4e6cce961179093e3fbe430ef41d5b4cf8b495e1f3bff0fb75"
+      "hash": "sha256:a32ebb3abdc006629e12af3849a861108afdf3ff1a3c45976123cca6d660a540"
     },
     {
       "id": "agents.organise.agent.md",
@@ -162,9 +164,11 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{agent:planner:plan-format}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:7aa6d75fadb8c68f46056fa0bd2d5499d0be7cf4d6c0ed9da1346718fbfeb9fc"
+      "hash": "sha256:22ad6fd59ae945269e7fc0b803a1c9b27bc531ee2e46bea77a7743f5861d5f5f"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -195,10 +199,10 @@
       "strategy": "token-replace",
       "requiredWhen": [],
       "tokens": [
-        "{{pack:review-depth}}"
+        "{{agent:review:reporting-threshold}}"
       ],
       "chmod": "none",
-      "hash": "sha256:7a184521e5a69aa741a7a7839265c98edb85cfe9f4ac37baebf4389fa418ad0e"
+      "hash": "sha256:f9840d83b6ca5cb5c8b6646b620343631f08ea01c5e4719e2ab8e844d401413a"
     },
     {
       "id": "agents.triage.agent.md",
@@ -656,7 +660,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:19f6c1174a064f222bdd3f1ef9c2a0385b23130e889831f15f84e7684d74945c"
+      "hash": "sha256:d0338f94dfabc626f8f3b5cdf26199e99f1d1fa10f457ea857b4cfacfaff71c3"
     },
     {
       "id": "devops-prompts.devops-incident.prompt.md",
@@ -878,7 +882,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:f5cc5c846a2bbe83e0dceaa848b27fd25dbad6ce3a104478fa5085d859a7a2f6"
+      "hash": "sha256:a3035fae38c0bd8deec8cf4671e24a7d51b2d23282a1e8f9b6937d0fa61a283d"
     },
     {
       "id": "shapeup-prompts.shapeup-kickoff.prompt.md",
