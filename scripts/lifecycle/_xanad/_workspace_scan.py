@@ -39,7 +39,7 @@ _LANGUAGE_CHECKS: list[tuple[str, str]] = [
 
 
 def _detect_language(workspace: Path) -> str | None:
-    for filename in ("pyproject.toml", "setup.py", "requirements.txt"):
+    for filename in ("pyproject.toml", "setup.py", "requirements.txt", "requirements-dev.txt"):
         if (workspace / filename).exists():
             return "Python"
     # Check JS/TS before lower-priority Rust/Go/Java/Ruby so polyglot repos
@@ -77,7 +77,7 @@ def _detect_package_manager(workspace: Path) -> str | None:
         return "Cargo"
     if (workspace / "go.mod").exists():
         return "go modules"
-    if (workspace / "requirements.txt").exists():
+    if (workspace / "requirements.txt").exists() or (workspace / "requirements-dev.txt").exists():
         return "pip"
     return None
 
@@ -123,4 +123,7 @@ def _detect_test_command(workspace: Path) -> str | None:
                 return "make test"
         except OSError:  # pragma: no cover
             pass
+    # Fallback: Python workspace with a tests/ directory.
+    if _detect_language(workspace) == "Python" and (workspace / "tests").is_dir():
+        return 'python3 -m unittest discover -s tests -p "test_*.py"'
     return None

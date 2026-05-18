@@ -1,7 +1,7 @@
 ---
 name: xanadLifecycle
-description: "Use when: set up xanadAssistant, inspect workspace, run lifecycle check, interview, plan setup, apply setup, update xanadAssistant, repair install, factory restore, run workspace audit, submit audit report, or coordinate any lifecycle command in a consumer workspace."
-argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, apply, update, repair, factory restore, or audit."
+description: "Use when: set up xanadAssistant, inspect workspace, run lifecycle check, interview, plan setup, apply setup, update xanadAssistant, repair install, factory restore, run lifecycle audit, submit lifecycle audit report, or coordinate any lifecycle command in a consumer workspace."
+argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, apply, update, repair, factory restore, or lifecycle audit."
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
@@ -33,7 +33,8 @@ resolution is missing.
 - Repair a broken or incomplete install → run `repair`
 - Restore to factory defaults → run `factory-restore`
 - Check current workspace state → run `inspect` or `check`
-- Run a workspace audit / submit an audit report → run `audit` (see `## Audit workflow`)
+- Run a **lifecycle** audit / submit a lifecycle audit report → run `audit` (see `## Audit workflow`)
+- A bare `audit` request (without the word "lifecycle") means the user wants a codebase audit — do not invoke this agent; route to `Review` instead.
 - Natural-language requests to add a convention or preference to instructions are not lifecycle operations; do not invoke this agent for phrases like `Remember this for next time` or `Add this to your instructions`.
 
 ## Cold-start (blank workspace)

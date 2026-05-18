@@ -11,7 +11,7 @@ I work **in** xanadassistant — implementing features, reviewing code, running 
 
 | Task | Command |
 |------|---------|
-| Run tests | `(not detected)` |
+| Run tests | `python3 -m unittest discover -s tests -p "test_*.py"` |
 | Inspect Copilot install state | `python3 <xanad-root>/xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` |
 | Check for repair needs | `python3 <xanad-root>/xanadAssistant.py check --workspace . --package-root <xanad-root> --json` |
 
@@ -26,6 +26,9 @@ Use the **xanadLifecycle** agent for all xanadAssistant operations. Trigger phra
 | `"run lifecycle check"` | Inspect + check; surface repair reasons |
 | `"repair install"` | Fix stale or broken managed files |
 | `"factory restore"` | Reset to clean managed state |
+| `"lifecycle audit"` | Collect xanadAssistant install-state audit report |
+
+A bare `audit` request (without "lifecycle") means a codebase audit — route to the `Review` agent, not `xanadLifecycle`.
 
 Available prompts: `/setup` (install or refresh), `/bootstrap` (cold-start from bare workspace), `/update` (pull latest package files).
 
@@ -52,12 +55,12 @@ Route specialist work to the matching agent before acting directly. If a task ha
 | Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
-| Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanadAssistant inspect, check, plan, apply, update, repair, or factory-restore | `xanadLifecycle` |
+| Code review, architecture review, security review, maintainability review, regression-risk review, review of a PR/diff, or a bare codebase **audit** | `Review` |
+| xanadAssistant inspect, check, plan, apply, update, repair, factory-restore, or **lifecycle audit** | `xanadLifecycle` |
 
 ## Coding Conventions
 
-- Language: **(not detected)** · Package manager: **(not detected)**
+- Language: **Python** · Package manager: **pip**
 - **Testing**: Always — write tests alongside every code change.
 - Read before modifying — never edit a file not opened this session
 - No silent error swallowing
@@ -101,5 +104,5 @@ When hooks are enabled, a `memory` MCP server is available. Each specialist agen
 - `Explore` agent — broad read-only codebase exploration and architecture lookup
 - `Planner` agent — produce scoped execution plans for multi-step work before implementation
 - `Researcher` agent — gather source-backed external constraints before implementation or review
-- `Review` agent — code, architecture, security, and regression-risk review
-- `xanadLifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore` requests
+- `Review` agent — code, architecture, security, and regression-risk review; also handles bare codebase audits
+- `xanadLifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and **lifecycle audit** requests

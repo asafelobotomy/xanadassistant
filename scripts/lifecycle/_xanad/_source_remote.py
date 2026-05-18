@@ -6,11 +6,36 @@ Factored out of _source.py to keep that module under the 250-line warning thresh
 All functions here require network access and are excluded from coverage.
 """
 
+import hashlib
 import re
 import subprocess
 from pathlib import Path
 
 from scripts.lifecycle._xanad._errors import LifecycleCommandError
+
+_SAFE_REF_RE = re.compile(r"^[A-Za-z0-9._/-]+$")
+
+
+def _cache_key(raw: str) -> str:
+    """Return a filesystem-safe, collision-free key for a version or ref string.
+
+    Combines a sanitised readable prefix with a short SHA-256 digest so that
+    values like 'feature/x' and 'feature-x' cannot map to the same directory.
+    """
+    digest = hashlib.sha256(raw.encode()).hexdigest()[:12]
+    safe_prefix = re.sub(r"[^A-Za-z0-9._-]", "-", raw)[:40]
+    return f"{safe_prefix}-{digest}"
+
+
+def _validate_ref(ref: str) -> None:
+    """Reject ref values containing characters not safe for git subprocess args."""
+    if not _SAFE_REF_RE.match(ref):
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"ref {ref!r} contains invalid characters.",
+            3,
+            {"ref": ref},
+        )
 
 
 def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:  # pragma: no cover
@@ -20,7 +45,7 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     import urllib.request as _urllib_request
 
     safe_version = re.sub(r"[^A-Za-z0-9._-]", "-", version)
-    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"release-{safe_version}"
+    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"release-{_cache_key(version)}"
     sentinel = cache_dir / ".complete"
     if sentinel.exists():
         return cache_dir
@@ -69,8 +94,9 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
 
 def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:  # pragma: no cover
     """Clone or update a GitHub repo at a specific ref to the cache and return the path."""
+    _validate_ref(ref)
     safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)
-    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{safe_ref}"
+    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
     clone_url = f"https://github.com/{owner}/{repo}.git"
     try:
         if (cache_dir / ".git").exists():

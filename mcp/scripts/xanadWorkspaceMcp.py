@@ -70,6 +70,8 @@ def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: 
         package_root = Path(package_root_arg).expanduser().resolve()
         if not package_root.exists():
             return None, f"Explicit packageRoot does not exist: {package_root_arg}"
+        if not package_root.is_dir():
+            return None, f"Explicit packageRoot is not a directory: {package_root_arg}"
     else:
         package_root_value = package_block.get("packageRoot") if isinstance(package_block, dict) else None
         if isinstance(package_root_value, str) and package_root_value.strip():
@@ -77,6 +79,8 @@ def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: 
         else:
             package_root = None
     if package_root is not None and package_root.exists():
+        if not package_root.is_dir():
+            return None, f"packageRoot resolved from lockfile is not a directory: {package_root}"
         return package_root, None
     resolved_source = source_arg
     resolved_version = version_arg
@@ -168,7 +172,10 @@ def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None =
     if answers_path is not None:
         if not (isinstance(answers_path, str) and answers_path.strip() and Path(answers_path).is_file()):
             return build_tool_result(status="unavailable", summary="answersPath must be a non-empty string pointing to an existing file.")
-        argv.extend(["--answers", answers_path])
+        resolved_answers = Path(answers_path).resolve()
+        if not resolved_answers.is_relative_to(WORKSPACE_ROOT):
+            return build_tool_result(status="unavailable", summary="answersPath must be a path within the workspace root.")
+        argv.extend(["--answers", str(resolved_answers)])
     for name, value, flag in (("nonInteractive", non_interactive, "--non-interactive"), ("dryRun", dry_run, "--dry-run")):
         if value is True:
             argv.append(flag)

@@ -6,8 +6,8 @@ description: "Conventions for scripts in this workspace — language, style, and
 
 # Script Instructions
 
-- Primary language for this workspace: **(not detected)**
-- Package manager: **(not detected)**
+- Primary language for this workspace: **Python**
+- Package manager: **pip**
 - Keep scripts small and focused — one responsibility per file.
 - No silent error swallowing: fail loudly with a non-zero exit code or a structured error.
 - Prefer stdlib or built-in tooling over introducing new dependencies.

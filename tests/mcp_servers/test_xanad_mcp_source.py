@@ -56,7 +56,7 @@ class XanadMcpSourceTests(unittest.TestCase):
             with self.subTest(module=module.__name__):
                 with tempfile.TemporaryDirectory() as tmpdir:
                     cache_root = Path(tmpdir)
-                    cache_dir = cache_root / "github" / "owner-repo" / "release-v1.0.0"
+                    cache_dir = cache_root / "github" / "owner-repo" / f"release-{module._cache_key('v1.0.0')}"
                     cache_dir.mkdir(parents=True)
                     (cache_dir / ".complete").write_text("ok\n", encoding="utf-8")
 
@@ -69,7 +69,7 @@ class XanadMcpSourceTests(unittest.TestCase):
             with self.subTest(module=module.__name__):
                 with tempfile.TemporaryDirectory() as tmpdir:
                     cache_root = Path(tmpdir)
-                    cache_dir = cache_root / "github" / "owner-repo" / "ref-main"
+                    cache_dir = cache_root / "github" / "owner-repo" / f"ref-{module._cache_key('main')}"
                     (cache_dir / ".git").mkdir(parents=True)
 
                     with mock.patch.object(module.subprocess, "run") as run_mock:
@@ -86,7 +86,7 @@ class XanadMcpSourceTests(unittest.TestCase):
 
                 with tempfile.TemporaryDirectory() as tmpdir:
                     cache_root = Path(tmpdir)
-                    cache_dir = cache_root / "github" / "owner-repo" / "ref-feature-test"
+                    cache_dir = cache_root / "github" / "owner-repo" / f"ref-{module._cache_key('feature/test')}"
                     with mock.patch.object(module.subprocess, "run") as run_mock:
                         result = module.resolve_github_ref("owner", "repo", "feature/test", cache_root)
 
@@ -95,6 +95,14 @@ class XanadMcpSourceTests(unittest.TestCase):
                         run_mock.call_args.args[0],
                         ["git", "clone", "--depth", "1", "--branch", "feature/test", "https://github.com/owner/repo.git", str(cache_dir)],
                     )
+
+    def test_cache_key_is_collision_free_for_slash_vs_hyphen(self) -> None:
+        for module in (SOURCE_MODULE, MANAGED_MODULE):
+            with self.subTest(module=module.__name__):
+                self.assertNotEqual(
+                    module._cache_key("feature/x"),
+                    module._cache_key("feature-x"),
+                )
 
 
 if __name__ == "__main__":

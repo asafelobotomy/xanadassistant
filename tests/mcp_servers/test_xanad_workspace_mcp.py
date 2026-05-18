@@ -213,6 +213,43 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
                 self.assertEqual(invalid_bool["status"], "unavailable")
                 self.assertIn("dryRun", invalid_bool["summary"])
 
+    def test_run_lifecycle_command_rejects_answers_path_outside_workspace(self) -> None:
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as f:
+                    outside_path = f.name
+                try:
+                    with self._workspace_ready(module), mock.patch.object(
+                        module,
+                        "resolve_lifecycle_package_root",
+                        return_value=(Path("/tmp/pkg"), None),
+                    ), mock.patch.object(module, "resolve_lifecycle_cli", return_value=(["python3", "xanadAssistant.py"], None)):
+                        result = module.run_lifecycle_command("plan", answers_path=outside_path)
+                    self.assertEqual(result["status"], "unavailable")
+                    self.assertIn("workspace", result["summary"].lower())
+                finally:
+                    Path(outside_path).unlink(missing_ok=True)
+
+    def test_run_lifecycle_command_rejects_symlinked_answers_path_outside_workspace(self) -> None:
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as workspace_dir, \
+                     tempfile.TemporaryDirectory() as outside_dir:
+                    workspace_root = Path(workspace_dir)
+                    outside_file = Path(outside_dir) / "answers.json"
+                    outside_file.write_text("{}", encoding="utf-8")
+                    symlink_path = workspace_root / "answers-link.json"
+                    symlink_path.symlink_to(outside_file)
+
+                    with self._workspace_ready(module), \
+                         mock.patch.object(module, "WORKSPACE_ROOT", workspace_root), \
+                         mock.patch.object(module, "resolve_lifecycle_package_root", return_value=(Path("/tmp/pkg"), None)), \
+                         mock.patch.object(module, "resolve_lifecycle_cli", return_value=(["python3", "xanadAssistant.py"], None)):
+                        result = module.run_lifecycle_command("plan", answers_path=str(symlink_path))
+
+                    self.assertEqual(result["status"], "unavailable")
+                    self.assertIn("workspace", result["summary"].lower())
+
     def test_workspace_show_install_state_uses_check_status_for_drift(self) -> None:
         lifecycle_result = {
             "status": "ok",
@@ -256,6 +293,18 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
 
                 self.assertIsNone(package_root)
                 self.assertIn("does not exist", reason)
+
+    def test_explicit_package_root_must_be_a_directory(self) -> None:
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
+                    file_path = f.name
+                try:
+                    package_root, reason = module.resolve_lifecycle_package_root(file_path)
+                    self.assertIsNone(package_root)
+                    self.assertIn("not a directory", reason)
+                finally:
+                    Path(file_path).unlink(missing_ok=True)
 
     def test_run_argv_and_tool_wrappers_surface_payload_and_mode_validation(self) -> None:
         payload = {"command": "inspect", "status": "ok", "result": {"installState": "installed"}}

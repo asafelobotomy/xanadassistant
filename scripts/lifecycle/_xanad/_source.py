@@ -13,6 +13,13 @@ def resolve_workspace(path_value: str, *, create: bool = False) -> Path:
     workspace = Path(path_value).resolve()
     if create:
         workspace.mkdir(parents=True, exist_ok=True)
+    elif workspace.exists() and not workspace.is_dir():
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"Workspace path is not a directory: {workspace}",
+            3,
+            {"path": str(workspace)},
+        )
     return workspace
 
 
@@ -22,6 +29,13 @@ def resolve_package_root(path_value: str) -> Path:
         raise LifecycleCommandError(
             "source_resolution_failure",
             f"Package root does not exist: {package_root}",
+            3,
+            {"path": str(package_root)},
+        )
+    if not package_root.is_dir():
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"Package root is not a directory: {package_root}",
             3,
             {"path": str(package_root)},
         )

@@ -9,6 +9,7 @@ from unittest import mock
 
 from scripts.lifecycle._xanad import _loader
 from scripts.lifecycle._xanad import _source
+from scripts.lifecycle._xanad import _source_remote
 from scripts.lifecycle._xanad import _state
 from scripts.lifecycle._xanad._errors import (
     DEFAULT_CATALOG_PATH,
@@ -80,9 +81,34 @@ class SourceResolutionTests(unittest.TestCase):
 
         with self.assertRaises(LifecycleCommandError):
             _source.resolve_package_root("/path/that/does/not/exist")
+        with tempfile.NamedTemporaryFile() as f:
+            with self.assertRaises(LifecycleCommandError):
+                _source.resolve_package_root(f.name)
         self.assertEqual(_source.parse_github_source("github:owner/repo"), ("owner", "repo"))
         with self.assertRaises(LifecycleCommandError):
             _source.parse_github_source("github:owner/repo/extra")
+
+    def test_resolve_workspace_rejects_file_path(self) -> None:
+        with tempfile.NamedTemporaryFile() as f:
+            with self.assertRaises(LifecycleCommandError):
+                _source.resolve_workspace(f.name)
+
+    def test_validate_ref_rejects_invalid_characters(self) -> None:
+        _source_remote._validate_ref("main")
+        _source_remote._validate_ref("v1.2.3")
+        _source_remote._validate_ref("feature/my-branch")
+        with self.assertRaises(LifecycleCommandError):
+            _source_remote._validate_ref("bad ref!")
+        with self.assertRaises(LifecycleCommandError):
+            _source_remote._validate_ref("ref;rm -rf /")
+        with self.assertRaises(LifecycleCommandError):
+            _source_remote._validate_ref("")
+
+    def test_cache_key_is_collision_free_for_slash_vs_hyphen(self) -> None:
+        self.assertNotEqual(
+            _source_remote._cache_key("feature/x"),
+            _source_remote._cache_key("feature-x"),
+        )
 
     def test_get_cache_root_honors_environment_override(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir, mock.patch.dict(os.environ, {"XANAD_PKG_CACHE": tmpdir}):

@@ -78,6 +78,18 @@ class WorkspaceScanTests(unittest.TestCase):
         self.assertEqual(cargo_result["{{PACKAGE_MANAGER}}"], "Cargo")
         self.assertEqual(cargo_result["{{TEST_COMMAND}}"], "cargo test")
 
+    def test_detects_python_workspace_with_requirements_dev_and_no_pyproject(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            (workspace / "requirements-dev.txt").write_text("coverage\n", encoding="utf-8")
+            (workspace / "tests").mkdir()
+
+            result = _workspace_scan.scan_workspace_stack(workspace)
+
+        self.assertEqual(result["{{PRIMARY_LANGUAGE}}"], "Python")
+        self.assertEqual(result["{{PACKAGE_MANAGER}}"], "pip")
+        self.assertEqual(result["{{TEST_COMMAND}}"], 'python3 -m unittest discover -s tests -p "test_*.py"')
+
 
 class PrescanTests(unittest.TestCase):
     def test_scan_existing_copilot_files_reports_collisions_and_unmanaged_files(self) -> None:

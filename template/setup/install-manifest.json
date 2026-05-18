@@ -198,7 +198,7 @@
         "{{pack:review-depth}}"
       ],
       "chmod": "none",
-      "hash": "sha256:873d54489d7f23719860543f3f4002bedbb33acd545c966fa176bb63cf31e978"
+      "hash": "sha256:7a184521e5a69aa741a7a7839265c98edb85cfe9f4ac37baebf4389fa418ad0e"
     },
     {
       "id": "agents.triage.agent.md",
@@ -230,7 +230,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:6aedd5183bab54e08d962d8e28dea4c45533608d1250c1750f48ba1343bc4f53"
+      "hash": "sha256:e451aa0ae0b561f348bde3eeabb78c4e3de08f296f8d6d59f9837651bfec4345"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -254,7 +254,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:8e027962684e198e7b07fa5a7227067ae94381b7072d9c540831b433482f8c07"
+      "hash": "sha256:5495f4b3ad6d27e330c9823a9d4bf64d9919fdb3e3d6d1a3e1da1972cc64d1a0"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -308,7 +308,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:2b51ff482fb5d677c52b1106ae3d3d2bcd01ab2fb03492ecf04c0242b2cc687d"
+      "hash": "sha256:42fe0aee5ac88e316a5c9493433577921a473b1a6f4c33d05916d5f848b87cd7"
     },
     {
       "id": "devops-hooks.devopsEnvCheck.py",
@@ -361,7 +361,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:56bf33638ecc5f6b4934f59356817804d5011eb8ba605d2597bc21df54cb717f"
+      "hash": "sha256:02181555c1868209e1e0ebefe227819bb2c3298a0fcc88bcaa7c7c3df009c682"
     },
     {
       "id": "hook-scripts.githubMcp.py",
@@ -641,7 +641,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:4d30fb1053fcd46429d1a1a19a5fe96d2b2f172d9692d05654102a6cd82da1bb"
+      "hash": "sha256:d27fed8da379a537c5b4093f93f2e7bfafce879868a76d569ecba9c3b81e1e71"
     },
     {
       "id": "prompts.bootstrap.md",
