@@ -12,7 +12,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `Deps` | yes | Scanning workspace dependencies, auditing installed packages, checking for vulnerabilities, suggesting updates or alternatives, and installing/updating/repairing/removing packages |
 | `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, architecture lookup, dependency tracing, example search, and repository structure questions |
 | `Review` | yes | Code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, and test coverage review |
-| `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and `lifecycle audit` for xanadAssistant-managed surfaces |
+| `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and `health check` for xanadAssistant-managed surfaces |
 | `Triage` | no | First-pass complexity classification — determines whether a task needs a direct answer, targeted edit, single agent, or multi-agent plan |
 | `Debugger` | no | Root-cause diagnosis, failing tests, regression triage, broken commands, unclear behavior reproduction, and minimal fix-path isolation |
 | `Organise` | no | Subagent-only structural worker — moving files, regrouping folders, fixing caller paths after a file move |
@@ -33,7 +33,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanadAssistant inspect, check, plan, apply, update, repair, factory-restore, or lifecycle audit | `xanadLifecycle` |
+| xanadAssistant inspect, check, plan, apply, update, repair, factory-restore, or health check | `xanadLifecycle` |
 
 ## Handoff Rules
 
@@ -103,10 +103,8 @@ Use these patterns when a task crosses specialist boundaries but should still st
 | `repair install` | `xanadLifecycle` |
 | `update xanadAssistant` | `xanadLifecycle` |
 | `factory restore` | `xanadLifecycle` |
-| `lifecycle audit` | `xanadLifecycle` |
-| `run lifecycle audit` | `xanadLifecycle` |
-
-A bare `audit` request (no "lifecycle" qualifier) means a codebase audit — route to `Review`, not `xanadLifecycle`.
+| `health check` | `xanadLifecycle` |
+| `run health check` | `xanadLifecycle` |
 
 Natural-language requests to add a convention or preference to instructions, such as `Remember this for next time` or `Add this to your instructions`, are not lifecycle operations.
 

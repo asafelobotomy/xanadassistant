@@ -1,7 +1,7 @@
 ---
 name: xanadLifecycle
-description: "Use when: set up xanadAssistant, inspect workspace, run lifecycle check, interview, plan setup, apply setup, update xanadAssistant, repair install, factory restore, run lifecycle audit, submit lifecycle audit report, or coordinate any lifecycle command in a consumer workspace."
-argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, apply, update, repair, factory restore, or lifecycle audit."
+description: "Use when: set up xanadAssistant, inspect workspace, run lifecycle check, interview, plan setup, apply setup, update xanadAssistant, repair install, factory restore, run health check, submit health check report, or coordinate any lifecycle command in a consumer workspace."
+argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, apply, update, repair, factory restore, or health check."
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
@@ -33,8 +33,7 @@ resolution is missing.
 - Repair a broken or incomplete install → run `repair`
 - Restore to factory defaults → run `factory-restore`
 - Check current workspace state → run `inspect` or `check`
-- Run a **lifecycle** audit / submit a lifecycle audit report → run `audit` (see `## Audit workflow`)
-- A bare `audit` request (without the word "lifecycle") means the user wants a codebase audit — do not invoke this agent; route to `Review` instead.
+- Run a lifecycle **health check** / submit a health check report → run the `audit` command (see `## Health check workflow`)
 - Natural-language requests to add a convention or preference to instructions are not lifecycle operations; do not invoke this agent for phrases like `Remember this for next time` or `Add this to your instructions`.
 
 ## Cold-start (blank workspace)
@@ -310,7 +309,7 @@ python3 xanadAssistant.py factory-restore \
   --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 
-# Collect a workspace audit report (read-only)
+# Collect a workspace health check report (read-only)
 python3 xanadAssistant.py audit \
   --workspace <consumer-repo-path> \
   --package-root <xanadAssistant-checkout> \
@@ -330,7 +329,7 @@ python3 xanadAssistant.py apply \
   --non-interactive --ui agent --json-lines
 ```
 
-## Audit workflow
+## Health check workflow
 
 The `audit` command collects xanadAssistant-only lifecycle state — no workspace
 file contents, project names, or secrets are included.

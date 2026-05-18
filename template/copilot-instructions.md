@@ -26,9 +26,7 @@ Use the **xanadLifecycle** agent for all xanadAssistant operations. Trigger phra
 | `"run lifecycle check"` | Inspect + check; surface repair reasons |
 | `"repair install"` | Fix stale or broken managed files |
 | `"factory restore"` | Reset to clean managed state |
-| `"lifecycle audit"` | Collect xanadAssistant install-state audit report |
-
-A bare `audit` request (without "lifecycle") means a codebase audit — route to the `Review` agent, not `xanadLifecycle`.
+| `"health check"` | Run xanadAssistant install-state health check |
 
 Available prompts: `/setup` (install or refresh), `/bootstrap` (cold-start from bare workspace), `/update` (pull latest package files).
 
@@ -55,8 +53,8 @@ Route specialist work to the matching agent before acting directly. If a task ha
 | Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
-| Code review, architecture review, security review, maintainability review, regression-risk review, review of a PR/diff, or a bare codebase **audit** | `Review` |
-| xanadAssistant inspect, check, plan, apply, update, repair, factory-restore, or **lifecycle audit** | `xanadLifecycle` |
+| Code review, architecture review, security review, maintainability review, regression-risk review, review of a PR/diff, or a codebase **audit** | `Review` |
+| xanadAssistant inspect, check, plan, apply, update, repair, factory-restore, or **health check** | `xanadLifecycle` |
 
 ## Coding Conventions
 
@@ -104,5 +102,5 @@ When hooks are enabled, a `memory` MCP server is available. Each specialist agen
 - `Explore` agent — broad read-only codebase exploration and architecture lookup
 - `Planner` agent — produce scoped execution plans for multi-step work before implementation
 - `Researcher` agent — gather source-backed external constraints before implementation or review
-- `Review` agent — code, architecture, security, and regression-risk review; also handles bare codebase audits
-- `xanadLifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and **lifecycle audit** requests
+- `Review` agent — code, architecture, security, and regression-risk review; handles codebase audits
+- `xanadLifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and **health check** requests

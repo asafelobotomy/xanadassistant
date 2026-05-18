@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:632baf6620223df624f04ecd51f6f3aab28d4f49f8d43e827514a2c3dbd8ee48"
+    "hash": "sha256:e963d76ff1fc9c27832101a0351160e58cd8838459b1f8d7e76f90641124dd8e"
   },
   "timestamps": {
-    "appliedAt": "2026-05-18T09:27:19Z",
-    "updatedAt": "2026-05-18T09:27:19Z"
+    "appliedAt": "2026-05-18T09:34:07Z",
+    "updatedAt": "2026-05-18T09:34:07Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -45,48 +45,7 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [
-    {
-      "id": "core-instructions.copilot-instructions.md",
-      "target": ".github/copilot-instructions.md",
-      "sourceHash": "sha256:5495f4b3ad6d27e330c9823a9d4bf64d9919fdb3e3d6d1a3e1da1972cc64d1a0",
-      "installedHash": "sha256:6fe61b2e88ff5b0d226d3a2835caf6c2283d072b28e734589d50eb5a9b263489",
-      "ownershipMode": "local",
-      "status": "applied"
-    },
-    {
-      "id": "instructions.scripts.instructions.md",
-      "target": ".github/instructions/scripts.instructions.md",
-      "sourceHash": "sha256:e8fed078fa1cf7c988ad5c49f3bfdb16412ec6db65ec3a17cc0c0f4740e31dbf",
-      "installedHash": "sha256:27be472906ba0689045bc19e3e364a172f3010ca146df957ec0fc7994e9d4482",
-      "ownershipMode": "local",
-      "status": "applied"
-    },
-    {
-      "id": "instructions.tests.instructions.md",
-      "target": ".github/instructions/tests.instructions.md",
-      "sourceHash": "sha256:99c1cda791d7774a900b386b9cc9d34f95fc8f702f291332bb58e87995f1df36",
-      "installedHash": "sha256:60405879da3e15ab85950bfeb8ba61854d6e8d70858c1c970b927f90b5fc9f73",
-      "ownershipMode": "local",
-      "status": "applied"
-    },
-    {
-      "id": "hook-scripts._xanad_mcp_source.py",
-      "target": ".github/mcp/scripts/_xanad_mcp_source.py",
-      "sourceHash": "sha256:42fe0aee5ac88e316a5c9493433577921a473b1a6f4c33d05916d5f848b87cd7",
-      "installedHash": "sha256:42fe0aee5ac88e316a5c9493433577921a473b1a6f4c33d05916d5f848b87cd7",
-      "ownershipMode": "local",
-      "status": "applied"
-    },
-    {
-      "id": "hook-scripts.xanadWorkspaceMcp.py",
-      "target": ".github/mcp/scripts/xanadWorkspaceMcp.py",
-      "sourceHash": "sha256:d27fed8da379a537c5b4093f93f2e7bfafce879868a76d569ecba9c3b81e1e71",
-      "installedHash": "sha256:d27fed8da379a537c5b4093f93f2e7bfafce879868a76d569ecba9c3b81e1e71",
-      "ownershipMode": "local",
-      "status": "applied"
-    }
-  ],
+  "files": [],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -164,8 +123,5 @@
   ],
   "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {},
-  "lastBackup": {
-    "path": ".xanadAssistant/backups/2026-05-18T09-27-19Z"
-  }
+  "unknownValues": {}
 }

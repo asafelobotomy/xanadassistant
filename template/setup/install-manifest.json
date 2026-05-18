@@ -230,7 +230,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:e451aa0ae0b561f348bde3eeabb78c4e3de08f296f8d6d59f9837651bfec4345"
+      "hash": "sha256:bbe330f5ba5202205c2e48fd982a95fbde8b4e9931e8333d1b140860653456b7"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -254,7 +254,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:5495f4b3ad6d27e330c9823a9d4bf64d9919fdb3e3d6d1a3e1da1972cc64d1a0"
+      "hash": "sha256:eebb9efe01cfd4078728dc87b04ec05b088569eebe0cb3e605ce17384a80c815"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -1247,7 +1247,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:db38c7a6aa8bdeac89ce057ff889193e45682515be3fd44ea0facc5e53e42efe"
+      "hash": "sha256:5b194927dd73d9e611e683f034bbb9dcc2424efba2bb70c6adf3a0850a1900a4"
     },
     {
       "id": "mlops-skills.mlopsDataPipelines.SKILL.md",
