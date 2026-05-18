@@ -54,4 +54,8 @@ def build_parser() -> argparse.ArgumentParser:
         if command == "apply":
             command_parser.add_argument("--plan", default=None, help="Path to a serialized lifecycle plan to apply.")
 
+    audit_parser = subparsers.add_parser("audit", help="Collect and format a workspace audit report.")
+    add_common_arguments(audit_parser)
+    audit_parser.add_argument("--label", default=None, help="Optional workspace alias for the audit report.")
+
     return parser

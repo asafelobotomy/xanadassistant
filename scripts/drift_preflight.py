@@ -60,6 +60,25 @@ CHECKS: tuple[Check, ...] = (
             "template/setup/catalog.json",
         ),
     ),
+    Check(
+        name="workspace-drift",
+        description="Managed .github/ files are in sync with the local package source.",
+        command=(
+            "python3",
+            "xanadAssistant.py",
+            "check",
+            "--workspace",
+            ".",
+            "--package-root",
+            ".",
+            "--json",
+        ),
+    ),
+    Check(
+        name="parity",
+        description="Installed .github/ copies match source files (bypasses ownership skip model).",
+        command=("python3", "scripts/check_managed_parity.py"),
+    ),
 )
 CHECKS_BY_NAME = {check.name: check for check in CHECKS}
 

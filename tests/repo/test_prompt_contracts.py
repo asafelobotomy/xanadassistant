@@ -30,5 +30,61 @@ class PromptContractTests(unittest.TestCase):
         self.assertNotRegex(content, re.compile(r"xanadBootstrap.py apply \\\n(?:.+\\\n)*\s+--answers "))
 
 
+class TemplateMcpJsonContractTests(unittest.TestCase):
+    """Regression tests for template/vscode/mcp.json contract.
+
+    Unpinned --from mcp[cli] args cause merge-json-object updates to silently
+    overwrite user version pins (GitHub issue #2). All --from args must use a
+    pinned specifier so that the merge result matches the user's installed state.
+    """
+
+    _PIN_RE = re.compile(r"^mcp\[cli\]==\d+\.\d+\.\d+$")
+
+    def test_all_server_from_args_are_pinned_to_semver(self) -> None:
+        import json
+
+        mcp_json = json.loads(
+            (REPO_ROOT / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8")
+        )
+        for server_name, server_cfg in mcp_json.get("servers", {}).items():
+            args = server_cfg.get("args", [])
+            from_indices = [i for i, v in enumerate(args) if v == "--from"]
+            for idx in from_indices:
+                pkg_arg = args[idx + 1] if idx + 1 < len(args) else ""
+                with self.subTest(server=server_name):
+                    self.assertRegex(
+                        pkg_arg,
+                        self._PIN_RE,
+                        f"Server '{server_name}' --from arg must be pinned (mcp[cli]==X.Y.Z), got '{pkg_arg}'",
+                    )
+
+    def test_all_servers_use_the_same_mcp_cli_version(self) -> None:
+        """All servers must pin the same mcp[cli] version.
+
+        Prevents intra-file drift where different servers silently diverge to
+        different pins after manual edits.
+        """
+        import json
+
+        mcp_json = json.loads(
+            (REPO_ROOT / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8")
+        )
+        pins: dict[str, str] = {}
+        for server_name, server_cfg in mcp_json.get("servers", {}).items():
+            args = server_cfg.get("args", [])
+            from_indices = [i for i, v in enumerate(args) if v == "--from"]
+            for idx in from_indices:
+                pkg_arg = args[idx + 1] if idx + 1 < len(args) else ""
+                if self._PIN_RE.match(pkg_arg):
+                    pins[server_name] = pkg_arg
+
+        unique_pins = set(pins.values())
+        self.assertLessEqual(
+            len(unique_pins),
+            1,
+            f"All servers must use the same mcp[cli] pin. Found multiple: {unique_pins}. Per-server: {pins}",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

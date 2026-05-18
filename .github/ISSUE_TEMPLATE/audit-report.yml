@@ -1,0 +1,68 @@
+name: Workspace Audit Report
+description: "Automated xanadAssistant workspace audit report submitted by the xanadLifecycle agent."
+title: "[Audit] xanadAssistant <version> — <status>"
+labels:
+  - audit-report
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > Audit reports are typically submitted automatically by the `xanadLifecycle` agent.
+        > If submitting manually, fill in the required fields below.
+  - type: input
+    id: version
+    attributes:
+      label: Package Version
+      placeholder: "e.g. 0.2.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: install_state
+    attributes:
+      label: Install State
+      options:
+        - installed
+        - partial
+        - not-installed
+    validations:
+      required: true
+  - type: dropdown
+    id: check_status
+    attributes:
+      label: Check Status
+      options:
+        - clean
+        - drift
+        - error
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      placeholder: "e.g. linux, darwin, windows"
+    validations:
+      required: false
+  - type: input
+    id: python_version
+    attributes:
+      label: Python Version
+      placeholder: "e.g. 3.12"
+    validations:
+      required: false
+  - type: input
+    id: label
+    attributes:
+      label: Workspace Label
+      description: Optional alias provided via --label when running the audit command.
+      placeholder: "e.g. my-project"
+    validations:
+      required: false
+  - type: textarea
+    id: full_report
+    attributes:
+      label: Full Audit Report (JSON)
+      description: Paste the `result` block from `xanadAssistant audit --json` output here.
+      render: json
+    validations:
+      required: false

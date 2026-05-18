@@ -132,6 +132,37 @@ class PlanUtilsAndMergeTests(unittest.TestCase):
         self.assertEqual(merged_json, {"a": {"keep": True, "set": 1}, "b": 2})
         self.assertIn("## §10 - Project-Specific Overrides", merged_markdown)
 
+    def test_merge_json_objects_template_wins_for_arrays(self) -> None:
+        existing = {
+            "servers": {
+                "git": {
+                    "args": ["--from", "mcp[cli]==1.26.0", "mcp", "run", "gitMcp.py"],
+                    "env": {"MY_VAR": "value"},
+                }
+            }
+        }
+        source = {
+            "servers": {
+                "git": {
+                    "args": ["--from", "mcp[cli]==1.27.1", "mcp", "run", "gitMcp.py"],
+                    "env": {"OTHER_VAR": "other"},
+                }
+            }
+        }
+        merged = _merge.merge_json_objects(existing, source)
+
+        # Template wins for arrays — the source array replaces the existing array entirely.
+        # This is intentional: args arrays encode the full invocation and must stay
+        # coherent with the template version. Users who need to pin a different version
+        # should use consumer-keep to opt the whole file out of managed updates.
+        self.assertEqual(
+            merged["servers"]["git"]["args"],
+            ["--from", "mcp[cli]==1.27.1", "mcp", "run", "gitMcp.py"],
+        )
+        # Template wins for new scalar env keys, existing env keys are preserved.
+        self.assertIn("OTHER_VAR", merged["servers"]["git"]["env"])
+        self.assertIn("MY_VAR", merged["servers"]["git"]["env"])
+
 
 if __name__ == "__main__":
     unittest.main()

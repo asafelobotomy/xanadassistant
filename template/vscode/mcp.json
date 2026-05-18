@@ -9,7 +9,7 @@
       },
       "args": [
         "--from",
-        "mcp[cli]",
+        "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/xanadWorkspaceMcp.py"
@@ -24,7 +24,7 @@
       },
       "args": [
         "--from",
-        "mcp[cli]",
+        "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/gitMcp.py"
@@ -42,7 +42,7 @@
         "--with", "markdownify",
         "--with", "beautifulsoup4",
         "--from",
-        "mcp[cli]",
+        "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/webMcp.py"
@@ -57,7 +57,7 @@
       },
       "args": [
         "--from",
-        "mcp[cli]",
+        "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/timeMcp.py"
@@ -73,7 +73,7 @@
       },
       "args": [
         "--from",
-        "mcp[cli]",
+        "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/memoryMcp.py"
@@ -88,7 +88,7 @@
       },
       "args": [
         "--from",
-        "mcp[cli]",
+        "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/securityMcp.py"
@@ -104,7 +104,7 @@
       },
       "args": [
         "--from",
-        "mcp[cli]",
+        "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/githubMcp.py"
@@ -120,7 +120,7 @@
       },
       "args": [
         "--from",
-        "mcp[cli]",
+        "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/sqliteMcp.py"
@@ -136,7 +136,7 @@
       },
       "args": [
         "--from",
-        "mcp[cli]",
+        "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/sequentialThinkingMcp.py"

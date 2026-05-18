@@ -56,9 +56,11 @@ class GenerateManifestPackValidationTests(unittest.TestCase):
             self.assertEqual(result, 0)
             manifest_after = manifest_path.read_text(encoding="utf-8")
             catalog_after = catalog_path.read_text(encoding="utf-8")
+            repo_root = Path(__file__).resolve().parents[2]
+            expected_version = (repo_root / "VERSION").read_text(encoding="utf-8").strip()
             self.assertNotEqual(manifest_before, "")
             self.assertNotEqual(catalog_before, "")
-            self.assertEqual(json.loads(manifest_after)["packageVersion"], "0.1.1")
+            self.assertEqual(json.loads(manifest_after)["packageVersion"], expected_version)
             self.assertIn("tdd-hooks", json.loads(catalog_after)["surfaceLayers"])
 
     def test_main_fails_before_write_when_pack_registry_mismatches(self) -> None:

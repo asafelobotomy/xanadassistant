@@ -23,6 +23,8 @@ class DriftPreflightTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("attention-budget", output)
         self.assertIn("freshness", output)
+        self.assertIn("workspace-drift", output)
+        self.assertIn("parity", output)
 
     def test_run_executes_selected_checks_in_order(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

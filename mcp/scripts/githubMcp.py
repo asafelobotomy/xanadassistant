@@ -269,6 +269,28 @@ def get_issue(owner: str, repo: str, issue_number: int) -> str:
 
 
 @mcp.tool()
+def create_issue(owner: str, repo: str, title: str, body: str,
+                labels: list[str] | None = None) -> str:
+    """Create a new issue in a repository.
+
+    Args:
+        owner: Repository owner.
+        repo: Repository name.
+        title: Issue title.
+        body: Issue body text (Markdown supported).
+        labels: Optional list of label names to apply.
+    """
+    _validate_owner_repo(owner, repo)
+    if not title.strip():
+        raise ValueError("Issue title cannot be empty.")
+    issue_body: dict[str, object] = {"title": title, "body": body}
+    if labels:
+        issue_body["labels"] = labels
+    r = _post(f"/repos/{owner}/{repo}/issues", issue_body)
+    return f"Issue #{r['number']} created: {r['html_url']}"
+
+
+@mcp.tool()
 def create_issue_comment(owner: str, repo: str,
                          issue_number: int, body: str) -> str:
     """Post a comment on an issue or pull request.

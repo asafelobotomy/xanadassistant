@@ -218,6 +218,22 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
             "factory-restore",
         )
 
+    if args.command == "audit":
+        from scripts.lifecycle._xanad._audit import build_audit_result
+        try:
+            payload = build_audit_result(
+                workspace, package_root, label=getattr(args, "label", None)
+            )
+        except LifecycleCommandError as error:
+            payload, exit_code = build_error_payload(
+                "audit", workspace, package_root,
+                error.code, error.message, error.exit_code, details=error.details,
+            )
+            emit_payload(payload, args.ui, use_json_lines)
+            return exit_code
+        emit_payload(payload, args.ui, use_json_lines)
+        return 0
+
     mode = getattr(args, "mode", None)  # pragma: no cover
     payload = build_not_implemented_payload(args.command, workspace, package_root, mode)  # pragma: no cover
     emit_payload(payload, args.ui, use_json_lines)  # pragma: no cover

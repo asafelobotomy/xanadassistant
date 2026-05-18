@@ -55,3 +55,25 @@ jobs:
           python-version: "3.11"
       - name: Check manifest and catalog freshness
         run: python3 scripts/drift_preflight.py --check freshness
+
+  workspace-drift:
+    name: Workspace Drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check managed .github/ files are in sync with package source
+        run: python3 scripts/drift_preflight.py --check workspace-drift
+
+  parity:
+    name: Managed File Parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check installed .github/ copies match source (bypasses ownership skip model)
+        run: python3 scripts/drift_preflight.py --check parity

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.1.0",
-  "packageVersion": "0.1.1",
+  "packageVersion": "0.2.1",
   "policySchemaVersion": "0.1.0",
   "sourceRoots": {
     "template": "template",
@@ -230,7 +230,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:291b83ee85cc1959e76bf139fa1ab09cab310eecad774eba6ee6b79dff7103d5"
+      "hash": "sha256:6aedd5183bab54e08d962d8e28dea4c45533608d1250c1750f48ba1343bc4f53"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -378,7 +378,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:92ab6859508af79020293f58c95277500729d5d134f3b381b05345a0dabe48cf"
+      "hash": "sha256:df6b4480a9bb6e012e9d3bfa7c3fdd725822f2a74473df8bdf3ddb68c8086cb3"
     },
     {
       "id": "lean-hooks.leanContextBudget.py",
@@ -1606,7 +1606,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:c7d06824e1934a3a239218004f094d165e0b0c67b706cc8f864e41b191f40aea"
+      "hash": "sha256:867c5c105229ae9817ae08a86b2d84e26745d9973a72128ed92e33f168c55987"
     },
     {
       "id": "vscode-settings.settings.json",

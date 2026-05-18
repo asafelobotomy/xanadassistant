@@ -45,6 +45,8 @@ Default order:
 2. `loc`
 3. `tests`
 4. `freshness`
+5. `workspace-drift`
+6. `parity`
 
 Usage:
 
