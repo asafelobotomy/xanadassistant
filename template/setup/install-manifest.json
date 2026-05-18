@@ -258,7 +258,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:eebb9efe01cfd4078728dc87b04ec05b088569eebe0cb3e605ce17384a80c815"
+      "hash": "sha256:483403921d4e405ea5d72708f3983f63a0728da4e788e067b52f10ac03caed50"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -679,7 +679,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:5f4ea843df7ba960320d36b872ca5fe685184b0fc7507c57646ced40071da0e0"
+      "hash": "sha256:268eedd37bac9043788bf12446638587489db386b7fdd0c968eaca5795144025"
     },
     {
       "id": "prompts.bootstrap.md",

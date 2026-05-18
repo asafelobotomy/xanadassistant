@@ -2,17 +2,17 @@
   "schemaVersion": "0.1.0",
   "package": {
     "name": "xanadAssistant",
-    "packageRoot": "/home/solon/Documents/git/repos/xanadassistant",
+    "packageRoot": "/mnt/SteamLibrary/git/xanadassistant",
     "source": "github:asafelobotomy/xanadassistant",
     "ref": "main"
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:927a0da085cc48e07d26542edc7dfb87a4826e0aa182e23221ee71a4434b392c"
+    "hash": "sha256:b865112a7d89cdbbc4dc5acc9d95f4f2392bd8640c3e539eebc1acdc15085b68"
   },
   "timestamps": {
-    "appliedAt": "2026-05-18T14:23:59Z",
-    "updatedAt": "2026-05-18T14:23:59Z"
+    "appliedAt": "2026-05-18T19:21:49Z",
+    "updatedAt": "2026-05-18T19:21:49Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -49,8 +49,8 @@
     {
       "id": "hook-scripts.xanadWorkspaceMcp.py",
       "target": ".github/mcp/scripts/xanadWorkspaceMcp.py",
-      "sourceHash": "sha256:c691b48ab650bdc22ccf294b15250a86362639c1e3c1f4f0bf2168ff843618cb",
-      "installedHash": "sha256:5f4ea843df7ba960320d36b872ca5fe685184b0fc7507c57646ced40071da0e0",
+      "sourceHash": "sha256:166e3cac14966c3447eaac5a15d9f7bc610a1479d2566755d875e2de31378265",
+      "installedHash": "sha256:268eedd37bac9043788bf12446638587489db386b7fdd0c968eaca5795144025",
       "ownershipMode": "local",
       "status": "applied"
     }
@@ -134,6 +134,6 @@
   "consumerResolutions": {},
   "unknownValues": {},
   "lastBackup": {
-    "path": ".xanadAssistant/backups/2026-05-18T14-23-59Z"
+    "path": ".xanadAssistant/backups/2026-05-18T19-21-49Z"
   }
 }

@@ -9,6 +9,32 @@ from tests.mcp_servers._xanad_workspace_mcp_support import XanadWorkspaceMcpTest
 
 
 class XanadWorkspaceMcpToolTests(XanadWorkspaceMcpTestCaseMixin, unittest.TestCase):
+    def test_exported_mcp_tools_have_descriptions(self) -> None:
+        tool_names = [
+            "workspace_show_key_commands",
+            "workspace_run_tests",
+            "workspace_run_check_loc",
+            "workspace_validate_lockfile",
+            "workspace_show_install_state",
+            "lifecycle_inspect",
+            "lifecycle_check",
+            "lifecycle_interview",
+            "lifecycle_plan_setup",
+            "lifecycle_setup",
+            "lifecycle_apply",
+            "lifecycle_update",
+            "lifecycle_repair",
+            "lifecycle_factory_restore",
+        ]
+
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                for tool_name in tool_names:
+                    with self.subTest(tool=tool_name):
+                        doc = getattr(module, tool_name).__doc__
+                        self.assertIsNotNone(doc)
+                        self.assertTrue(doc.strip())
+
     def test_workspace_run_tests_returns_unavailable_for_placeholder_command(self) -> None:
         instructions = """## Key Commands
 
@@ -116,11 +142,14 @@ class XanadWorkspaceMcpToolTests(XanadWorkspaceMcpTestCaseMixin, unittest.TestCa
 """
 
         with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
             instructions_path = self._write_text_file(tmpdir, "copilot-instructions.md", instructions)
 
             for module in self.MODULES:
                 with self.subTest(module=module.__name__):
                     with self._workspace_ready(module, instructions_path=instructions_path), mock.patch.object(
+                        module, "WORKSPACE_ROOT", workspace
+                    ), mock.patch.object(
                         module, "run_argv", return_value={"status": "ok", "summary": "ran"}
                     ) as run_argv:
                         tests_result = module.tool_workspace_run_tests({"scope": "default", "extraArgs": ["-k", "needle"]})
@@ -129,6 +158,55 @@ class XanadWorkspaceMcpToolTests(XanadWorkspaceMcpTestCaseMixin, unittest.TestCa
                     self.assertEqual(tests_result["status"], "ok")
                     self.assertEqual(loc_result["status"], "ok")
                     self.assertEqual(run_argv.call_args_list[0].args[0], ["python3", "-m", "unittest", "-k", "needle"])
+
+    def test_check_loc_falls_back_to_default_command_when_missing_from_instructions(self) -> None:
+        instructions = """## Key Commands
+
+| Task | Command |
+|---|---|
+| Run tests | `python3 -m unittest` |
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            instructions_path = self._write_text_file(tmpdir, "copilot-instructions.md", instructions)
+
+            for module in self.MODULES:
+                with self.subTest(module=module.__name__):
+                    with self._workspace_ready(module, instructions_path=instructions_path), mock.patch.object(
+                        module, "WORKSPACE_ROOT", workspace
+                    ), mock.patch.object(
+                        module, "run_argv", return_value={"status": "ok", "summary": "ran"}
+                    ) as run_argv:
+                        result = module.tool_workspace_run_check_loc({})
+
+                    self.assertEqual(result["status"], "ok")
+                    self.assertEqual(run_argv.call_args.args[0], ["python3", "scripts/check_loc.py"])
+
+    def test_python_commands_prefer_workspace_venv_when_available(self) -> None:
+        instructions = """## Key Commands
+
+| Task | Command |
+|---|---|
+| Run tests | `python3 -m unittest` |
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            instructions_path = self._write_text_file(tmpdir, "copilot-instructions.md", instructions)
+            venv_python = workspace / ".venv" / "bin" / "python"
+            venv_python.parent.mkdir(parents=True)
+            venv_python.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+
+            for module in self.MODULES:
+                with self.subTest(module=module.__name__):
+                    with self._workspace_ready(module, instructions_path=instructions_path), mock.patch.object(
+                        module, "WORKSPACE_ROOT", workspace
+                    ), mock.patch.object(module, "run_argv", return_value={"status": "ok", "summary": "ran"}) as run_argv:
+                        result = module.tool_workspace_run_tests({"scope": "default", "extraArgs": []})
+
+                    self.assertEqual(result["status"], "ok")
+                    self.assertEqual(run_argv.call_args.args[0], [str(venv_python), "-m", "unittest"])
 
                 with self.subTest(module=f"{module.__name__}-shell-guard"):
                     bad_instructions = self._write_text_file(
@@ -148,7 +226,7 @@ class XanadWorkspaceMcpToolTests(XanadWorkspaceMcpTestCaseMixin, unittest.TestCa
                 self.assertEqual(failed["status"], "failed")
                 self.assertIn("missing required keys", failed["summary"])
 
-                with self._workspace_ready(module, resolve_key_command=None):
+                with self._workspace_ready(module, resolve_key_command=None), mock.patch.object(module, "DEFAULT_KEY_COMMANDS", {}, create=True):
                     unavailable = module.tool_workspace_run_check_loc({})
                 self.assertEqual(unavailable["status"], "unavailable")
 
