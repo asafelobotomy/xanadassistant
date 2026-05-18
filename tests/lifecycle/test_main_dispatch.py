@@ -16,7 +16,7 @@ class MainDispatchTests(unittest.TestCase):
     def _resolved_package_root(self, tmpdir: str) -> tuple[Path, dict[str, str]]:
         return Path(tmpdir), {"kind": "package-root"}
 
-    def test_run_execution_command_covers_success_and_apply_error_paths(self) -> None:
+    def test_run_execution_command_covers_success_and_serialized_plan_error_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             workspace = Path(tmpdir)
             package_root = Path(tmpdir)
@@ -45,6 +45,28 @@ class MainDispatchTests(unittest.TestCase):
             self.assertEqual(emit_payload.call_args.args[0]["result"]["reportOut"], str(workspace / "report.json"))
 
             args.plan = str(workspace / "plan.json")
+            with mock.patch.object(
+                _main,
+                "build_setup_result",
+                side_effect=LifecycleCommandError("apply_failure", "setup failed", 5, details={"x": 1}),
+            ), mock.patch.object(
+                _main,
+                "load_apply_plan",
+                return_value={"mode": "setup"},
+            ), mock.patch.object(
+                _main,
+                "build_error_payload",
+                return_value=({"command": "setup", "result": {}}, 5),
+            ) as build_error_payload, mock.patch.object(
+                _main,
+                "write_plan_output",
+                return_value=None,
+            ), mock.patch.object(_main, "emit_payload"):
+                exit_code = _main._run_execution_command(args, workspace, package_root, False, "setup", None)
+
+            self.assertEqual(exit_code, 5)
+            self.assertEqual(build_error_payload.call_args.kwargs["mode"], "setup")
+
             with mock.patch.object(
                 _main,
                 "build_apply_result",
@@ -107,10 +129,22 @@ class MainDispatchTests(unittest.TestCase):
         self.assertEqual(exit_code, 4)
         self.assertTrue(emit_payload.called)
 
-    def test_main_dispatches_apply_and_handles_source_resolution_failure(self) -> None:
+    def test_main_dispatches_setup_apply_and_handles_source_resolution_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plan_path = Path(tmpdir) / "plan.json"
             plan_path.write_text("{}", encoding="utf-8")
+
+            with mock.patch(
+                "scripts.lifecycle._xanad._main.resolve_effective_package_root",
+                return_value=self._resolved_package_root(tmpdir),
+            ), mock.patch(
+                "scripts.lifecycle._xanad._main._run_execution_command",
+                return_value=0,
+            ) as run_exec:
+                setup_exit = main(["setup", "--workspace", tmpdir, "--package-root", tmpdir, "--plan", str(plan_path)])
+
+            self.assertEqual(setup_exit, 0)
+            self.assertTrue(run_exec.called)
 
             with mock.patch(
                 "scripts.lifecycle._xanad._main.resolve_effective_package_root",

@@ -79,6 +79,19 @@ class LifecycleEmitTests(unittest.TestCase):
                     "validation": {"status": "passed"},
                 },
             },
+            "setup": {
+                "command": "setup",
+                "status": "ok",
+                "warnings": [],
+                "result": {
+                    "backup": {"created": False, "path": None},
+                    "writes": {"added": 1},
+                    "retired": [],
+                    "lockfile": {"written": True, "path": ".github/xanadAssistant-lock.json"},
+                    "summary": {"written": True, "path": ".github/copilot-version.md"},
+                    "validation": {"status": "passed"},
+                },
+            },
         }
         expected_types = {
             "inspect": ["phase", "inspect-summary", "receipt"],
@@ -86,6 +99,7 @@ class LifecycleEmitTests(unittest.TestCase):
             "interview": ["phase", "question", "receipt"],
             "plan": ["phase", "inspect-summary", "question", "phase", "plan-summary", "receipt"],
             "apply": ["phase", "apply-report", "receipt"],
+            "setup": ["phase", "apply-report", "receipt"],
         }
 
         for command, payload in payloads.items():

@@ -360,6 +360,7 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
                     inspect_result = module.lifecycle_inspect(packageRoot="/tmp/pkg")
                     check_result = module.lifecycle_check(packageRoot="/tmp/pkg")
                     plan_result = module.lifecycle_plan_setup(packageRoot="/tmp/pkg", answersPath=None)
+                    setup_result = module.lifecycle_setup(packageRoot="/tmp/pkg", dryRun=True)
                     apply_result = module.lifecycle_apply(packageRoot="/tmp/pkg", dryRun=True)
                     update_result = module.lifecycle_update(packageRoot="/tmp/pkg", dryRun=False)
                     repair_result = module.lifecycle_repair(packageRoot="/tmp/pkg")
@@ -368,6 +369,7 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
                 self.assertEqual(inspect_result.status, "ok")
                 self.assertEqual(check_result.status, "ok")
                 self.assertEqual(plan_result.status, "ok")
+                self.assertEqual(setup_result.status, "ok")
                 self.assertEqual(apply_result.status, "ok")
                 self.assertEqual(update_result.status, "ok")
                 self.assertEqual(repair_result.status, "ok")
@@ -497,6 +499,7 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
                 with mock.patch.object(module, "run_lifecycle_command", return_value={"status": "ok", "summary": "ok"}) as runner:
                     module.lifecycle_interview(packageRoot="/tmp/pkg", mode="setup")
                     module.lifecycle_plan_setup(packageRoot="/tmp/pkg", answersPath="/tmp/answers.json", nonInteractive=True)
+                    module.lifecycle_setup(packageRoot="/tmp/pkg", dryRun=True, planPath="/tmp/setup-plan.json")
                     module.lifecycle_apply(packageRoot="/tmp/pkg", dryRun=True)
                     module.lifecycle_update(packageRoot="/tmp/pkg", dryRun=False)
                     module.lifecycle_repair(packageRoot="/tmp/pkg", nonInteractive=False)
@@ -504,7 +507,9 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
 
                 self.assertEqual(runner.call_args_list[0].kwargs["mode"], "setup")
                 self.assertTrue(runner.call_args_list[1].kwargs["non_interactive"])
+                self.assertEqual(runner.call_args_list[2].kwargs["plan_path"], "/tmp/setup-plan.json")
                 self.assertTrue(runner.call_args_list[2].kwargs["dry_run"])
+                self.assertTrue(runner.call_args_list[3].kwargs["dry_run"])
 
                 with self._workspace_ready(module), mock.patch.object(
                     module,
@@ -577,13 +582,14 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
                 finally:
                     Path(outside_path).unlink(missing_ok=True)
 
-    def test_lifecycle_apply_accepts_plan_path_parameter(self) -> None:
+    def test_lifecycle_setup_and_apply_accept_plan_path_parameter(self) -> None:
         for module in self.MODULES:
             with self.subTest(module=module.__name__):
                 with mock.patch.object(module, "run_lifecycle_command", return_value={"status": "ok", "summary": "ok"}) as runner:
+                    module.lifecycle_setup(packageRoot="/tmp/pkg", planPath="/tmp/setup-plan.json")
                     module.lifecycle_apply(packageRoot="/tmp/pkg", planPath="/tmp/plan.json")
-                self.assertIn("plan_path", runner.call_args.kwargs)
-                self.assertEqual(runner.call_args.kwargs["plan_path"], "/tmp/plan.json")
+                self.assertEqual(runner.call_args_list[0].kwargs["plan_path"], "/tmp/setup-plan.json")
+                self.assertEqual(runner.call_args_list[1].kwargs["plan_path"], "/tmp/plan.json")
 
 
 if __name__ == "__main__":

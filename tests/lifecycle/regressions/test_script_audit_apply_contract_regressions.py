@@ -68,7 +68,7 @@ class ScriptAuditApplyContractRegressionsTests(unittest.TestCase):
                         workspace,
                         package_root,
                         answers_path=None,
-                        non_interactive=True,
+                        non_interactive=False,
                         plan_path=str(plan_path),
                     )
 
@@ -120,7 +120,7 @@ class ScriptAuditApplyContractRegressionsTests(unittest.TestCase):
                     workspace,
                     package_root,
                     answers_path=None,
-                    non_interactive=True,
+                    non_interactive=False,
                     plan_path=str(plan_path),
                 )
 
@@ -181,7 +181,7 @@ class ScriptAuditApplyContractRegressionsTests(unittest.TestCase):
                         workspace,
                         package_root,
                         answers_path=None,
-                        non_interactive=True,
+                        non_interactive=False,
                         plan_path=str(plan_path),
                     )
 
@@ -224,7 +224,7 @@ class ScriptAuditApplyContractRegressionsTests(unittest.TestCase):
                     workspace,
                     package_root,
                     answers_path=None,
-                    non_interactive=True,
+                    non_interactive=False,
                     plan_path=str(plan_path),
                 )
 

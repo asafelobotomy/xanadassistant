@@ -344,8 +344,12 @@ def lifecycle_plan_setup(packageRoot: str | None = None, source: str | None = No
     return _lifecycle_tool("plan", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, mode="setup", answers_path=answersPath, non_interactive=nonInteractive)
 
 @mcp.tool()
-def lifecycle_apply(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, planPath: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> ToolResult:
-    return _lifecycle_tool("apply", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, plan_path=planPath, answers_path=answersPath, non_interactive=nonInteractive, dry_run=dryRun)
+def lifecycle_setup(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, planPath: str | None = None, dryRun: bool | None = None) -> ToolResult:
+    return _lifecycle_tool("setup", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, plan_path=planPath, dry_run=dryRun)
+
+@mcp.tool()
+def lifecycle_apply(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, planPath: str | None = None, dryRun: bool | None = None) -> ToolResult:
+    return _lifecycle_tool("apply", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, plan_path=planPath, dry_run=dryRun)
 
 @mcp.tool()
 def lifecycle_update(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> ToolResult:

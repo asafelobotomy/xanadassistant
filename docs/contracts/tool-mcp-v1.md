@@ -79,7 +79,7 @@ Output: `status`, `commands` (array of `{label, command}`), `summary`.
 
 ### Lifecycle Tools — Shared Contract
 
-All five lifecycle tools share the same input schema and resolution rules.
+All six lifecycle tools share the same package-resolution rules.
 
 **Shared input schema** (all fields optional):
 
@@ -116,11 +116,19 @@ Additional inputs: `answersPath` (string path), `nonInteractive` (boolean).
 
 Run `xanadAssistant.py plan setup --json` with optional `--answers` / `--non-interactive` flags.
 
+### `lifecycle_setup`
+
+Additional inputs: `planPath` (string path), `dryRun` (boolean).
+
+Run `xanadAssistant.py setup --json` with optional `--plan`, `--dry-run` flags.
+
 ### `lifecycle_apply`
 
-Additional inputs: `answersPath` (string path), `nonInteractive` (boolean), `dryRun` (boolean).
+Additional inputs: `planPath` (string path), `dryRun` (boolean).
 
-Run `xanadAssistant.py apply --json` with optional `--answers`, `--non-interactive`, `--dry-run` flags.
+Run `xanadAssistant.py apply --json` with optional `--plan`, `--dry-run` flags.
+
+`lifecycle_apply` remains available as a compatibility alias during Phase 1. New setup flows should use `lifecycle_setup`.
 
 ### `lifecycle_check`
 

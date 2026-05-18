@@ -53,6 +53,7 @@ The complete `xanadTools` tool set is (see `tool-mcp-v1.md` for V1 vs Extended d
 - `lifecycle_check`
 - `lifecycle_interview`
 - `lifecycle_plan_setup`
+- `lifecycle_setup`
 - `lifecycle_apply`
 - `lifecycle_update`
 - `lifecycle_repair`

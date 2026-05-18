@@ -71,7 +71,7 @@ def emit_json_lines(payload: dict) -> None:
             },
             {"type": "receipt", "command": command, "sequence": -1, "status": payload["status"]},  # renumbered below
         ])
-    elif command in {"apply", "update", "repair", "factory-restore"}:
+    elif command in {"setup", "apply", "update", "repair", "factory-restore"}:
         events = [
             {"type": "phase", "command": command, "sequence": 1, "phase": "Apply"},
             {

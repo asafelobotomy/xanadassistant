@@ -56,7 +56,7 @@ Open Copilot chat (agent mode) and say:
 > **Setup asafelobotomy/xanadassistant**
 
 Copilot fetches the `xanadLifecycle` agent from GitHub, installs it into your
-workspace, and drives the full setup — interview, plan, apply, cleanup.
+workspace, and drives the full setup — interview, plan, setup, cleanup.
 No manual commands needed.
 
 For a step-by-step walkthrough of what happens, see [INSTALL.md](INSTALL.md).
@@ -82,7 +82,7 @@ curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/x
   -o xanadBootstrap.py
 python3 xanadBootstrap.py plan setup --workspace . --non-interactive \
   --plan-out .xanadAssistant/tmp/setup-plan.json --json
-python3 xanadBootstrap.py apply --workspace . \
+python3 xanadBootstrap.py setup --workspace . \
   --plan .xanadAssistant/tmp/setup-plan.json --json
 ```
 
@@ -111,7 +111,8 @@ python3 xanadAssistant.py <command> --workspace <path> --package-root <path> [--
 | `plan update` | Compute an update plan without writing anything. |
 | `plan repair` | Compute a repair plan without writing anything. |
 | `plan factory-restore` | Compute a full-reset plan without writing anything. |
-| `apply` | Apply a previously computed plan. Creates a backup before the first write. |
+| `setup` | Apply a previously computed serialized setup plan. Creates a backup before the first write. |
+| `apply` | Compatibility alias for applying a previously computed serialized plan. |
 | `update` | Inspect + plan + apply in one step. |
 | `repair` | Inspect + repair plan + apply in one step. |
 | `factory-restore` | Backup + purge + reinstall from policy. |
@@ -152,11 +153,11 @@ First-time install of all managed surfaces into a workspace that has no existing
 1. Run `inspect` — confirms the workspace is in `not-installed` state.
 2. Run `interview` — collects your choices: profile, optional packs, personalisation tokens (response style, autonomy level, agent persona, testing philosophy), and whether to enable MCP hooks.
 3. Run `plan setup` — computes the full write set; no files are written yet; conflicts and backup needs are flagged.
-4. Run `apply` — backs up any pre-existing content, writes all managed files with token substitution, and writes the lockfile recording your answers, hashes, profile, packs, and MCP state.
+4. Run `setup` — backs up any pre-existing content, writes all managed files with token substitution, and writes the lockfile recording your answers, hashes, profile, packs, and MCP state.
 
 ```sh
 python3 xanadAssistant.py plan setup --workspace <path> --package-root <path> --json
-python3 xanadAssistant.py apply --workspace <path> --package-root <path> --plan <plan-file>
+python3 xanadAssistant.py setup --workspace <path> --package-root <path> --plan <plan-file>
 ```
 
 > For a fresh workspace, see [INSTALL.md](INSTALL.md) and the bootstrap runner.

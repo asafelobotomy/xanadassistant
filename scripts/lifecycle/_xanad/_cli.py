@@ -48,10 +48,10 @@ def build_parser() -> argparse.ArgumentParser:
         mode_parser = plan_subparsers.add_parser(mode, help=f"Generate a {mode} plan.")
         add_common_arguments(mode_parser)
 
-    for command in ("apply", "update", "repair", "factory-restore"):
+    for command in ("setup", "apply", "update", "repair", "factory-restore"):
         command_parser = subparsers.add_parser(command, help=f"{command} workspace state.")
         add_common_arguments(command_parser)
-        if command == "apply":
+        if command in {"setup", "apply"}:
             command_parser.add_argument("--plan", default=None, help="Path to a serialized lifecycle plan to apply.")
 
     health_check_parser = subparsers.add_parser("health-check", help="Collect and format a workspace health check report.")

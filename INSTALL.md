@@ -14,7 +14,7 @@ Open Copilot chat (agent mode) and say:
 > **Setup asafelobotomy/xanadassistant**
 
 Copilot fetches the `xanadLifecycle` agent from GitHub (Step 0 below), installs
-it into your workspace, then drives the full bootstrap — interview, plan, apply,
+it into your workspace, then drives the full bootstrap — interview, plan, setup,
 cleanup. No manual commands needed.
 
 ### Manual alternative
@@ -154,10 +154,10 @@ python3 xanadBootstrap.py plan setup \
 If `approvalRequired` is `true` in the plan payload, summarise the planned
 writes for the user and ask for confirmation before continuing.
 
-### Step 5 — Apply
+### Step 5 — Setup
 
 ```sh
-python3 xanadBootstrap.py apply \
+python3 xanadBootstrap.py setup \
   --workspace . \
   --plan .xanadAssistant/tmp/setup-plan.json \
   --json
@@ -188,7 +188,7 @@ Two-step install using defaults:
 ```sh
 curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py -o xanadBootstrap.py
 python3 xanadBootstrap.py plan setup --workspace . --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
-python3 xanadBootstrap.py apply --workspace . --plan .xanadAssistant/tmp/setup-plan.json --json
+python3 xanadBootstrap.py setup --workspace . --plan .xanadAssistant/tmp/setup-plan.json --json
 ```
 
 Or download-then-run for a pinned release:
@@ -196,7 +196,7 @@ Or download-then-run for a pinned release:
 ```sh
 curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py -o xanadBootstrap.py
 python3 xanadBootstrap.py plan setup --workspace . --version v1.0.0 --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
-python3 xanadBootstrap.py apply --workspace . --plan .xanadAssistant/tmp/setup-plan.json --json
+python3 xanadBootstrap.py setup --workspace . --plan .xanadAssistant/tmp/setup-plan.json --json
 ```
 
 ---

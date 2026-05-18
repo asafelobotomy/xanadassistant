@@ -641,7 +641,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:07d11d10d94d64e19123339b71e70a596082172bcbec4f00d2352cf34be5afd3"
+      "hash": "sha256:bd342bd4496ac7f189bfc58affb4c7275c3c84449963489e2c0a2509ede5e443"
     },
     {
       "id": "prompts.bootstrap.md",
@@ -656,7 +656,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:fa4db42ab6fb3dede0a41f118001129b1d5fa995e3816509a985a5d7603b3fd4"
+      "hash": "sha256:19f6c1174a064f222bdd3f1ef9c2a0385b23130e889831f15f84e7684d74945c"
     },
     {
       "id": "devops-prompts.devops-incident.prompt.md",
@@ -878,7 +878,7 @@
         "{{XANAD_PROFILE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:2d4193fd4c0a618ac01a36e1be0d3de727e38077a743d71c6756039421764115"
+      "hash": "sha256:f5cc5c846a2bbe83e0dceaa848b27fd25dbad6ce3a104478fa5085d859a7a2f6"
     },
     {
       "id": "shapeup-prompts.shapeup-kickoff.prompt.md",

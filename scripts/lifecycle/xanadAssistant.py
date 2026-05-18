@@ -72,7 +72,7 @@ from scripts.lifecycle._xanad._apply import (
     apply_chmod_rule,
 )
 from scripts.lifecycle._xanad._execute_apply import (
-    execute_apply_plan, build_execution_result, build_apply_result,
+    execute_apply_plan, build_execution_result, build_apply_result, build_setup_result,
 )
 from scripts.lifecycle._xanad._emit import emit_json, emit_json_lines
 from scripts.lifecycle._xanad._progress import (

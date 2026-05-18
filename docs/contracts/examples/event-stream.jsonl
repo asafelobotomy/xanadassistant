@@ -6,5 +6,5 @@
 {"type":"receipt","command":"plan","sequence":6,"status":"approval-required"}
 {"type":"check-summary","command":"check","sequence":2,"status":"clean","summary":{"total":91,"clean":91,"missing":0,"stale":0,"malformed":0,"retired":0,"skipped":0,"unmanaged":0,"unknown":0},"unmanagedFiles":[]}
 {"type":"warning","command":"inspect","sequence":2,"code":"memory_db_missing","message":"Memory DB not yet initialised (first-run state is valid).","details":{"path":".github/xanadAssistant/memory/memory.db","severity":"info"}}
-{"type":"apply-report","command":"apply","sequence":2,"backup":{"path":".xanadAssistant/backups/20260515T120000","files":3},"writes":{"written":12,"skipped":0,"merged":2},"retired":[],"lockfile":{"written":true},"summary":"Applied 12 writes and merged 2 files.","validation":{"status":"ok"}}
+{"type":"apply-report","command":"setup","sequence":2,"backup":{"path":".xanadAssistant/backups/20260515T120000","files":3},"writes":{"written":12,"skipped":0,"merged":2},"retired":[],"lockfile":{"written":true},"summary":"Applied 12 writes and merged 2 files.","validation":{"status":"ok"}}
 {"type":"error","command":"unknown","sequence":1,"code":"not_implemented","message":"Command 'unknown' is not implemented.","details":{}}

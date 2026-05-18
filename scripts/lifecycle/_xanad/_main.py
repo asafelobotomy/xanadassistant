@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from scripts.lifecycle._xanad._execute_apply import build_apply_result, build_execution_result, load_apply_plan
+from scripts.lifecycle._xanad._execute_apply import build_apply_result, build_execution_result, build_setup_result, load_apply_plan
 from scripts.lifecycle._xanad._check import build_check_result
 from scripts.lifecycle._xanad._cli import build_parser
 from scripts.lifecycle._xanad._errors import LifecycleCommandError, _State
@@ -31,7 +31,18 @@ def _run_execution_command(
 ) -> int:
     error_mode = mode
     try:
-        if command == "apply":
+        if command == "setup":
+            payload = build_setup_result(
+                workspace,
+                package_root,
+                answers_path=args.answers,
+                non_interactive=args.non_interactive,
+                dry_run=args.dry_run,
+                resolutions_path=getattr(args, "resolutions", None),
+                plan_path=getattr(args, "plan", None),
+            )
+            error_mode = payload.get("mode")
+        elif command == "apply":
             payload = build_apply_result(
                 workspace,
                 package_root,
@@ -54,7 +65,7 @@ def _run_execution_command(
                 resolutions_path=getattr(args, "resolutions", None),
             )
     except LifecycleCommandError as error:
-        if command == "apply":
+        if command in {"setup", "apply"}:
             plan_path = getattr(args, "plan", None)
             if plan_path:
                 try:
@@ -110,7 +121,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def _run_lifecycle(args: argparse.Namespace) -> int:
     """Inner lifecycle dispatch — separated so main() can close _State.log_file on exit."""
-    write_commands = {"apply", "update", "repair", "factory-restore"}
+    write_commands = {"setup", "apply", "update", "repair", "factory-restore"}
     workspace = resolve_workspace(args.workspace, create=args.command in write_commands)
     if args.json and args.json_lines:
         payload, exit_code = build_error_payload(
@@ -198,6 +209,9 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
         _attach_output_path(args.plan_out, payload, "planOut")
         emit_payload(payload, args.ui, use_json_lines)
         return 0 if not payload["errors"] else 4
+
+    if args.command == "setup":
+        return _run_execution_command(args, workspace, package_root, use_json_lines, "setup", None)
 
     if args.command == "apply":
         return _run_execution_command(args, workspace, package_root, use_json_lines, "apply", None)

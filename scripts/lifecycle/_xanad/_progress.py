@@ -84,7 +84,7 @@ def emit_agent_progress(payload: dict) -> None:
         out(f"  Status: {payload['status']}")
         return
 
-    if payload["command"] in {"apply", "update", "repair", "factory-restore"}:
+    if payload["command"] in {"setup", "apply", "update", "repair", "factory-restore"}:
         out(_phase("Apply"))
         out(f"  Files added: {payload['result']['writes']['added']}")
         out(f"  Files replaced: {payload['result']['writes']['replaced']}")

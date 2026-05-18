@@ -21,6 +21,7 @@ The lifecycle engine must expose these commands:
 - `plan update`
 - `plan repair`
 - `plan factory-restore`
+- `setup`
 - `apply`
 - `check`
 - `update`
@@ -44,14 +45,21 @@ The lifecycle engine must expose these commands:
 `plan <mode>`
 
 - Computes a no-write lifecycle plan for `setup`, `update`, `repair`, or `factory-restore`.
-- Produces machine-readable output suitable for later `apply`.
+- Produces machine-readable output suitable for later `setup` or `apply`.
 - Must not write managed files to the workspace.
+
+`setup`
+
+- Applies a previously generated serialized `setup` plan.
+- Creates a backup before the first managed write.
+- Produces a machine-readable report and writes installed state when successful.
 
 `apply`
 
-- Applies a previously generated plan.
+- Applies a previously generated serialized plan.
 - Creates a backup before the first managed write.
 - Produces a machine-readable report and writes installed state when successful.
+- Phase 1 compatibility alias for serialized-plan execution; `setup` is the supported public executor for setup plans.
 
 `check`
 
@@ -137,6 +145,7 @@ Presentation:
 
 - Disables interactive prompting.
 - Commands must fail with a stable exit code when required answers are missing.
+- `setup` and `apply` must reject this flag because interactive decisions are already frozen into the serialized plan.
 
 `--dry-run`
 
@@ -145,6 +154,7 @@ Presentation:
 `--answers`
 
 - Supplies machine-readable answers for interview-driven decisions.
+- `setup` and `apply` must reject this flag because answers are resolved before the serialized plan is produced.
 
 `--resolutions`
 
@@ -155,7 +165,7 @@ Presentation:
 `--plan`
 
 - Supplies a previously generated serialized lifecycle plan.
-- Required by `apply`.
+- Required by `setup` and `apply`.
 
 `--plan-out`
 

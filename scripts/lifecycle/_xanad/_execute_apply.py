@@ -265,6 +265,44 @@ def load_apply_plan(plan_path: str | None, workspace: Path) -> dict:
     return payload
 
 
+def _execute_serialized_plan(
+    command: str,
+    workspace: Path,
+    package_root: Path,
+    dry_run: bool,
+    plan_path: str | None,
+    expected_mode: str | None = None,
+) -> dict:
+    plan_payload = load_apply_plan(plan_path, workspace)
+    if expected_mode is not None and plan_payload["mode"] != expected_mode:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            f"{command.capitalize()} requires a serialized {expected_mode} plan.",
+            4,
+            {"command": command, "expectedMode": expected_mode, "mode": plan_payload["mode"]},
+        )
+    validate_apply_plan_paths(plan_payload, package_root)
+    validate_apply_plan_package(plan_payload, package_root)
+    if plan_payload["result"].get("conflictDetails"):
+        raise LifecycleCommandError(
+            "approval_or_answers_required",
+            "Pack token conflicts must be resolved before applying.",
+            6,
+            {"questionIds": [c["questionId"] for c in plan_payload["result"]["conflictDetails"]]},
+        )
+    apply_result = execute_apply_plan(workspace, package_root, plan_payload, dry_run=dry_run)
+    return {
+        "command": command,
+        "mode": plan_payload["mode"],
+        "workspace": str(workspace),
+        "source": build_source_summary(package_root),
+        "status": "ok",
+        "warnings": plan_payload.get("warnings", []),
+        "errors": [],
+        "result": apply_result,
+    }
+
+
 def validate_apply_plan_package(plan_payload: dict, package_root: Path) -> None:
     planned_lockfile = plan_payload["result"]["plannedLockfile"]["contents"]
     planned_package = planned_lockfile.get("package", {})
@@ -333,6 +371,20 @@ def build_apply_result(
     non_interactive: bool, dry_run: bool = False, resolutions_path: str | None = None,
     plan_path: str | None = None,
 ) -> dict:
+    if answers_path is not None:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Apply does not accept --answers; answer collection must be resolved before serializing the plan.",
+            4,
+            {"argument": "--answers"},
+        )
+    if non_interactive:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Apply does not accept --non-interactive; the serialized plan already freezes interactive decisions.",
+            4,
+            {"argument": "--non-interactive"},
+        )
     if resolutions_path is not None:
         raise LifecycleCommandError(
             "contract_input_failure",
@@ -340,24 +392,37 @@ def build_apply_result(
             4,
             {"argument": "--resolutions"},
         )
-    plan_payload = load_apply_plan(plan_path, workspace)
-    validate_apply_plan_paths(plan_payload, package_root)
-    validate_apply_plan_package(plan_payload, package_root)
-    if plan_payload["result"].get("conflictDetails"):
+    return _execute_serialized_plan("apply", workspace, package_root, dry_run, plan_path)
+
+
+def build_setup_result(
+    workspace: Path,
+    package_root: Path,
+    answers_path: str | None = None,
+    non_interactive: bool = False,
+    dry_run: bool = False,
+    resolutions_path: str | None = None,
+    plan_path: str | None = None,
+) -> dict:
+    if answers_path is not None:
         raise LifecycleCommandError(
-            "approval_or_answers_required",
-            "Pack token conflicts must be resolved before applying.",
-            6,
-            {"questionIds": [c["questionId"] for c in plan_payload["result"]["conflictDetails"]]},
+            "contract_input_failure",
+            "Setup does not accept --answers; answer collection must be resolved before serializing the plan.",
+            4,
+            {"argument": "--answers"},
         )
-    apply_result = execute_apply_plan(workspace, package_root, plan_payload, dry_run=dry_run)
-    return {
-        "command": "apply",
-        "mode": plan_payload["mode"],
-        "workspace": str(workspace),
-        "source": build_source_summary(package_root),
-        "status": "ok",
-        "warnings": plan_payload.get("warnings", []),
-        "errors": [],
-        "result": apply_result,
-    }
+    if non_interactive:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Setup does not accept --non-interactive; the serialized plan already freezes interactive decisions.",
+            4,
+            {"argument": "--non-interactive"},
+        )
+    if resolutions_path is not None:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Setup does not accept --resolutions; conflict decisions must be recorded in the serialized plan.",
+            4,
+            {"argument": "--resolutions"},
+        )
+    return _execute_serialized_plan("setup", workspace, package_root, dry_run, plan_path, expected_mode="setup")

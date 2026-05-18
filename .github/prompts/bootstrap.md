@@ -100,10 +100,10 @@ python3 xanadBootstrap.py plan setup \
 If `approvalRequired` is `true`, summarise the planned writes and confirm with
 the user before proceeding.
 
-### 4 — Apply
+### 4 — Setup
 
 ```sh
-python3 xanadBootstrap.py apply \
+python3 xanadBootstrap.py setup \
   --workspace . \
   --plan .xanadAssistant/tmp/setup-plan.json \
   --json

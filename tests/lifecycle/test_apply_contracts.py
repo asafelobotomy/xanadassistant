@@ -145,6 +145,19 @@ class ApplyContractTests(unittest.TestCase):
         with self.assertRaises(LifecycleCommandError):
             _execute_apply.build_apply_result(Path("."), Path("."), None, False, resolutions_path="resolutions.json")
 
+    def test_build_serialized_plan_executors_reject_answers_and_non_interactive(self) -> None:
+        with self.assertRaises(LifecycleCommandError):
+            _execute_apply.build_apply_result(Path("."), Path("."), "answers.json", False, plan_path="plan.json")
+
+        with self.assertRaises(LifecycleCommandError):
+            _execute_apply.build_apply_result(Path("."), Path("."), None, True, plan_path="plan.json")
+
+        with self.assertRaises(LifecycleCommandError):
+            _execute_apply.build_setup_result(Path("."), Path("."), answers_path="answers.json", plan_path="plan.json")
+
+        with self.assertRaises(LifecycleCommandError):
+            _execute_apply.build_setup_result(Path("."), Path("."), non_interactive=True, plan_path="plan.json")
+
     def test_build_execution_and_apply_result_cover_conflict_and_success_paths(self) -> None:
         workspace = Path("/workspace")
         package_root = Path("/package")
@@ -175,6 +188,36 @@ class ApplyContractTests(unittest.TestCase):
 
         self.assertEqual(payload["command"], "apply")
         self.assertEqual(payload["mode"], "update")
+        self.assertEqual(payload["warnings"], ["warn"])
+        self.assertEqual(payload["result"], {"applied": True})
+
+    def test_build_setup_result_requires_setup_plan_and_returns_setup_command(self) -> None:
+        workspace = Path("/workspace")
+        package_root = Path("/package")
+
+        with mock.patch(
+            "scripts.lifecycle._xanad._execute_apply.load_apply_plan",
+            return_value={"mode": "repair", "warnings": [], "result": {"plannedLockfile": {"contents": {}}, "conflictDetails": []}},
+        ):
+            with self.assertRaises(LifecycleCommandError) as excinfo:
+                _execute_apply.build_setup_result(workspace, package_root, plan_path="plan.json")
+
+        self.assertEqual(excinfo.exception.code, "contract_input_failure")
+
+        plan_payload = {"mode": "setup", "warnings": ["warn"], "result": {"plannedLockfile": {"contents": {}}, "conflictDetails": []}}
+        with mock.patch("scripts.lifecycle._xanad._execute_apply.load_apply_plan", return_value=plan_payload), mock.patch(
+            "scripts.lifecycle._xanad._execute_apply.validate_apply_plan_paths"
+        ), mock.patch("scripts.lifecycle._xanad._execute_apply.validate_apply_plan_package"), mock.patch(
+            "scripts.lifecycle._xanad._execute_apply.execute_apply_plan",
+            return_value={"applied": True},
+        ), mock.patch(
+            "scripts.lifecycle._xanad._execute_apply.build_source_summary",
+            return_value={"source": "github:owner/repo", "ref": "main"},
+        ):
+            payload = _execute_apply.build_setup_result(workspace, package_root, dry_run=True, plan_path="plan.json")
+
+        self.assertEqual(payload["command"], "setup")
+        self.assertEqual(payload["mode"], "setup")
         self.assertEqual(payload["warnings"], ["warn"])
         self.assertEqual(payload["result"], {"applied": True})
 
