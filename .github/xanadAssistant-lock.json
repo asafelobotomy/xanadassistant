@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:b974ea179668d19d4aaab90ddc1a50787bab354fe872c2ae4899f1f0b71c8304"
+    "hash": "sha256:3c88b7212dabab533b8eca1e5fbc82ef69c4f8e3e21e4fceab911404725d1566"
   },
   "timestamps": {
-    "appliedAt": "2026-05-18T09:41:37Z",
-    "updatedAt": "2026-05-18T09:41:37Z"
+    "appliedAt": "2026-05-18T10:06:14Z",
+    "updatedAt": "2026-05-18T10:06:14Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -45,7 +45,16 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [],
+  "files": [
+    {
+      "id": "hook-scripts.xanadWorkspaceMcp.py",
+      "target": ".github/mcp/scripts/xanadWorkspaceMcp.py",
+      "sourceHash": "sha256:8d08ae72254811ec208af29e11fd68a9674c6790583bfcd5320ade6c4b81d90a",
+      "installedHash": "sha256:8d08ae72254811ec208af29e11fd68a9674c6790583bfcd5320ade6c4b81d90a",
+      "ownershipMode": "local",
+      "status": "applied"
+    }
+  ],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -123,5 +132,8 @@
   ],
   "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {}
+  "unknownValues": {},
+  "lastBackup": {
+    "path": ".xanadAssistant/backups/2026-05-18T10-06-14Z"
+  }
 }

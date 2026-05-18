@@ -31,6 +31,28 @@ _LEGACY_LOCKFILE = WORKSPACE_ROOT / ".github" / "xanad-assistant-lock.json"
 WORKSPACE_LOCKFILE_PATH = _NEW_LOCKFILE if _NEW_LOCKFILE.exists() else _LEGACY_LOCKFILE
 SHELL_METACHARACTERS = ["|", "&", ";", ">", "<", "\n", "\r", "`", "$((", "$(", "${"]
 UNRESOLVED_COMMAND_VALUES = frozenset({"(not detected)", "not detected"})
+_ALLOWED_RUNNER_EXECUTABLES = frozenset({
+    "python", "python3",
+    "pytest", "py.test",
+    "npm", "npx", "yarn", "pnpm",
+    "cargo", "go",
+})
+def _check_executable_allowed(command: str) -> str | None:
+    """Return a rejection reason if the command's executable is not in the runner allowlist."""
+    try:
+        argv = shlex.split(command)
+    except ValueError:
+        return "command could not be parsed"
+    if not argv:
+        return "command is empty"
+    executable = Path(argv[0]).name
+    if executable in _ALLOWED_RUNNER_EXECUTABLES:
+        return None
+    # Allow version-suffixed Python interpreters (e.g. python3.11, python3.12)
+    prefix, _, suffix = executable.partition(".")
+    if prefix in {"python", "python3"} and suffix.isdigit():
+        return None
+    return f"executable {executable!r} is not in the permitted runner allowlist"
 def workspace_root_valid() -> bool: return (WORKSPACE_ROOT / ".github").is_dir()
 def parse_key_commands(instructions_path: Path) -> list[dict[str, str]]:
     if not instructions_path.exists():
@@ -156,7 +178,7 @@ def run_argv(argv: list[str], *, parse_payload: bool = False) -> dict:
     if payload is not None:
         result["payload"] = payload
     return result
-def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None = None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None, mode: str | None = None, mode_as_flag: bool = False, answers_path: object | None = None, non_interactive: object | None = None, dry_run: object | None = None) -> dict:
+def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None = None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None, mode: str | None = None, mode_as_flag: bool = False, answers_path: object | None = None, non_interactive: object | None = None, dry_run: object | None = None, plan_path: object | None = None) -> dict:
     if not workspace_root_valid():
         return build_tool_result(status="unavailable", summary="The MCP server is not installed in a workspace root.")
     package_root, reason = resolve_lifecycle_package_root(package_root_arg, source_arg, version_arg, ref_arg)
@@ -169,6 +191,13 @@ def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None =
     if mode is not None:
         argv.extend(["--mode", mode] if mode_as_flag else [mode])
     argv.extend(["--workspace", str(WORKSPACE_ROOT), "--package-root", str(package_root), "--json"])
+    if plan_path is not None:
+        if not (isinstance(plan_path, str) and plan_path.strip() and Path(plan_path).is_file()):
+            return build_tool_result(status="unavailable", summary="planPath must be a non-empty string pointing to an existing file.")
+        resolved_plan = Path(plan_path).resolve()
+        if not resolved_plan.is_relative_to(WORKSPACE_ROOT):
+            return build_tool_result(status="unavailable", summary="planPath must be a path within the workspace root.")
+        argv.extend(["--plan", str(resolved_plan)])
     if answers_path is not None:
         if not (isinstance(answers_path, str) and answers_path.strip() and Path(answers_path).is_file()):
             return build_tool_result(status="unavailable", summary="answersPath must be a non-empty string pointing to an existing file.")
@@ -205,6 +234,9 @@ def tool_workspace_run_tests(arguments: dict) -> dict:
     reason = reject_shell_metacharacters(command)
     if reason is not None:
         return {"status": "unavailable", "summary": reason, "command": command}
+    reason = _check_executable_allowed(command)
+    if reason is not None:
+        return build_tool_result(status="unavailable", summary=reason)
     argv = shlex.split(command) if scope == "full" else shlex.split(command) + extra_args
     return run_argv(argv)
 def tool_workspace_run_check_loc(arguments: dict) -> dict:
@@ -214,6 +246,12 @@ def tool_workspace_run_check_loc(arguments: dict) -> dict:
     command = resolve_key_command("LOC gate")
     if command is None:
         return build_tool_result(status="unavailable", summary="No LOC gate command is declared in .github/copilot-instructions.md.")
+    reason = reject_shell_metacharacters(command)
+    if reason is not None:
+        return {"status": "unavailable", "summary": reason, "command": command}
+    reason = _check_executable_allowed(command)
+    if reason is not None:
+        return build_tool_result(status="unavailable", summary=reason)
     return run_argv(shlex.split(command))
 def tool_workspace_validate_lockfile(arguments: dict) -> dict:
     del arguments
@@ -285,8 +323,8 @@ def lifecycle_plan_setup(packageRoot: str | None = None, source: str | None = No
     return _lifecycle_tool("plan", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, mode="setup", answers_path=answersPath, non_interactive=nonInteractive)
 
 @mcp.tool()
-def lifecycle_apply(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> ToolResult:
-    return _lifecycle_tool("apply", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, answers_path=answersPath, non_interactive=nonInteractive, dry_run=dryRun)
+def lifecycle_apply(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, planPath: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> ToolResult:
+    return _lifecycle_tool("apply", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, plan_path=planPath, answers_path=answersPath, non_interactive=nonInteractive, dry_run=dryRun)
 
 @mcp.tool()
 def lifecycle_update(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, answersPath: str | None = None, nonInteractive: bool | None = None, dryRun: bool | None = None) -> ToolResult:

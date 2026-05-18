@@ -491,6 +491,62 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
                 self.assertEqual(unavailable_cli["status"], "unavailable")
                 self.assertIn("cli missing", unavailable_cli["summary"])
 
+    def test_run_tests_and_check_loc_reject_non_allowlisted_executables(self) -> None:
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with self._workspace_ready(module, resolve_key_command="bash scripts/run_tests.sh"):
+                    tests_result = module.tool_workspace_run_tests({"scope": "default", "extraArgs": []})
+                self.assertEqual(tests_result["status"], "unavailable")
+                self.assertIn("allowlist", tests_result["summary"])
+
+                with self._workspace_ready(module, resolve_key_command="curl http://example.com/script.sh"):
+                    loc_result = module.tool_workspace_run_check_loc({})
+                self.assertEqual(loc_result["status"], "unavailable")
+                self.assertIn("allowlist", loc_result["summary"])
+
+    def test_check_loc_also_guards_shell_metacharacters(self) -> None:
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with self._workspace_ready(module, resolve_key_command="python3 scripts/check_loc.py | cat"):
+                    result = module.tool_workspace_run_check_loc({})
+                self.assertEqual(result["status"], "unavailable")
+                self.assertIn("unsupported shell syntax", result["summary"])
+
+    def test_run_lifecycle_command_rejects_invalid_plan_path(self) -> None:
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with self._workspace_ready(module), mock.patch.object(
+                    module,
+                    "resolve_lifecycle_package_root",
+                    return_value=(Path("/tmp/pkg"), None),
+                ), mock.patch.object(module, "resolve_lifecycle_cli", return_value=(["python3", "xanadAssistant.py"], None)):
+                    result = module.run_lifecycle_command("apply", plan_path="/missing/plan.json")
+                self.assertEqual(result["status"], "unavailable")
+                self.assertIn("planPath", result["summary"])
+
+    def test_run_lifecycle_command_rejects_plan_path_outside_workspace(self) -> None:
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as f:
+                    outside_path = f.name
+                try:
+                    with self._workspace_ready(module), \
+                         mock.patch.object(module, "resolve_lifecycle_package_root", return_value=(Path("/tmp/pkg"), None)), \
+                         mock.patch.object(module, "resolve_lifecycle_cli", return_value=(["python3", "xanadAssistant.py"], None)):
+                        result = module.run_lifecycle_command("apply", plan_path=outside_path)
+                    self.assertEqual(result["status"], "unavailable")
+                    self.assertIn("workspace", result["summary"].lower())
+                finally:
+                    Path(outside_path).unlink(missing_ok=True)
+
+    def test_lifecycle_apply_accepts_plan_path_parameter(self) -> None:
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with mock.patch.object(module, "run_lifecycle_command", return_value={"status": "ok", "summary": "ok"}) as runner:
+                    module.lifecycle_apply(packageRoot="/tmp/pkg", planPath="/tmp/plan.json")
+                self.assertIn("plan_path", runner.call_args.kwargs)
+                self.assertEqual(runner.call_args.kwargs["plan_path"], "/tmp/plan.json")
+
 
 if __name__ == "__main__":
     unittest.main()

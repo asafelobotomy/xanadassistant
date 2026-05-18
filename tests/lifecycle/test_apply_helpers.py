@@ -263,6 +263,24 @@ class ApplyExecutorTests(unittest.TestCase):
         self.assertFalse(result["rolledBack"])
         self.assertIn("rollback failed", result["rollbackError"])
 
+    def test_assert_within_workspace_raises_for_outside_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir, tempfile.TemporaryDirectory() as outside_dir:
+            workspace = Path(tmpdir).resolve()
+            outside = Path(outside_dir).resolve()
+            outside_file = outside / "secret.txt"
+
+            with self.assertRaises(LifecycleCommandError) as exc:
+                _apply_executor._assert_within_workspace(outside_file, workspace)
+
+        self.assertEqual(exc.exception.code, "apply_failure")
+
+    def test_assert_within_workspace_accepts_paths_inside_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir).resolve()
+            inside = workspace / ".github" / "agents" / "foo.md"
+            # Should not raise
+            _apply_executor._assert_within_workspace(inside, workspace)
+
 
 if __name__ == "__main__":
     unittest.main()

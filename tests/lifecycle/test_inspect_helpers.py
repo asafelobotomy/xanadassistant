@@ -161,3 +161,42 @@ class CollectUnmanagedFilesTests(unittest.TestCase):
         self.assertIn(".github/prompts/clean.prompt.md", managed_targets)
         self.assertIn({"id": "prompts.retired", "target": ".github/prompts/retired.prompt.md", "status": "retired"}, entries)
         self.assertEqual(cleanup, [".github/skills/legacy.skill.md"])
+
+    def test_collect_unmanaged_files_skips_symlinked_managed_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir, tempfile.TemporaryDirectory() as outside_dir:
+            workspace = Path(tmpdir)
+            outside = Path(outside_dir)
+            (outside / "secret.txt").write_text("outside\n", encoding="utf-8")
+            github_dir = workspace / ".github"
+            github_dir.mkdir()
+            (github_dir / "prompts").symlink_to(outside)
+            managed_target = ".github/prompts/main.prompt.md"
+
+            result = collect_unmanaged_files(
+                workspace,
+                self._minimal_manifest(),
+                {managed_target},
+            )
+
+        self.assertNotIn(".github/prompts/secret.txt", result)
+
+    def test_collect_successor_migration_files_skips_symlinked_roots(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir, tempfile.TemporaryDirectory() as outside_dir:
+            workspace = Path(tmpdir)
+            outside = Path(outside_dir)
+            (outside / "legacy.skill.md").write_text("legacy\n", encoding="utf-8")
+            github_dir = workspace / ".github"
+            github_dir.mkdir()
+            (github_dir / "skills").symlink_to(outside)
+            # Place a marker so collect_successor_migration_files enters the scan loop
+            (github_dir / "hooks").mkdir()
+            (github_dir / "hooks" / "copilot-hooks.json").write_text("{}\n", encoding="utf-8")
+
+            cleanup = collect_successor_migration_files(
+                workspace,
+                {"managedFiles": [], "retiredFiles": []},
+                {"present": False},
+                {"present": False},
+            )
+
+        self.assertNotIn(".github/skills/legacy.skill.md", cleanup)

@@ -338,4 +338,16 @@ class ApplyContractTests(unittest.TestCase):
                 with self.assertRaises(LifecycleCommandError):
                     _execute_apply.validate_apply_plan_package(version_mismatch, package_root)
 
+    def test_validate_plan_path_rejects_backslash_traversal(self) -> None:
+        for bad_path in (
+            "..\\..\\outside.txt",
+            ".github\\agents\\foo.md",
+            "normal\\path.txt",
+        ):
+            with self.subTest(path=bad_path):
+                with self.assertRaises(LifecycleCommandError) as exc:
+                    _execute_apply._validate_relative_plan_path(bad_path, "target")
+                self.assertEqual(exc.exception.code, "contract_input_failure")
+                self.assertIn("backslash", exc.exception.message.lower())
+
 

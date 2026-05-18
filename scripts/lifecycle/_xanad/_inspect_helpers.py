@@ -123,6 +123,8 @@ def collect_unmanaged_files(workspace: Path, manifest: dict | None, managed_targ
         base_dir = workspace / candidate
         if not base_dir.exists() or not base_dir.is_dir():
             continue
+        if base_dir.is_symlink():
+            continue
         for file_path in sorted(path for path in base_dir.rglob("*") if path.is_file() and "__pycache__" not in path.parts):
             relative = file_path.relative_to(workspace).as_posix()
             if relative in managed_targets or relative in retired_targets:
@@ -165,6 +167,8 @@ def collect_successor_migration_files(
     for root in _SUCCESSOR_MIGRATION_ROOTS:
         root_path = workspace / root
         if not root_path.exists():
+            continue
+        if root_path.is_symlink():
             continue
         for file_path in sorted(path for path in root_path.rglob("*") if path.is_file()):
             relative = file_path.relative_to(workspace).as_posix()

@@ -49,6 +49,19 @@ def _restore_snapshot(path: Path, snapshot: bytes | None) -> None:
     path.write_bytes(snapshot)
 
 
+def _assert_within_workspace(path: Path, workspace_resolved: Path) -> None:
+    """Raise LifecycleCommandError if path resolves outside the workspace boundary."""
+    try:
+        path.resolve().relative_to(workspace_resolved)
+    except ValueError:
+        raise LifecycleCommandError(
+            "apply_failure",
+            "Action target resolves outside the workspace boundary.",
+            9,
+            {"path": str(path)},
+        )
+
+
 def _copy_backup_file(source_path: Path, destination_path: Path) -> None:
     destination_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source_path, destination_path)
@@ -143,6 +156,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
     if dry_run:
         return _build_dry_run_result(plan_payload, planned_lockfile)
 
+    workspace_resolved = workspace.resolve()
     backup_root = materialize_apply_timestamp(backup_plan.get("root"), path_timestamp)
     archive_targets_map = {
         entry["target"]: entry["archivePath"]
@@ -201,6 +215,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
                     _copy_backup_file(target_path, workspace / backup_root / action["target"])
                 if archive_path_str is not None:
                     archive_dest = workspace / archive_path_str
+                    _assert_within_workspace(archive_dest, workspace_resolved)
                     archive_dest.parent.mkdir(parents=True, exist_ok=True)
                     shutil.move(str(target_path), archive_dest)
                     archive_paths.add(archive_path_str)
@@ -242,6 +257,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
                 )
 
             target_path = workspace / action["target"]
+            _assert_within_workspace(target_path, workspace_resolved)
             target_path.parent.mkdir(parents=True, exist_ok=True)
             if action["action"] == "merge":
                 if action["strategy"] == "merge-json-object":

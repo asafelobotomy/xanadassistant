@@ -21,6 +21,14 @@ def _validate_relative_plan_path(path_value: object, field: str) -> str:
             {"field": field, "value": path_value},
         )
 
+    if "\\" in path_value:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file path fields must not contain backslashes.",
+            4,
+            {"field": field, "value": path_value},
+        )
+
     path = PurePosixPath(path_value)
     if path.is_absolute() or ".." in path.parts:
         raise LifecycleCommandError(

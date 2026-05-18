@@ -20,6 +20,7 @@ All other flags are forwarded verbatim to the underlying xanadAssistant CLI.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import subprocess
 import sys
@@ -41,6 +42,17 @@ _SUPPORTED_COMMANDS = ("inspect", "interview", "plan", "apply")
 def _safe_slug(value: str) -> str:
     """Sanitise a string for use in a filesystem path component."""
     return re.sub(r"[^A-Za-z0-9._-]", "-", value)
+
+
+def _cache_key(raw: str) -> str:
+    """Return a collision-free cache key: readable slug + 12-char SHA-256 digest.
+
+    Prevents path collisions between refs whose slugs are identical after
+    substitution, e.g. 'feature/x' and 'feature-x'.
+    """
+    digest = hashlib.sha256(raw.encode()).hexdigest()[:12]
+    safe_prefix = re.sub(r"[^A-Za-z0-9._-]", "-", raw)[:40]
+    return f"{safe_prefix}-{digest}"
 
 
 def _validate_source(source: str) -> tuple[str, str]:
@@ -78,7 +90,7 @@ def _archive_url(owner: str, repo: str, ref: str) -> str:
 
 def _download_archive(owner: str, repo: str, ref: str, cache_root: Path) -> Path:
     """Download a GitHub archive for *ref* into the cache and return the extracted root."""
-    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_safe_slug(ref)}"
+    cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
     sentinel = cache_dir / ".complete"
     if sentinel.exists():
         return cache_dir
