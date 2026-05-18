@@ -8,6 +8,7 @@ All functions here require network access and are excluded from coverage.
 
 import hashlib
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -49,6 +50,8 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     sentinel = cache_dir / ".complete"
     if sentinel.exists():
         return cache_dir
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
 
     url = f"https://github.com/{owner}/{repo}/archive/refs/tags/{version}.tar.gz"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -80,6 +83,7 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     except LifecycleCommandError:
         raise
     except Exception as exc:
+        shutil.rmtree(cache_dir, ignore_errors=True)
         raise LifecycleCommandError(
             "source_resolution_failure",
             f"Failed to download GitHub release {owner}/{repo}@{version}: {exc}",
@@ -98,8 +102,9 @@ def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Pat
     safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
     clone_url = f"https://github.com/{owner}/{repo}.git"
+    clone_required = not (cache_dir / ".git").exists()
     try:
-        if (cache_dir / ".git").exists():
+        if not clone_required:
             subprocess.run(
                 ["git", "-C", str(cache_dir), "fetch", "--depth", "1", "origin", ref],
                 check=True,
@@ -111,13 +116,17 @@ def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Pat
                 capture_output=True,
             )
         else:
-            cache_dir.mkdir(parents=True, exist_ok=True)
+            if cache_dir.exists():
+                shutil.rmtree(cache_dir)
+            cache_dir.parent.mkdir(parents=True, exist_ok=True)
             subprocess.run(
                 ["git", "clone", "--depth", "1", "--branch", ref, clone_url, str(cache_dir)],
                 check=True,
                 capture_output=True,
             )
     except subprocess.CalledProcessError as exc:
+        if clone_required:
+            shutil.rmtree(cache_dir, ignore_errors=True)
         stderr_text = exc.stderr.decode(errors="replace").strip() if exc.stderr else ""
         raise LifecycleCommandError(
             "source_resolution_failure",

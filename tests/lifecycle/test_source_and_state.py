@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -108,6 +109,35 @@ class SourceResolutionTests(unittest.TestCase):
         self.assertNotEqual(
             _source_remote._cache_key("feature/x"),
             _source_remote._cache_key("feature-x"),
+        )
+
+    def test_resolve_github_release_cleans_incomplete_cache_after_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_root = Path(tmpdir)
+            cache_dir = cache_root / "github" / "owner-repo" / f"release-{_source_remote._cache_key('v1.0.0')}"
+            with mock.patch("urllib.request.urlopen", side_effect=OSError("network down")):
+                with self.assertRaises(LifecycleCommandError):
+                    _source_remote.resolve_github_release("owner", "repo", "v1.0.0", cache_root)
+
+        self.assertFalse(cache_dir.exists())
+
+    def test_resolve_github_ref_cleans_incomplete_cache_and_retry_succeeds(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_root = Path(tmpdir)
+            cache_dir = cache_root / "github" / "owner-repo" / f"ref-{_source_remote._cache_key('main')}"
+            clone_error = subprocess.CalledProcessError(1, ["git", "clone"], stderr=b"clone failed")
+            with mock.patch("scripts.lifecycle._xanad._source_remote.subprocess.run", side_effect=clone_error):
+                with self.assertRaises(LifecycleCommandError):
+                    _source_remote.resolve_github_ref("owner", "repo", "main", cache_root)
+            self.assertFalse(cache_dir.exists())
+
+            with mock.patch("scripts.lifecycle._xanad._source_remote.subprocess.run") as run_mock:
+                result = _source_remote.resolve_github_ref("owner", "repo", "main", cache_root)
+
+        self.assertEqual(result, cache_dir)
+        self.assertEqual(
+            run_mock.call_args.args[0],
+            ["git", "clone", "--depth", "1", "--branch", "main", "https://github.com/owner/repo.git", str(cache_dir)],
         )
 
     def test_get_cache_root_honors_environment_override(self) -> None:

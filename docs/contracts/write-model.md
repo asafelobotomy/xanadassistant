@@ -28,6 +28,8 @@ Initial ownership modes:
 - Ownership must be explicit for every managed surface.
 - The updater must not assume ownership of unmanaged lookalike files.
 - User-owned or project-specific content must not be overwritten without policy, plan visibility, and backup.
+- Lifecycle writes and backups must reject any source or destination path that resolves outside the workspace boundary.
+- Lifecycle backups must not dereference symlinked sources that resolve outside the workspace boundary.
 
 ## Supported Write Strategies
 
@@ -98,3 +100,9 @@ Default retired-file behavior should be:
 - archive when update policy says archive and backup exists
 - report when the file should remain visible for manual review
 - remove only with explicit policy, flag, or user approval
+
+## Factory-Restore Rules
+
+- Factory-restore purges only managed and retired xanadAssistant content.
+- Factory-restore must preserve unmanaged lookalike files, even when they live under directories that also contain managed targets.
+- Preserved unmanaged lookalikes may still be reported to the caller, but they do not become owned by xanadAssistant as a side effect of factory-restore.

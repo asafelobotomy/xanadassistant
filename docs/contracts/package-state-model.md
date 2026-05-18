@@ -72,7 +72,7 @@ It should contain at least:
 - applied managed file records or equivalent applied-state summary
 - managed files skipped by policy
 - retired managed files archived, removed, or left in place
-- backup metadata for the last write operation when relevant
+- backup metadata for the last managed write operation when relevant
 - timestamps or comparable lifecycle receipt data
 
 ## Migration Rules

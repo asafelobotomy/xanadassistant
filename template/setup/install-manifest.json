@@ -308,7 +308,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:42fe0aee5ac88e316a5c9493433577921a473b1a6f4c33d05916d5f848b87cd7"
+      "hash": "sha256:f7114c23196895e7833d52a652bd62a3e1bcc92d9da72850e96a2dc8a369111d"
     },
     {
       "id": "devops-hooks.devopsEnvCheck.py",
@@ -641,7 +641,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:d27fed8da379a537c5b4093f93f2e7bfafce879868a76d569ecba9c3b81e1e71"
+      "hash": "sha256:07d11d10d94d64e19123339b71e70a596082172bcbec4f00d2352cf34be5afd3"
     },
     {
       "id": "prompts.bootstrap.md",

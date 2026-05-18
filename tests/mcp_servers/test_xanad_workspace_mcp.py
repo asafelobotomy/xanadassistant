@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import ExitStack
 import importlib.util
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -249,6 +250,43 @@ class XanadWorkspaceMcpTests(unittest.TestCase):
 
                     self.assertEqual(result["status"], "unavailable")
                     self.assertIn("workspace", result["summary"].lower())
+
+    def test_run_lifecycle_command_resolves_relative_workspace_paths_from_workspace_root(self) -> None:
+        original_cwd = Path.cwd()
+        try:
+            with tempfile.TemporaryDirectory() as workspace_dir, tempfile.TemporaryDirectory() as other_dir:
+                workspace_root = Path(workspace_dir)
+                plan_path = workspace_root / "plans" / "apply.json"
+                answers_path = workspace_root / "answers" / "setup.json"
+                plan_path.parent.mkdir(parents=True, exist_ok=True)
+                answers_path.parent.mkdir(parents=True, exist_ok=True)
+                plan_path.write_text("{}", encoding="utf-8")
+                answers_path.write_text("{}", encoding="utf-8")
+                os.chdir(other_dir)
+
+                for module in self.MODULES:
+                    with self.subTest(module=module.__name__):
+                        with self._workspace_ready(module), mock.patch.object(module, "WORKSPACE_ROOT", workspace_root), mock.patch.object(
+                            module,
+                            "resolve_lifecycle_package_root",
+                            return_value=(Path("/tmp/pkg"), None),
+                        ), mock.patch.object(module, "resolve_lifecycle_cli", return_value=(["python3", "xanadAssistant.py"], None)), mock.patch.object(
+                            module,
+                            "run_argv",
+                            return_value={"status": "ok", "summary": "done"},
+                        ) as runner:
+                            result = module.run_lifecycle_command(
+                                "apply",
+                                plan_path="plans/apply.json",
+                                answers_path="answers/setup.json",
+                            )
+
+                        self.assertEqual(result["status"], "ok")
+                        argv = runner.call_args.args[0]
+                        self.assertIn(str(plan_path.resolve()), argv)
+                        self.assertIn(str(answers_path.resolve()), argv)
+        finally:
+            os.chdir(original_cwd)
 
     def test_workspace_show_install_state_uses_check_status_for_drift(self) -> None:
         lifecycle_result = {

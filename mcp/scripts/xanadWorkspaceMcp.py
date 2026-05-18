@@ -178,6 +178,31 @@ def run_argv(argv: list[str], *, parse_payload: bool = False) -> dict:
     if payload is not None:
         result["payload"] = payload
     return result
+
+
+def _resolve_workspace_file(path_value: object, argument_name: str) -> tuple[Path | None, dict | None]:
+    if not (isinstance(path_value, str) and path_value.strip()):
+        return None, build_tool_result(
+            status="unavailable",
+            summary=f"{argument_name} must be a non-empty string pointing to an existing file.",
+        )
+    candidate = Path(path_value).expanduser()
+    if not candidate.is_absolute():
+        candidate = WORKSPACE_ROOT / candidate
+    resolved = candidate.resolve()
+    if not resolved.is_file():
+        return None, build_tool_result(
+            status="unavailable",
+            summary=f"{argument_name} must be a non-empty string pointing to an existing file.",
+        )
+    if not resolved.is_relative_to(WORKSPACE_ROOT):
+        return None, build_tool_result(
+            status="unavailable",
+            summary=f"{argument_name} must be a path within the workspace root.",
+        )
+    return resolved, None
+
+
 def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None = None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None, mode: str | None = None, mode_as_flag: bool = False, answers_path: object | None = None, non_interactive: object | None = None, dry_run: object | None = None, plan_path: object | None = None) -> dict:
     if not workspace_root_valid():
         return build_tool_result(status="unavailable", summary="The MCP server is not installed in a workspace root.")
@@ -192,18 +217,14 @@ def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None =
         argv.extend(["--mode", mode] if mode_as_flag else [mode])
     argv.extend(["--workspace", str(WORKSPACE_ROOT), "--package-root", str(package_root), "--json"])
     if plan_path is not None:
-        if not (isinstance(plan_path, str) and plan_path.strip() and Path(plan_path).is_file()):
-            return build_tool_result(status="unavailable", summary="planPath must be a non-empty string pointing to an existing file.")
-        resolved_plan = Path(plan_path).resolve()
-        if not resolved_plan.is_relative_to(WORKSPACE_ROOT):
-            return build_tool_result(status="unavailable", summary="planPath must be a path within the workspace root.")
+        resolved_plan, error = _resolve_workspace_file(plan_path, "planPath")
+        if error is not None or resolved_plan is None:
+            return error or build_tool_result(status="unavailable", summary="planPath must be a non-empty string pointing to an existing file.")
         argv.extend(["--plan", str(resolved_plan)])
     if answers_path is not None:
-        if not (isinstance(answers_path, str) and answers_path.strip() and Path(answers_path).is_file()):
-            return build_tool_result(status="unavailable", summary="answersPath must be a non-empty string pointing to an existing file.")
-        resolved_answers = Path(answers_path).resolve()
-        if not resolved_answers.is_relative_to(WORKSPACE_ROOT):
-            return build_tool_result(status="unavailable", summary="answersPath must be a path within the workspace root.")
+        resolved_answers, error = _resolve_workspace_file(answers_path, "answersPath")
+        if error is not None or resolved_answers is None:
+            return error or build_tool_result(status="unavailable", summary="answersPath must be a non-empty string pointing to an existing file.")
         argv.extend(["--answers", str(resolved_answers)])
     for name, value, flag in (("nonInteractive", non_interactive, "--non-interactive"), ("dryRun", dry_run, "--dry-run")):
         if value is True:

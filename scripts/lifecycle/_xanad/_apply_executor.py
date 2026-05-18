@@ -16,7 +16,6 @@ from scripts.lifecycle._xanad._apply import (
     render_entry_bytes,
 )
 from scripts.lifecycle._xanad._errors import DEFAULT_POLICY_PATH, LifecycleCommandError
-from scripts.lifecycle._xanad._inspect import collect_unmanaged_files
 from scripts.lifecycle._xanad._loader import load_json, load_manifest
 
 
@@ -62,7 +61,9 @@ def _assert_within_workspace(path: Path, workspace_resolved: Path) -> None:
         )
 
 
-def _copy_backup_file(source_path: Path, destination_path: Path) -> None:
+def _copy_backup_file(source_path: Path, destination_path: Path, workspace_resolved: Path) -> None:
+    _assert_within_workspace(source_path, workspace_resolved)
+    _assert_within_workspace(destination_path, workspace_resolved)
     destination_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source_path, destination_path)
 
@@ -144,6 +145,20 @@ def _build_dry_run_result(plan_payload: dict, planned_lockfile: dict) -> dict:
     }
 
 
+def _validation_allows_factory_restore(validation: dict, factory_restore: bool) -> bool:
+    if validation.get("status") == "clean":
+        return True
+    if not factory_restore:
+        return False
+    summary = validation.get("result", {}).get("summary", {})
+    if summary.get("unmanaged", 0) <= 0:
+        return False
+    for key in ("missing", "stale", "malformed", "retired", "unknown"):
+        if summary.get(key, 0) > 0:
+            return False
+    return True
+
+
 def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, dry_run: bool = False) -> dict:
     manifest = load_manifest(package_root, load_json(package_root / DEFAULT_POLICY_PATH)) or {"managedFiles": []}
     manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
@@ -185,26 +200,18 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
 
         for backup_target in backup_plan.get("targets", []):
             source_path = workspace / backup_target["target"]
+            _assert_within_workspace(source_path, workspace_resolved)
             if not source_path.exists():
                 continue
             backup_path = materialize_apply_timestamp(backup_target["backupPath"], path_timestamp)
             if backup_path is None:
                 continue
-            _copy_backup_file(source_path, workspace / backup_path)
-
-        if factory_restore:
-            managed_targets = {entry["target"] for entry in manifest.get("managedFiles", [])}
-            unmanaged_files = collect_unmanaged_files(workspace, manifest, managed_targets)
-            for relative_path in unmanaged_files:
-                source_path = workspace / relative_path
-                if backup_root is not None and source_path.exists():
-                    _copy_backup_file(source_path, workspace / backup_root / relative_path)
-                if source_path.exists():
-                    source_path.unlink()
+            _copy_backup_file(source_path, workspace / backup_path, workspace_resolved)
 
         for action in actions:
             if action["action"] == "archive-retired":
                 target_path = workspace / action["target"]
+                _assert_within_workspace(target_path, workspace_resolved)
                 if action.get("strategy", "archive-retired") == "report-retired":
                     retired_records.append({"target": action["target"], "action": "reported"})
                     writes["retiredReported"] += 1
@@ -212,7 +219,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
 
                 archive_path_str = archive_targets_map.get(action["target"])
                 if target_path.exists() and backup_root is not None:
-                    _copy_backup_file(target_path, workspace / backup_root / action["target"])
+                    _copy_backup_file(target_path, workspace / backup_root / action["target"], workspace_resolved)
                 if archive_path_str is not None:
                     archive_dest = workspace / archive_path_str
                     _assert_within_workspace(archive_dest, workspace_resolved)
@@ -231,10 +238,11 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
 
             if action["action"] == "delete":
                 target_path = workspace / action["target"]
+                _assert_within_workspace(target_path, workspace_resolved)
                 if not target_path.exists():
                     continue
                 if backup_root is not None:
-                    _copy_backup_file(target_path, workspace / backup_root / action["target"])
+                    _copy_backup_file(target_path, workspace / backup_root / action["target"], workspace_resolved)
                 target_path.unlink()
                 writes["deleted"] += 1
                 continue
@@ -301,7 +309,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
             created_paths.add(".gitignore")
 
         validation = _check.build_check_result(workspace, package_root)
-        if validation["status"] != "clean":
+        if not _validation_allows_factory_restore(validation, factory_restore):
             details = _rollback_metadata(workspace, backup_root, created_paths, archive_paths, snapshots)
             details["summary"] = validation["result"]["summary"]
             raise LifecycleCommandError(

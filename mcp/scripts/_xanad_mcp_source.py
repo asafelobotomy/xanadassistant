@@ -5,6 +5,7 @@ Installed alongside xanadWorkspaceMcp.py in .github/mcp/scripts/.
 from __future__ import annotations
 import hashlib
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -42,6 +43,8 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     sentinel = cache_dir / ".complete"
     if sentinel.exists():
         return cache_dir
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
     url = f"https://github.com/{owner}/{repo}/archive/refs/tags/{version}.tar.gz"
     cache_dir.mkdir(parents=True, exist_ok=True)
     tmp_path: Path | None = None
@@ -67,6 +70,9 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
                     if (file_obj := tar.extractfile(member)) is not None:
                         dest.write_bytes(file_obj.read())
         sentinel.write_text("ok\n", encoding="utf-8")
+    except Exception:
+        shutil.rmtree(cache_dir, ignore_errors=True)
+        raise
     finally:
         if tmp_path is not None and tmp_path.exists():
             tmp_path.unlink(missing_ok=True)
@@ -79,10 +85,18 @@ def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Pat
     safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
     clone_url = f"https://github.com/{owner}/{repo}.git"
-    if (cache_dir / ".git").exists():
+    clone_required = not (cache_dir / ".git").exists()
+    if not clone_required:
         for argv in (["git", "-C", str(cache_dir), "fetch", "--depth", "1", "origin", ref], ["git", "-C", str(cache_dir), "checkout", "FETCH_HEAD"]):
             subprocess.run(argv, check=True, capture_output=True)
         return cache_dir
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
     cache_dir.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["git", "clone", "--depth", "1", "--branch", ref, clone_url, str(cache_dir)], check=True, capture_output=True)
+    try:
+        subprocess.run(["git", "clone", "--depth", "1", "--branch", ref, clone_url, str(cache_dir)], check=True, capture_output=True)
+    except subprocess.CalledProcessError:
+        if clone_required:
+            shutil.rmtree(cache_dir, ignore_errors=True)
+        raise
     return cache_dir

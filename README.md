@@ -201,7 +201,8 @@ Full reset of a workspace that already has xanadAssistant installed. Use this wh
 
 1. Requires an existing install (use **setup** for first-time installs).
 2. Backs up all currently installed managed files.
-3. Purges all managed content from the workspace.
+3. Purges managed and retired xanadAssistant content from the workspace.
+4. Preserves user-owned unmanaged lookalike files that happen to live under managed directories.
 4. Reinstalls from policy from scratch, reusing your lockfile answers for profile, packs, and personalisation.
 5. Rewrites the lockfile with updated hashes.
 

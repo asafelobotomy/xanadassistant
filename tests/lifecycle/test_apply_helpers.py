@@ -248,11 +248,137 @@ class ApplyExecutorTests(unittest.TestCase):
                 }
             }
 
-            with mock.patch("scripts.lifecycle._xanad._apply_executor.collect_unmanaged_files", return_value=["unmanaged.txt"]):
+            with self.assertRaises(LifecycleCommandError) as excinfo:
+                _apply_executor.execute_apply_plan(workspace, package_root, plan_payload, dry_run=False)
+
+        self.assertEqual(excinfo.exception.code, "apply_failure")
+
+    def test_factory_restore_preserves_unmanaged_lookalike_when_validation_only_reports_unmanaged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            workspace = root / "workspace"
+            package_root = root / "package"
+            workspace.mkdir()
+            package_root.mkdir()
+            self._write_policy_and_manifest(package_root)
+            custom_file = workspace / ".github" / "prompts" / "custom.prompt.md"
+            custom_file.parent.mkdir(parents=True, exist_ok=True)
+            custom_file.write_text("custom\n", encoding="utf-8")
+
+            plan_payload = {
+                "result": {
+                    "actions": [],
+                    "backupPlan": {"root": ".xanadAssistant/backups/<apply-timestamp>", "targets": [], "archiveTargets": []},
+                    "plannedLockfile": {
+                        "path": ".github/xanadAssistant-lock.json",
+                        "contents": {
+                            "package": {"name": "xanadAssistant"},
+                            "manifest": {"hash": "sha256:abc"},
+                            "timestamps": {"appliedAt": "<apply-timestamp>", "updatedAt": "<apply-timestamp>"},
+                            "setupAnswers": {},
+                            "selectedPacks": [],
+                            "files": [],
+                        },
+                    },
+                    "factoryRestore": True,
+                    "skippedActions": [],
+                }
+            }
+
+            validation = {
+                "status": "drift",
+                "result": {"summary": {"missing": 0, "stale": 0, "malformed": 0, "retired": 0, "unmanaged": 1, "unknown": 0}},
+            }
+            with mock.patch("scripts.lifecycle._xanad._apply_executor._check.build_check_result", return_value=validation):
+                result = _apply_executor.execute_apply_plan(workspace, package_root, plan_payload, dry_run=False)
+
+            self.assertEqual(result["validation"]["status"], "passed")
+            self.assertEqual(custom_file.read_text(encoding="utf-8"), "custom\n")
+
+    def test_factory_restore_preserves_symlinked_unmanaged_lookalike_without_backup_copy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            workspace = root / "workspace"
+            package_root = root / "package"
+            workspace.mkdir()
+            package_root.mkdir()
+            self._write_policy_and_manifest(package_root)
+            outside_file = root / "outside.txt"
+            outside_file.write_text("outside\n", encoding="utf-8")
+            custom_link = workspace / ".github" / "prompts" / "custom.prompt.md"
+            custom_link.parent.mkdir(parents=True, exist_ok=True)
+            custom_link.symlink_to(outside_file)
+
+            plan_payload = {
+                "result": {
+                    "actions": [],
+                    "backupPlan": {"root": ".xanadAssistant/backups/<apply-timestamp>", "targets": [], "archiveTargets": []},
+                    "plannedLockfile": {
+                        "path": ".github/xanadAssistant-lock.json",
+                        "contents": {
+                            "package": {"name": "xanadAssistant"},
+                            "manifest": {"hash": "sha256:abc"},
+                            "timestamps": {"appliedAt": "<apply-timestamp>", "updatedAt": "<apply-timestamp>"},
+                            "setupAnswers": {},
+                            "selectedPacks": [],
+                            "files": [],
+                        },
+                    },
+                    "factoryRestore": True,
+                    "skippedActions": [],
+                }
+            }
+
+            validation = {
+                "status": "drift",
+                "result": {"summary": {"missing": 0, "stale": 0, "malformed": 0, "retired": 0, "unmanaged": 1, "unknown": 0}},
+            }
+            with mock.patch("scripts.lifecycle._xanad._apply_executor._check.build_check_result", return_value=validation):
+                _apply_executor.execute_apply_plan(workspace, package_root, plan_payload, dry_run=False)
+
+            self.assertTrue(custom_link.is_symlink())
+            self.assertEqual(outside_file.read_text(encoding="utf-8"), "outside\n")
+            backup_root = workspace / ".xanadAssistant" / "backups"
+            self.assertFalse(any(backup_root.rglob("custom.prompt.md")))
+
+    def test_factory_restore_still_fails_when_validation_reports_non_unmanaged_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            workspace = root / "workspace"
+            package_root = root / "package"
+            workspace.mkdir()
+            package_root.mkdir()
+            self._write_policy_and_manifest(package_root)
+
+            plan_payload = {
+                "result": {
+                    "actions": [],
+                    "backupPlan": {"root": ".xanadAssistant/backups/<apply-timestamp>", "targets": [], "archiveTargets": []},
+                    "plannedLockfile": {
+                        "path": ".github/xanadAssistant-lock.json",
+                        "contents": {
+                            "package": {"name": "xanadAssistant"},
+                            "manifest": {"hash": "sha256:abc"},
+                            "timestamps": {"appliedAt": "<apply-timestamp>", "updatedAt": "<apply-timestamp>"},
+                            "setupAnswers": {},
+                            "selectedPacks": [],
+                            "files": [],
+                        },
+                    },
+                    "factoryRestore": True,
+                    "skippedActions": [],
+                }
+            }
+
+            validation = {
+                "status": "drift",
+                "result": {"summary": {"missing": 1, "stale": 0, "malformed": 0, "retired": 0, "unmanaged": 1, "unknown": 0}},
+            }
+            with mock.patch("scripts.lifecycle._xanad._apply_executor._check.build_check_result", return_value=validation):
                 with self.assertRaises(LifecycleCommandError) as excinfo:
                     _apply_executor.execute_apply_plan(workspace, package_root, plan_payload, dry_run=False)
 
-        self.assertEqual(excinfo.exception.code, "apply_failure")
+            self.assertEqual(excinfo.exception.code, "apply_failure")
 
     def test_rollback_metadata_reports_failure_when_rollback_raises(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

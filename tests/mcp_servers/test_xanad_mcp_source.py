@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -103,6 +104,40 @@ class XanadMcpSourceTests(unittest.TestCase):
                     module._cache_key("feature/x"),
                     module._cache_key("feature-x"),
                 )
+
+    def test_resolve_github_release_cleans_incomplete_cache_after_failure(self) -> None:
+        for module in (SOURCE_MODULE, MANAGED_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    cache_root = Path(tmpdir)
+                    cache_dir = cache_root / "github" / "owner-repo" / f"release-{module._cache_key('v1.0.0')}"
+                    with mock.patch("urllib.request.urlopen", side_effect=OSError("network down")):
+                        with self.assertRaises(OSError):
+                            module.resolve_github_release("owner", "repo", "v1.0.0", cache_root)
+
+                    self.assertFalse(cache_dir.exists())
+
+    def test_resolve_github_ref_cleans_incomplete_cache_and_retry_succeeds(self) -> None:
+        for module in (SOURCE_MODULE, MANAGED_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    cache_root = Path(tmpdir)
+                    cache_dir = cache_root / "github" / "owner-repo" / f"ref-{module._cache_key('main')}"
+                    clone_error = subprocess.CalledProcessError(1, ["git", "clone"], stderr=b"clone failed")
+                    with mock.patch.object(module.subprocess, "run", side_effect=clone_error):
+                        with self.assertRaises(subprocess.CalledProcessError):
+                            module.resolve_github_ref("owner", "repo", "main", cache_root)
+
+                    self.assertFalse(cache_dir.exists())
+
+                    with mock.patch.object(module.subprocess, "run") as run_mock:
+                        result = module.resolve_github_ref("owner", "repo", "main", cache_root)
+
+                    self.assertEqual(result, cache_dir)
+                    self.assertEqual(
+                        run_mock.call_args.args[0],
+                        ["git", "clone", "--depth", "1", "--branch", "main", "https://github.com/owner/repo.git", str(cache_dir)],
+                    )
 
 
 if __name__ == "__main__":
