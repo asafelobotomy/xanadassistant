@@ -31,6 +31,16 @@ class PromptContractTests(unittest.TestCase):
         self.assertIn("xanadBootstrap.py setup --workspace . \\", content)
         self.assertNotRegex(content, re.compile(r"xanadBootstrap.py apply \\\n(?:.+\\\n)*\s+--answers "))
 
+    def test_active_docs_do_not_teach_apply_as_supported_command(self) -> None:
+        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        cli_surface = (REPO_ROOT / "docs" / "contracts" / "cli-surface.md").read_text(encoding="utf-8")
+
+        self.assertNotIn("| `update` | Inspect + plan + apply in one step. |", readme)
+        self.assertNotIn("| `repair` | Inspect + repair plan + apply in one step. |", readme)
+        self.assertNotIn("4. Run `apply`", readme)
+        self.assertNotIn("approved apply through one top-level command", cli_surface)
+        self.assertNotIn("Writes a serialized lifecycle plan for later apply.", cli_surface)
+
 
 class TemplateMcpJsonContractTests(unittest.TestCase):
     """Regression tests for template/vscode/mcp.json contract.

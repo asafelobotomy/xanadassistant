@@ -61,11 +61,11 @@ The lifecycle engine must expose these commands:
 
 `update`
 
-- Performs inspect plus update planning plus approved apply through one top-level command.
+- Performs inspect plus update planning plus approved write execution through one top-level command.
 
 `repair`
 
-- Performs inspect plus repair planning plus apply through one top-level command.
+- Performs inspect plus repair planning plus approved write execution through one top-level command.
 
 `factory-restore`
 
@@ -169,7 +169,7 @@ Presentation:
 
 `--plan-out`
 
-- Writes a serialized lifecycle plan for later apply.
+- Writes a serialized lifecycle plan for later setup when the mode is `setup`, or for review before the matching top-level write command.
 
 `--report-out`
 

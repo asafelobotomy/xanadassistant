@@ -112,8 +112,8 @@ python3 xanadAssistant.py <command> --workspace <path> --package-root <path> [--
 | `plan repair` | Compute a repair plan without writing anything. |
 | `plan factory-restore` | Compute a full-reset plan without writing anything. |
 | `setup` | Apply a previously computed serialized setup plan. Creates a backup before the first write. |
-| `update` | Inspect + plan + apply in one step. |
-| `repair` | Inspect + repair plan + apply in one step. |
+| `update` | Inspect + plan + write in one step. |
+| `repair` | Inspect + repair plan + write in one step. |
 | `factory-restore` | Backup + purge + reinstall from policy. |
 
 Stale `apply` invocations are retired and return structured migration guidance. Use `setup` for serialized setup plans.
@@ -173,7 +173,7 @@ Refresh stale or missing managed files in a workspace that is already installed.
 1. Run `inspect` — confirms install state is `installed` and identifies stale or missing files.
 2. Reads all previous answers (profile, packs, personalisation, MCP state) from the lockfile.
 3. Run `plan update` — hashes each managed file; only stale and missing files appear in the write set.
-4. Run `apply` — backs up changed files, writes only the stale/missing entries, and updates the lockfile with new hashes.
+4. Run the top-level `update` command — it backs up changed files, writes only the stale/missing entries, and updates the lockfile with new hashes.
 
 ```sh
 # One-step shorthand

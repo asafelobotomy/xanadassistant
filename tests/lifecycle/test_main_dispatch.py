@@ -176,14 +176,45 @@ class MainDispatchTests(unittest.TestCase):
             self.assertEqual(payload["mode"], "setup")
             self.assertEqual(payload["errors"][0]["code"], "retired_command")
 
+    def test_retired_apply_does_not_create_missing_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir, mock.patch(
+            "scripts.lifecycle._xanad._main.emit_payload"
+        ) as emit_payload:
+            workspace = Path(tmpdir) / "missing-workspace"
+
+            exit_code = main(["apply", "--workspace", str(workspace), "--json"])
+
+        self.assertEqual(exit_code, 4)
+        self.assertFalse(workspace.exists())
+        payload = emit_payload.call_args.args[0]
+        self.assertEqual(payload["errors"][0]["code"], "retired_command")
+
+    def test_main_handles_source_resolution_failure_for_inspect(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir, mock.patch(
+            "scripts.lifecycle._xanad._main.resolve_effective_package_root",
+            side_effect=LifecycleCommandError("contract_input_failure", "bad source", 4),
+        ), mock.patch("scripts.lifecycle._xanad._main.emit_payload") as emit_payload:
+            failed = main(["inspect", "--workspace", tmpdir, "--package-root", tmpdir])
+
+        self.assertEqual(failed, 4)
+        self.assertTrue(emit_payload.called)
+
+    def test_main_dispatches_setup_before_source_resolution_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plan_path = Path(tmpdir) / "plan.json"
+            plan_path.write_text("{}", encoding="utf-8")
+
             with mock.patch(
                 "scripts.lifecycle._xanad._main.resolve_effective_package_root",
-                side_effect=LifecycleCommandError("contract_input_failure", "bad source", 4),
-            ), mock.patch("scripts.lifecycle._xanad._main.emit_payload") as emit_payload:
-                failed = main(["inspect", "--workspace", tmpdir, "--package-root", tmpdir])
+                return_value=self._resolved_package_root(tmpdir),
+            ), mock.patch(
+                "scripts.lifecycle._xanad._main._run_execution_command",
+                return_value=0,
+            ) as run_exec:
+                setup_exit = main(["setup", "--workspace", tmpdir, "--package-root", tmpdir, "--plan", str(plan_path)])
 
-            self.assertEqual(failed, 4)
-            self.assertTrue(emit_payload.called)
+        self.assertEqual(setup_exit, 0)
+        self.assertTrue(run_exec.called)
 
     def test_main_handles_inspect_and_interview_errors(self) -> None:
         cases = [
