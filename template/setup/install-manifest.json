@@ -349,6 +349,23 @@
       "hash": "sha256:f7114c23196895e7833d52a652bd62a3e1bcc92d9da72850e96a2dc8a369111d"
     },
     {
+      "id": "hook-scripts.devDocsMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/devDocsMcp.py",
+      "target": ".github/mcp/scripts/devDocsMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:8f5c667e43a9608c7c577ba8b183cee375cf073fad994d97bbc294d255a31256"
+    },
+    {
       "id": "devops-hooks.devopsEnvCheck.py",
       "surface": "hooks",
       "layer": "pack",
@@ -1644,7 +1661,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:867c5c105229ae9817ae08a86b2d84e26745d9973a72128ed92e33f168c55987"
+      "hash": "sha256:0230bafbfb075ad64e5d2e31ce424f97c21f17f7c2351df593cdc2385af65280"
     },
     {
       "id": "vscode-settings.settings.json",

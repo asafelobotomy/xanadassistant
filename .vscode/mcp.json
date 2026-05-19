@@ -3,17 +3,17 @@
     "xanadTools": {
       "type": "stdio",
       "command": "uvx",
+      "env": {
+        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
+        "TMPDIR": "${userHome}/.cache/uv"
+      },
       "args": [
         "--from",
         "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/xanadWorkspaceMcp.py"
-      ],
-      "env": {
-        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
-        "TMPDIR": "${userHome}/.cache/uv"
-      }
+      ]
     },
     "git": {
       "type": "stdio",
@@ -51,6 +51,26 @@
         "${workspaceFolder}/.github/mcp/scripts/webMcp.py"
       ]
     },
+    "devDocs": {
+      "type": "stdio",
+      "command": "uvx",
+      "env": {
+        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
+        "TMPDIR": "${userHome}/.cache/uv"
+      },
+      "args": [
+        "--with",
+        "httpx",
+        "--with",
+        "beautifulsoup4",
+        "--from",
+        "mcp[cli]==1.27.1",
+        "mcp",
+        "run",
+        "${workspaceFolder}/.github/mcp/scripts/devDocsMcp.py"
+      ],
+      "disabled": false
+    },
     "time": {
       "type": "stdio",
       "command": "uvx",
@@ -64,6 +84,22 @@
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/timeMcp.py"
+      ]
+    },
+    "memory": {
+      "type": "stdio",
+      "command": "uvx",
+      "env": {
+        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
+        "TMPDIR": "${userHome}/.cache/uv",
+        "WORKSPACE_ROOT": "${workspaceFolder}"
+      },
+      "args": [
+        "--from",
+        "mcp[cli]==1.27.1",
+        "mcp",
+        "run",
+        "${workspaceFolder}/.github/mcp/scripts/memoryMcp.py"
       ]
     },
     "security": {
@@ -127,22 +163,6 @@
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/sequentialThinkingMcp.py"
-      ]
-    },
-    "memory": {
-      "type": "stdio",
-      "command": "uvx",
-      "env": {
-        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
-        "TMPDIR": "${userHome}/.cache/uv",
-        "WORKSPACE_ROOT": "${workspaceFolder}"
-      },
-      "args": [
-        "--from",
-        "mcp[cli]==1.27.1",
-        "mcp",
-        "run",
-        "${workspaceFolder}/.github/mcp/scripts/memoryMcp.py"
       ]
     }
   }

@@ -26,6 +26,14 @@ class _FakeFastMCP:
         del args, kwargs
 
 
+class _FakeContext:
+    async def info(self, message: str) -> None:
+        del message
+
+    async def error(self, message: str) -> None:
+        del message
+
+
 def load_mcp_script_module(relative_path: str, module_name: str, failure_label: str):
     repo_root = Path(__file__).resolve().parents[2]
     module_path = repo_root / relative_path
@@ -34,6 +42,7 @@ def load_mcp_script_module(relative_path: str, module_name: str, failure_label: 
     fake_server = ModuleType("mcp.server")
     fake_fastmcp = ModuleType("mcp.server.fastmcp")
     fake_fastmcp.FastMCP = _FakeFastMCP
+    fake_fastmcp.Context = _FakeContext
     fake_mcp.server = fake_server
     fake_server.fastmcp = fake_fastmcp
     sys.path.insert(0, str(scripts_dir))

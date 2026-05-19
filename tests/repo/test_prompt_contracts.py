@@ -153,6 +153,36 @@ class TemplateMcpJsonContractTests(unittest.TestCase):
             f"All servers must use the same mcp[cli] pin. Found multiple: {unique_pins}. Per-server: {pins}",
         )
 
+    def test_devdocs_server_is_enabled_by_default_in_template_and_repo_workspace(self) -> None:
+        import json
+
+        template_mcp = json.loads(
+            (REPO_ROOT / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8")
+        )
+        workspace_mcp = json.loads(
+            (REPO_ROOT / ".vscode" / "mcp.json").read_text(encoding="utf-8")
+        )
+
+        template_server = template_mcp.get("servers", {}).get("devDocs")
+        workspace_server = workspace_mcp.get("servers", {}).get("devDocs")
+
+        self.assertIsNotNone(template_server)
+        self.assertIsNotNone(workspace_server)
+        self.assertFalse(template_server.get("disabled", False))
+        self.assertFalse(workspace_server.get("disabled", False))
+
+    def test_template_and_repo_mcp_json_use_canonical_serialization(self) -> None:
+        import json
+
+        for path in (
+            REPO_ROOT / "template" / "vscode" / "mcp.json",
+            REPO_ROOT / ".vscode" / "mcp.json",
+        ):
+            with self.subTest(path=path):
+                content = path.read_text(encoding="utf-8")
+                parsed = json.loads(content)
+                self.assertEqual(content, json.dumps(parsed, indent=2) + "\n")
+
 
 if __name__ == "__main__":
     unittest.main()

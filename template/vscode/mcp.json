@@ -38,15 +38,38 @@
         "TMPDIR": "${userHome}/.cache/uv"
       },
       "args": [
-        "--with", "httpx",
-        "--with", "markdownify",
-        "--with", "beautifulsoup4",
+        "--with",
+        "httpx",
+        "--with",
+        "markdownify",
+        "--with",
+        "beautifulsoup4",
         "--from",
         "mcp[cli]==1.27.1",
         "mcp",
         "run",
         "${workspaceFolder}/.github/mcp/scripts/webMcp.py"
       ]
+    },
+    "devDocs": {
+      "type": "stdio",
+      "command": "uvx",
+      "env": {
+        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
+        "TMPDIR": "${userHome}/.cache/uv"
+      },
+      "args": [
+        "--with",
+        "httpx",
+        "--with",
+        "beautifulsoup4",
+        "--from",
+        "mcp[cli]==1.27.1",
+        "mcp",
+        "run",
+        "${workspaceFolder}/.github/mcp/scripts/devDocsMcp.py"
+      ],
+      "disabled": false
     },
     "time": {
       "type": "stdio",

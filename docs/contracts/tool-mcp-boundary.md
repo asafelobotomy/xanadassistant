@@ -45,7 +45,7 @@ Recommended first domains:
 
 ## V1 Server Shape
 
-The initial shape is one workspace-local stdio MCP server (`xanadTools`), managed by the lifecycle engine and referenced from `.vscode/mcp.json`. Companion servers are shipped alongside it and registered in the same MCP config under the IDs `git`, `web`, `time`, `memory`, `security`, `github`, `sqlite`, and `sequential-thinking`. Internal FastMCP server names may differ from those registered config IDs.
+The initial shape is one workspace-local stdio MCP server (`xanadTools`), managed by the lifecycle engine and referenced from `.vscode/mcp.json`. Companion servers are shipped alongside it and registered in the same MCP config under the IDs `git`, `web`, `devDocs`, `time`, `memory`, `security`, `github`, `sqlite`, and `sequential-thinking`. Internal FastMCP server names may differ from those registered config IDs.
 
 The complete `xanadTools` tool set is (see `tool-mcp-v1.md` for V1 vs Extended delivery history):
 
