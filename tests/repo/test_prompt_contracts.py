@@ -271,13 +271,15 @@ class PromptReviewSkillContractTests(unittest.TestCase):
 
     def test_prompt_review_skill_has_step_zero_automated_prescan(self) -> None:
         content = self._content()
-        self.assertIn("Step 0", content)
-        self.assertIn("pre-scan", content)
+        # Step 0 is dissolved — waza commands now live inside each relevant module
+        self.assertNotIn("## Step 0", content)
+        self.assertNotIn("## Module 7", content)
 
-    def test_prompt_review_skill_has_module_seven_llm_as_judge(self) -> None:
+    def test_prompt_review_skill_integrates_llm_as_judge_in_modules(self) -> None:
         content = self._content()
-        self.assertIn("Module 7", content)
+        # LLM-as-judge appears within Module 1, not as a separate numbered module
         self.assertIn("LLM-as-judge", content)
+        self.assertNotIn("Module 7", content)
 
     def test_prompt_review_skill_maps_waza_quality_dimensions_to_modules(self) -> None:
         content = self._content()
@@ -290,10 +292,11 @@ class PromptReviewSkillContractTests(unittest.TestCase):
     def test_prompt_review_skill_verify_checklist_covers_waza_steps(self) -> None:
         content = self._content()
         verify_section = content.split("## Verify", 1)[1]
-        self.assertIn("Step 0 pre-scan", verify_section)
-        self.assertIn("waza check", verify_section)
         self.assertIn("waza tokens profile", verify_section)
+        self.assertIn("waza check", verify_section)
         self.assertIn("waza quality", verify_section)
+        # Step 0 pre-scan language replaced by per-module integration
+        self.assertNotIn("Step 0 pre-scan", verify_section)
 
 
 class TemplateMcpJsonContractTests(unittest.TestCase):
