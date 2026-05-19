@@ -5,7 +5,7 @@ argument-hint: "Describe the git task: commit, push, preflight, PR, branch, tag,
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_diff_staged_stat, git_diff_unstaged_stat, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_stash, git_stash_pop, git_stash_apply, git_stash_drop, git_push_tag, git_push]
+tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_stash, git_stash_pop, git_stash_apply, git_stash_drop, git_push_tag, git_push]
 agents: [Explore, Review, Debugger]
 user-invocable: true
 ---
@@ -60,16 +60,17 @@ user explicitly accepts any residual risk surfaced.
 
 1. Run the secret-guard check over all candidate files before staging anything. Surface any probable secret to the user and stop until resolved.
 2. Prefer `git_status` and `git_diff_staged_stat` for the opening inspection summary instead of shelling out for `git status` and `git diff --cached --stat`.
-3. If nothing staged, prefer `git_diff_unstaged_stat` to show `git diff --stat`, then ask which files to include.
-4. When the user wants to unstage only part of the staged set, Prefer `git_reset` with explicit file paths instead of shelling out for a selective reset.
+3. If nothing staged, prefer `git_diff_unstaged_stat` to show `git diff --stat`, then ask which files to include. Use `git_add` to stage the selected files.
+4. When a full unified diff of unstaged or staged changes is needed, prefer `git_diff_unstaged` or `git_diff_staged` instead of shelling out for `git diff`.
+5. When the user wants to unstage only part of the staged set, Prefer `git_reset` with explicit file paths instead of shelling out for a selective reset.
 5. Write a commit message following the project's conventions (Conventional Commits 1.0 as default).
 6. **Present the message** to the user before committing. When using `askQuestions` for approval, include the exact proposed commit subject and body verbatim in the question or its supporting message block so the user can review the full text before answering. Do not commit without acknowledgement.
 7. Prefer `git_commit` for the final non-interactive commit step so the result comes back as a structured envelope instead of raw terminal text.
-8. Report the short hash and subject after a successful commit.
+8. Report the short hash and subject after a successful commit, using `git_log` with `max_count=1` to confirm the new commit.
 
 ## Push workflow
 
-1. Show `git log origin/<branch>..HEAD --oneline` (unpushed commits).
+1. Prefer `git_log` with a branch range such as `origin/<branch>..HEAD` to list unpushed commits before pushing.
 2. Confirm target branch and remote.
 3. Prefer `git_push` for straightforward non-interactive pushes so the result comes back as a structured envelope instead of raw terminal text.
 4. For new branches, Prefer `git_push` with `set_upstream=True`.

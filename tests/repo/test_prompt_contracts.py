@@ -92,6 +92,18 @@ class PromptContractTests(unittest.TestCase):
         self.assertIn("Prefer `git_stash`", content)
         self.assertIn("Prefer `git_stash_pop`", content)
 
+    def test_commit_agent_prefers_git_log_and_diff_for_inspection(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("Prefer `git_log`", content)
+        self.assertIn("`git_diff_unstaged`", content)
+        self.assertIn("`git_diff_staged`", content)
+
+    def test_commit_agent_prefers_git_add_for_staging(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("`git_add`", content)
+
     def test_commit_agent_requires_showing_full_message_in_approval_prompt(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
 

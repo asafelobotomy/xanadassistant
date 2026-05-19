@@ -11,8 +11,8 @@
     "hash": "sha256:173072b3fa7cc9ce60c7c0c34c36f72114587e4a91ec7b9cbf8a9776081b18c2"
   },
   "timestamps": {
-    "appliedAt": "2026-05-19T13:59:17Z",
-    "updatedAt": "2026-05-19T13:59:17Z"
+    "appliedAt": "2026-05-19T14:10:02Z",
+    "updatedAt": "2026-05-19T14:10:02Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -45,7 +45,16 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [],
+  "files": [
+    {
+      "id": "hook-scripts.gitMcp.py",
+      "target": ".github/mcp/scripts/gitMcp.py",
+      "sourceHash": "sha256:7d0356644e782a0a5dd4c6b4ae156588fe1cf9866782808e6c3eb13fabd06889",
+      "installedHash": "sha256:1e44d939678eb2d48090c11e27dcd0f83f92239b503018c535f7711747bb59a7",
+      "ownershipMode": "local",
+      "status": "applied"
+    }
+  ],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -123,5 +132,8 @@
   ],
   "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {}
+  "unknownValues": {},
+  "lastBackup": {
+    "path": ".xanadAssistant/backups/2026-05-19T14-10-02Z"
+  }
 }

@@ -462,15 +462,19 @@ def git_pull(
 
     Args:
         repo_path: Absolute path to the git repository.
-        remote: Remote name; defaults to 'origin'.
-        branch: Remote branch to pull; defaults to the tracking branch.
+        remote: Remote name; defaults to 'origin'.  Ignored when branch is
+            omitted — git uses the branch's configured upstream instead.
+        branch: Remote branch to pull.  When omitted, git uses the current
+            branch's configured upstream (i.e. ``git pull`` with no args).
         rebase: When True, rebases local commits on top of the fetched branch.
     """
     flags = ["--rebase"] if rebase else []
-    tail = [remote] + ([branch] if branch else [])
+    # When no explicit branch is given, omit remote too so that git resolves
+    # the tracking upstream from config rather than using FETCH_HEAD.
+    tail = [remote, branch] if branch else []
     command = ["git", "pull", *flags, *tail]
     result = _run_flags_completed(repo_path, ["pull"], flags, tail)
-    branch_summary = branch or "tracking branch"
+    branch_summary = f"{remote}/{branch}" if branch else "configured upstream"
     return _mutation_result(
         "git_pull",
         result,
@@ -478,7 +482,7 @@ def git_pull(
         remote=remote,
         branch=branch,
         rebase=rebase,
-        summary=f"git pull from {remote} {branch_summary} {'succeeded' if result.returncode == 0 else 'failed'}",
+        summary=f"git pull from {branch_summary} {'succeeded' if result.returncode == 0 else 'failed'}",
     )
 
 
@@ -497,7 +501,8 @@ def git_push(
     Args:
         repo_path: Absolute path to the git repository.
         remote: Remote name; defaults to 'origin'.
-        branch: Branch to push; defaults to the current tracking branch.
+        branch: Branch to push.  When omitted, git resolves the target via
+            push.default (typically the current branch's tracking ref).
         force_with_lease: Safer force-push — fails if the remote has new
             commits since the last fetch.  Preferred over force=True.
         force: Unconditional force-push.  Ignored when force_with_lease=True.
