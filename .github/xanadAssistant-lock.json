@@ -2,7 +2,7 @@
   "schemaVersion": "0.1.0",
   "package": {
     "name": "xanadAssistant",
-    "packageRoot": "/mnt/SteamLibrary/git/xanadassistant",
+    "packageRoot": "/home/solon/Documents/git/repos/xanadassistant",
     "source": "github:asafelobotomy/xanadassistant",
     "ref": "main"
   },
@@ -11,8 +11,8 @@
     "hash": "sha256:81812b0e1a0cb9688a4f8d544ade1f3bb40371e9bbd6292953550b7a0025650a"
   },
   "timestamps": {
-    "appliedAt": "2026-05-18T19:56:16Z",
-    "updatedAt": "2026-05-18T19:56:16Z"
+    "appliedAt": "2026-05-19T07:19:52Z",
+    "updatedAt": "2026-05-19T07:19:52Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -45,7 +45,16 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [],
+  "files": [
+    {
+      "id": "hook-scripts.timeMcp.py",
+      "target": ".github/mcp/scripts/timeMcp.py",
+      "sourceHash": "sha256:c0d97b640fdfc2db84f5048c49d0b6c9090d6e9848abdbea9fa5dc1f806d7de5",
+      "installedHash": "sha256:583d5eb957c3497bfdebbef4ac45dcc6a1d57b6e698a11eb00241f6c335d3258",
+      "ownershipMode": "local",
+      "status": "applied"
+    }
+  ],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -123,5 +132,8 @@
   ],
   "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {}
+  "unknownValues": {},
+  "lastBackup": {
+    "path": ".xanadAssistant/backups/2026-05-19T07-19-52Z"
+  }
 }
