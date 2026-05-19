@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:4d53c7085bad3d533410b7c1ed9af9f252c9eccc0b7344035416b627f71f79d0"
+    "hash": "sha256:f9735ade5d65f81c03d61aa12c75f993f4b1de03e9651f797f0757a2ffb9840d"
   },
   "timestamps": {
-    "appliedAt": "2026-05-19T14:31:15Z",
-    "updatedAt": "2026-05-19T14:31:15Z"
+    "appliedAt": "2026-05-19T14:52:45Z",
+    "updatedAt": "2026-05-19T14:52:45Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -22,6 +22,7 @@
     "hooks": "local",
     "prompts": "local",
     "skills": "plugin-backed-copilot-format",
+    "tools": "local",
     "mcp": "local",
     "vscode-settings": "local"
   },
@@ -45,7 +46,16 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [],
+  "files": [
+    {
+      "id": "tools.xanadEval.xanadEval.py",
+      "target": ".github/tools/xanadEval/xanadEval.py",
+      "sourceHash": "sha256:7ef0a0426fbf09a4dadb02ebd2e7aa6ee4e5eb2753fc17000f89d9a6c18e39cb",
+      "installedHash": "sha256:7ef0a0426fbf09a4dadb02ebd2e7aa6ee4e5eb2753fc17000f89d9a6c18e39cb",
+      "ownershipMode": "local",
+      "status": "applied"
+    }
+  ],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",

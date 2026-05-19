@@ -1,11 +1,11 @@
 ---
 name: promptReview
-description: "Six-module quality review for .prompt.md, .agent.md, SKILL.md, and .instructions.md files — contradiction detection, ambiguity analysis, persona consistency, cognitive load, coverage gaps, and composition conflict analysis. Integrates waza-backed metrics and LLM-as-judge scoring throughout each module."
+description: "Six-module quality review for .prompt.md, .agent.md, SKILL.md, and .instructions.md files — contradiction detection, ambiguity analysis, persona consistency, cognitive load, coverage gaps, and composition conflict analysis. Integrates xanadEval-backed metrics and LLM-as-judge scoring throughout each module."
 ---
 
 # Prompt Review
 
-> Skill metadata: version "1.0"; tags [review, prompt, agent, skill, instructions, quality]; recommended tools [read_file, file_search, grep_search, semantic_search]; optional tools [waza].
+> Skill metadata: version "1.0"; tags [review, prompt, agent, skill, instructions, quality]; recommended tools [read_file, file_search, grep_search, semantic_search]; bundled tools [xanadEval].
 
 Systematic quality review of Copilot surface files. Run all six modules in sequence; each produces zero or more labelled findings. Collect every finding before returning the summary.
 
@@ -27,7 +27,7 @@ Systematic quality review of Copilot surface files. Run all six modules in seque
 
 Identify directives or rules within the file that produce conflicting instructions when applied together.
 
-For SKILL.md files, run `waza quality <path>` (LLM-as-judge) and note the Anti-patterns score. A failing score surfaces contradictions that manual review may miss; tag corroborating findings with `(waza quality: anti-patterns)`.
+After completing the checklist, rate overall contradiction risk (LLM-as-judge): **Low / Medium / High / Critical**. Anti-patterns found at High or Critical severity warrant re-examining the file for subtle scope overlaps before finalising findings.
 
 **What to look for:**
 
@@ -55,7 +55,7 @@ For SKILL.md files, run `waza quality <path>` (LLM-as-judge) and note the Anti-p
 
 Find directives that cannot be executed reliably because they lack a precise, observable definition.
 
-For SKILL.md files, a `waza quality` Clarity score ≤ 0.5 confirms ambiguity findings; tag corroborating findings with `(waza quality: clarity = <score>)`.
+After completing the checklist, score overall directive Clarity on a 0–1 scale (LLM-as-judge, 1 = all directives are precisely actionable). A score ≤ 0.5 indicates significant ambiguity needing revision — treat as High severity.
 
 **What to look for:**
 
@@ -79,7 +79,7 @@ Severity: High if the ambiguity causes the agent to silently skip a required ste
 
 Verify that the file presents a coherent, stable identity and tone throughout.
 
-For SKILL.md files, a low `waza quality` Trigger precision score signals over-broad scope or persona confusion; tag findings with `(waza quality: trigger-precision = <score>)`.
+After completing the checklist, rate persona stability (LLM-as-judge): **Stable / Drifting / Conflicted**. A low Trigger precision result — over-broad scope or persona confusion — maps to Drifting (Medium) or Conflicted (High).
 
 **What to look for:**
 
@@ -99,7 +99,7 @@ Severity: Medium if the inconsistency is detectable mid-conversation; Low if it 
 
 Warn when the prompt's structural complexity makes it difficult to apply reliably.
 
-**Gather metrics.** Run `waza tokens profile <path>` for exact token count, section count, code block count, and workflow-step detection; use those figures in place of manual estimation. For SKILL.md files, also run `waza check <path>` for advisory flags. When waza is unavailable, apply the thresholds below by inspection.
+**Gather metrics.** Run `python3 .github/tools/xanadEval/xanadEval.py tokens <path>` for token estimate, section count, code block count, and workflow-step detection; use those figures in place of manual estimation. For SKILL.md files, also run `python3 .github/tools/xanadEval/xanadEval.py check <path>` for advisory flags. When xanadEval is unavailable, apply the thresholds below by inspection.
 
 **Metrics — warn or block per section:**
 
@@ -113,13 +113,13 @@ Warn when the prompt's structural complexity makes it difficult to apply reliabl
 
 A **warning** means "consider simplifying"; a **block** means "this complexity level makes reliable execution unlikely — restructure before merging".
 
-**waza check advisory flags (SKILL.md only)** — each finding with status ✗ maps to a `cognitive-load: warning` or `cognitive-load: block`:
+**xanadEval check advisory flags (SKILL.md only)** — each finding with status ✗ maps to a `cognitive-load: warning` or `cognitive-load: block`:
 - `complexity` — structural complexity exceeds heuristic threshold
 - `module-count` — more than 3 reference modules (2–3 is optimal)
 - `over-specificity` — excessive rigidity that reduces adaptability
 - `negative-delta-risk` — instructions that may worsen agent behavior
 
-If waza reports no workflow steps detected, emit `cognitive-load: warning` — the file may lack clear procedure structure.
+If xanadEval reports no workflow steps detected, emit `cognitive-load: warning` — the file may lack clear procedure structure.
 
 **Also flag:**
 - Tables with more than 10 rows that do not have an obvious sort or lookup key
@@ -134,7 +134,7 @@ If waza reports no workflow steps detected, emit `cognitive-load: warning` — t
 
 Identify gaps in the file's stated intent: scenarios that should be handled but are not.
 
-For SKILL.md files, `waza quality` Completeness and Scope coverage scores confirm coverage-gap findings; tag with `(waza quality: completeness)` or `(waza quality: scope)`.
+After completing the checklist, rate overall coverage Completeness (LLM-as-judge): **Complete / Gaps-present / Incomplete**. Gaps-present or Incomplete confirms coverage-gap findings. Also rate Scope coverage: is the file's scope well-defined, or does it bleed into adjacent agent territory?
 
 **Checklist — run for every file type:**
 
@@ -155,9 +155,9 @@ For SKILL.md files, `waza quality` Completeness and Scope coverage scores confir
 *Skill files (`SKILL.md`):*
 - [ ] A `## Verify` checklist is present
 - [ ] Every step either has a success criterion or delegates to a fallback
-- [ ] `waza check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings here
-- [ ] If an eval suite is expected: `waza check` eval-presence check passes; absence is a Medium-severity finding
-- [ ] If coverage gaps were found: `waza suggest --dry-run <path>` run; each expected eval task not yet present is a Low-severity finding
+- [ ] `xanadEval check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings here
+  - [ ] If an eval suite is expected: `xanadEval check` eval-presence check passes; absence is a Medium-severity finding
+  - [ ] If coverage gaps were found: run `python3 .github/tools/xanadEval/xanadEval.py suggest --dry-run <path>`; each expected eval task not yet present is a Low-severity finding
 
 *Instructions files (`.instructions.md`):*
 - [ ] `applyTo:` pattern is present and non-empty
@@ -223,9 +223,9 @@ Decision rules:
 ## Verify
 
 - [ ] All six modules run and each produced at least a "no findings" row
-- [ ] Module 4: `waza tokens profile` figures used, or waza unavailability noted
-- [ ] For SKILL.md files: `waza check` spec violations mapped to Module 5 findings
-- [ ] For SKILL.md files: `waza quality` scores cross-checked against Module 1/2/3/5 findings
+- [ ] Module 4: `xanadEval tokens` figures used, or xanadEval unavailability noted
+- [ ] For SKILL.md files: `xanadEval check` spec violations mapped to Module 5 findings
+- [ ] For SKILL.md files: LLM-as-judge quality ratings (contradiction risk, Clarity score, persona stability, coverage Completeness) applied in Modules 1/2/3/5
 - [ ] Composition imports resolved — linked files read before reporting conflict findings
 - [ ] Every ambiguity finding includes a rewrite suggestion
 - [ ] Every cognitive-load finding includes the measured metric value and the threshold

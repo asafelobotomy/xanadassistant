@@ -76,7 +76,8 @@
     "shapeup-prompts": "pack",
     "shapeup-hooks": "pack",
     "mcp-config": "core",
-    "vscode-settings": "core"
+    "vscode-settings": "core",
+    "tools": "core"
   },
   "packs": [
     "lean",

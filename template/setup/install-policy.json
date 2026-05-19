@@ -32,6 +32,7 @@
     "shapeup-prompts",
     "shapeup-hooks",
     "hook-scripts",
+    "tools",
     "mcp-config",
     "vscode-settings"
   ],
@@ -47,7 +48,8 @@
     "devops-pack": "packs/devops",
     "mlops-pack": "packs/mlops",
     "shapeup-pack": "packs/shapeup",
-    "mcp": "mcp"
+    "mcp": "mcp",
+    "tools": "tools"
   },
   "surfaceSources": {
     "core-instructions": {
@@ -241,6 +243,12 @@
       "path": "vscode/settings.json",
       "kind": "file",
       "layer": "core"
+    },
+    "tools": {
+      "sourceRoot": "tools",
+      "path": ".",
+      "kind": "directory",
+      "layer": "core"
     }
   },
   "targetPathRules": {
@@ -374,6 +382,10 @@
       "targetRoot": ".vscode",
       "pathPattern": "settings.json",
       "surface": "vscode-settings"
+    },
+    "tools": {
+      "targetRoot": ".github/tools",
+      "surface": "tools"
     }
   },
   "ownershipDefaults": {
@@ -408,7 +420,8 @@
     "shapeup-hooks": "local",
     "hook-scripts": "local",
     "mcp-config": "local",
-    "vscode-settings": "local"
+    "vscode-settings": "local",
+    "tools": "local"
   },
   "strategyDefaults": {
     "core-instructions": "preserve-marked-markdown-blocks",
@@ -442,7 +455,8 @@
     "shapeup-hooks": "replace-verbatim",
     "hook-scripts": "replace-verbatim",
     "mcp-config": "merge-json-object",
-    "vscode-settings": "merge-json-object"
+    "vscode-settings": "merge-json-object",
+    "tools": "replace-verbatim"
   },
   "requiredConditions": {
     "lean-skills": [
@@ -667,7 +681,8 @@
     "docs-hooks": "executable",
     "devops-hooks": "executable",
     "mlops-hooks": "executable",
-    "shapeup-hooks": "executable"
+    "shapeup-hooks": "executable",
+    "tools": "executable"
   },
   "retiredFilePolicy": {
     "defaultAction": "report-retired",
@@ -685,84 +700,84 @@
         "target": ".github/agents/xanad-lifecycle-planning.agent.md",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/agents/xanadLifecycle.agent.md — 'planning' was a misnomer; this agent coordinates the full lifecycle."
+        "notes": "Renamed to .github/agents/xanadLifecycle.agent.md \u2014 'planning' was a misnomer; this agent coordinates the full lifecycle."
       },
       {
         "id": "retired.agents.xanad-lifecycle.agent.md",
         "target": ".github/agents/xanad-lifecycle.agent.md",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/agents/xanadLifecycle.agent.md — standardized to camelCase naming."
+        "notes": "Renamed to .github/agents/xanadLifecycle.agent.md \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.skills.lifecycle-audit.SKILL.md",
         "target": ".github/skills/lifecycle-audit/SKILL.md",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/skills/lifecycleAudit/SKILL.md — standardized to camelCase naming."
+        "notes": "Renamed to .github/skills/lifecycleAudit/SKILL.md \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.xanad-workspace-mcp.py",
         "target": ".github/hooks/scripts/xanad-workspace-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/mcp/scripts/xanadWorkspaceMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/xanadWorkspaceMcp.py \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.git-mcp.py",
         "target": ".github/hooks/scripts/git-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/mcp/scripts/gitMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/gitMcp.py \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.github-mcp.py",
         "target": ".github/hooks/scripts/github-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/mcp/scripts/githubMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/githubMcp.py \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.mcp-sequential-thinking-server.py",
         "target": ".github/hooks/scripts/mcp-sequential-thinking-server.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/mcp/scripts/mcpSequentialThinkingServer.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/mcpSequentialThinkingServer.py \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.mcpSequentialThinkingServer.py",
         "target": ".github/hooks/scripts/mcpSequentialThinkingServer.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.1",
-        "notes": "Renamed to .github/mcp/scripts/sequentialThinkingMcp.py — standardized to the repo's Mcp suffix naming."
+        "notes": "Renamed to .github/mcp/scripts/sequentialThinkingMcp.py \u2014 standardized to the repo's Mcp suffix naming."
       },
       {
         "id": "retired.hook-scripts.security-mcp.py",
         "target": ".github/hooks/scripts/security-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/mcp/scripts/securityMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/securityMcp.py \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.sqlite-mcp.py",
         "target": ".github/hooks/scripts/sqlite-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/mcp/scripts/sqliteMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/sqliteMcp.py \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.time-mcp.py",
         "target": ".github/hooks/scripts/time-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/mcp/scripts/timeMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/timeMcp.py \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.web-mcp.py",
         "target": ".github/hooks/scripts/web-mcp.py",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/mcp/scripts/webMcp.py — standardized to camelCase naming."
+        "notes": "Renamed to .github/mcp/scripts/webMcp.py \u2014 standardized to camelCase naming."
       },
       {
         "id": "retired.hook-scripts.consumer-target._xanad_mcp_source.py",
@@ -909,7 +924,7 @@
         "target": ".github/skills/lean-output/SKILL.md",
         "defaultAction": "archive-retired",
         "retiredIn": "0.1.0",
-        "notes": "Renamed to .github/skills/leanOutput/SKILL.md — standardized to camelCase naming."
+        "notes": "Renamed to .github/skills/leanOutput/SKILL.md \u2014 standardized to camelCase naming."
       }
     ]
   },

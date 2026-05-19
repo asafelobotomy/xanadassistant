@@ -124,7 +124,7 @@ class _CopiedPackageRoot:
         tmp_root = Path(self._tmpdir.name)
         repo_root = Path(__file__).resolve().parents[2]
 
-        for name in ("agents", "mcp", "packs", "skills", "template"):
+        for name in ("agents", "mcp", "packs", "skills", "template", "tools"):
             shutil.copytree(repo_root / name, tmp_root / name)
         shutil.copy2(repo_root / "VERSION", tmp_root / "VERSION")
         return tmp_root

@@ -253,21 +253,24 @@ class PromptReviewSkillContractTests(unittest.TestCase):
         self.assertIn("nesting depth", content)
         self.assertIn("threshold", content)
 
-    def test_prompt_review_skill_references_waza_check_command(self) -> None:
+    def test_prompt_review_skill_references_xanadEval_check_command(self) -> None:
         content = self._content()
-        self.assertIn("waza check", content)
+        self.assertIn("xanadEval check", content)
 
-    def test_prompt_review_skill_references_waza_quality_command(self) -> None:
+    def test_prompt_review_skill_integrates_quality_self_assessment(self) -> None:
+        # waza quality (LLM-as-judge) is now an inline rubric applied by the reviewing agent
         content = self._content()
-        self.assertIn("waza quality", content)
+        self.assertIn("LLM-as-judge", content)
+        self.assertIn("Clarity", content)
+        self.assertIn("Completeness", content)
 
-    def test_prompt_review_skill_references_waza_tokens_profile(self) -> None:
+    def test_prompt_review_skill_references_xanadEval_tokens_command(self) -> None:
         content = self._content()
-        self.assertIn("waza tokens profile", content)
+        self.assertIn("xanadEval tokens", content)
 
-    def test_prompt_review_skill_references_waza_suggest_for_eval_scaffolding(self) -> None:
+    def test_prompt_review_skill_references_xanadEval_suggest_command(self) -> None:
         content = self._content()
-        self.assertIn("waza suggest", content)
+        self.assertIn("xanadEval.py suggest", content)
 
     def test_prompt_review_skill_has_step_zero_automated_prescan(self) -> None:
         content = self._content()
@@ -281,7 +284,7 @@ class PromptReviewSkillContractTests(unittest.TestCase):
         self.assertIn("LLM-as-judge", content)
         self.assertNotIn("Module 7", content)
 
-    def test_prompt_review_skill_maps_waza_quality_dimensions_to_modules(self) -> None:
+    def test_prompt_review_skill_maps_quality_dimensions_to_modules(self) -> None:
         content = self._content()
         self.assertIn("Clarity", content)
         self.assertIn("Completeness", content)
@@ -289,13 +292,12 @@ class PromptReviewSkillContractTests(unittest.TestCase):
         self.assertIn("Scope coverage", content)
         self.assertIn("Anti-patterns", content)
 
-    def test_prompt_review_skill_verify_checklist_covers_waza_steps(self) -> None:
+    def test_prompt_review_skill_verify_checklist_covers_xanadEval_steps(self) -> None:
         content = self._content()
         verify_section = content.split("## Verify", 1)[1]
-        self.assertIn("waza tokens profile", verify_section)
-        self.assertIn("waza check", verify_section)
-        self.assertIn("waza quality", verify_section)
-        # Step 0 pre-scan language replaced by per-module integration
+        self.assertIn("xanadEval tokens", verify_section)
+        self.assertIn("xanadEval check", verify_section)
+        self.assertIn("LLM-as-judge", verify_section)
         self.assertNotIn("Step 0 pre-scan", verify_section)
 
 

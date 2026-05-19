@@ -14,7 +14,8 @@
     "devops-pack": "packs/devops",
     "mlops-pack": "packs/mlops",
     "shapeup-pack": "packs/shapeup",
-    "mcp": "mcp"
+    "mcp": "mcp",
+    "tools": "tools"
   },
   "generationSettings": {
     "manifestSchemaVersion": "0.1.0",
@@ -1462,7 +1463,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:20b75703888e945c119351020879d3e1478dc55cc3ba6ecf28c0fda3601576af"
+      "hash": "sha256:fee923f973c583a8e43e18100cc22f06f59c6efe4d648e374076c788559bd64b"
     },
     {
       "id": "secure-skills.secretScanning.SKILL.md",
@@ -1661,6 +1662,21 @@
       "tokens": [],
       "chmod": "none",
       "hash": "sha256:84a00417900d31f7ad12d34508c88938111ca5c8437e9c5514696b2c7f5e4ef3"
+    },
+    {
+      "id": "tools.xanadEval.xanadEval.py",
+      "surface": "tools",
+      "layer": "core",
+      "source": "tools/xanadEval/xanadEval.py",
+      "target": ".github/tools/xanadEval/xanadEval.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:7ef0a0426fbf09a4dadb02ebd2e7aa6ee4e5eb2753fc17000f89d9a6c18e39cb"
     },
     {
       "id": "mcp-config.mcp.json",
