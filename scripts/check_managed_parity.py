@@ -26,6 +26,16 @@ import json
 import sys
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.lifecycle._xanad._conditions import resolve_token_values
+from scripts.lifecycle._xanad._defaults import derive_effective_plan_defaults
+from scripts.lifecycle._xanad._plan_utils import expected_entry_bytes
+from scripts.lifecycle._xanad._state import parse_lockfile_state
+from scripts.lifecycle._xanad._loader import load_json, load_optional_json
+
 
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -35,16 +45,40 @@ def _sha256_file(path: Path) -> str:
     return f"sha256:{digest.hexdigest()}"
 
 
+def _load_metadata(package_root: Path) -> dict:
+    template_setup = package_root / "template" / "setup"
+    return {
+        "packRegistry": load_optional_json(template_setup / "pack-registry.json") or {},
+        "profileRegistry": load_optional_json(template_setup / "profile-registry.json") or {},
+        "agentRegistry": load_optional_json(template_setup / "agent-registry.json") or {},
+    }
+
+
+def _build_token_values(package_root: Path, manifest: dict) -> dict[str, str]:
+    policy = load_json(package_root / "template" / "setup" / "install-policy.json")
+    metadata = _load_metadata(package_root)
+    lockfile_state = parse_lockfile_state(package_root)
+    resolved_answers, _ = derive_effective_plan_defaults(policy, metadata, manifest, lockfile_state)
+    return resolve_token_values(
+        policy,
+        package_root,
+        resolved_answers,
+        package_root=package_root,
+        metadata=metadata,
+    )
+
+
 def run(package_root: Path) -> int:
     manifest_path = package_root / "template" / "setup" / "install-manifest.json"
     if not manifest_path.exists():
         print(f"Manifest not found: {manifest_path}", file=sys.stderr)
         return 2
 
-    managed_files = json.loads(manifest_path.read_text(encoding="utf-8")).get("managedFiles", [])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    managed_files = manifest.get("managedFiles", [])
+    token_values: dict[str, str] | None = None
     mismatches: list[str] = []
     checked = 0
-    skipped_tokens = 0
     skipped_merge = 0
 
     for entry in managed_files:
@@ -64,21 +98,34 @@ def run(package_root: Path) -> int:
             skipped_merge += 1
             continue
 
-        if tokens:
-            # Token-replaced files: installed content differs from source by design.
-            skipped_tokens += 1
-            continue
-
         source_path = package_root / source_rel
         if not source_path.exists():
             print(f"WARNING: source missing for {entry_id}: {source_rel}", file=sys.stderr)
             continue
 
-        source_hash = _sha256_file(source_path)
+        if strategy == "token-replace":
+            if token_values is None:
+                token_values = _build_token_values(package_root, manifest)
+            expected_bytes = expected_entry_bytes(package_root, entry, token_values, target_path)
+            if expected_bytes is None:
+                mismatches.append(
+                    f"  {entry_id}\n    source: {source_rel}\n    target: {target_rel}\n    reason: failed to render expected tokenized content"
+                )
+                continue
+            unresolved_tokens = [token for token in tokens if token.encode("utf-8") in expected_bytes]
+            if unresolved_tokens:
+                mismatches.append(
+                    f"  {entry_id}\n    source: {source_rel}\n    target: {target_rel}\n    reason: unresolved tokens {unresolved_tokens}"
+                )
+                continue
+            expected_hash = f"sha256:{hashlib.sha256(expected_bytes).hexdigest()}"
+        else:
+            expected_hash = _sha256_file(source_path)
+
         target_hash = _sha256_file(target_path)
         checked += 1
 
-        if source_hash != target_hash:
+        if expected_hash != target_hash:
             mismatches.append(
                 f"  {entry_id}\n    source: {source_rel}\n    target: {target_rel}"
             )
@@ -86,7 +133,7 @@ def run(package_root: Path) -> int:
     if mismatches:
         print(
             f"Parity check FAILED: {len(mismatches)} file(s) differ from source "
-            f"({checked} checked, {skipped_tokens} skipped due to tokens, "
+            f"({checked} checked, 0 skipped due to tokens, "
             f"{skipped_merge} skipped due to merge strategy):",
             file=sys.stderr,
         )
@@ -96,7 +143,7 @@ def run(package_root: Path) -> int:
 
     print(
         f"Parity check PASSED: {checked} file(s) match source "
-        f"({skipped_tokens} skipped due to tokens, "
+        f"(0 skipped due to tokens, "
         f"{skipped_merge} skipped due to merge strategy).",
         file=sys.stderr,
     )

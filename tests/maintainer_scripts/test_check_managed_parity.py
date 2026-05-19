@@ -4,6 +4,7 @@ import hashlib
 import json
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from scripts import check_managed_parity
@@ -69,7 +70,7 @@ class ParityPassTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
 
-    def test_skips_entry_with_tokens_even_when_target_exists(self) -> None:
+    def test_passes_for_token_replaced_entry_when_rendered_target_matches(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             (root / "agents").mkdir()
@@ -87,9 +88,56 @@ class ParityPassTests(unittest.TestCase):
                 }
             ])
 
-            exit_code = check_managed_parity.run(root)
+            with mock.patch("scripts.check_managed_parity._build_token_values", return_value={"{{pack:style}}": "inline"}):
+                exit_code = check_managed_parity.run(root)
 
         self.assertEqual(exit_code, 0)
+
+    def test_fails_for_token_replaced_entry_when_rendered_target_is_stale(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "agents").mkdir()
+            (root / "agents" / "foo.agent.md").write_bytes(b"style: {{pack:style}}")
+            github_agents = root / ".github" / "agents"
+            github_agents.mkdir(parents=True)
+            (github_agents / "foo.agent.md").write_bytes(b"style: stale")
+            _write_manifest(root, [
+                {
+                    "id": "agents.foo.agent.md",
+                    "source": "agents/foo.agent.md",
+                    "target": ".github/agents/foo.agent.md",
+                    "strategy": "token-replace",
+                    "tokens": ["{{pack:style}}"],
+                }
+            ])
+
+            with mock.patch("scripts.check_managed_parity._build_token_values", return_value={"{{pack:style}}": "inline"}):
+                exit_code = check_managed_parity.run(root)
+
+        self.assertEqual(exit_code, 1)
+
+    def test_fails_for_token_replaced_entry_when_tokens_remain_unresolved(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "agents").mkdir()
+            (root / "agents" / "foo.agent.md").write_bytes(b"style: {{pack:style}}")
+            github_agents = root / ".github" / "agents"
+            github_agents.mkdir(parents=True)
+            (github_agents / "foo.agent.md").write_bytes(b"style: {{pack:style}}")
+            _write_manifest(root, [
+                {
+                    "id": "agents.foo.agent.md",
+                    "source": "agents/foo.agent.md",
+                    "target": ".github/agents/foo.agent.md",
+                    "strategy": "token-replace",
+                    "tokens": ["{{pack:style}}"],
+                }
+            ])
+
+            with mock.patch("scripts.check_managed_parity._build_token_values", return_value={}):
+                exit_code = check_managed_parity.run(root)
+
+        self.assertEqual(exit_code, 1)
 
     def test_skips_entry_with_merge_json_object_strategy(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

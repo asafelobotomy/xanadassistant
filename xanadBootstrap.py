@@ -8,7 +8,7 @@ Usage:
     python3 xanadBootstrap.py inspect  --workspace <path> [options]
     python3 xanadBootstrap.py interview --workspace <path> [--mode setup] [options]
     python3 xanadBootstrap.py plan setup --workspace <path> [--answers <file>] --plan-out <file> [options]
-    python3 xanadBootstrap.py apply     --workspace <path> --plan <file> [options]
+    python3 xanadBootstrap.py setup     --workspace <path> --plan <file> [options]
 
 Source options:
     --package-root <path>       Use a local xanadAssistant checkout (dev / CI).
@@ -32,7 +32,7 @@ from pathlib import Path
 _DEFAULT_SOURCE = "github:asafelobotomy/xanadassistant"
 _DEFAULT_CACHE_ROOT = Path.home() / ".xanadAssistant" / "pkg-cache"
 _VERSION = "0.1.1"
-_SUPPORTED_COMMANDS = ("inspect", "interview", "plan", "apply")
+_SUPPORTED_COMMANDS = ("inspect", "interview", "plan", "setup", "apply")
 
 
 # ---------------------------------------------------------------------------

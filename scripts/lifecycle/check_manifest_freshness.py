@@ -5,7 +5,13 @@ import json
 import sys
 from pathlib import Path
 
-from scripts.lifecycle.generate_manifest import generate_catalog, generate_manifest, load_json, load_optional_registry
+from scripts.lifecycle.generate_manifest import (
+    generate_catalog,
+    generate_manifest,
+    load_json,
+    load_optional_registry,
+    validate_pack_registry,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -40,6 +46,7 @@ def compare_catalog_to_generated(package_root: Path, policy_rel: str, catalog_re
     policy = load_json(package_root / policy_rel)
     current_catalog = load_json(package_root / catalog_rel)
     pack_registry = load_optional_registry(package_root / "template/setup/pack-registry.json")
+    validate_pack_registry(package_root, policy, pack_registry)
     profile_registry = load_optional_registry(package_root / "template/setup/profile-registry.json")
     agent_registry = load_optional_registry(package_root / "template/setup/agent-registry.json")
     generated_catalog = generate_catalog(policy, pack_registry, profile_registry, agent_registry)

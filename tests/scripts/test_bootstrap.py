@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
+import tempfile
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -47,6 +49,51 @@ class CacheKeyTests(unittest.TestCase):
         # No raw slashes or @ characters in the key
         self.assertNotIn("/", key)
         self.assertNotIn("@", key)
+
+
+class BootstrapCommandTests(unittest.TestCase):
+    def test_build_cli_command_accepts_setup(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_root = Path(tmpdir)
+            entry = package_root / "xanadAssistant.py"
+            entry.write_text("# stub\n", encoding="utf-8")
+            args = type("Args", (), {"command": "setup", "mode": None, "workspace": tmpdir})()
+
+            command = _bootstrap._build_cli_command(package_root, args, ["--plan", "plan.json"])
+
+        self.assertEqual(command[:3], [sys.executable, str(entry), "setup"])
+        self.assertIn("--plan", command)
+        self.assertIn("plan.json", command)
+
+    def test_main_accepts_setup_command(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_root = Path(tmpdir) / "package"
+            package_root.mkdir()
+
+            with mock.patch(
+                "sys.argv",
+                [
+                    "xanadBootstrap.py",
+                    "setup",
+                    "--workspace",
+                    tmpdir,
+                    "--plan",
+                    "plan.json",
+                ],
+            ), mock.patch.object(_bootstrap, "_resolve_package_root", return_value=package_root), mock.patch.object(
+                _bootstrap,
+                "_build_cli_command",
+                return_value=["python3", "xanadAssistant.py", "setup", "--plan", "plan.json"],
+            ) as build_command, mock.patch.object(
+                _bootstrap.subprocess,
+                "run",
+                return_value=mock.Mock(returncode=0),
+            ), self.assertRaises(SystemExit) as excinfo:
+                _bootstrap.main()
+
+        self.assertEqual(excinfo.exception.code, 0)
+        self.assertEqual(build_command.call_args.args[0], package_root)
+        self.assertEqual(build_command.call_args.args[1].command, "setup")
 
 
 if __name__ == "__main__":

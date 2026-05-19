@@ -9,6 +9,7 @@ from argparse import Namespace
 from pathlib import Path
 from unittest import mock
 
+from scripts.lifecycle import check_manifest_freshness as check_manifest_freshness_module
 from scripts.lifecycle import generate_manifest as generate_manifest_module
 from scripts.lifecycle.generate_manifest import main, validate_pack_registry
 from scripts.lifecycle._manifest_utils import load_json, load_optional_registry
@@ -91,6 +92,27 @@ class GenerateManifestPackValidationTests(unittest.TestCase):
 
             self.assertEqual(manifest_before, manifest_path.read_text(encoding="utf-8"))
             self.assertEqual(catalog_before, catalog_path.read_text(encoding="utf-8"))
+
+    def test_freshness_check_fails_when_pack_registry_mismatches(self) -> None:
+        with self._copied_package_root() as package_root:
+            registry_path = package_root / "template/setup/pack-registry.json"
+            registry = json.loads(registry_path.read_text(encoding="utf-8"))
+            tdd_pack = next(pack for pack in registry["packs"] if pack["id"] == "tdd")
+            tdd_pack["surfaces"] = [surface for surface in tdd_pack["surfaces"] if surface != "tdd-hooks"]
+            registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+
+            with mock.patch.object(
+                check_manifest_freshness_module,
+                "parse_args",
+                return_value=Namespace(
+                    package_root=str(package_root),
+                    policy="template/setup/install-policy.json",
+                    manifest="template/setup/install-manifest.json",
+                    catalog="template/setup/catalog.json",
+                ),
+            ):
+                with self.assertRaisesRegex(ValueError, "Pack registry surfaces are inconsistent: tdd"):
+                    check_manifest_freshness_module.main()
 
     def _copied_package_root(self):
         return _CopiedPackageRoot()

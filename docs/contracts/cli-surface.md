@@ -26,6 +26,7 @@ The lifecycle engine must expose these commands:
 - `update`
 - `repair`
 - `factory-restore`
+- `health-check`
 
 ## Command Intent
 
@@ -72,6 +73,12 @@ The lifecycle engine must expose these commands:
 `factory-restore`
 
 - Performs backup plus purge plus reinstall according to policy and approval rules.
+
+`health-check`
+
+- Collects a workspace health check report for maintainers.
+- Must not write managed files to the workspace.
+- May format findings for issue or discussion submission.
 
 ## Required Common Flags
 

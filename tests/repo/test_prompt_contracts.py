@@ -68,6 +68,13 @@ class PromptContractTests(unittest.TestCase):
         self.assertNotIn("approved apply through one top-level command", cli_surface)
         self.assertNotIn("Writes a serialized lifecycle plan for later apply.", cli_surface)
 
+    def test_cli_surface_documents_health_check_command(self) -> None:
+        cli_surface = (REPO_ROOT / "docs" / "contracts" / "cli-surface.md").read_text(encoding="utf-8")
+
+        self.assertIn("- `health-check`", cli_surface)
+        self.assertIn("`health-check`", cli_surface)
+        self.assertIn("Collects a workspace health check report for maintainers.", cli_surface)
+
     def test_readme_and_protocol_document_agent_follow_up_customization(self) -> None:
         readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
         protocol = (REPO_ROOT / "docs" / "contracts" / "lifecycle-protocol.md").read_text(encoding="utf-8")
