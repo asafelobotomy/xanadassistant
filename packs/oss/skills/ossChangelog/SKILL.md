@@ -61,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Semantic Versioning rules
 
 | Change type | Version bump | Example |
-|---|---|---|
+| --- | --- | --- |
 | Breaking change | MAJOR | 1.2.0 → 2.0.0 |
 | New backward-compatible feature | MINOR | 1.2.0 → 1.3.0 |
 | Bug fix (backward-compatible) | PATCH | 1.2.0 → 1.2.1 |
@@ -86,7 +86,7 @@ git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%s" --no-merges
 ## Categorizing conventional commits into changelog sections
 
 | Commit type prefix | Changelog section |
-|---|---|
+| --- | --- |
 | `feat:` | Added |
 | `feat!:` or `BREAKING CHANGE:` | Changed (with breaking notice) |
 | `fix:` | Fixed |

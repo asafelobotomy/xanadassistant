@@ -43,7 +43,7 @@ table from accumulating stale work.
 ## Appetite Setting Rules
 
 | Appetite | When to use |
-|---|---|
+| --- | --- |
 | Small batch (1-2 weeks) | Well-understood problems, small teams, low-risk scope |
 | Big batch (6 weeks) | Complex problems requiring sustained focus; one team per bet |
 

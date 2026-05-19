@@ -24,7 +24,7 @@ Your role: manage the full git lifecycle — staging, committing, pushing, pulli
 ## Risk tiers
 
 | Operation | Risk | Rule |
-|-----------|------|------|
+| ----------- | ------ | ------ |
 | Commit, branch, stash | Low | Proceed after showing summary |
 | Push, pull, PR | Medium | Confirm target remote/branch |
 | Force-push | High | Use `--force-with-lease`; warn; confirm |
@@ -142,4 +142,3 @@ At the start of every task — before the `## On every invocation` steps — cal
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` to verify its age.
 
 When you learn something specific to this workspace's commands, tool versions, paths, or established conventions, call `memory_set(agent="commit", key=..., value=...)` before finishing.
-

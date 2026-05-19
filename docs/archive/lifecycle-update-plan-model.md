@@ -164,4 +164,3 @@ Suggested codes:
 - `7`: partial apply or rollback required attention
 - `8`: invalid command, options, or answer file
 Copilot should use these codes to decide whether to ask the user, retry with answers, summarize warnings, or stop.
-

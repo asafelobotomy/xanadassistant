@@ -17,17 +17,27 @@ from scripts.lifecycle._xanad._source import build_source_summary
 
 HEALTH_CHECK_SCHEMA_VERSION = "1"
 _SAFE_SOURCE_PREFIXES = ("github:", "pypi:")
+_REDACTED_WORKSPACE = "redacted"
+_LOCAL_PACKAGE_ROOT = "local"
 
 
 def _sanitize_source(source_summary: dict) -> str:
     """Return a privacy-safe source string. Local package-root paths become 'local'."""
     kind = source_summary.get("kind", "")
     if kind == "package-root":
-        return "local"
+        return _LOCAL_PACKAGE_ROOT
     raw = source_summary.get("source", "") or ""
     if any(raw.startswith(p) for p in _SAFE_SOURCE_PREFIXES):
         return raw
     return "unknown"
+
+
+def _sanitize_source_summary(source_summary: dict) -> dict:
+    """Return a privacy-safe source summary without exposing local filesystem paths."""
+    sanitized = dict(source_summary)
+    if "packageRoot" in sanitized:
+        sanitized["packageRoot"] = _LOCAL_PACKAGE_ROOT
+    return sanitized
 
 
 def _extract_install_metadata(lockfile_state: dict, install_state: str) -> dict:
@@ -186,8 +196,8 @@ def build_health_check_result(workspace: Path, package_root: Path, label: str | 
     report = build_health_check_report(workspace, package_root, label=label)
     return {
         "command": "health-check",
-        "workspace": str(workspace),
-        "source": build_source_summary(package_root),
+        "workspace": _REDACTED_WORKSPACE,
+        "source": _sanitize_source_summary(build_source_summary(package_root)),
         "status": "ok",
         "warnings": [],
         "errors": [],

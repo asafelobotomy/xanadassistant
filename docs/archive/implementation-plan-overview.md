@@ -236,4 +236,3 @@ Turn the `core` / `pack` / `profile` / `catalog` model into concrete repository 
 - [x] Every known feature can be placed cleanly in one layer.
 - [x] No pack requires loading its full instructions at session start.
 - [x] Profile behavior remains configuration, not content duplication.
-

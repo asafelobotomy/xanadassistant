@@ -10,7 +10,7 @@ Use the `secureReview` skill for category definitions and output format.
 Output a table:
 
 | Severity | OWASP | File:Line | Finding | Recommended fix |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 
 If zero findings: output one line — "No security findings."
 

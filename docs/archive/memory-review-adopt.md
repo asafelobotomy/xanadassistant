@@ -79,7 +79,7 @@ better default unless real scale later proves otherwise.
 ## Proposed Xanad V1 Shape
 
 | Concern | Xanad v1 choice |
-|--------|------------------|
+| -------- | ------------------ |
 | Current task notes | `/memories/session/` |
 | User-wide preferences | `/memories/` |
 | In-flight repo facts | `/memories/repo/` |

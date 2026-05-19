@@ -90,7 +90,7 @@ def validate_schema(df: pd.DataFrame, expected_columns: list[str], expected_dtyp
 ## Feature engineering discipline
 
 | Rule | Why |
-|---|---|
+| --- | --- |
 | All transformers fitted on train only | Prevents leakage |
 | Transformers serialised with model | Ensures identical preprocessing at serving time |
 | No manual edits to raw data | Use a reproducible transform stage instead |
@@ -99,7 +99,7 @@ def validate_schema(df: pd.DataFrame, expected_columns: list[str], expected_dtyp
 ## Anti-patterns
 
 | Anti-pattern | Fix |
-|---|---|
+| --- | --- |
 | Raw CSV committed to git | Use DVC with remote storage |
 | Scaler/encoder fitted on full dataset | Always fit on train split only |
 | Hard-coded column names in notebooks | Define schema as a config or constant |

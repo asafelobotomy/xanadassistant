@@ -49,7 +49,7 @@ client.transition_model_version_stage(
 ### Versioning contract
 
 | Field | Required | Example |
-|---|---|---|
+| --- | --- | --- |
 | Model name | Yes | `fraud-detector` |
 | Version | Yes | Semantic (`v1.2.0`) or auto-incremented |
 | Stage | Yes | `None → Staging → Production → Archived` |
@@ -80,7 +80,7 @@ client.transition_model_version_stage(
 ## Drift monitoring
 
 | Drift type | What to monitor | Alert threshold |
-|---|---|---|
+| --- | --- | --- |
 | Data drift | Input feature distributions vs. training baseline | PSI > 0.2 or KS p-value < 0.05 |
 | Prediction drift | Output distribution vs. baseline | Distribution shift by > 5% |
 | Concept drift | Model accuracy vs. ground-truth labels | Primary metric drops > 3% |
@@ -98,7 +98,7 @@ client.transition_model_version_stage(name="my-classifier", version=<prev-versio
 ## Anti-patterns
 
 | Anti-pattern | Fix |
-|---|---|
+| --- | --- |
 | Deploying directly to Production | Always go through Staging |
 | No model registry | Use MLflow, Vertex AI, or SageMaker Model Registry |
 | Model artefact committed to git | Store in object storage; log URI in registry |

@@ -23,7 +23,7 @@ Detect credential leakage before it reaches version control. Secrets committed t
 Flag these as **probable secrets** requiring confirmation before staging:
 
 | Pattern | Examples |
-|---|---|
+| --- | --- |
 | API keys | `sk-...`, `pk_live_...`, `AKIA...` (AWS), `ghp_...` (GitHub) |
 | Connection strings | `postgresql://user:pass@...`, `mongodb+srv://...`, `redis://:pass@...` |
 | Private keys | `-----BEGIN RSA PRIVATE KEY-----`, `-----BEGIN EC PRIVATE KEY-----` |

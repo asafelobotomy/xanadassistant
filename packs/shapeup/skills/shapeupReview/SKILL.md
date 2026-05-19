@@ -28,7 +28,7 @@ identified rabbit holes, explicit no-gos, and scope hammering during cycles.
 These issues must be resolved before a pitch is eligible for the betting table.
 
 | Check | Fail condition |
-|---|---|
+| --- | --- |
 | **Problem clarity** | The problem section describes a solution, not a problem. |
 | **Appetite present** | No appetite stated, or appetite is a range ("4-8 weeks"). |
 | **Solution present** | No sketch, breadboard, or prose sketch of the approach. |
@@ -40,7 +40,7 @@ These issues must be resolved before a pitch is eligible for the betting table.
 These issues reduce confidence in the bet.
 
 | Check | Warning condition |
-|---|---|
+| --- | --- |
 | **Scope vs. appetite** | The described solution seems to exceed the stated appetite. |
 | **Rabbit hole mitigations** | A rabbit hole is named but no mitigation is described. |
 | **No-go completeness** | No-gos listed are vague ("we won't over-engineer it"). |
@@ -50,7 +50,7 @@ These issues reduce confidence in the bet.
 Suggestions for pitch quality improvements.
 
 | Check | Advisory condition |
-|---|---|
+| --- | --- |
 | **Problem grounding** | Problem is stated abstractly without a concrete example. |
 | **Sketch clarity** | Fat-marker sketch is absent when prose is ambiguous. |
 | **Audience fit** | Pitch assumes technical context the betting table may not have. |

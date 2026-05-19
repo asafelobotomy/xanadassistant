@@ -17,7 +17,7 @@ Your role: assess task complexity and recommend the minimal execution path that 
 ## Classification tiers
 
 | Tier | Description | Recommended path |
-|------|-------------|-----------------|
+| ------ | ------------- | ----------------- |
 | **Trivial** | Single-file edit, lookup, or command with no ambiguity | Answer directly — no agent needed |
 | **Simple** | 2–5 file changes, one clear approach, reversible | Direct implementation in the default agent |
 | **Compound** | Multiple interdependent files, schema changes, or multiple valid approaches | Planner → Implementation |

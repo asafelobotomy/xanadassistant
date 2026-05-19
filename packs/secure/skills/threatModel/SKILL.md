@@ -29,7 +29,7 @@ Produce lightweight STRIDE threat models for features and modules. A threat mode
 ## STRIDE categories
 
 | Threat | Description | Example |
-|---|---|---|
+| --- | --- | --- |
 | Spoofing | Pretending to be someone else | Forged auth tokens, impersonation |
 | Tampering | Modifying data without authorization | Input manipulation, log tampering |
 | Repudiation | Denying an action occurred | Missing audit logs |
@@ -42,7 +42,7 @@ Produce lightweight STRIDE threat models for features and modules. A threat mode
 Produce this table for every threat model:
 
 | Threat type | Description | Likelihood (H/M/L) | Mitigation |
-|---|---|---|---|
+| --- | --- | --- | --- |
 
 Followed by:
 - **Trust boundaries identified**: list the points where data crosses a trust boundary (e.g., user input → backend, backend → database, service → external API)

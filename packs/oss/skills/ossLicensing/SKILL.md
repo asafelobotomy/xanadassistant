@@ -19,7 +19,7 @@ Use this skill when a user asks about OSS licensing: what license to choose, how
 ## License selection guide
 
 | License | Permissions | Copyleft | Use when |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | MIT | Broad | None | Maximum permissive; fewest restrictions on users |
 | Apache 2.0 | Broad + patent grant | None | Enterprise-friendly; explicit patent protection |
 | GPL-3.0 | Broad | Strong (derivative works) | Force derivatives to stay open |

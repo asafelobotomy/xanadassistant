@@ -37,7 +37,7 @@ This contract refines the boundary in `docs/contracts/memory-boundary.md`.
 ## Memory Tiers
 
 | Scope | Location | Lifetime | Purpose | Authority |
-|------|----------|----------|---------|-----------|
+| ------ | ---------- | ---------- | --------- | ----------- |
 | Session | `/memories/session/` | Current conversation or task | In-progress notes and temporary context | Non-authoritative |
 | User | `/memories/` | Cross-repo, user-wide | Personal preferences and durable individual conventions | Non-authoritative |
 | Repo inbox | `/memories/repo/` | Machine-local, intermediate | Candidate repo facts not yet promoted | Non-authoritative |
@@ -101,17 +101,17 @@ The minimum expected sections are:
 ### Architecture Decisions
 
 | Date | Decision | Rationale | Source |
-|------|----------|-----------|--------|
+| ------ | ---------- | ----------- | -------- |
 
 ### Known Gotchas
 
 | Date | Pattern | Context | Source |
-|------|---------|---------|--------|
+| ------ | --------- | --------- | -------- |
 
 ### Conventions
 
 | Date | Convention | Applies To | Source |
-|------|-----------|------------|--------|
+| ------ | ----------- | ------------ | -------- |
 
 ## Verification Rules
 

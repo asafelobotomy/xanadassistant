@@ -13,6 +13,6 @@ Output:
 3. **Threat table**:
 
 | Threat type | Description | Likelihood (H/M/L) | Mitigation |
-|---|---|---|---|
+| --- | --- | --- | --- |
 
 Keep the model scoped to the described component only.

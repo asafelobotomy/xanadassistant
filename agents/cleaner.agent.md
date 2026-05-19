@@ -84,4 +84,3 @@ At the start of every task, call `memory_dump(agent="cleaner")`.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` to verify its age.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="cleaner", key=..., value=...)` before finishing.
-

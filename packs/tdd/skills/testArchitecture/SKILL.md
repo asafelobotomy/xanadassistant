@@ -24,7 +24,7 @@ to distrust.
 ## Test Pyramid
 
 | Layer | Scope | Count | Speed |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Unit** | One function or class, all dependencies doubled | Many | Milliseconds |
 | **Integration** | A group of real components together | Fewer | Seconds |
 | **End-to-end** | Full system through public API or UI | Few | Tens of seconds |
@@ -46,7 +46,7 @@ unit test is inverted. Add unit tests until the pyramid stabilizes.
 Decide what the test's subject is, then double everything outside that boundary:
 
 | Inside the boundary | Outside the boundary |
-|---|---|
+| --- | --- |
 | The class or function under test | External services (HTTP, DB, filesystem) |
 | Pure helper functions it calls | Clocks and random sources |
 | In-memory data structures | Other modules if testing this module in isolation |

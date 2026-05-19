@@ -12,7 +12,7 @@ Review the current changes (or the specified file/diff) for Critical and High se
 **Output format — a Markdown table:**
 
 | Severity | File:Line | Finding | Suggested fix |
-|---|---|---|---|
+| --- | --- | --- | --- |
 
 If zero Critical or High issues: one line only — `Review: clean (Critical/High)`
 

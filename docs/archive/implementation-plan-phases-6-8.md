@@ -86,4 +86,3 @@ Deliver the visible terminal experience for humans without compromising machine 
 - [x] Copilot does not need to parse visible cosmetic output.
 - [x] The human-visible terminal feels intentional without adding operational fragility.
 - [x] Logs remain useful in plain-text environments.
-

@@ -47,7 +47,7 @@ Use this skill when reviewing ML code, notebooks, pipeline definitions, or model
 Flag any of these patterns:
 
 | Pattern | Risk |
-|---|---|
+| --- | --- |
 | `scaler.fit(X)` before `train_test_split` | Leaks test statistics into training |
 | Same file used as both input and ground truth | Label leakage |
 | Time-series data split randomly (not by time) | Future data leaks into training |
@@ -65,7 +65,7 @@ When the model makes decisions affecting people, flag for review:
 ## Review comment format
 
 | Prefix | Meaning |
-|---|---|
+| --- | --- |
 | `leakage:` | Data leakage detected — must fix |
 | `reproducibility:` | Cannot reproduce this result — must fix |
 | `bias:` | Potential fairness or bias concern — requires review |

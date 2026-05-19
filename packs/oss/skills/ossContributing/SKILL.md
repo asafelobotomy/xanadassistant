@@ -21,7 +21,7 @@ Use this skill when a user asks about contribution workflows, CONTRIBUTING.md st
 A complete `CONTRIBUTING.md` should cover these sections in order:
 
 | Section | Required | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | Code of Conduct reference | Yes | Link to CODE_OF_CONDUCT.md or inline CoC |
 | Getting started | Yes | Fork, clone, branch naming, local setup |
 | Development workflow | Yes | How to build, test, lint before opening a PR |

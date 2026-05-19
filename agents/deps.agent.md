@@ -30,7 +30,7 @@ Your role: full-lifecycle dependency management — discover, audit, research, a
 Scan the workspace for dependency manifests. Recognise all of the following:
 
 | Ecosystem | Files to look for |
-|-----------|-------------------|
+| ----------- | ------------------- |
 | Python | `requirements*.txt`, `pyproject.toml`, `setup.py`, `setup.cfg`, `Pipfile`, `Pipfile.lock`, `poetry.lock`, `uv.lock` |
 | Node.js | `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml` |
 | Rust | `Cargo.toml`, `Cargo.lock` |
@@ -110,7 +110,7 @@ Flag packages where the installed version is more than **2 major versions** or *
 After the audit, produce a prioritised recommendation list:
 
 | Priority | Condition | Action |
-|----------|-----------|--------|
+| ---------- | ----------- | -------- |
 | `P0` | Known CVE with a fix available | Upgrade immediately |
 | `P1` | Package abandoned / no releases in 2+ years | Replace with maintained alternative |
 | `P2` | Outdated by 2+ majors or 12+ months | Upgrade to latest stable |
@@ -129,7 +129,7 @@ Present the full audit summary and proposed changes. **Do not run any install, u
 ### Supported operations
 
 | Operation | Python | Node.js | Rust | Go |
-|-----------|--------|---------|------|----|
+| ----------- | -------- | --------- | ------ | ---- |
 | Search | `pip index versions <pkg>` / `uv pip index versions` | `npm view <pkg> versions` | `cargo search <pkg>` | `go list -m <mod>@latest` |
 | Install | `pip install <pkg>` / `uv add <pkg>` | `npm install <pkg>` | `cargo add <pkg>` | `go get <mod>` |
 | Update specific | `pip install -U <pkg>` / `uv add <pkg>@latest` | `npm update <pkg>` | `cargo update -p <pkg>` | `go get <mod>@latest` |

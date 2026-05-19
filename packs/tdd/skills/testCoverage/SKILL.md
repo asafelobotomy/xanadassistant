@@ -29,7 +29,7 @@ Coverage is a diagnostic tool, not a goal. High line coverage with weak assertio
 There are no universal targets. Use these as starting heuristics:
 
 | Code type | Branch coverage target | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Core business logic | ≥ 90% | Test all decision points; high value, high risk |
 | Public API layer | ≥ 80% | Focus on contract behavior, not internal wiring |
 | Infrastructure / adapters | ≥ 70% | Integration tests often cover more than unit tests here |

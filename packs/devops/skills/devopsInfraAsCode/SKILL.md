@@ -102,7 +102,7 @@ Run `terraform plan` in CI on a schedule (not just on PR) to detect out-of-band 
 ## Common anti-patterns
 
 | Anti-pattern | Fix |
-|---|---|
+| --- | --- |
 | Hardcoded AWS account IDs or region strings | Use `data.aws_caller_identity` and variables |
 | `count = 0` to disable a resource | Use `for_each` with an empty map |
 | Secrets in `.tfvars` committed to git | Use a secrets manager or CI secret injection |

@@ -167,4 +167,3 @@ Required surfaces:
 - starter kits from `starter-kits/`
 - Claude compatibility files and workflow files
 The manifest should also declare retired managed files so the updater can report, archive, or remove them according to policy.
-

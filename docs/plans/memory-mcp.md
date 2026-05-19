@@ -1,8 +1,11 @@
 # Memory MCP — Working Document
 
-**Status**: Plan complete, implementation not started.
+**Status**: Implemented and shipped; retained as the design and rollout record.
 **Branch**: main
 **Repo**: /mnt/SteamLibrary/git/xanadassistant
+
+This document captures the original implementation plan and confirmed design decisions.
+Treat the phase list below as historical rollout guidance; the current implementation lives in `mcp/scripts/memoryMcp.py`.
 
 ---
 
@@ -15,7 +18,7 @@ Build a FastMCP-based Memory MCP server (`mcp/scripts/memoryMcp.py`) that gives 
 ## Design Decisions (confirmed)
 
 | Decision | Value |
-|---|---|
+| --- | --- |
 | Storage path | `.github/xanadAssistant/memory/memory.db` (relative to workspace root) |
 | Branch scoping | `git -C <workspace_root> rev-parse --abbrev-ref HEAD` via subprocess |
 | Advisory enforcement | Advisory only — not hard-blocked on contradicting a fact |
@@ -83,7 +86,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS agent_diary_fts
 ### What we adopt
 
 | MemPalace concept | Our adaptation | Rationale |
-|---|---|---|
+| --- | --- | --- |
 | Per-agent **wing + diary** | New `agent_diary` table — chronological log of agent decisions/actions, separate from the fact store | Diary entries are append-only and not keyed — distinct semantic from facts |
 | **Validity windows** (`valid_from` / `valid_until`) | Add `valid_from TEXT` and `valid_until TEXT` to `advisory_memory` | More expressive than a single `expires_at`; allows "this fact applies to v2.x only" |
 | **Soft invalidation** | New `memory_invalidate(agent, key)` tool — sets `invalidated_at`, row kept for audit; `memory_dump` skips invalidated rows | Audit trail preserved; hard delete (`memory_remove`) still available |
@@ -93,7 +96,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS agent_diary_fts
 ### What we reject
 
 | MemPalace feature | Reason |
-|---|---|
+| --- | --- |
 | ChromaDB / vector search | Overkill for structured key-value agent facts; adds 300 MB dependency |
 | AAAK compression | Lossy (−12.4pp on LongMemEval); not lossless as claimed |
 | Palace spatial metaphor | Organises human maintenance, not agent retrieval — irrelevant to our use case |
@@ -137,23 +140,26 @@ it internally (server-to-server MCP calls are not possible in the stdio model).
 Instead, time awareness is split across two layers:
 
 ### Server side — Python stdlib only
+
 - `updated_at` and `created_at` are set by SQLite `DEFAULT (strftime(...,'now'))` — no MCP needed.
 - `expires_at` is computed by the server when `ttl_days` is passed: `datetime.now(UTC) + timedelta(days=ttl_days)`. No time MCP round-trip at write time.
 - `memory_prune` deletes rows where `expires_at < datetime('now')` (hard expiry via SQLite).
 
 ### Agent side — time MCP for reasoning
+
 - `memory_dump` returns `updated_at` in every fact object so agents can reason about age.
 - Agent instructions (Phase 3) tell agents: after calling `memory_dump`, call `elapsed(start=fact.updated_at)` for any fact they intend to act on.
 - Facts older than **7 days** should be treated as potentially stale and re-verified before use.
 - Facts with `expires_at` set should be checked against `current_time()` — if expired but not yet pruned, treat as invalid.
 
 ### Why not pass timestamp from agent at write time?
+
 Possible (agent calls `current_time()` then passes it as `updated_at`), but rejected: adds a mandatory round-trip before every write, and the SQLite default is perfectly reliable for this use case. The agent only needs the timestamp at *read* time.
 
 ### Staleness summary
 
 | Age (from `elapsed`) | Treatment |
-|---|---|
+| --- | --- |
 | < 1 day | Fresh — use directly |
 | 1–7 days | Usable — note age if acting on it |
 | > 7 days | Potentially stale — re-verify before acting |
@@ -166,7 +172,7 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 ### Advisory memory
 
 | Tool | Signature | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `memory_set` | `(agent, key, value, scope='workspace', confidence=1.0, source='agent-discovered', ttl_days=None, valid_from=None, valid_until=None)` | Upsert into advisory_memory; computes `expires_at` from `ttl_days` via stdlib |
 | `memory_get` | `(agent, key, scope='workspace', include_agents=None)` | Single lookup; falls back to `agent='shared'`; `include_agents` for explicit cross-agent peek |
 | `memory_list` | `(agent, scope='workspace', include_shared=True, include_agents=None)` | All active (non-invalidated) keys for agent+scope; `include_agents` explicit opt-in list for cross-agent key union |
@@ -178,7 +184,7 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 ### Rules
 
 | Tool | Signature | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `rule_add` | `(description, rule_type, agent=None, scope='workspace', branch=None)` | Insert a rule |
 | `rule_list` | `(agent=None, scope='workspace')` | List rules matching agent or global |
 | `rule_remove` | `(rule_id)` | Delete rule by id |
@@ -186,12 +192,13 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 ### Agent diary (append-only)
 
 | Tool | Signature | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `diary_add` | `(agent, entry, scope='workspace', tags='')` | Append a chronological decision/action entry |
 | `diary_get` | `(agent, scope='workspace', limit=20, tag=None)` | Retrieve recent diary entries, newest first |
 | `diary_search` | `(agent, query, scope='workspace', limit=20, include_agents=None)` | FTS5 full-text search across `entry` and `tags`; default calling agent only; `include_agents` to widen scope |
 
 **Allowlists** (validate on entry, raise `ValueError` if invalid):
+
 - `scope`: `{'workspace', 'project', 'branch', 'session'}`
 - `rule_type`: `{'never', 'always', 'prefer', 'avoid'}`
 - `agent`: any non-empty alphanumeric+hyphen string OR `None`
@@ -201,9 +208,11 @@ Possible (agent calls `current_time()` then passes it as `updated_at`), but reje
 ## Phases
 
 ### Phase 0 — Interview Question (deferred to Phase 7)
+
 See Phase 7 below.
 
-### Phase 1 — MCP Server (START HERE)
+### Phase 1 — MCP Server (implemented)
+
 - File: `mcp/scripts/memoryMcp.py`
 - ~300 lines, FastMCP, two tables, 9 tools
 - Header docstring listing tools + security notes
@@ -213,11 +222,13 @@ See Phase 7 below.
 - `_get_conn()` — opens/creates DB, runs `_init_db`, returns connection
 
 ### Phase 2 — MCP Registration
+
 - File: `template/vscode/mcp.json`
 - Add `"memory"` server entry (not disabled) using uvx pattern
 - After: regenerate manifest (`python3 scripts/generate.py`)
 
 ### Phase 3 — Agent Instructions
+
 - Files: all consumer agents in `agents/`
 - All agents receive both rule-following language and fact-recording instructions (Option A: unconditional)
 - Each agent: always call `memory_dump` at session start → follow all returned rules → call `memory_set` for discovered facts
@@ -225,16 +236,19 @@ See Phase 7 below.
 - Agents: commit, debugger, deps, docs, explore, planner, researcher, review, cleaner
 
 ### Phase 4 — ciPreflight Skill Update
+
 - File: `skills/ciPreflight/SKILL.md`
 - After discovering CI commands, cache them: `memory_set(agent='shared', key='ci.commands', ...)`
 - At start: check `memory_get(agent='shared', key='ci.commands')` before re-scanning
 
 ### Phase 5 — Tests
+
 - File: `tests/test_memory_mcp.py`
 - Classes: `MemorySetGetTests`, `MemoryBranchScopeTests` (mock `_current_branch`), `MemoryRulesTests`, `MemoryDumpTests`, `MemoryPruneTests`, `DiaryTests` (add/get basic), `DiaryFTS5Tests` (FTS5 full-text + `include_agents` widening), `MemoryListIncludeAgentsTests`, `SecurityTests`
 - Use `tempfile.mkdtemp()` for DB; patch `WORKSPACE_ROOT`
 
 ### Phase 6 — Lifecycle Engine + Manifest Regeneration + Full Suite
+
 - Add memory health check to lifecycle `inspect`/`check`:
   - Verify `memoryMcp.py` is present in the install
   - Verify `"memory"` entry is registered in `template/vscode/mcp.json`
@@ -244,6 +258,7 @@ See Phase 7 below.
 - `python3 -m unittest discover -s tests -p 'test_*.py'`
 
 ### Phase 7 — Interview Question (was Phase 0)
+
 - File: `scripts/lifecycle/_xanad/_interview_questions.py`
 - Add `memory_gitignore` question to `personalisation_questions()`
 - `batch='advanced'`, `default='yes'`, `required=False`

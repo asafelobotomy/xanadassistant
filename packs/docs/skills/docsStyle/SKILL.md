@@ -19,7 +19,7 @@ Use this skill when drafting or reviewing any user-facing documentation: READMEs
 ## Core principles
 
 | Principle | Rule | Example |
-|---|---|---|
+| --- | --- | --- |
 | Active voice | Subject performs the action | "The CLI reads the config file." not "The config file is read by the CLI." |
 | Imperative mood | Instructions start with a verb | "Run `npm install`." not "You should run `npm install`." |
 | Short sentences | One idea per sentence | Split anything over ~25 words. |
@@ -43,7 +43,7 @@ Use this skill when drafting or reviewing any user-facing documentation: READMEs
 ## Tone by doc type
 
 | Type | Tone |
-|---|---|
+| --- | --- |
 | Tutorial | Encouraging; guide the reader step by step. |
 | How-to guide | Direct; assume the reader knows what they want. |
 | Reference | Neutral, precise; no narrative. |

@@ -47,7 +47,7 @@ Use this skill when reviewing CI/CD pipelines, Dockerfiles, IaC definitions, dep
 Flag any value that matches these patterns — even in comments:
 
 | Pattern | Example |
-|---|---|
+| --- | --- |
 | AWS access key | `AKIA[0-9A-Z]{16}` |
 | Private key header | `-----BEGIN RSA PRIVATE KEY-----` |
 | Generic API key assignment | `api_key = "sk-..."`, `token = "ghp_..."` |
@@ -65,7 +65,7 @@ A deployment is reviewable only if it has a rollback path:
 ## Review comment format
 
 | Prefix | Meaning |
-|---|---|
+| --- | --- |
 | `secret:` | Credential or token exposure — must fix |
 | `privilege:` | Overly broad permission — must fix |
 | `rollback:` | No recovery path — must fix for production |

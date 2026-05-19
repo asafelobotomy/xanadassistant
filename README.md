@@ -12,7 +12,7 @@ xanadAssistant installs, updates, repairs, and factory-restores a curated set of
 ## What it manages
 
 | Surface | Installed to | Default ownership |
-|---|---|---|
+| --- | --- | --- |
 | `copilot-instructions.md` | `.github/` | `local` (merge-safe) |
 | Instructions | `.github/instructions/` | `local` |
 | Prompts | `.github/prompts/` | `local` |
@@ -29,18 +29,20 @@ Optional packs (e.g. `lean`, `secure`, `tdd`, `docs`) add further surfaces when 
 When hooks are enabled at setup time, xanadAssistant registers these MCP servers in `.vscode/mcp.json`:
 
 | Server | Script | Purpose |
-|---|---|---|
-| `memory` | `memoryMcp.py` | Persistent, scoped SQLite-backed agent memory — advisory facts, authoritative rules, and FTS-indexed diary |
+| --- | --- | --- |
+| `xanadTools` | `xanadWorkspaceMcp.py` | Workspace lifecycle inspection and maintenance tools |
 | `git` | `gitMcp.py` | Local git operations |
+| `web` | `webMcp.py` | Web search and fetch |
+| `devDocs` | `devDocsMcp.py` | DevDocs-backed library documentation lookup |
+| `time` | `timeMcp.py` | Time and elapsed-time tools |
+| `memory` | `memoryMcp.py` | Persistent, scoped SQLite-backed agent memory — advisory facts, authoritative rules, and FTS-indexed diary |
+| `security` | `securityMcp.py` | Dependency vulnerability queries |
 | `github` | `githubMcp.py` | GitHub API operations |
 | `sqlite` | `sqliteMcp.py` | Workspace-local SQLite read-only query access |
-| `time` | `timeMcp.py` | Time and elapsed-time tools |
-| `web` | `webMcp.py` | Web search and fetch |
-| `security` | `securityMcp.py` | Dependency vulnerability queries |
+| `filesystem` | `fsMcp.py` | Workspace-bounded file I/O and search |
 | `sequential-thinking` | `sequentialThinkingMcp.py` | Structured step-by-step reasoning |
-| `xanad-workspace` | `xanadWorkspaceMcp.py` | Workspace lifecycle inspection tools |
 
-All servers use the `stdio` transport via `uvx` and are registered with `WORKSPACE_ROOT` pointing to the workspace folder.
+All servers use the `stdio` transport via `uvx`; server ids match `.vscode/mcp.json`, and servers that need workspace scoping receive the relevant environment variables such as `WORKSPACE_ROOT` or `FS_ALLOWED_ROOT`.
 
 ## Requirements
 
@@ -103,7 +105,7 @@ python3 xanadAssistant.py <command> --workspace <path> --package-root <path> [--
 ### Commands
 
 | Command | Description |
-|---|---|
+| --- | --- |
 | `inspect` | Read-only. Report install state, managed-file findings, and repair needs. |
 | `check` | Read-only. Classify each managed file as clean, stale, missing, malformed, or retired. |
 | `interview` | Read-only. Emit structured questions needed to complete a lifecycle mode. |
@@ -115,6 +117,7 @@ python3 xanadAssistant.py <command> --workspace <path> --package-root <path> [--
 | `update` | Inspect + plan + write in one step. |
 | `repair` | Inspect + repair plan + write in one step. |
 | `factory-restore` | Backup + purge + reinstall from policy. |
+| `health-check` | Collect a maintainer-facing health check report without writing managed files. |
 
 Stale `apply` invocations are retired and return structured migration guidance. Use `setup` for serialized setup plans.
 
@@ -143,6 +146,9 @@ python3 xanadAssistant.py inspect --workspace . --package-root . --json
 
 # Check this workspace
 python3 xanadAssistant.py check --workspace . --package-root . --json
+
+# Build a shareable maintainer health report for this workspace
+python3 xanadAssistant.py health-check --workspace . --package-root . --json
 
 # Plan a setup into another workspace
 python3 xanadAssistant.py plan setup --workspace <path> --package-root . --json --non-interactive
@@ -212,8 +218,8 @@ Full reset of a workspace that already has xanadAssistant installed. Use this wh
 2. Backs up all currently installed managed files.
 3. Purges managed and retired xanadAssistant content from the workspace.
 4. Preserves user-owned unmanaged lookalike files that happen to live under managed directories.
-4. Reinstalls from policy from scratch, reusing your lockfile answers for profile, packs, and personalisation.
-5. Rewrites the lockfile with updated hashes.
+5. Reinstalls from policy from scratch, reusing your lockfile answers for profile, packs, and personalisation.
+6. Rewrites the lockfile with updated hashes.
 
 ```sh
 # One-step shorthand
@@ -260,13 +266,16 @@ skills/                       # → .github/skills/ in consumer workspaces
 packs/                        # optional pack surfaces (e.g. lean)
 mcp/scripts/                  # → .github/mcp/scripts/ in consumer workspaces
 docs/contracts/               # frozen contracts — change requires explicit discussion
+docs/contracts/examples/      # machine-facing example payloads for contract surfaces
+evals/                        # declarative eval suites for top-level skills
 tests/                        # unittest suite
+tools/xanadEval/              # static analysis helper for prompt, skill, and eval hygiene
 ```
 
 ### Layers
 
 | Layer | Purpose |
-|---|---|
+| --- | --- |
 | `core` | Required for all lifecycle guarantees. Never depends on a pack. |
 | `pack` | Optional capability module selected at setup time. |
 | `profile` | Behavior preset that changes defaults without adding content. |
@@ -275,7 +284,7 @@ tests/                        # unittest suite
 ### Packs
 
 | Pack | Status | Description |
-|---|---|---|
+| --- | --- | --- |
 | `lean` | active | Terse workflow helpers and brevity-oriented defaults |
 | `secure` | active | Security-first coding defaults with OWASP Top 10:2025 review and dependency vulnerability scanning |
 | `tdd` | active | Test-driven development defaults — Red-Green-Refactor discipline, test double guidance, and coverage analysis |
@@ -291,7 +300,7 @@ tests/                        # unittest suite
 ### Profiles
 
 | Profile | Status | Description |
-|---|---|---|
+| --- | --- | --- |
 | `balanced` | active | Balanced detail and guidance for normal interactive work |
 | `lean` | active | Concise output; includes `lean` pack by default |
 | `ultra-lean` | planned | Minimum viable output density for highly structured workflows |
@@ -301,13 +310,15 @@ tests/                        # unittest suite
 When hooks are enabled, the following MCP server scripts are installed into `.github/mcp/scripts/`:
 
 | Server | Enabled by default | Description |
-|---|---|---|
+| --- | --- | --- |
 | `xanadWorkspaceMcp.py` | yes | xanadAssistant lifecycle tools (`lifecycle_inspect`, `lifecycle_update`, etc.) |
 | `memoryMcp.py` | yes | Persistent SQLite-backed agent memory — advisory facts, authoritative rules, and FTS-indexed diary |
 | `gitMcp.py` | yes | Full local + remote git workflow (22 tools) |
 | `webMcp.py` | yes | DuckDuckGo search and URL fetch |
+| `devDocsMcp.py` | yes | DevDocs-backed library documentation lookup |
 | `timeMcp.py` | yes | Current time, elapsed duration, timezone conversion |
 | `securityMcp.py` | yes | OSV vulnerability lookup and deps.dev health check |
+| `fsMcp.py` | yes | Workspace-bounded file I/O and search |
 | `sequentialThinkingMcp.py` | yes | Sequential reasoning bridge |
 | `githubMcp.py` | no | GitHub REST API (repos, issues, PRs, Actions, code search) |
 | `sqliteMcp.py` | no | Query and inspect workspace-local SQLite databases (read-only) |

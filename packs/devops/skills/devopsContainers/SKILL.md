@@ -63,7 +63,7 @@ Copying source code before installing dependencies defeats caching — every cod
 ## Image security
 
 | Rule | Why |
-|---|---|
+| --- | --- |
 | Pin base image to a digest: `python:3.12-slim@sha256:abc123` | Prevents silent upstream changes |
 | Scan images with `docker scout` or `trivy` in CI | Catch known CVEs before deploy |
 | Do not include `.git/`, secrets, or IDE config in the image | Use `.dockerignore` |
@@ -91,7 +91,7 @@ build
 ## Image tagging strategy
 
 | Tag | Use |
-|---|---|
+| --- | --- |
 | `:latest` | Never in production — it is mutable and unpredictable |
 | `:${GIT_SHA}` | Immutable; trace from image to commit |
 | `:v1.2.3` | Semver release tag |

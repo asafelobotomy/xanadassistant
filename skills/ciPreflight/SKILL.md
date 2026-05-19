@@ -77,7 +77,7 @@ excluded), detect the verification command from workspace files using workspace
 search and file-reading tools:
 
 | Signal file or folder | Inferred command |
-|---|---|
+| --- | --- |
 | `tests/` with `test_*.py` files | `python3 -m unittest discover -s tests -p 'test_*.py'` |
 | `pytest.ini`, `pyproject.toml` with `[tool.pytest]` | `python3 -m pytest` |
 | `package.json` with a `test` script | `npm test` |
@@ -109,7 +109,7 @@ workflow file — the project author likely ordered them by cost already.
 Run each command with a terminal tool. For each result:
 
 | Outcome | Action |
-|---|---|
+| --- | --- |
 | Exit 0 | Continue to the next check |
 | Stale generated artifact (exit nonzero and the output includes an explicit invocation of the form `python3 …generate`, `npm run generate`, or a similar regen tool) | Re-run the generator, explicitly `git add` regenerated outputs, then re-run the check |
 | Unit or lint failure | Delegate to `Debugger` with the exact failure output and staged file list; apply the minimal fix returned; re-run the failing check. If `Debugger` cannot isolate a fix, surface the raw failure output to the user and ask whether to block the commit or accept residual risk. |

@@ -22,7 +22,7 @@ Use this skill when reviewing OSS pull requests or when a maintainer needs struc
 Run through all tiers before leaving a verdict.
 
 | Tier | What to check | Block merge? |
-|---|---|---|
+| --- | --- | --- |
 | **Correctness** | Logic is sound; edge cases handled; no regressions | Yes |
 | **Tests** | New behavior has tests; tests actually fail before the fix | Yes |
 | **API compatibility** | No unannounced breaking changes to public surface | Yes |
@@ -37,7 +37,7 @@ Run through all tiers before leaving a verdict.
 Use the following prefixes to make severity obvious:
 
 | Prefix | Meaning |
-|---|---|
+| --- | --- |
 | `nit:` | Non-blocking style preference |
 | `suggest:` | Non-blocking improvement idea |
 | `question:` | Clarification needed; may block if unanswered |

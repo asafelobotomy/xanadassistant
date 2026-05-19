@@ -40,7 +40,7 @@ After completing the checklist, rate overall contradiction risk (LLM-as-judge): 
 **Severity mapping:**
 
 | Contradiction type | Severity |
-|---|---|
+| --- | --- |
 | Behavioral (agent acts vs. must not act) | Critical |
 | Scope or tool constraint | High |
 | Risk-tier mismatch | High |
@@ -111,7 +111,7 @@ python3 .github/tools/xanadEval/xanadEval.py check <path>
 **Metrics — warn or block per section:**
 
 | Metric | Warning threshold | Block threshold |
-|---|---|---|
+| --- | --- | --- |
 | Conditional nesting depth | > 2 levels | > 3 levels |
 | Rules per section | > 7 | > 10 |
 | Steps in a single sequence | > 8 | > 12 |
@@ -123,7 +123,7 @@ Emit `cognitive-load: warning` for any metric at or above the warning threshold.
 **xanadEval check advisory flags (SKILL.md only)** — each ✗ maps to the severity shown:
 
 | Advisory flag | Level | Meaning |
-|---|---|---|
+| --- | --- | --- |
 | `complexity` | block | Structural complexity exceeds heuristic threshold |
 | `module-count` | warning | Fewer than 2 or more than 6 modules (acceptable range: 2–6) |
 | `over-specificity` | warning | Excessive rigidity that reduces adaptability |
@@ -213,7 +213,7 @@ Severity: Critical for direct behavioral contradiction; High for shadowing; Medi
 Produce a consolidated findings table after running all six modules:
 
 | Severity | Module | Section | Finding | Suggested fix |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Critical | Contradiction | `## Commit workflow` | Step 4 negates the lock established by step 2 | Remove step 4 or add a guard condition |
 | … | … | … | … | … |
 

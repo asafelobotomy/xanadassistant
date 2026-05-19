@@ -9,7 +9,7 @@ skill, workflow, instruction, and contract files.
 ## Adopted
 
 | ID | Decision | Canonical references | Notes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | A1 | Attention-budget gate adopted | `scripts/check_attention_budget.py`, `.github/workflows/ci.yml` | Enforced as a repo-local budget check rather than a one-off shell snippet. |
 | A6 | Memory MCP server adopted | `mcp/scripts/memoryMcp.py`, `.github/copilot-instructions.md`, `template/copilot-instructions.md` | Persistent agent memory via SQLite MCP server; replaces the `docs/memory.md` file-based approach. |
 | A10 | `Cleaner` adopted as consumer-delivered agent | `agents/cleaner.agent.md` | Adapted: removed mcp-servers/handoffs/Codex models; Audit → Review; Code dropped; diary refs removed. |
@@ -18,14 +18,14 @@ skill, workflow, instruction, and contract files.
 ## Retired
 
 | ID | Decision | Canonical references | Notes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | A8 | `commitPreflight` retired | none — removed from repo-local maintainer surfaces | Previously adopted as a maintainer-only skill, then removed during repo cleanup. |
 | A9 | `techDebtAudit` retired | none — removed from repo-local maintainer surfaces | Previously adopted as a maintainer-only skill, then removed during repo cleanup. |
 
 ## Deferred
 
 | ID | Decision | Revisit when |
-|---|---|---|
+| --- | --- | --- |
 | A2 | Defer section numbering in `template/copilot-instructions.md` | Consumer instructions need stable section-level cross-references. |
 | A3 | Defer a dedicated self-update protocol section | Consumer instructions need direct self-edit guidance beyond the existing lifecycle routing. |
 | A4 | Defer explicit progressive-disclosure rules in more skills | Additional consumer-facing skills are added and need a shared structure contract. |
@@ -36,7 +36,7 @@ skill, workflow, instruction, and contract files.
 `Debugger`, `Planner`, `Researcher`, and `Docs` are already adopted. The highest-value remaining template-agent candidates are:
 
 | Rank | Agent | Recommendation | Why |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | `Audit` | Conditional next | Strongest remaining specialist if broader repo-health or security review becomes a recurring workflow. |
 | 2 | `Fast` | Defer | Useful for tiny tasks, but lower leverage than the default coding flow in this repo. |
 | 3 | `Extensions` | Avoid for now | Too tied to extension/profile workflows that are peripheral to xanadassistant. |
@@ -58,7 +58,7 @@ Prefer adaptation when a feature depends on:
 ## Non-goals
 
 | Feature | Reason |
-|---|---|
+| --- | --- |
 | Pulse / heartbeat session tracking | Too heavy for current single-repo needs. |
 | `routing-manifest.json` | Agent frontmatter plus `AGENTS.md` already define routing. |
 | Multi-plugin-format manifests | Not needed for the current CLI- and manifest-driven architecture. |

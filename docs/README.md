@@ -2,7 +2,7 @@
 
 The `docs/` tree is split by document role:
 
-- `contracts/` holds stable interface and behavior contracts.
+- `contracts/` holds stable interface and behavior contracts, including `contracts/examples/` for machine-facing sample payloads and event streams.
 - `plans/` holds implementation and rollout plans.
 - `archive/` holds historical material that should not drive current behavior.
 

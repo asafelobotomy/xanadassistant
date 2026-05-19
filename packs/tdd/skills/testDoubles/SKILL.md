@@ -21,7 +21,7 @@ Choose the right test double for the job. The wrong double makes tests brittle; 
 ## The five kinds
 
 | Kind | What it does | Use when |
-|---|---|---|
+| --- | --- | --- |
 | **Dummy** | Passed but never used | Satisfying a parameter list when the argument doesn't matter |
 | **Stub** | Returns pre-programmed values | Isolating the unit from a dependency's return value |
 | **Fake** | Working implementation with shortcuts | Replacing a heavy dependency (e.g., an in-memory DB instead of a real one) |

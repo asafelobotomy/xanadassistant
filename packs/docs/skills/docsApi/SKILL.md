@@ -74,7 +74,7 @@ Go doc comments begin with the function name, use complete sentences, and end wi
 Use a Markdown table for reference documentation of CLI flags, env vars, or config options:
 
 | Name | Type | Default | Required | Description |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `--output` | string | `stdout` | No | File path for output. Use `-` for stdout. |
 | `--format` | enum | `json` | No | Output format: `json`, `csv`, `text`. |
 | `--token` | string | — | Yes | API token. Prefer env var `API_TOKEN`. |
@@ -92,7 +92,7 @@ Each endpoint should document:
 ## What must always be documented
 
 | Artifact | Must document |
-|---|---|
+| --- | --- |
 | Public function/method | All params, return type, exceptions, one example |
 | CLI command/flag | Description, type, default, required/optional |
 | Config field | Description, type, default, valid values |

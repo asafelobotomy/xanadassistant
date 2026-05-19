@@ -10,7 +10,7 @@ I work **in** xanadassistant — implementing features, reviewing code, running 
 ## Key Commands
 
 | Task | Command |
-|------|---------|
+| ------ | --------- |
 | Run tests | `python3 -m unittest discover -s tests -p "test_*.py"` |
 | LOC gate | `python3 scripts/check_loc.py` |
 | Inspect Copilot install state | `python3 <xanad-root>/xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` |
@@ -21,7 +21,7 @@ I work **in** xanadassistant — implementing features, reviewing code, running 
 Use the **xanadLifecycle** agent for all xanadAssistant operations. Trigger phrases:
 
 | Trigger phrase | Operation |
-|---|---|
+| --- | --- |
 | `"set up xanadAssistant"` | First-time install |
 | `"update xanadAssistant"` | Pull latest agents, skills, hooks, prompts |
 | `"run lifecycle check"` | Inspect + check; surface repair reasons |
@@ -42,7 +42,7 @@ Do not edit files under `.github/agents/`, `.github/skills/`, `.github/mcp/`, or
 Route specialist work to the matching agent before acting directly. If a task involves work that maps to a specialist agent's domain, delegate that work to the specialist agent first and continue from the returned result. If a delegated agent cannot complete its task, handle the failure inline or surface it to the user before continuing.
 
 | Work type | Required agent |
-|---|---|
+| --- | --- |
 | Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `Cleaner` |
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
 | Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, or installing/updating/removing packages | `Deps` |

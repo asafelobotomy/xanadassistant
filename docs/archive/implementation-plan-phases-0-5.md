@@ -194,4 +194,3 @@ Current validated scope in this phase: public `apply` now drives the setup slice
 - [x] lockfile schema validation test
 - [x] legacy migration repair test
 - [x] validation failure behavior test
-

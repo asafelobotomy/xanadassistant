@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.1.0",
-  "packageVersion": "0.3.4",
+  "packageVersion": "0.3.5",
   "policySchemaVersion": "0.1.0",
   "sourceRoots": {
     "template": "template",
@@ -47,7 +47,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:9ba21835e4ca2b69a6ee9cc955b8fe0241e01b08b60b306a627b4cb047301334"
+      "hash": "sha256:2f2602ef964dc739dee4508d85d2e984e2b3a337b6754318fe2545bc0924e85b"
     },
     {
       "id": "agents.commit.agent.md",
@@ -66,7 +66,7 @@
         "{{agent:commit:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:67a92e1a144be593300ee43ee2e2357f090b25cfe67afadbdbb634671be41453"
+      "hash": "sha256:1973b61a3a6f8c6d6e379d33336fd4f58ba74a3c393483905d318bc66b6a578e"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -100,7 +100,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:3b20e2f5f92529c039eba261cb31be8f1e2d4242bed07a6cd73794b458fae7a7"
+      "hash": "sha256:ee38999018218c2e85b9726e31ae9d80d140cdd1381ce346695be44a5cf5f402"
     },
     {
       "id": "agents.docs.agent.md",
@@ -204,7 +204,7 @@
         "{{agent:review:reporting-threshold}}"
       ],
       "chmod": "none",
-      "hash": "sha256:f9840d83b6ca5cb5c8b6646b620343631f08ea01c5e4719e2ab8e844d401413a"
+      "hash": "sha256:0b8b6ed4399ce7c0d743035e79032dcaa25d14e1d8708e0e80c16dd9b2029389"
     },
     {
       "id": "agents.triage.agent.md",
@@ -220,7 +220,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:b80c38d295da6e0a6b9594becbbe9c800963320c29798362616be49f699cc2e6"
+      "hash": "sha256:503f37911c8e3f46d665f263c43b38e1c3ab887de2f5f48d50931ce57efa260b"
     },
     {
       "id": "agents.xanadLifecycle.agent.md",
@@ -236,7 +236,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:bc78d5bbaccc9553017e31389735656e38d347c37060344b33d4fec8cc8306ae"
+      "hash": "sha256:4d49ef6d8c6ef4c4bd1909e1db9dbbad1bb3bf30ddb2e1b4d72a9d4ac413825c"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -260,7 +260,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:145bec8ce5ab3aac4838e7b549f5a3bff9f7ad68f61f774e8dedcca44b3d6f59"
+      "hash": "sha256:3dbb850fda1d7ede2171b101bda935d2428732d9b778333ce4bee75d6d0f2439"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -832,7 +832,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:3b1cd1b5dfd2761a1f8cc7c215280b74246ea6c4b4743c4825fa313814c33cd9"
+      "hash": "sha256:2a8a9b0f66703cc89d7ecc6238997b0771f2504791956dd36fe171d69451836e"
     },
     {
       "id": "lean-prompts.lean-status.prompt.md",
@@ -934,7 +934,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:dba9395c12e5770b8b14cf71d769c18777b2937430d66c6bcb6b64d5994487ee"
+      "hash": "sha256:7f6bb094adcbd366dd21e451896635f66a18e1f10dc2301a2b4982652634e31d"
     },
     {
       "id": "prompts.setup.md",
@@ -1037,7 +1037,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:0cd2e72a720f5feb3d90c9bf97333538e17f0d375af40b5a4f32cdbdf329b6c8"
+      "hash": "sha256:a4fbff89d70a7a30261f568b43836b0d98a2e6fd24f4b84233ce13e016707a87"
     },
     {
       "id": "prompts.update.md",
@@ -1071,7 +1071,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:7c886057746f25361dad559d582e56ef871d0b8dd76b24f4c4faaa329e4bcce7"
+      "hash": "sha256:b4fd1027887aaa7557c50d477499454f753b54e1de3ecab496f7bc2837e7a4b2"
     },
     {
       "id": "secure-skills.dependencyAudit.SKILL.md",
@@ -1089,7 +1089,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:07186eebf7385ba9a319f736d58f2c9b8b82c095f86656292c06f9373754073f"
+      "hash": "sha256:8b96cb08d566a3cad7904ae8f576f40751fb2d1d219d4581efa5c60dc72fba5c"
     },
     {
       "id": "devops-skills.devopsCiCd.SKILL.md",
@@ -1107,7 +1107,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:4be513b34dfd3882d154bde2e7875fea638c56eaaa059813ae3436adb34cbc04"
+      "hash": "sha256:8f3f65d10e57312781547844542c080492263bd590037a044d6250f4b43f8d25"
     },
     {
       "id": "devops-skills.devopsContainers.SKILL.md",
@@ -1125,7 +1125,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:a71b917fb2d451fc97765e443c5654434684ca5b5bd767961a850b3e632672eb"
+      "hash": "sha256:3db4b0063fa061df42333998766216b9cce279db07a4c43e3312d6835d6e5889"
     },
     {
       "id": "devops-skills.devopsInfraAsCode.SKILL.md",
@@ -1143,7 +1143,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:33a0aaf560f8ddac38c5b3696eeb541e4b0c71eacd47e3905e5d6f88e1680622"
+      "hash": "sha256:74f4eca4542e336c9d1f1ff00b40cde9d26d12c226d97e97982648f8e628b351"
     },
     {
       "id": "devops-skills.devopsReview.SKILL.md",
@@ -1161,7 +1161,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:54ab8274cd60441b220ab9abc06b6dff760d0f1e7cc02ae4edd1728cc4983ffd"
+      "hash": "sha256:78736625b8ef8728bb1b7dd9edabad7dd1e0b9b2e18f47205bab622fe3243224"
     },
     {
       "id": "docs-skills.docsApi.SKILL.md",
@@ -1179,7 +1179,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:0c0724dd147a06d9db6f54611aa7be11f0af07418cf704955a2b557832e2eaae"
+      "hash": "sha256:560957eed249487ea9c96889524245841134d5023301bfbcaa5bdf99c4e496f7"
     },
     {
       "id": "docs-skills.docsReview.SKILL.md",
@@ -1197,7 +1197,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:8280c4a33f3d87a4599651073ff4e291d399d23d893ffa118935239b24a667ce"
+      "hash": "sha256:c3625358ce8ac8d1a80ecc16c17800245f10c682a5e32c7c6cb92d8749358522"
     },
     {
       "id": "docs-skills.docsStructure.SKILL.md",
@@ -1215,7 +1215,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:f92befb5a323d4699865456d842dc773d3390d9997cba39ed9c6e525cf39a6d5"
+      "hash": "sha256:24c657a1f9a7d8222df255287e83fc92a669927359378878aac205400c324c4a"
     },
     {
       "id": "docs-skills.docsStyle.SKILL.md",
@@ -1233,7 +1233,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:66ce8ae4d70227247a39513e6bd495d6aab63532d066e15922bd7a3bb4bc19ca"
+      "hash": "sha256:b29519bb272d8e1c26b1911de9dee2f6dcb6b69ce170580d3d9302b7accc4927"
     },
     {
       "id": "lean-skills.leanAndon.SKILL.md",
@@ -1321,7 +1321,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:f727a4b7beb8d9659e768680f933fc625ee31a7d5ebee9aaa678532fe4b3d461"
+      "hash": "sha256:35b6929cda79902c1dffc5e79312c17ba8d20d895f779941bc0feaec3f1b1b82"
     },
     {
       "id": "mlops-skills.mlopsDataPipelines.SKILL.md",
@@ -1339,7 +1339,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:9bc6d5707fdf32e244744e40b54cfc12c190750be42b692999e070c7ee60812e"
+      "hash": "sha256:cf61dbf40a5a4b5b3dbfd3d982a25118f8386b9518198267ab8fd2b922f218a6"
     },
     {
       "id": "mlops-skills.mlopsExperiments.SKILL.md",
@@ -1357,7 +1357,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:af2b9687fee9621216186778812cdf48de6b715dd56afa8d75ca0705405762b9"
+      "hash": "sha256:528588ffc4ee7370d3f133a8b5f906c87d203046dc4f279397f1e10447f2c6fe"
     },
     {
       "id": "mlops-skills.mlopsModelServing.SKILL.md",
@@ -1375,7 +1375,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:e43cfad311de4dbf9af8d2d547c34fdc4721e601465af09ebb1e62db55ae473f"
+      "hash": "sha256:17509f486aa1d91d6c24ac54ef33259d4811670944c8bca2e3a17dfd22637562"
     },
     {
       "id": "mlops-skills.mlopsReview.SKILL.md",
@@ -1393,7 +1393,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:751ed7a72ae2437a755033c43e966ceeb826a3f8e410e864173f5af48507dca3"
+      "hash": "sha256:08429fe57446aca5656005ed3878fa4399d705574f213cbe444197a8d4541bdb"
     },
     {
       "id": "oss-skills.ossChangelog.SKILL.md",
@@ -1411,7 +1411,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:bab1a9f6b9b33d208a44b830d63d92ab188b871f7820590154f8fccf02be3b3e"
+      "hash": "sha256:33e8681db732d22a8658151c040911cd9007329836aa58eea0de0c6398e0cbf7"
     },
     {
       "id": "oss-skills.ossCodeReview.SKILL.md",
@@ -1429,7 +1429,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:46990e6ecb2bb63b1d25e87e9e5107e71f94237a7ba94643b13cbd0fbce25c00"
+      "hash": "sha256:0ad651397b14106a37455fb35fef12c9ec676299c8cbfbea04014414b258432a"
     },
     {
       "id": "oss-skills.ossContributing.SKILL.md",
@@ -1447,7 +1447,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:d5c55f483fe462b9dab56eb945be99a220d0d43c6cbb7553d5f67690c155ad6d"
+      "hash": "sha256:d958f366ee1ab050ac3f737b9b5c6d6933984c9f989a2cf00cce831fefacc22d"
     },
     {
       "id": "oss-skills.ossLicensing.SKILL.md",
@@ -1465,7 +1465,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:416b05e67006ea9baa8efff46cdc4c87e95786ef04351f1bb163b86a0dd0d566"
+      "hash": "sha256:1966cc79421ad863dd68889fbc677e43bdaae775e2f5a167d712931054f8543b"
     },
     {
       "id": "skills.promptReview.SKILL.md",
@@ -1481,7 +1481,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:762b9f9ee84f83514985f2672b8928a1e75b857d2ec10c8a272edacef4210e7b"
+      "hash": "sha256:0eaf6a146d837f7aa3d3734dbd95acf1cf92f3a667f0af5d02cdbda979e10e24"
     },
     {
       "id": "secure-skills.secretScanning.SKILL.md",
@@ -1499,7 +1499,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:1b6387a46a0396280c56d1e8354620488aaf90e54b2efbdd5d89339d410d9d0c"
+      "hash": "sha256:c2774e3421a4b410860468779b1ef474446a489bab35e3555a38424a8c17c2e1"
     },
     {
       "id": "secure-skills.secureReview.SKILL.md",
@@ -1517,7 +1517,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:680be9b9587fae1fd897f4e069d4d5f4ed16e9e24f2ffd541375e0bac201a359"
+      "hash": "sha256:08728d040723ee58b33e38a96861bc20585e7da27175d679cf9f0bde2da2cd6b"
     },
     {
       "id": "shapeup-skills.shapeupBetting.SKILL.md",
@@ -1535,7 +1535,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:b37f75f17a1ce44969428bf42c187dfca25b0b22945e5319fcf64a365bd457df"
+      "hash": "sha256:9553b9210502fc598d78c0ad8cc833ecf9d5d1fb428be047ac0d49e4f27a2eb5"
     },
     {
       "id": "shapeup-skills.shapeupCycleWork.SKILL.md",
@@ -1571,7 +1571,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:75d0b4dd531bb6d6c57b0a783b5d07b9c4b6d802770ac25e571c8bc1ca35df1f"
+      "hash": "sha256:30ec6c0086dcdd64cf5d78c0e7d49edd8f25f24c3a3dd22bde673fc6ea0da98a"
     },
     {
       "id": "shapeup-skills.shapeupReview.SKILL.md",
@@ -1589,7 +1589,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:a4505f17346157ed5fcf9fe36a5af2bda0123da3e4c16ff5e96bee32e9c9bc47"
+      "hash": "sha256:71812788fc94fdc6d7d66717b18efc9d287e687b20256084a8db558110edfd76"
     },
     {
       "id": "tdd-skills.tddCycle.SKILL.md",
@@ -1625,7 +1625,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:38b97f971188b0fd93d45b8110c23968ddb3f92d589db8ed11859fa131b5be91"
+      "hash": "sha256:12c4e9837607def037c9ce5deb56164facdf253c7d277b1450cc33c000a4d00e"
     },
     {
       "id": "tdd-skills.testCoverage.SKILL.md",
@@ -1643,7 +1643,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:d1136fb37b4996fe450ed33f74f7856e33ccffc9a8f2eb84a7bc654444a52471"
+      "hash": "sha256:b7d69cd8c75b55f2fff4019a0ff0041cfdb3dd4a16acd5b976e6eb9f4808cf83"
     },
     {
       "id": "tdd-skills.testDoubles.SKILL.md",
@@ -1661,7 +1661,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:1a37791d849c449e2b1efaa3deffdd1e5a105fbed2ac51ac99d7e49df6d39fec"
+      "hash": "sha256:a84188c1ea5b2feef28d4d66336ec42adb5bd0cb0316634ba5fe6c404739288c"
     },
     {
       "id": "secure-skills.threatModel.SKILL.md",
@@ -1679,7 +1679,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:b5768c17944a206947d34f144687946e25e44c89cda9b72b63313bf5a6372c8a"
+      "hash": "sha256:7596d8dd647449d2de4d5ba78059eb0bc9ad9ad5ebed51033f06b23fe99ece3d"
     },
     {
       "id": "tools.xanadEval.xanadEval.py",

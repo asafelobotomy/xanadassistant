@@ -48,7 +48,7 @@ For Go dependencies, use `query_package_vulnerabilities` per package/version; th
 ## Interpreting results
 
 | CVSS score | Severity | Action |
-|---|---|---|
+| --- | --- | --- |
 | 9.0–10.0 | Critical | Block release — must fix before shipping |
 | 7.0–8.9 | High | Fix before release unless no viable upgrade path |
 | 4.0–6.9 | Medium | Fix in next planned dependency update cycle |

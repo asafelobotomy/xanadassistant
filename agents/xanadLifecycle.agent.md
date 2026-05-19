@@ -101,7 +101,7 @@ Parse `result.questions`. Each question carries a `batch` field with one of
 four values:
 
 | batch | when to present |
-|---|---|
+| --- | --- |
 | `setup` | always first — ask `setup.depth` before anything else |
 | `simple` | always |
 | `advanced` | when `setup.depth` is `advanced` or `full` |

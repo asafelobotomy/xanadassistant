@@ -5,7 +5,7 @@
 The pulse system comprises six Python modules invoked on every PostToolUse hook call:
 
 | Module | Responsibility |
-|--------|---------------|
+| -------- | --------------- |
 | `pulse_runtime.py` | Entry point; routes by trigger type; calls all others |
 | `pulse_state.py` | JSONL event journal + state.json; session size heuristics; lock files |
 | `pulse_routing.py` | Routing manifest loading; prompt pattern matching; confidence scoring |
@@ -162,4 +162,3 @@ equivalent schema contracts for its JSON artifacts (`workspace-index.json`,
 `routing-manifest.json`).
 
 ---
-

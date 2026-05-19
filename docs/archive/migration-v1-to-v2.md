@@ -81,7 +81,7 @@ deploying — any remaining references will silently return `undefined`.
 ## Quick-Reference Diff
 
 | Concern | v1 | v2 |
-|---|---|---|
+| --- | --- | --- |
 | Auth on `/users` | not required | `Authorization: Bearer <token>` required |
 | Response root type | array | object (`{ data, total }`) |
 | User array field | `user_id` | `id` |

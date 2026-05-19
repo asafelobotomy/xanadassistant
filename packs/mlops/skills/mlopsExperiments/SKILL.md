@@ -27,7 +27,7 @@ Use this skill when designing, running, or reviewing machine learning experiment
 ## Required logged artifacts
 
 | Artifact | Examples |
-|---|---|
+| --- | --- |
 | Dataset version | DVC tag, S3 URI with hash, dataset registry entry |
 | Model architecture | Config file, architecture class name + parameter count |
 | Hyperparameters | Learning rate, batch size, scheduler, optimizer |
@@ -69,7 +69,7 @@ wandb.finish()
 ## Notebook hygiene
 
 | Rule | Why |
-|---|---|
+| --- | --- |
 | Strip cell outputs before commit | Prevents binary diffs, potential data leakage |
 | One notebook per experiment | Avoids cell-ordering bugs |
 | Pin cell execution order | Use `nbconvert --execute` to verify clean re-run |
@@ -78,7 +78,7 @@ wandb.finish()
 ## Anti-patterns
 
 | Anti-pattern | Fix |
-|---|---|
+| --- | --- |
 | Hardcoded dataset path (`/home/user/data`) | Use a config file or env variable |
 | Result reported only on test set | Always validate on held-out val set; reserve test for final eval |
 | No seed set | Set all random seeds at experiment start |

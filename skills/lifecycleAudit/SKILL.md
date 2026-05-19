@@ -31,7 +31,7 @@ Systematic lifecycle state review before any install, update, repair, or factory
 3. **Classify the state** — the `needsMigration: true` row takes priority over all other rows:
 
    | `installState` | `check.status` / `plan.repairReasons` | Action |
-   |---|---|---|
+   | --- | --- | --- |
    | `installed` | `clean` and no plan repair reasons | Proceed with intended operation |
    | `installed` | `drift` or non-empty plan repair reasons | Run `repair` first, then re-check |
    | `not-installed` | any | Run `setup` |

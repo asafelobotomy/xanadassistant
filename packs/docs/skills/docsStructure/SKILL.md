@@ -22,7 +22,7 @@ Use this skill when planning, scaffolding, or reorganising documentation. Apply 
 Four document types that serve different reader goals. Each type should be kept separate — do not mix tutorial steps with reference tables.
 
 | Type | Reader goal | Characteristic |
-|---|---|---|
+| --- | --- | --- |
 | **Tutorial** | Learn by doing | Guided, outcome-oriented, no choices |
 | **How-to guide** | Accomplish a specific task | Assumes knowledge; focused steps |
 | **Reference** | Look something up | Accurate, complete, no narrative |

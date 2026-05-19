@@ -60,7 +60,7 @@ def _mock_check_result(status: str = "clean") -> dict:
 
 def _mock_source_summary(kind: str = "github") -> dict:
     if kind == "package-root":
-        return {"kind": "package-root", "source": "/home/user/xanadassistant"}
+        return {"kind": "package-root", "packageRoot": "/home/user/xanadassistant"}
     return {"kind": "github", "source": "github:asafelobotomy/xanadassistant@v0.2.0"}
 
 
@@ -227,6 +227,20 @@ class HealthCheckResultPayloadTests(unittest.TestCase):
         with _patch_all():
             payload = build_health_check_result(Path("."), _PKG_ROOT)
         self.assertIn("healthCheckSchemaVersion", payload["result"])
+
+    def test_build_health_check_result_redacts_workspace_path(self) -> None:
+        workspace = Path("/home/user/private-project")
+        with _patch_all():
+            payload = build_health_check_result(workspace, _PKG_ROOT)
+        self.assertNotEqual(payload.get("workspace"), str(workspace))
+        self.assertNotIn("private-project", str(payload))
+
+    def test_build_health_check_result_redacts_local_package_root(self) -> None:
+        source = _mock_source_summary(kind="package-root")
+        with _patch_all(source=source):
+            payload = build_health_check_result(Path("."), _PKG_ROOT)
+        self.assertEqual(payload["source"]["packageRoot"], "local")
+        self.assertNotIn("/home/user/xanadassistant", str(payload))
 
 
 class HealthCheckCLIIntegrationTests(unittest.TestCase):

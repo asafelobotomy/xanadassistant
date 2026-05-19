@@ -9,7 +9,7 @@
 ## Summary
 
 | Category | Finding count |
-|----------|--------------|
+| ---------- | -------------- |
 | What they did right — adopt or adapt | 8 |
 | What they did wrong — avoid | 7 |
 | What xanadassistant does better | 5 |
@@ -63,7 +63,7 @@ Hard line limits on `template/copilot-instructions.md` enforced by
 `scripts/ci/validate-attention-budget.sh`, called from `ci.yml`:
 
 | Budget | Limit | Sections |
-|--------|-------|---------|
+| -------- | ------- | --------- |
 | Total file | 800 lines | All of §1–§14 |
 | Per section (standard) | 120 lines | §1–§4, §6–§9 |
 | §5 Operating Modes | 210 lines | Largest section; contains all workflow modes |
@@ -121,7 +121,7 @@ Key rules from §8:
 The canonical trigger table is in `AGENTS.md`:
 
 | Action | Trigger phrase |
-|--------|---------------|
+| -------- | --------------- |
 | Update instructions | `"Update your instructions"` / `"Check for instruction updates"` / `"Sync instructions with the template"` |
 | Force update check | `"Force check instruction updates"` |
 | Restore backup | `"Restore instructions from backup"` |
@@ -142,7 +142,7 @@ the xanadAssistant update flow from within a consumer workspace session.
 Skills explicitly follow a three-tier loading model:
 
 | Tier | Token budget | Content |
-|------|-------------|---------|
+| ------ | ------------- | --------- |
 | Startup metadata | ~100 tokens | YAML frontmatter + one-line description |
 | On-activation body | < 5000 tokens (≤ 400 lines) | Steps, rules, tables, examples |
 | On-demand resources | Unbounded | `scripts/`, `references/`, `assets/` subdirs |
@@ -199,7 +199,7 @@ packaged as a VS Code plugin.
 The instructions template defines four explicit test scope tiers:
 
 | Tier | When to use |
-|------|-------------|
+| ------ | ------------- |
 | `PathTargeted` | Default during intermediate work |
 | `AffectedSuite` | Shared helpers or broad contract surfaces |
 | `FullSuite` | Only when selector emits `run_full_suite_at_completion: true` |
@@ -247,4 +247,3 @@ No active VS Code lifecycle hooks are wired. The `hooks/scripts/xanadWorkspaceMc
 stub exists but is unused.
 
 ---
-

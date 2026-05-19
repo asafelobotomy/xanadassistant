@@ -23,7 +23,7 @@ Use this skill when designing, reviewing, or debugging CI/CD pipelines.
 Structure pipelines in ordered stages. Each stage must pass before the next runs.
 
 | Stage | Purpose | Typical jobs |
-|---|---|---|
+| --- | --- | --- |
 | **Validate** | Fast, cheap checks | Lint, format check, type check |
 | **Test** | Correctness | Unit tests, integration tests |
 | **Build** | Produce artifacts | Compile, container image, package |
@@ -94,7 +94,7 @@ jobs:
 ## Common anti-patterns
 
 | Anti-pattern | Fix |
-|---|---|
+| --- | --- |
 | `uses: actions/checkout@main` | Pin to `@v4` or a SHA |
 | `env: SECRET=${{ secrets.X }}` with `echo $SECRET` | Never echo secrets |
 | `if: always()` on deploy | Deploy only on success |

@@ -23,7 +23,7 @@ before any cycle time is committed.
 ## The Five Elements
 
 | Element | What it covers |
-|---|---|
+| --- | --- |
 | **Problem** | The raw customer pain or business friction — not a solution in disguise. |
 | **Appetite** | How much time the team is willing to spend: S (1-2 weeks), M (4 weeks), or L (6 weeks). |
 | **Solution** | A concrete enough sketch to convey the approach — fat-marker sketch, breadboard, or short prose. Enough to bet on, not a full spec. |

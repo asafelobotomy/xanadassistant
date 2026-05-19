@@ -21,7 +21,7 @@ Perform security-focused code review against the OWASP Top 10:2025. For each fin
 ## OWASP Top 10:2025 categories
 
 | ID | Category | Common patterns to look for |
-|---|---|---|
+| --- | --- | --- |
 | A01 | Broken Access Control | Missing authorization checks, IDOR, path traversal, privilege escalation |
 | A02 | Security Misconfiguration | Default credentials, overly permissive CORS, debug endpoints in production, unnecessary features enabled |
 | A03 | Software Supply Chain Failures | Unpinned dependencies, unsigned artifacts, build system trust issues |
@@ -38,7 +38,7 @@ Perform security-focused code review against the OWASP Top 10:2025. For each fin
 Produce a table for every code review:
 
 | Severity | OWASP | File:Line | Finding | Recommended fix |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 
 - Severity: Critical / High / Medium / Low
 - OWASP: category ID (A01–A10) or "N/A" if not an OWASP category

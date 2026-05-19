@@ -51,7 +51,7 @@ Use this skill when reviewing documentation before it is merged or published. Ru
 Use these prefixes consistently:
 
 | Prefix | Meaning |
-|---|---|
+| --- | --- |
 | `accuracy:` | Documented behavior does not match implementation — must fix |
 | `missing:` | Required content absent — must fix if API changed |
 | `clarity:` | Prose or example could be clearer — suggest |

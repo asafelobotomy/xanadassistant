@@ -6,7 +6,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 ## Roster
 
 | Agent | User-invocable | Use when |
-|---|---|---|
+| --- | --- | --- |
 | `Cleaner` | yes | Pruning stale artefacts, caches, archives, and dead files; tightening repository hygiene without changing behaviour |
 | `Commit` | yes | Git status, staging, commit messages, commits, pushes, pulls, rebases, branches, tags, releases, and PR work |
 | `Deps` | yes | Scanning workspace dependencies, auditing installed packages, checking for vulnerabilities, suggesting updates or alternatives, and installing/updating/repairing/removing packages |
@@ -23,7 +23,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 ## Routing Table
 
 | Work type | Required agent |
-|---|---|
+| --- | --- |
 | Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `Cleaner` |
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
 | Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, suggesting updates or alternatives, or installing/updating/removing packages | `Deps` |
@@ -55,7 +55,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 Use these patterns when a task crosses specialist boundaries but should still stay narrow and deliberate.
 
 | Start | Hand off to | Use when |
-|---|---|---|
+| --- | --- | --- |
 | `Cleaner` | `Review` | Cleanup touches security-sensitive files, managed surfaces, or policy-owned content |
 | `Cleaner` | `Organise` | Cleanup turns into file moves, path repair, or repository reshaping |
 | `Cleaner` | `Docs` | Cleanup changes archive conventions, maintenance guidance, or user-facing references |
@@ -97,7 +97,7 @@ Use these patterns when a task crosses specialist boundaries but should still st
 ## Lifecycle Trigger Phrases
 
 | Trigger phrase | Route |
-|---|---|
+| --- | --- |
 | `inspect workspace` | `xanadLifecycle` |
 | `run lifecycle check` | `xanadLifecycle` |
 | `repair install` | `xanadLifecycle` |
@@ -113,7 +113,7 @@ Natural-language requests to add a convention or preference to instructions, suc
 Each agent's frontmatter lists models in preference order. The first entry is the default; subsequent entries are fallbacks. Fallback ordering follows **closer task-fit before lighter-but-less-capable models** — prefer the next model that still matches the work profile over the cheapest available option.
 
 | Default model | Agents | Rationale |
-|---|---|---|
+| --- | --- | --- |
 | `Claude Sonnet 4.6` | Cleaner, Commit, Deps, Docs, Organise, Researcher, xanadLifecycle | General-purpose procedural work — instruction-following, structured output, multi-step execution. GitHub Copilot guidance recommends Sonnet-class models as the baseline for agentic tasks. |
 | `GPT-5.4` | Debugger, Planner, Review | Deep-reasoning tasks — root-cause isolation, multi-file planning, architectural and security review. GPT-5.4's reasoning depth pays off where correctness matters more than speed. |
 | `GPT-5.4 mini` | Explore | Codebase exploration and grep-style tooling. GitHub explicitly recommends a mini-class model here: fast symbol and file traversal does not require deep reasoning, and the lighter model keeps exploration loops responsive. |

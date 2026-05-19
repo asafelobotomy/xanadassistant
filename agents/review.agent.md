@@ -36,7 +36,7 @@ For each finding, report:
 ## Finding categories
 
 | Tag | Meaning |
-|-----|---------|
+| ----- | --------- |
 | `correctness` | Logic error, wrong return, off-by-one, bad edge case |
 | `security` | OWASP Top 10 issue, injection, secret exposure, trust boundary |
 | `maintainability` | Duplication, unclear naming, missing abstraction, tech debt |
