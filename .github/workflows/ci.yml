@@ -21,6 +21,17 @@ jobs:
       - name: Check maintainer doc attention budgets
         run: python3 scripts/drift_preflight.py --check attention-budget
 
+  version-bump:
+    name: Version References
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check version mirrors match VERSION
+        run: python3 scripts/drift_preflight.py --check version-bump
+
   loc-gate:
     name: LOC Gate
     runs-on: ubuntu-latest
@@ -77,3 +88,103 @@ jobs:
           python-version: "3.11"
       - name: Check installed .github/ copies match source (bypasses ownership skip model)
         run: python3 scripts/drift_preflight.py --check parity
+
+  release:
+    name: Publish Release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      - attention-budget
+      - version-bump
+      - loc-gate
+      - test
+      - freshness
+      - workspace-drift
+      - parity
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect version bump
+        id: version
+        run: |
+          set -euo pipefail
+
+          before="${{ github.event.before }}"
+          if [[ "$before" == "0000000000000000000000000000000000000000" ]]; then
+            changed_files=$(git show --pretty='' --name-only "$GITHUB_SHA")
+          else
+            changed_files=$(git diff --name-only "$before" "$GITHUB_SHA")
+          fi
+
+          if ! grep -Fxq VERSION <<<"$changed_files"; then
+            echo "version_changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          version=$(tr -d '[:space:]' < VERSION)
+          if [[ -z "$version" ]]; then
+            echo "VERSION is empty" >&2
+            exit 1
+          fi
+
+          tag="v$version"
+          echo "version_changed=true" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if release already exists
+        id: release_state
+        if: steps.version.outputs.version_changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build release changelog
+        if: steps.version.outputs.version_changed == 'true' && steps.release_state.outputs.exists != 'true'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          git fetch --tags --force
+          previous_tag=$(git tag --sort=-version:refname | grep -Fxv "$TAG" | head -n 1 || true)
+
+          {
+            echo "# Changelog"
+            echo
+            echo "Release: $TAG"
+            echo
+            if [[ -n "$previous_tag" ]]; then
+              echo "Changes since $previous_tag:"
+              echo
+              git log --reverse --pretty='- %s (%h)' "$previous_tag..$GITHUB_SHA"
+              echo
+              echo "Full diff: https://github.com/${GITHUB_REPOSITORY}/compare/${previous_tag}...${TAG}"
+            else
+              echo "Initial release changes:"
+              echo
+              git log --reverse --pretty='- %s (%h)' "$GITHUB_SHA"
+            fi
+          } > RELEASE_NOTES.md
+
+      - name: Publish GitHub release
+        if: steps.version.outputs.version_changed == 'true' && steps.release_state.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --target "$GITHUB_SHA" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --notes-file RELEASE_NOTES.md

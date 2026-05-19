@@ -34,6 +34,11 @@ CHECKS: tuple[Check, ...] = (
         command=("python3", "scripts/check_attention_budget.py"),
     ),
     Check(
+        name="version-bump",
+        description="Package-version mirrors match the canonical VERSION file.",
+        command=("python3", "scripts/check_bump_version.py", "--check"),
+    ),
+    Check(
         name="loc",
         description="LOC gate for tracked source files.",
         command=("python3", "scripts/check_loc.py"),

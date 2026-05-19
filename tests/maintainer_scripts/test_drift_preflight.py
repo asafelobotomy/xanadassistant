@@ -22,6 +22,7 @@ class DriftPreflightTests(unittest.TestCase):
         output = stdout.getvalue()
         self.assertEqual(exit_code, 0)
         self.assertIn("attention-budget", output)
+        self.assertIn("version-bump", output)
         self.assertIn("freshness", output)
         self.assertIn("workspace-drift", output)
         self.assertIn("parity", output)

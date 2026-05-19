@@ -135,6 +135,9 @@ python3 scripts/check_loc.py
 # Regenerate manifest and catalog after any policy or template change
 python3 scripts/generate.py
 
+# Check package-version mirrors against VERSION and update stale references
+python3 scripts/check_bump_version.py
+
 # Inspect this workspace
 python3 xanadAssistant.py inspect --workspace . --package-root . --json
 
@@ -144,6 +147,10 @@ python3 xanadAssistant.py check --workspace . --package-root . --json
 # Plan a setup into another workspace
 python3 xanadAssistant.py plan setup --workspace <path> --package-root . --json --non-interactive
 ```
+
+## Release automation
+
+Pushes to `main` that change [VERSION](VERSION) now publish a GitHub release automatically after the CI checks in [.github/workflows/ci.yml](.github/workflows/ci.yml) pass. The workflow creates the `v<version>` tag if needed and publishes release notes with the full commit changelog since the previous tag.
 
 ## Lifecycle processes
 
