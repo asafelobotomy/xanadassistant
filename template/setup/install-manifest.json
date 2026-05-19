@@ -46,7 +46,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:dcc7cd53eb03057ce506b8510ee9f7332cf50092cff57bd44f3667de39974b8b"
+      "hash": "sha256:9ba21835e4ca2b69a6ee9cc955b8fe0241e01b08b60b306a627b4cb047301334"
     },
     {
       "id": "agents.commit.agent.md",
@@ -135,7 +135,7 @@
         "{{agent:explore:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:a32ebb3abdc006629e12af3849a861108afdf3ff1a3c45976123cca6d660a540"
+      "hash": "sha256:b6dbc6ea61df1a78e32258360a7bf11beff45720ba02c5e186e62edeb5ee4932"
     },
     {
       "id": "agents.organise.agent.md",
@@ -151,7 +151,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:7bcce48d64eb92953e421759791016308c2cf43605f95eba0a1e2f0fd904e601"
+      "hash": "sha256:eadbcb71a09a7185a512a9015ba00bd80876be7f25a5ed581b29d7f8bcf4c503"
     },
     {
       "id": "agents.planner.agent.md",

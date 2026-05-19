@@ -5,7 +5,7 @@ argument-hint: "Say what to clean — e.g. 'clean up repo clutter', 'remove stal
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, editFiles, runCommands, codebase, search, askQuestions]
+tools: [agent, editFiles, runCommands, codebase, search, askQuestions, delete_file, list_directory, file_info]
 agents: [Review, Organise, Docs, Commit]
 user-invocable: true
 ---
@@ -50,6 +50,7 @@ Do not use this agent for:
   user-facing file references.
 - Use `Commit` when the cleanup scope is approved and changes are ready to stage.
 - Prefer the smallest reversible cleanup first, then validate before widening scope.
+- When the `filesystem` server is connected, prefer `list_directory` and `file_info` for the dry-run inventory phase, and `delete_file` for the actual removal step after approval — `delete_file` enforces path-safety and rejects directories, preventing accidental wide deletion.
 
 ## Approval gate
 

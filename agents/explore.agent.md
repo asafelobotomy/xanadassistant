@@ -6,7 +6,7 @@ model:
   - GPT-5.4 mini
   - Claude Sonnet 4.6
   - Claude Haiku 4.5
-tools: [agent, codebase, search, runCommands]
+tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info]
 user-invocable: true
 agents: []
 ---
@@ -26,6 +26,7 @@ Your role: fast, read-only codebase exploration. Search files, read sections, an
 - **Read-only strictly** — never use `editFiles`. Terminal commands must be read-only: `grep`, `find`, `cat`, `wc`, `ls`, `head`, `tail`.
 - **Targeted** — answer the specific question asked. Do not summarise unrelated files.
 - **Parallel reads** — batch independent file reads and searches into simultaneous calls wherever possible.
+- **Filesystem MCP** — when the `filesystem` server is connected, prefer `read_file` for ranged file reads, `list_directory` for directory listings, `search_files` for pattern searches, and `file_info` for metadata — these tools enforce path safety and are faster than shell equivalents.
 - **Thoroughness tiers** — follow the caller's requested depth:
   - `quick` — one targeted search; confirm the pattern exists.
   - `medium` — search + read key file sections.
