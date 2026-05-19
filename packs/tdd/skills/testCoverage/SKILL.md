@@ -9,6 +9,15 @@ Use this skill in workspaces with the tdd pack selected.
 
 Coverage is a diagnostic tool, not a goal. High line coverage with weak assertions is worse than targeted coverage with strong assertions.
 
+## When to use
+
+- Workspaces with the tdd pack selected, when analyzing coverage gaps, interpreting coverage reports, or deciding on coverage targets
+
+## When NOT to use
+
+- When writing new tests from scratch — prefer `tddCycle`
+- When reviewing test architecture decisions — prefer `testArchitecture`
+
 ## What coverage tells you
 
 - **Line/statement coverage**: which code was executed. Tells you what was NOT tested; says nothing about test quality.
@@ -39,3 +48,9 @@ There are no universal targets. Use these as starting heuristics:
 - Tests that test getter/setter trivially without exercising business logic
 - Artificially inflating coverage with trivially-satisfied paths to reach a percentage target
 - Missing tests for error paths, boundary conditions, and empty/null inputs
+
+## Verify
+
+- [ ] Branch coverage reported, not only line coverage
+- [ ] Meaningful gaps identified (untested paths, not just low-count lines)
+- [ ] Coverage treated as a diagnostic signal, not as a target metric

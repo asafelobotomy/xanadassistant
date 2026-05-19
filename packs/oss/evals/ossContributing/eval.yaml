@@ -1,0 +1,11 @@
+name: "ossContributing-eval"
+description: "Evaluates ossContributing skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(CONTRIBUTING|DCO|CLA|onboarding)"
+
+tasks:
+  - "tasks/*.yaml"

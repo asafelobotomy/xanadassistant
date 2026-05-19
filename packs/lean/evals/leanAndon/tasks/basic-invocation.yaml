@@ -1,0 +1,10 @@
+id: basic-invocation
+description: "Verify skill produces output appropriate for Andon cord stop-or-proceed decision"
+prompt: |
+  Run the leanAndon skill. Apply it to a relevant example and produce the
+  expected output, checklist findings, or recommendations as defined by the skill.
+expected:
+  - "pull the cord"
+tags:
+  - basic
+  - smoke

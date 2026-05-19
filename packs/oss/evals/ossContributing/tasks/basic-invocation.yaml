@@ -1,0 +1,10 @@
+id: basic-invocation
+description: "Verify skill produces output appropriate for OSS contribution workflow guidance"
+prompt: |
+  Run the ossContributing skill. Apply it to a relevant example and produce the
+  expected output, checklist findings, or recommendations as defined by the skill.
+expected:
+  - "CONTRIBUTING"
+tags:
+  - basic
+  - smoke

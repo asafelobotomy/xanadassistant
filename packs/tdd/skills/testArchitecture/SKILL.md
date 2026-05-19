@@ -12,6 +12,15 @@ A well-structured test suite is maintainable, fast to run, and clearly signals w
 why. Poor test architecture creates slow, brittle, or duplicated suites that developers learn
 to distrust.
 
+## When to use
+
+- Structuring a test suite; separating unit from integration tests; deciding what a test should and should not cross as a boundary
+
+## When NOT to use
+
+- When applying the TDD cycle itself — prefer `tddCycle`
+- When analyzing coverage gaps in an existing suite — prefer `testCoverage`
+
 ## Test Pyramid
 
 | Layer | Scope | Count | Speed |
@@ -76,3 +85,8 @@ Use these prefixes when reviewing test architecture:
 - `naming:` — test name describes implementation rather than behavior
 - `coupling:` — test depends on execution order or another test's state
 - `nit:` — minor organization or style issue
+
+## Verify
+
+- [ ] Test pyramid respected (unit > integration > e2e in count and speed)
+- [ ] Each test layer has clear boundary rules; no cross-layer coupling

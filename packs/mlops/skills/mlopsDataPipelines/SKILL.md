@@ -7,6 +7,15 @@ description: "Data pipeline conventions — versioning, feature engineering disc
 
 Use this skill when designing, reviewing, or debugging ML data pipelines.
 
+## When to use
+
+- Designing, reviewing, or debugging ML data pipelines
+
+## When NOT to use
+
+- When reviewing model serving infrastructure — prefer `mlopsModelServing`
+- When reviewing experiment tracking only — prefer `mlopsExperiments`
+
 ## Core data pipeline principles
 
 1. **Version data, not just code** — a model is only reproducible if its training data is versioned.
@@ -95,3 +104,9 @@ def validate_schema(df: pd.DataFrame, expected_columns: list[str], expected_dtyp
 | Scaler/encoder fitted on full dataset | Always fit on train split only |
 | Hard-coded column names in notebooks | Define schema as a config or constant |
 | No validation between pipeline stages | Add schema + statistics checks at each stage boundary |
+
+## Verify
+
+- [ ] Core data pipeline principles applied; no leakage across train/val/test splits
+- [ ] Dataset version pinned (DVC, S3 URI with hash, or registry entry)
+- [ ] Schema validation present at pipeline entry

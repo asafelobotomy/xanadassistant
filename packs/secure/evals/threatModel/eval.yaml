@@ -1,0 +1,11 @@
+name: "threatModel-eval"
+description: "Evaluates threatModel skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(STRIDE|trust boundary|mitigation|threat)"
+
+tasks:
+  - "tasks/*.yaml"

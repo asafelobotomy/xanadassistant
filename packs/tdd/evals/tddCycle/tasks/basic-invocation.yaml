@@ -1,0 +1,10 @@
+id: basic-invocation
+description: "Verify skill produces output appropriate for TDD Red-Green-Refactor cycle"
+prompt: |
+  Run the tddCycle skill. Apply it to a relevant example and produce the
+  expected output, checklist findings, or recommendations as defined by the skill.
+expected:
+  - "Red"
+tags:
+  - basic
+  - smoke

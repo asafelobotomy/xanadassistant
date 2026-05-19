@@ -1,0 +1,11 @@
+name: "leanAndon-eval"
+description: "Evaluates leanAndon skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(pull the cord|proceed|irreversible)"
+
+tasks:
+  - "tasks/*.yaml"

@@ -7,6 +7,15 @@ description: "Model serving — registry, versioning, A/B testing, canary deploy
 
 Use this skill when deploying, versioning, or monitoring ML models in production.
 
+## When to use
+
+- Deploying, versioning, or monitoring ML models in production
+
+## When NOT to use
+
+- When setting up experiment tracking — prefer `mlopsExperiments`
+- When reviewing data pipeline code — prefer `mlopsDataPipelines`
+
 ## Core serving principles
 
 1. **Register before serving** — every production model must be registered in a model registry with a version tag.
@@ -94,3 +103,9 @@ client.transition_model_version_stage(name="my-classifier", version=<prev-versio
 | No model registry | Use MLflow, Vertex AI, or SageMaker Model Registry |
 | Model artefact committed to git | Store in object storage; log URI in registry |
 | Serving the same model version for months without drift check | Schedule weekly drift evaluation |
+
+## Verify
+
+- [ ] Model registered in registry with version tag before any production deploy
+- [ ] Stage gate followed (Staging → Production, not direct to Production)
+- [ ] Canary or A/B rollout plan present; rollback documented and previous version retained

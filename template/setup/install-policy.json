@@ -1021,7 +1021,8 @@
     },
     "unmanagedSourceExcludes": [
       "template/setup/**",
-      "packs/*/tokens.json"
+      "packs/*/tokens.json",
+      "packs/*/evals/**"
     ]
   }
 }

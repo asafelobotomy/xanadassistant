@@ -1,0 +1,11 @@
+name: "devopsInfraAsCode-eval"
+description: "Evaluates devopsInfraAsCode skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(IaC|Terraform|Pulumi)"
+
+tasks:
+  - "tasks/*.yaml"

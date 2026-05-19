@@ -1,0 +1,11 @@
+name: "secureReview-eval"
+description: "Evaluates secureReview skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(OWASP|A0[0-9]|Critical|High|Medium)"
+
+tasks:
+  - "tasks/*.yaml"

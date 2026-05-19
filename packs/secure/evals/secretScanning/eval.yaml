@@ -1,0 +1,11 @@
+name: "secretScanning-eval"
+description: "Evaluates secretScanning skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(secret|token|credential|private key)"
+
+tasks:
+  - "tasks/*.yaml"

@@ -1,0 +1,16 @@
+id: basic-invocation
+description: "Verify skill discovers CI workflow files, scopes to staged changes, and returns a pass/block/residual-risk summary"
+prompt: |
+  Run the ciPreflight skill for the current workspace. Walk through Steps 0–6: discover
+  workflow files, extract locally-executable run steps, scope to staged changes, fall back
+  to project-structure detection if needed, execute checks cheapest-first, and return a
+  summary with a clear pass, block, or residual-risk outcome.
+expected:
+  - "pass"
+  - "block"
+  - "residual-risk"
+  - "staged"
+  - "summary"
+tags:
+  - basic
+  - smoke

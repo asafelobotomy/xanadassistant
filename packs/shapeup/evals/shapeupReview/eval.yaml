@@ -1,0 +1,11 @@
+name: "shapeupReview-eval"
+description: "Evaluates shapeupReview skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(Tier 1|blocking|pitch|scope discipline)"
+
+tasks:
+  - "tasks/*.yaml"

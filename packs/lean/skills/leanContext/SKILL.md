@@ -9,6 +9,15 @@ Use this skill in workspaces with the lean pack selected.
 
 Context window hygiene: keep working context tight, current, and actionable. Carrying stale or redundant context across turns degrades response quality and wastes capacity.
 
+## When to use
+
+- Workspaces with the lean pack selected, when managing context window hygiene across turns
+
+## When NOT to use
+
+- Outside workspaces with the lean pack selected
+- When the context is genuinely needed to continue — defer rather than prune
+
 ## What to prune
 
 - Raw tool results after you have derived an answer from them — emit the conclusion, not the raw output
@@ -36,3 +45,9 @@ When building on decisions or context established earlier in the conversation:
 - File paths, symbol names, and schema field names — precision cannot be recovered from summaries
 - Security or destructive action confirmations — always enumerate what is affected
 - The active task state — the user must be able to orient from your last response alone
+
+## Verify
+
+- [ ] Raw tool results pruned after answers derived; conclusions retained
+- [ ] Completed intermediate steps not re-read or re-run this session
+- [ ] Unchanged-state confirmations omitted unless ambiguity requires them

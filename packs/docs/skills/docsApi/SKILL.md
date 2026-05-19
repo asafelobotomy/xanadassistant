@@ -7,6 +7,15 @@ description: "API and code documentation — docstring conventions, OpenAPI patt
 
 Use this skill when documenting code: functions, classes, REST endpoints, CLI commands, or configuration schemas.
 
+## When to use
+
+- Documenting code: functions, classes, REST endpoints, CLI commands, or configuration schemas
+
+## When NOT to use
+
+- When writing user-facing guides or tutorials — prefer `docsStructure`
+- When reviewing existing documentation for accuracy — prefer `docsReview`
+
 ## Docstring conventions by language
 
 ### Python (Google style)
@@ -90,3 +99,9 @@ Each endpoint should document:
 | REST endpoint | Method, path, request, all responses |
 | Environment variable | Purpose, type, default, when to set |
 | Breaking change | What changed, migration path, affected versions |
+
+## Verify
+
+- [ ] Correct docstring format used for the target language
+- [ ] All required fields present (args, returns, raises, or equivalent)
+- [ ] Parameter names, types, and defaults match the current implementation

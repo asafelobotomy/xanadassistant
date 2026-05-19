@@ -7,6 +7,15 @@ description: "OSS contributing workflow — CONTRIBUTING.md structure, DCO/CLA g
 
 Use this skill when a user asks about contribution workflows, CONTRIBUTING.md structure, or how to prepare a first contribution to an open-source project.
 
+## When to use
+
+- Answering questions about contribution workflows, CONTRIBUTING.md structure, or preparing a first contribution to an open-source project
+
+## When NOT to use
+
+- When reviewing a specific open PR — prefer `ossCodeReview`
+- When handling licensing questions — prefer `ossLicensing`
+
 ## CONTRIBUTING.md structure
 
 A complete `CONTRIBUTING.md` should cover these sections in order:
@@ -60,3 +69,8 @@ Verify with: `git log -n 5 --pretty=full` — confirm each commit message body i
 5. Open a PR against the project's default branch (usually `main` or `develop`).
 6. Address review feedback with additional commits (do not force-push unless asked).
 7. Squash or rebase when the maintainer requests it.
+
+## Verify
+
+- [ ] CONTRIBUTING.md covers all required sections (Code of Conduct, Getting started, Workflow, Commit format, PR checklist)
+- [ ] DCO or CLA requirements stated; contributor onboarding checklist present

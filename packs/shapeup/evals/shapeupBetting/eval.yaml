@@ -1,0 +1,11 @@
+name: "shapeupBetting-eval"
+description: "Evaluates shapeupBetting skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(betting table|appetite|pitch)"
+
+tasks:
+  - "tasks/*.yaml"

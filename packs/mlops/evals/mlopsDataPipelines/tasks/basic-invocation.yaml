@@ -1,0 +1,10 @@
+id: basic-invocation
+description: "Verify skill produces output appropriate for ML data pipeline design or review"
+prompt: |
+  Run the mlopsDataPipelines skill. Apply it to a relevant example and produce the
+  expected output, checklist findings, or recommendations as defined by the skill.
+expected:
+  - "DVC"
+tags:
+  - basic
+  - smoke

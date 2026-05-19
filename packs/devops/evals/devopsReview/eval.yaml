@@ -1,0 +1,11 @@
+name: "devopsReview-eval"
+description: "Evaluates devopsReview skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(secret:|rollback:|privilege:)"
+
+tasks:
+  - "tasks/*.yaml"

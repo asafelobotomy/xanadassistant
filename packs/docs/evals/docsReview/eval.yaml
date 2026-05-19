@@ -1,0 +1,11 @@
+name: "docsReview-eval"
+description: "Evaluates docsReview skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(accuracy:|missing:|clarity:)"
+
+tasks:
+  - "tasks/*.yaml"

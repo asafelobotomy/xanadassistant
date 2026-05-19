@@ -7,6 +7,16 @@ description: "Infrastructure as Code conventions — naming, state management, m
 
 Use this skill when writing or reviewing Terraform, Pulumi, or similar IaC definitions.
 
+## When to use
+
+- Writing or reviewing Terraform, Pulumi, or similar IaC definitions
+- Auditing IaC for state management, naming, modularity, or drift-detection discipline
+
+## When NOT to use
+
+- When reviewing container images or Dockerfiles — prefer `devopsContainers`
+- When reviewing CI/CD pipeline YAML only — prefer `devopsCiCd`
+
 ## Core IaC principles
 
 1. **All infrastructure is code** — no console-click changes. Manual changes create drift.
@@ -98,3 +108,9 @@ Run `terraform plan` in CI on a schedule (not just on PR) to detect out-of-band 
 | Secrets in `.tfvars` committed to git | Use a secrets manager or CI secret injection |
 | `terraform apply` without `plan` in CI | Always plan first; require approval for prod |
 | No version constraints on providers | Pin: `version = "~> 5.0"` |
+
+## Verify
+
+- [ ] Applied core IaC principles (state locked, plan before apply, least privilege)
+- [ ] Naming conventions and file organisation follow the prescribed conventions
+- [ ] No console-click changes implied; mutable or unlocked state flagged

@@ -1,0 +1,11 @@
+name: "testArchitecture-eval"
+description: "Evaluates testArchitecture skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(unit|integration|pyramid|boundary)"
+
+tasks:
+  - "tasks/*.yaml"

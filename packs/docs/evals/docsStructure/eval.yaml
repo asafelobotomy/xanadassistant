@@ -1,0 +1,11 @@
+name: "docsStructure-eval"
+description: "Evaluates docsStructure skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(Tutorial|How-to|Reference|Explanation|Diátaxis)"
+
+tasks:
+  - "tasks/*.yaml"

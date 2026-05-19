@@ -7,6 +7,17 @@ description: "CI/CD pipeline patterns — GitHub Actions, stage design, environm
 
 Use this skill when designing, reviewing, or debugging CI/CD pipelines.
 
+## When to use
+
+- Designing, reviewing, or debugging CI/CD pipeline definitions
+- Setting up new pipeline stages, environment gates, or artifact workflows
+
+## When NOT to use
+
+- When reviewing Dockerfiles or container images specifically — prefer `devopsContainers`
+- When reviewing IaC definitions — prefer `devopsInfraAsCode`
+- When performing a full deployment-risk review — prefer `devopsReview`
+
 ## Pipeline stage model
 
 Structure pipelines in ordered stages. Each stage must pass before the next runs.
@@ -89,3 +100,9 @@ jobs:
 | `if: always()` on deploy | Deploy only on success |
 | Build image in deploy job | Build once, promote the artifact |
 | `permissions: write-all` | Enumerate only what is needed |
+
+## Verify
+
+- [ ] Applied the pipeline stage model (Validate → Test → Build → Security → Deploy)
+- [ ] Job naming and runner version follow conventions
+- [ ] No mutable branch references or echoed secrets in the pipeline YAML

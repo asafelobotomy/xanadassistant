@@ -7,6 +7,16 @@ description: "OSS code review discipline — PR review standards, review comment
 
 Use this skill when reviewing OSS pull requests or when a maintainer needs structured guidance on what to check before merging.
 
+## When to use
+
+- Reviewing OSS pull requests
+- When a maintainer needs structured guidance on what to check before merging
+
+## When NOT to use
+
+- When reviewing internal private code for security — prefer `secureReview`
+- When reviewing documentation only — prefer `docsReview`
+
 ## Review tiers
 
 Run through all tiers before leaving a verdict.
@@ -65,3 +75,8 @@ A PR is ready to merge when:
 - Suggest, don't demand, style fixes on a first PR.
 - If a PR needs significant work, offer to pair or provide an example rather than just listing what is wrong.
 - Approve once criteria are met — do not hold a PR for minor nits that can be addressed in a follow-up.
+
+## Verify
+
+- [ ] All five tiers run (Correctness, Tests, API compatibility, Documentation, License & DCO)
+- [ ] Verdict given as Approve, Request Changes, or Comment with tier-level justification

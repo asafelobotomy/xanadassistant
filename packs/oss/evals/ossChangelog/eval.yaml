@@ -1,0 +1,11 @@
+name: "ossChangelog-eval"
+description: "Evaluates ossChangelog skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(Unreleased|Added|Fixed|Changed)"
+
+tasks:
+  - "tasks/*.yaml"

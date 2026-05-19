@@ -10,6 +10,16 @@ description: >
 Shape Up pitches are the unit of work proposed for a betting table. A pitch answers five questions
 before any cycle time is committed.
 
+## When to use
+
+- Drafting, reviewing, or refining a Shape Up pitch
+- Preparing a pitch for the betting table
+
+## When NOT to use
+
+- When the betting table is already in progress — prefer `shapeupBetting`
+- When managing active in-cycle work — prefer `shapeupCycleWork`
+
 ## The Five Elements
 
 | Element | What it covers |
@@ -52,3 +62,9 @@ Use these prefixes when giving pitch feedback:
 - `rabbit-hole:` — a likely rabbit hole is unaddressed
 - `no-go:` — scope boundary is unclear or missing
 - `nit:` — minor wording or formatting issue
+
+## Verify
+
+- [ ] All five elements present: Problem, Appetite, Solution, Rabbit holes, No-gos
+- [ ] No solution disguised as a problem statement
+- [ ] Appetite stated as S (1–2 weeks), M (4 weeks), or L (6 weeks)

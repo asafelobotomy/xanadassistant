@@ -7,6 +7,15 @@ description: "Documentation writing style — prose register, active voice, impe
 
 Use this skill when drafting or reviewing any user-facing documentation: READMEs, guides, API references, changelogs, or inline code comments.
 
+## When to use
+
+- Drafting or reviewing any user-facing documentation: READMEs, guides, API references, changelogs, or inline code comments
+
+## When NOT to use
+
+- When reviewing for technical accuracy — prefer `docsReview`
+- When writing code docstrings in a language with dedicated conventions — prefer `docsApi`
+
 ## Core principles
 
 | Principle | Rule | Example |
@@ -46,3 +55,9 @@ Use this skill when drafting or reviewing any user-facing documentation: READMEs
 - **Weasel words**: "fairly", "quite", "very", "basically" — delete them.
 - **Future tense for current behavior**: "This will allow…" → "This allows…"
 - **Unnecessary preamble**: "In this section, we will explore…" → start with the content.
+
+## Verify
+
+- [ ] Active voice, imperative mood, and short-sentence rules applied
+- [ ] Prescribed term list used; no synonym drift
+- [ ] No passive constructions, filler phrases, or second-person avoidance

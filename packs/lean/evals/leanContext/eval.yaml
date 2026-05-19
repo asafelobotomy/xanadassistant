@@ -1,0 +1,11 @@
+name: "leanContext-eval"
+description: "Evaluates leanContext skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(prune|defer|context)"
+
+tasks:
+  - "tasks/*.yaml"

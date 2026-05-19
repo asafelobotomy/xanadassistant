@@ -9,6 +9,18 @@ Use this skill in workspaces with the secure pack selected.
 
 Query known CVEs for project dependencies using the `secureOsv` hook, which wraps the OSV.dev API (public, no auth required).
 
+## When to use
+
+- Before releasing or deploying
+- When adding or updating a dependency
+- When a security advisory is mentioned for a package in use
+- As part of a periodic security review
+
+## When NOT to use
+
+- When reviewing source code for logic bugs — prefer `secureReview`
+- When the workspace has no package lockfile to audit
+
 ## When to audit
 
 - Before releasing or deploying
@@ -52,3 +64,9 @@ For Go dependencies, use `query_package_vulnerabilities` per package/version; th
 ## No-hit result
 
 If `batch_query_lockfile` returns zero vulnerabilities, report: "No known vulnerabilities found in `<lockfile>` as of `<query date>`." Do not treat a clean result as a permanent guarantee.
+
+## Verify
+
+- [ ] Queried OSV.dev (or equivalent) for all direct dependencies
+- [ ] Each CVE triaged with severity, affected version range, and patch status
+- [ ] Findings reported with ecosystem, package, version, and CVE ID

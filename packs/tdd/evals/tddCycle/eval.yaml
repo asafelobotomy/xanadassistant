@@ -1,0 +1,11 @@
+name: "tddCycle-eval"
+description: "Evaluates tddCycle skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(Red|Green|Refactor)"
+
+tasks:
+  - "tasks/*.yaml"

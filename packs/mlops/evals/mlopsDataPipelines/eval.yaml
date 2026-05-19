@@ -1,0 +1,11 @@
+name: "mlopsDataPipelines-eval"
+description: "Evaluates mlopsDataPipelines skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(DVC|leakage|split|train)"
+
+tasks:
+  - "tasks/*.yaml"

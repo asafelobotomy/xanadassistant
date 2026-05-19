@@ -10,6 +10,16 @@ description: >
 The betting table is the decision point before each cycle. A small group (typically senior leaders
 or decision-makers) reviews the available pitches and decides which ones to bet cycle time on.
 
+## When to use
+
+- Running or participating in a Shape Up betting table
+- Evaluating pitches for the next cycle, setting appetite, or deciding which pitches to bet on
+
+## When NOT to use
+
+- When writing a new pitch — prefer `shapeupPitching`
+- When managing in-cycle work — prefer `shapeupCycleWork`
+
 ## What Gets Bet
 
 Only pitches go to the betting table — not ideas, tasks, or backlogs. A pitch must satisfy the
@@ -51,3 +61,8 @@ to be shaped differently.
 
 Shape Up teams are small: typically one designer and one or two programmers per bet. Larger
 teams signal that the problem is not well enough shaped or scoped.
+
+## Verify
+
+- [ ] Only pitches with all five elements at the table
+- [ ] Bets recorded with team size and cycle time; unbet pitches explicitly declined rather than deferred

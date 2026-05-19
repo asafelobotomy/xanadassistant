@@ -1,0 +1,11 @@
+name: "dependencyAudit-eval"
+description: "Evaluates dependencyAudit skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(CVE|OSV|severity|ecosystem)"
+
+tasks:
+  - "tasks/*.yaml"

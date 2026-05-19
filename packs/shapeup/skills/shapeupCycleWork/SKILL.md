@@ -11,6 +11,16 @@ A Shape Up cycle is a fixed time box (typically 6 weeks) in which a team builds 
 solution. The team owns how they get there; the key disciplines are scope management and progress
 visibility.
 
+## When to use
+
+- Managing in-cycle scope during a Shape Up cycle
+- Using hill charts, applying scope hammering, or deciding whether to invoke the circuit breaker
+
+## When NOT to use
+
+- When writing a pitch — prefer `shapeupPitching`
+- When running the betting table — prefer `shapeupBetting`
+
 ## Hill Charts
 
 Hill charts track tasks on two halves:
@@ -58,3 +68,9 @@ Invoke the circuit breaker when:
 
 The two weeks between cycles are for slack, fixes, and exploration — not continuation of cycle
 work. Do not use cooldown to finish incomplete cycle work without a new bet.
+
+## Verify
+
+- [ ] Hill chart updated; each task placed correctly (uphill = unknowns remain, downhill = approach settled)
+- [ ] Scope hammering applied when timeline is at risk; no scope creep
+- [ ] Circuit breaker invoked only if work cannot ship within the fixed time box

@@ -7,9 +7,16 @@ description: "Documentation review checklist — accuracy, completeness, clarity
 
 Use this skill when reviewing documentation before it is merged or published. Run through all tiers; report findings with the tier and a brief description.
 
-## Review tiers
+## When to use
 
-### Tier 1 — Accuracy (block merge)
+- Reviewing documentation before it is merged or published
+
+## When NOT to use
+
+- When the PR contains no documentation changes
+- When reviewing code logic rather than documentation — prefer `secureReview` or `devopsReview`
+
+## Tier 1 — Accuracy (block merge)
 
 - [ ] Every code example runs without modification.
 - [ ] All parameter names, types, and defaults match the current implementation.
@@ -17,7 +24,7 @@ Use this skill when reviewing documentation before it is merged or published. Ru
 - [ ] API endpoints, CLI flags, and env var names are correct.
 - [ ] Version numbers in "Since version X" or "Deprecated in X" annotations are correct.
 
-### Tier 2 — Completeness (block merge if API changed)
+## Tier 2 — Completeness (block merge if API changed)
 
 - [ ] All public parameters, fields, and return values are documented.
 - [ ] All error / exception conditions are listed.
@@ -25,7 +32,7 @@ Use this skill when reviewing documentation before it is merged or published. Ru
 - [ ] New features added since the last release have a changelog entry.
 - [ ] No undocumented `required` parameters.
 
-### Tier 3 — Clarity (suggest)
+## Tier 3 — Clarity (suggest)
 
 - [ ] Sentences are active voice and ≤25 words.
 - [ ] Terms are used consistently throughout (no synonym drift).
@@ -33,7 +40,7 @@ Use this skill when reviewing documentation before it is merged or published. Ru
 - [ ] Headings follow the section order from docsStructure.
 - [ ] Acronyms are defined on first use.
 
-### Tier 4 — Link health (suggest)
+## Tier 4 — Link health (suggest)
 
 - [ ] All internal (relative) links resolve to existing files.
 - [ ] All anchor links (`#section-name`) match actual headings.
@@ -58,3 +65,8 @@ A documentation PR is ready to merge when:
 - All `accuracy:` and `missing:` findings are resolved.
 - No unresolved `blocker:` comments from other reviewers.
 - At least one approving review from someone who can verify accuracy (ideally the author of the code being documented).
+
+## Verify
+
+- [ ] All four tiers run; findings reported with `accuracy:`, `missing:`, `clarity:`, `link:`, or `nit:` prefix
+- [ ] All Tier 1 `accuracy:` and Tier 2 `missing:` findings identified before suggesting approve

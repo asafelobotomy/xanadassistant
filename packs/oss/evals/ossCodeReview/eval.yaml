@@ -1,0 +1,11 @@
+name: "ossCodeReview-eval"
+description: "Evaluates ossCodeReview skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(Correctness|Tests|API compat)"
+
+tasks:
+  - "tasks/*.yaml"

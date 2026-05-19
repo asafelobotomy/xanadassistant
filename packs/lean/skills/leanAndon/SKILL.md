@@ -9,6 +9,15 @@ Use this skill in workspaces with the lean pack selected.
 
 The **Andon cord** defines exactly when to stop and surface a question versus when to proceed. Pulling the cord too often wastes more time than proceeding and allowing correction.
 
+## When to use
+
+- Workspaces with the lean pack selected, when deciding whether to stop and ask or proceed autonomously
+
+## When NOT to use
+
+- Outside workspaces with the lean pack selected
+- When the user has already explicitly confirmed the action in the current turn
+
 ## Pull the cord — stop and ask — only when
 
 - The next action is **irreversible and unrecoverable** (deletes without backup, force-push to a shared branch, destructive migration, production change), AND the user has not already confirmed it in the current turn
@@ -36,3 +45,9 @@ These are the only three conditions. Do not add new stop conditions based on gen
 ## Anti-pattern: phantom ambiguity
 
 Treating a clear request as ambiguous because a contrived alternative interpretation exists is a false Andon trigger. If you would bet 9:1 on one interpretation, proceed on that interpretation.
+
+## Verify
+
+- [ ] Applied the three cord-pull conditions strictly (irreversible + unconfirmed, critical absent info, two materially different interpretations)
+- [ ] Did not pull the cord for general caution alone
+- [ ] Cord decision documented if pulled

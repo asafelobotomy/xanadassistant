@@ -1,0 +1,10 @@
+id: basic-invocation
+description: "Verify skill produces output appropriate for ML code review with tiered checklist"
+prompt: |
+  Run the mlopsReview skill. Apply it to a relevant example and produce the
+  expected output, checklist findings, or recommendations as defined by the skill.
+expected:
+  - "leakage:"
+tags:
+  - basic
+  - smoke

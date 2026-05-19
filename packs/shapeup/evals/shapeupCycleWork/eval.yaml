@@ -1,0 +1,11 @@
+name: "shapeupCycleWork-eval"
+description: "Evaluates shapeupCycleWork skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(hill chart|scope hammer|circuit breaker)"
+
+tasks:
+  - "tasks/*.yaml"

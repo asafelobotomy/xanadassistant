@@ -7,6 +7,15 @@ description: "OSS changelog workflow — Keep a Changelog format, versioning dis
 
 Use this skill when a user asks about maintaining a CHANGELOG, generating release notes, or formatting version entries.
 
+## When to use
+
+- Maintaining a CHANGELOG, generating release notes, or formatting version entries
+
+## When NOT to use
+
+- When writing code documentation — prefer `docsApi`
+- When drafting contribution guidelines — prefer `ossContributing`
+
 ## Keep a Changelog format
 
 Follow https://keepachangelog.com/en/1.1.0/ — the most widely adopted OSS changelog convention.
@@ -93,3 +102,9 @@ git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%s" --no-merges
 - Merge commits (`--no-merges` flag).
 - CI, test, and toolchain commits unless they affect the user.
 - Internal refactors unless they affect the public API.
+
+## Verify
+
+- [ ] Keep a Changelog format used; `[Unreleased]` section present
+- [ ] Version entries include all applicable categories (Added, Changed, Deprecated, Removed, Fixed, Security)
+- [ ] Semantic versioning rules applied to the version bump

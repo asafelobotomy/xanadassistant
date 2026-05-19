@@ -1,0 +1,10 @@
+id: basic-invocation
+description: "Verify skill produces output appropriate for STRIDE threat model"
+prompt: |
+  Run the threatModel skill. Apply it to a relevant example and produce the
+  expected output, checklist findings, or recommendations as defined by the skill.
+expected:
+  - "STRIDE"
+tags:
+  - basic
+  - smoke

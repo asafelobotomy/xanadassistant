@@ -1,0 +1,11 @@
+name: "mlopsReview-eval"
+description: "Evaluates mlopsReview skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(leakage:|reproducibility:|bias:)"
+
+tasks:
+  - "tasks/*.yaml"

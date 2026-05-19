@@ -1,0 +1,11 @@
+name: "ossLicensing-eval"
+description: "Evaluates ossLicensing skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(LICENSE|SPDX|MIT|Apache|GPL)"
+
+tasks:
+  - "tasks/*.yaml"

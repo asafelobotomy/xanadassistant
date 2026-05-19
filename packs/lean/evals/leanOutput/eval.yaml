@@ -1,0 +1,11 @@
+name: "leanOutput-eval"
+description: "Evaluates leanOutput skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(added:|replaced:|pass/fail)"
+
+tasks:
+  - "tasks/*.yaml"

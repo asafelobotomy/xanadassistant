@@ -11,6 +11,16 @@ description: >
 Shape Up review checks whether work follows the core Shape Up disciplines: bounded appetite,
 identified rabbit holes, explicit no-gos, and scope hammering during cycles.
 
+## When to use
+
+- Auditing a pitch for completeness
+- Reviewing in-cycle scope discipline or validating that a betting table decision meets Shape Up principles
+
+## When NOT to use
+
+- When writing a new pitch from scratch — prefer `shapeupPitching`
+- When actively running a betting table — prefer `shapeupBetting`
+
 ## Pitch Review
 
 ### Tier 1 — Blocking
@@ -74,3 +84,8 @@ Use these prefixes when giving review feedback:
 - `no-go:` — missing or vague no-go
 - `carry-over:` — work carried over without a fresh bet
 - `nit:` — minor style or completeness issue
+
+## Verify
+
+- [ ] All review tiers run; blocking issues reported before non-blocking
+- [ ] Output uses prescribed verdict format

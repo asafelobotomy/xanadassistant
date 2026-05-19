@@ -7,6 +7,15 @@ description: "OSS license guidance — choosing a license, LICENSE file format, 
 
 Use this skill when a user asks about OSS licensing: what license to choose, how to add a LICENSE file, how to check license compatibility, or how to use SPDX identifiers correctly.
 
+## When to use
+
+- Choosing a license, adding a LICENSE file, checking license compatibility, or using SPDX identifiers correctly
+
+## When NOT to use
+
+- When reviewing the contribution process — prefer `ossContributing`
+- When reviewing code for security issues — prefer `secureReview`
+
 ## License selection guide
 
 | License | Permissions | Copyleft | Use when |
@@ -71,3 +80,9 @@ pip install pip-licenses && pip-licenses --order=license
 ```
 
 Flag any GPL or AGPL dependency in a library project — it may require the entire project to be GPL.
+
+## Verify
+
+- [ ] LICENSE file present and correctly formatted for the chosen license
+- [ ] SPDX identifier used in file headers where required
+- [ ] License compatibility checked when mixing dependencies with different licenses

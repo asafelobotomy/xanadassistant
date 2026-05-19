@@ -32,17 +32,14 @@ Use the **xanadLifecycle** agent for all xanadAssistant operations. Trigger phra
 Available prompts: `/setup` (install or refresh), `/bootstrap` (cold-start from bare workspace), `/update` (pull latest package files).
 
 Do not edit files under `.github/agents/`, `.github/skills/`, `.github/mcp/`, or `.github/prompts/` directly — these are managed by xanadAssistant. Use the `lifecycleAudit` skill to review state before proposing any lifecycle operation.
-When the workspace-local `xanadTools` MCP server is available and can resolve a
-local xanadAssistant package root or a supported remote source, setup-oriented
-lifecycle operations may use its `lifecycle.*` tools instead of shelling out directly.
-If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`,
-the workspace is being migrated from `copilot-instructions-template`; use `repair`
-or `update` so xanadAssistant can archive predecessor-owned files and install the
-current bundle atomically.
+
+**Conditional behaviors:**
+- **If `xanadTools` MCP is available** and can resolve a local xanadAssistant package root or a supported remote source, setup-oriented lifecycle operations may use its `lifecycle.*` tools instead of shelling out directly. If `xanadTools` MCP is unavailable, fall back to `xanadAssistant.py` directly.
+- **If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`**, the workspace is being migrated from `copilot-instructions-template`; use `repair` or `update` so xanadAssistant can archive predecessor-owned files and install the current bundle atomically.
 
 ## Agent Routing
 
-Route specialist work to the matching agent before acting directly. If a task has multiple phases, delegate the specialist phase first and continue from the returned result.
+Route specialist work to the matching agent before acting directly. If a task involves work that maps to a specialist agent's domain, delegate that work to the specialist agent first and continue from the returned result. If a delegated agent cannot complete its task, handle the failure inline or surface it to the user before continuing.
 
 | Work type | Required agent |
 |---|---|
@@ -61,7 +58,7 @@ Route specialist work to the matching agent before acting directly. If a task ha
 
 - Language: **Python** · Package manager: **pip**
 - **Testing**: Always — write tests alongside every code change.
-- Read before modifying — never edit a file not opened this session
+- Read before modifying — never edit a file whose current content you have not read in this task
 - No silent error swallowing
 
 ## PDCA + Test Scope
@@ -80,7 +77,7 @@ Plan → Do → Check → Act on every non-trivial change.
 
 ## Memory
 
-Use memory as optional recall, not as lifecycle authority.
+Memory provides workspace-specific rules and cached facts; use it when available, not as lifecycle authority.
 
 ### Memory MCP server
 
@@ -89,19 +86,28 @@ When hooks are enabled, a `memory` MCP server is available. Each specialist agen
 1. Call `memory_dump(agent="<agent-name>")` at the start of each task to load rules and cached facts.
 2. Follow all returned **rules** unconditionally for the rest of the task.
 3. For any **fact** you intend to act on, call `elapsed(start=fact.updated_at)` to verify its age.
-4. When you discover something durable about this workspace, call `memory_set(agent="<agent-name>", key=..., value=...)` before finishing.
+4. When you discover something specific to this workspace's commands, tool versions, paths, or established conventions, call `memory_set(agent="<agent-name>", key=..., value=...)` before finishing.
 5. If the `memory` server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 
 ## Skills and Agents
 
-- `lifecycleAudit` skill — loaded on demand; run before any lifecycle operation
-- `Cleaner` agent — prune stale artefacts, caches, archives, and dead files
-- `Commit` agent — git operations, commit messages, staging, push, pull, PR work
-- `Debugger` agent — diagnose failures and isolate root causes before implementation
-- `Deps` agent — scan dependencies, audit packages, check for vulnerabilities, install/update/remove
-- `Docs` agent — write and update documentation, migration guides, and technical walkthroughs
-- `Explore` agent — broad read-only codebase exploration and architecture lookup
-- `Planner` agent — produce scoped execution plans for multi-step work before implementation
-- `Researcher` agent — gather source-backed external constraints before implementation or review
-- `Review` agent — code, architecture, security, and regression-risk review; handles codebase audits
-- `xanadLifecycle` agent — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and **health check** requests
+See `## Agent Routing` for the authoritative routing table; this section is a quick-reference index.
+
+### Skills
+
+- `lifecycleAudit` — loaded on demand; run before any lifecycle operation
+- `promptReview` — loaded on demand; evaluate or improve Copilot surface files
+- `ciPreflight` — loaded on demand; run CI-equivalent checks before push
+
+### Agents
+
+- `Cleaner` — prune stale artefacts, caches, archives, and dead files
+- `Commit` — git operations, commit messages, staging, push, pull, PR work
+- `Debugger` — diagnose failures and isolate root causes before implementation
+- `Deps` — scan dependencies, audit packages, check for vulnerabilities, install/update/remove
+- `Docs` — write and update documentation, migration guides, and technical walkthroughs
+- `Explore` — broad read-only codebase exploration and architecture lookup
+- `Planner` — produce scoped execution plans for multi-step work before implementation
+- `Researcher` — gather source-backed external constraints before implementation or review
+- `Review` — code, architecture, security, and regression-risk review; handles codebase audits
+- `xanadLifecycle` — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and **health check** requests

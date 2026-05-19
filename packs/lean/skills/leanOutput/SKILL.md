@@ -5,7 +5,16 @@ description: "Output discipline — lean factual responses with no filler, summa
 
 # Lean Output
 
-Use this skill when the workspace has selected the lean pack. Apply it when generating responses, summaries, receipts, and reports.
+## When to use
+
+- Workspaces with the lean pack selected, when generating responses, summaries, receipts, or reports
+
+## When NOT to use
+
+- Outside workspaces with the lean pack selected
+- When the user explicitly requests expanded or detailed output
+
+## Rules
 
 - Prefer one-line descriptions over multi-sentence explanations.
 - Summarize plan writes as counts only (added: N, replaced: N) without per-file listings unless explicitly asked.
@@ -13,3 +22,9 @@ Use this skill when the workspace has selected the lean pack. Apply it when gene
 - Keep validation output to pass/fail with the error only; skip success narration.
 - Omit unchanged-state commentary unless ambiguity exists (e.g., skip "no changes needed" when it is obvious).
 - Drop filler phrases such as "I will now", "Here is", and "As requested".
+
+## Verify
+
+- [ ] One-line descriptions used; plan writes summarised as counts only (added: N, replaced: N)
+- [ ] No filler phrases (`I will now`, `Here is`, `As requested`)
+- [ ] No unchanged-state commentary where state is obvious

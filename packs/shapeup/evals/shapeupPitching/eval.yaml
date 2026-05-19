@@ -1,0 +1,11 @@
+name: "shapeupPitching-eval"
+description: "Evaluates shapeupPitching skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(Problem|Appetite|Solution|Rabbit holes|No-gos)"
+
+tasks:
+  - "tasks/*.yaml"

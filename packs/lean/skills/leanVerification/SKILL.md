@@ -9,6 +9,15 @@ Use this skill in workspaces with the lean pack selected.
 
 Apply when running or reporting on tests, linters, type checkers, or any validation step.
 
+## When to use
+
+- Workspaces with the lean pack selected, when running or reporting on tests, linters, type checkers, or validation steps
+
+## When NOT to use
+
+- Outside workspaces with the lean pack selected
+- When the user explicitly requests verbose test output or a full run transcript
+
 ## Passing runs
 
 Single line only:
@@ -53,3 +62,9 @@ Stack traces: include only the immediate error line plus the assertion line. Omi
 - Full error messages verbatim — never truncate or paraphrase failure text
 - File and line references — every failure must be immediately locatable
 - Total counts — always, even on a clean run
+
+## Verify
+
+- [ ] Passing runs reported as a single summary line only
+- [ ] Failing runs include file, line, and message only — no stack-trace prose
+- [ ] No per-test narration for passing tests

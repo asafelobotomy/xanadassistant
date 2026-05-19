@@ -9,6 +9,15 @@ Use this skill in workspaces with the secure pack selected.
 
 Perform security-focused code review against the OWASP Top 10:2025. For each finding, map it to a specific OWASP category.
 
+## When to use
+
+- Performing security-focused code review in workspaces with the secure pack selected
+
+## When NOT to use
+
+- When reviewing infrastructure or deployment code — prefer `devopsReview`
+- When dependency scanning is the primary goal — prefer `dependencyAudit`
+
 ## OWASP Top 10:2025 categories
 
 | ID | Category | Common patterns to look for |
@@ -57,3 +66,9 @@ Use these prefixes when giving code review feedback:
 - `medium:` — Medium severity finding
 - `low:` — Low severity finding, accepted risk, or informational
 - `nit:` — Style or formatting issue with no security relevance
+
+## Verify
+
+- [ ] Each finding mapped to an OWASP Top 10:2025 category
+- [ ] Prescribed severity levels used (Critical, High, Medium, Low)
+- [ ] Purely stylistic findings not reported

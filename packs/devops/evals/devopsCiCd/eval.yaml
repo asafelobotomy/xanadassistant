@@ -1,0 +1,11 @@
+name: "devopsCiCd-eval"
+description: "Evaluates devopsCiCd skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(pipeline stage model or CI/CD)"
+
+tasks:
+  - "tasks/*.yaml"

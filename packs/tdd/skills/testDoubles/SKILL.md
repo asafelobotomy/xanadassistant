@@ -9,6 +9,15 @@ Use this skill in workspaces with the tdd pack selected.
 
 Choose the right test double for the job. The wrong double makes tests brittle; the right one makes them fast and deterministic.
 
+## When to use
+
+- Workspaces with the tdd pack selected, when choosing the right test double type for isolation or interaction verification
+
+## When NOT to use
+
+- Outside workspaces with the tdd pack selected
+- When the component under test has no external dependencies to isolate
+
 ## The five kinds
 
 | Kind | What it does | Use when |
@@ -35,3 +44,8 @@ Choose the right test double for the job. The wrong double makes tests brittle; 
 ## Fragility warning
 
 If changing an implementation detail (not the public contract) breaks a test that uses a mock, the mock is over-specified. Replace it with a stub or a spy asserting only the observable outcome.
+
+## Verify
+
+- [ ] Most minimal double type chosen for the test goal (dummy < stub < fake < spy < mock)
+- [ ] No over-mocking; flagged if more than 3 mocks appear in a single test

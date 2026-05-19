@@ -1,0 +1,11 @@
+name: "docsStyle-eval"
+description: "Evaluates docsStyle skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(active voice|imperative|present tense)"
+
+tasks:
+  - "tasks/*.yaml"

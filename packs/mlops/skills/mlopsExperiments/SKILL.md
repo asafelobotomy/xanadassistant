@@ -7,6 +7,15 @@ description: "ML experiment tracking — reproducibility, hyperparameter discipl
 
 Use this skill when designing, running, or reviewing machine learning experiments.
 
+## When to use
+
+- Designing, running, or reviewing machine learning experiments
+
+## When NOT to use
+
+- When deploying models to production — prefer `mlopsModelServing`
+- When reviewing data pipeline code — prefer `mlopsDataPipelines`
+
 ## Core experiment principles
 
 1. **Reproducibility is non-negotiable** — every run must be fully reproducible from logged parameters alone.
@@ -74,3 +83,9 @@ wandb.finish()
 | Result reported only on test set | Always validate on held-out val set; reserve test for final eval |
 | No seed set | Set all random seeds at experiment start |
 | Hyperparameters edited after seeing results | Lock config before evaluating; new config = new run |
+
+## Verify
+
+- [ ] Reproducibility confirmed: seeds, dataset versions, and hyperparameters logged at run start
+- [ ] Single north-star metric defined before the experiment
+- [ ] Baseline run documented; no cherry-picking metrics after the run

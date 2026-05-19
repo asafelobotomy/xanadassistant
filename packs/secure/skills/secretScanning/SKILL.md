@@ -9,6 +9,15 @@ Use this skill in workspaces with the secure pack selected.
 
 Detect credential leakage before it reaches version control. Secrets committed to a repository are effectively public, even in private repos.
 
+## When to use
+
+- Before staging or committing files that may contain credentials, tokens, or connection strings
+
+## When NOT to use
+
+- When the file has already been committed and the secret revoked — use `git-filter-repo` instead
+- When scanning for code logic issues — prefer `secureReview`
+
 ## High-confidence secret patterns
 
 Flag these as **probable secrets** requiring confirmation before staging:
@@ -42,3 +51,9 @@ Flag these as **probable secrets** requiring confirmation before staging:
 High-entropy strings (30+ random characters) assigned to names containing `key`, `token`, `secret`, `password`, `passwd`, `credential`, `auth` are probable secrets even without a recognizable prefix pattern. Flag them.
 
 Low-entropy strings assigned to those names are likely placeholder text. Do not flag.
+
+## Verify
+
+- [ ] Applied both high-confidence and medium-confidence secret patterns
+- [ ] Probable secrets surfaced for user confirmation before staging
+- [ ] No known-pattern false negatives (AWS keys, GitHub tokens, private key headers, connection strings)

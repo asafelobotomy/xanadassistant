@@ -7,6 +7,16 @@ description: "Container and image discipline — Dockerfile best practices, mult
 
 Use this skill when writing or reviewing Dockerfiles, container compose files, or image-build pipelines.
 
+## When to use
+
+- Writing or reviewing Dockerfiles, container compose files, or image-build pipelines
+- Auditing a container image for security posture, layer hygiene, or build reproducibility
+
+## When NOT to use
+
+- When reviewing IaC or pipeline YAML that does not touch image builds — prefer `devopsInfraAsCode` or `devopsCiCd`
+- When reviewing a full infrastructure PR for deployment risk — prefer `devopsReview`
+
 ## Dockerfile best practices
 
 ```dockerfile
@@ -95,3 +105,10 @@ Build once with the SHA tag, then add the version tag at release time. Never reb
 - Set `restart: unless-stopped` for long-running services.
 - Never store secrets in `docker-compose.yml` — use `.env` files excluded from git, or a secrets manager.
 - Set resource limits (`mem_limit`, `cpus`) to prevent runaway containers.
+
+## Verify
+
+- [ ] Multi-stage build used where applicable; runtime image is minimal
+- [ ] No root-user execution without explicit justification
+- [ ] Base image pinned to a minor version or digest — not `:latest`
+- [ ] `.dockerignore` excludes `.git`, `*.env`, and dev artifacts

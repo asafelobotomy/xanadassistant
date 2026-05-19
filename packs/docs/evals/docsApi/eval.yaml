@@ -1,0 +1,11 @@
+name: "docsApi-eval"
+description: "Evaluates docsApi skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(docstring|endpoint|Args|Returns)"
+
+tasks:
+  - "tasks/*.yaml"

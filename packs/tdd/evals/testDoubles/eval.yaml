@@ -1,0 +1,11 @@
+name: "testDoubles-eval"
+description: "Evaluates testDoubles skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(stub|mock|fake|spy|dummy)"
+
+tasks:
+  - "tasks/*.yaml"

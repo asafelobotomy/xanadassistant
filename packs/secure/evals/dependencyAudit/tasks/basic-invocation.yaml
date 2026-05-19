@@ -1,0 +1,10 @@
+id: basic-invocation
+description: "Verify skill produces output appropriate for dependency vulnerability audit"
+prompt: |
+  Run the dependencyAudit skill. Apply it to a relevant example and produce the
+  expected output, checklist findings, or recommendations as defined by the skill.
+expected:
+  - "CVE"
+tags:
+  - basic
+  - smoke

@@ -1,0 +1,11 @@
+name: "mlopsModelServing-eval"
+description: "Evaluates mlopsModelServing skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(registry|canary|rollback|drift)"
+
+tasks:
+  - "tasks/*.yaml"

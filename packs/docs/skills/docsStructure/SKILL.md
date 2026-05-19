@@ -7,6 +7,16 @@ description: "Documentation structure — Diátaxis framework, README anatomy, A
 
 Use this skill when planning, scaffolding, or reorganising documentation. Apply it before drafting to choose the right document type and section order.
 
+## When to use
+
+- Planning, scaffolding, or reorganising documentation
+- Choosing the correct Diátaxis document type and section order before drafting
+
+## When NOT to use
+
+- When reviewing finished documentation for accuracy — prefer `docsReview`
+- When editing prose style and register — prefer `docsStyle`
+
 ## Diátaxis framework
 
 Four document types that serve different reader goals. Each type should be kept separate — do not mix tutorial steps with reference tables.
@@ -99,3 +109,8 @@ Store ADRs in `docs/decisions/` with filenames `NNN-short-title.md`.
 - Prerequisites and setup before usage.
 - Happy-path examples before error handling.
 - Reference material last (tables, full option lists).
+
+## Verify
+
+- [ ] Correct Diátaxis type identified for the document (Tutorial / How-to / Reference / Explanation)
+- [ ] Appropriate section template applied; document types are not mixed in a single file

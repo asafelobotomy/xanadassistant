@@ -7,9 +7,16 @@ description: "ML code review checklist — data leakage, bias, reproducibility, 
 
 Use this skill when reviewing ML code, notebooks, pipeline definitions, or model deployment PRs.
 
-## Review tiers
+## When to use
 
-### Tier 1 — Safety blockers (block merge)
+- Reviewing ML code, notebooks, pipeline definitions, or model deployment PRs
+
+## When NOT to use
+
+- When reviewing non-ML source code — prefer `devopsReview` or `secureReview`
+- When reviewing documentation — prefer `docsReview`
+
+## Tier 1 — Safety blockers (block merge)
 
 - [ ] No training data or model weights committed to git (check for `.pkl`, `.pt`, `.h5`, `.onnx`, `.csv` > 1 MB).
 - [ ] No data leakage: transformers fitted only on training split, not on validation or test data.
@@ -18,7 +25,7 @@ Use this skill when reviewing ML code, notebooks, pipeline definitions, or model
 - [ ] No hardcoded absolute file paths (`/home/`, `/Users/`, `C:\`).
 - [ ] No API keys, credentials, or tokens in notebooks, configs, or pipeline scripts.
 
-### Tier 2 — Reproducibility risk (block merge for production-facing changes)
+## Tier 2 — Reproducibility risk (block merge for production-facing changes)
 
 - [ ] Dataset version is pinned (DVC tag, S3 URI with hash, or registry entry).
 - [ ] Model is registered in the model registry before any production deploy.
@@ -27,7 +34,7 @@ Use this skill when reviewing ML code, notebooks, pipeline definitions, or model
 - [ ] Canary or A/B rollout plan exists for new model versions going to Production.
 - [ ] Rollback procedure is documented and the previous model version is still registered.
 
-### Tier 3 — Hygiene (suggest)
+## Tier 3 — Hygiene (suggest)
 
 - [ ] Notebook outputs are stripped before commit.
 - [ ] Hyperparameters are in a config file, not hardcoded in notebook cells.
@@ -65,3 +72,9 @@ When the model makes decisions affecting people, flag for review:
 | `data:` | Data versioning or pipeline discipline issue |
 | `hygiene:` | Non-blocking improvement |
 | `nit:` | Minor style preference |
+
+## Verify
+
+- [ ] All applicable tiers run; findings reported with `leakage:`, `reproducibility:`, `bias:`, `data:`, `hygiene:`, or `nit:` prefix
+- [ ] Tier 1 safety blockers identified before proceeding to Tier 2
+- [ ] Bias and fairness flags applied when the model affects people

@@ -1,0 +1,11 @@
+name: "devopsContainers-eval"
+description: "Evaluates devopsContainers skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(Dockerfile or container)"
+
+tasks:
+  - "tasks/*.yaml"

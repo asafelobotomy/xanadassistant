@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:27382d1f6c48d98d7e93bf034117263a3d4bead5262aacca19f8d3fbd1a3f7cf"
+    "hash": "sha256:ace308c61cdac651fafc5471ae8e892d2a97083fffbb3dbc090669f1e4ad2b96"
   },
   "timestamps": {
-    "appliedAt": "2026-05-19T17:28:30Z",
-    "updatedAt": "2026-05-19T17:28:30Z"
+    "appliedAt": "2026-05-19T17:59:07Z",
+    "updatedAt": "2026-05-19T17:59:07Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -46,7 +46,32 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [],
+  "files": [
+    {
+      "id": "prompts.bootstrap.md",
+      "target": ".github/prompts/bootstrap.md",
+      "sourceHash": "sha256:a6ca285c23b47c7f538668d323f7fbb8af3324ac4be89619fe179babb218e1b5",
+      "installedHash": "sha256:a6ca285c23b47c7f538668d323f7fbb8af3324ac4be89619fe179babb218e1b5",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "prompts.setup.md",
+      "target": ".github/prompts/setup.md",
+      "sourceHash": "sha256:e1085bc49fccb20c549147201edabd77d688cb06453ef0925105cf6888b8b32e",
+      "installedHash": "sha256:413de4575aa97faea2ce53e594fec168cb2a28662629281194bad69cc84a28e1",
+      "ownershipMode": "local",
+      "status": "applied"
+    },
+    {
+      "id": "prompts.update.md",
+      "target": ".github/prompts/update.md",
+      "sourceHash": "sha256:5dd66eb9efb90bdd63f034d2e01583c1c06e622ecf7243d3555c4fc4ff12143a",
+      "installedHash": "sha256:4fdf16cb20f72341a5ffa26f7bb7968ce30aafa0647f8fd236e245854d020b87",
+      "ownershipMode": "local",
+      "status": "applied"
+    }
+  ],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -125,5 +150,8 @@
   ],
   "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {}
+  "unknownValues": {},
+  "lastBackup": {
+    "path": ".xanadAssistant/backups/2026-05-19T17-59-07Z"
+  }
 }

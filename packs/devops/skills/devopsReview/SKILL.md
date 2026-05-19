@@ -7,9 +7,16 @@ description: "DevOps review checklist — pipeline safety, secret hygiene, permi
 
 Use this skill when reviewing CI/CD pipelines, Dockerfiles, IaC definitions, deployment scripts, or infrastructure PRs.
 
-## Review tiers
+## When to use
 
-### Tier 1 — Safety blockers (block merge)
+- Reviewing CI/CD pipelines, Dockerfiles, IaC definitions, deployment scripts, or infrastructure PRs
+
+## When NOT to use
+
+- When reviewing source code for logic or application-layer security — prefer `secureReview`
+- When reviewing documentation only — prefer `docsReview`
+
+## Tier 1 — Safety blockers (block merge)
 
 - [ ] No secrets, tokens, or credentials hardcoded in any file (including base64-encoded).
 - [ ] No `.env` files or `*.tfvars` with real values committed to git.
@@ -18,7 +25,7 @@ Use this skill when reviewing CI/CD pipelines, Dockerfiles, IaC definitions, dep
 - [ ] Pipelines do not echo or log secret variable values.
 - [ ] Third-party actions/modules are pinned to a version tag or digest, not a mutable branch.
 
-### Tier 2 — Operational risk (block merge for production-facing changes)
+## Tier 2 — Operational risk (block merge for production-facing changes)
 
 - [ ] A rollback procedure exists and is documented (feature flag, blue/green swap, prior artifact re-deploy).
 - [ ] Production deploys are gated on successful staging and an explicit approval step.
@@ -26,7 +33,7 @@ Use this skill when reviewing CI/CD pipelines, Dockerfiles, IaC definitions, dep
 - [ ] Breaking changes to infrastructure (database schema, network topology) have a migration plan.
 - [ ] Resource limits (CPU, memory) are set for containerised services.
 
-### Tier 3 — Hygiene (suggest)
+## Tier 3 — Hygiene (suggest)
 
 - [ ] `.dockerignore` excludes `.git`, `*.env`, dev artifacts.
 - [ ] Base image is pinned to a minor version or digest (not `:latest`).
@@ -65,3 +72,9 @@ A deployment is reviewable only if it has a rollback path:
 | `risk:` | Operational risk requiring documented mitigation |
 | `hygiene:` | Non-blocking improvement |
 | `nit:` | Minor style preference |
+
+## Verify
+
+- [ ] All applicable tiers run; findings reported with `secret:`, `privilege:`, `rollback:`, `risk:`, `hygiene:`, or `nit:` prefix
+- [ ] Tier 1 blockers identified and acknowledged before proceeding to Tier 2
+- [ ] Rollback checklist applied for any production-facing change

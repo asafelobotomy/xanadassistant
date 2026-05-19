@@ -1,0 +1,11 @@
+name: "ciPreflight-eval"
+description: "Evaluates ciPreflight skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(ciPreflight|preflight|staged)"
+
+tasks:
+  - "tasks/*.yaml"
