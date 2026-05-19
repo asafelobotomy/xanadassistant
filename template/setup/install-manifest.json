@@ -403,6 +403,23 @@
       "hash": "sha256:a1d94883dd6052c8ce20cf4431d974d867b20fc6220de37f7d4a1e945a7823d7"
     },
     {
+      "id": "hook-scripts.fsMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/fsMcp.py",
+      "target": ".github/mcp/scripts/fsMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:f52dd6dd793cfac8b6ea454c57bc65d649c8e5ee9848a48dfab7f4b3996a9bbc"
+    },
+    {
       "id": "hook-scripts.gitMcp.py",
       "surface": "hooks",
       "layer": "core",
@@ -1693,7 +1710,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:0230bafbfb075ad64e5d2e31ce424f97c21f17f7c2351df593cdc2385af65280"
+      "hash": "sha256:940beb6dd3d7935cbcebc725d4c48a06e5dbe5a2717be4f163a64615c5a4bba7"
     },
     {
       "id": "vscode-settings.settings.json",

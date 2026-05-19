@@ -150,6 +150,22 @@
       ],
       "disabled": true
     },
+    "filesystem": {
+      "type": "stdio",
+      "command": "uvx",
+      "env": {
+        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
+        "TMPDIR": "${userHome}/.cache/uv",
+        "FS_ALLOWED_ROOT": "${workspaceFolder}"
+      },
+      "args": [
+        "--from",
+        "mcp[cli]==1.27.1",
+        "mcp",
+        "run",
+        "${workspaceFolder}/.github/mcp/scripts/fsMcp.py"
+      ]
+    },
     "sequential-thinking": {
       "type": "stdio",
       "command": "uvx",
