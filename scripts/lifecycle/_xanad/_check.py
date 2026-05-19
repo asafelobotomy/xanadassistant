@@ -10,6 +10,13 @@ from scripts.lifecycle._xanad._inspect_helpers import (
 from scripts.lifecycle._xanad._source import build_source_summary
 
 
+DRIFT_WARNING_CODES = {
+    "package_name_mismatch",
+    "package_version_changed",
+    "successor_cleanup_required",
+}
+
+
 def build_check_result(workspace: Path, package_root: Path) -> dict:
     context = collect_context(workspace, package_root)
     counts, entries, managed_targets = classify_manifest_entries(workspace, context["manifestWithStatus"])
@@ -43,6 +50,9 @@ def build_check_result(workspace: Path, package_root: Path) -> dict:
 
     status = "clean"
     if any(counts[key] > 0 for key in ("missing", "stale", "malformed", "retired", "unmanaged", "unknown")):
+        status = "drift"
+    warning_codes = {warning.get("code") for warning in context["warnings"]}
+    if warning_codes & DRIFT_WARNING_CODES:
         status = "drift"
 
     return {

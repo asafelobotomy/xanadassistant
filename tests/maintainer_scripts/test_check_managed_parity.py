@@ -240,6 +240,37 @@ class ParityErrorTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 2)
 
+    def test_main_returns_exit_2_for_missing_workspace_root(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            exit_code = check_managed_parity.main(["--package-root", tmpdir, "--workspace", "/no/such/path"])
+
+        self.assertEqual(exit_code, 2)
+
+
+class ParityWorkspaceTests(unittest.TestCase):
+    def test_checks_targets_in_explicit_workspace_root(self) -> None:
+        with tempfile.TemporaryDirectory() as package_tmpdir, tempfile.TemporaryDirectory() as workspace_tmpdir:
+            package_root = Path(package_tmpdir)
+            workspace_root = Path(workspace_tmpdir)
+            (package_root / "mcp").mkdir()
+            (package_root / "mcp" / "server.py").write_bytes(b"source content\n")
+            github_mcp = workspace_root / ".github" / "mcp"
+            github_mcp.mkdir(parents=True)
+            (github_mcp / "server.py").write_bytes(b"source content\n")
+            _write_manifest(package_root, [
+                {
+                    "id": "mcp.server.py",
+                    "source": "mcp/server.py",
+                    "target": ".github/mcp/server.py",
+                    "strategy": "replace-verbatim",
+                    "tokens": [],
+                }
+            ])
+
+            exit_code = check_managed_parity.run(package_root, workspace_root)
+
+        self.assertEqual(exit_code, 0)
+
 
 class ParityIntegrationTests(unittest.TestCase):
     def test_passes_against_real_repo(self) -> None:

@@ -54,26 +54,27 @@ def _load_metadata(package_root: Path) -> dict:
     }
 
 
-def _build_token_values(package_root: Path, manifest: dict) -> dict[str, str]:
+def _build_token_values(package_root: Path, workspace: Path, manifest: dict) -> dict[str, str]:
     policy = load_json(package_root / "template" / "setup" / "install-policy.json")
     metadata = _load_metadata(package_root)
-    lockfile_state = parse_lockfile_state(package_root)
+    lockfile_state = parse_lockfile_state(workspace)
     resolved_answers, _ = derive_effective_plan_defaults(policy, metadata, manifest, lockfile_state)
     return resolve_token_values(
         policy,
-        package_root,
+        workspace,
         resolved_answers,
         package_root=package_root,
         metadata=metadata,
     )
 
 
-def run(package_root: Path) -> int:
+def run(package_root: Path, workspace: Path | None = None) -> int:
     manifest_path = package_root / "template" / "setup" / "install-manifest.json"
     if not manifest_path.exists():
         print(f"Manifest not found: {manifest_path}", file=sys.stderr)
         return 2
 
+    workspace_root = (workspace or package_root).resolve()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     managed_files = manifest.get("managedFiles", [])
     token_values: dict[str, str] | None = None
@@ -88,7 +89,7 @@ def run(package_root: Path) -> int:
         tokens: list[str] = entry.get("tokens", [])
         strategy: str = entry.get("strategy", "")
 
-        target_path = package_root / target_rel
+        target_path = workspace_root / target_rel
         if not target_path.exists():
             continue
 
@@ -105,7 +106,7 @@ def run(package_root: Path) -> int:
 
         if strategy == "token-replace":
             if token_values is None:
-                token_values = _build_token_values(package_root, manifest)
+                token_values = _build_token_values(package_root, workspace_root, manifest)
             expected_bytes = expected_entry_bytes(package_root, entry, token_values, target_path)
             if expected_bytes is None:
                 mismatches.append(
@@ -157,6 +158,11 @@ def main(argv: list[str] | None = None) -> int:
         default=".",
         help="Package root containing the manifest (default: current directory).",
     )
+    parser.add_argument(
+        "--workspace",
+        default=None,
+        help="Workspace root containing installed target files (default: package root).",
+    )
     args = parser.parse_args(argv)
 
     package_root = Path(args.package_root).resolve()
@@ -164,7 +170,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Package root does not exist: {package_root}", file=sys.stderr)
         return 2
 
-    return run(package_root)
+    workspace_root = package_root if args.workspace is None else Path(args.workspace).resolve()
+    if not workspace_root.is_dir():
+        print(f"Workspace root does not exist: {workspace_root}", file=sys.stderr)
+        return 2
+
+    return run(package_root, workspace_root)
 
 
 if __name__ == "__main__":  # pragma: no cover

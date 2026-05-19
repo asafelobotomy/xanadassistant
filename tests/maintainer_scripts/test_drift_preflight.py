@@ -116,3 +116,8 @@ class DriftPreflightTests(unittest.TestCase):
         self.assertIn("git tag --sort=-version:refname | grep -Fxv \"$TAG\" | head -n 1 || true", workflow)
         self.assertIn("git log --reverse --pretty='- %s (%h)' \"$previous_tag..$GITHUB_SHA\"", workflow)
         self.assertIn("Full diff: https://github.com/${GITHUB_REPOSITORY}/compare/${previous_tag}...${TAG}", workflow)
+
+    def test_parity_check_uses_fresh_install_script(self) -> None:
+        parity_check = next(check for check in drift_preflight.CHECKS if check.name == "parity")
+
+        self.assertEqual(parity_check.command, ("python3", "scripts/check_install_parity.py"))

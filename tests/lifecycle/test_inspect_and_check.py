@@ -164,6 +164,40 @@ class InspectTests(unittest.TestCase):
 
 
 class CheckTests(unittest.TestCase):
+    def test_build_check_result_treats_actionable_install_state_warnings_as_drift(self) -> None:
+        context = {
+            "warnings": [
+                {
+                    "code": "package_version_changed",
+                    "message": "Run update.",
+                    "details": {},
+                }
+            ],
+            "installState": "installed",
+            "installPaths": {"lockfile": ".github/xanadAssistant-lock.json"},
+            "artifacts": {},
+            "existingSurfaces": {},
+            "legacyVersionState": {"malformed": False},
+            "lockfileState": {
+                "malformed": False,
+                "skippedManagedFiles": [],
+                "unknownValues": {},
+                "files": [],
+            },
+            "manifestWithStatus": {"managedFiles": []},
+        }
+
+        with mock.patch("scripts.lifecycle._xanad._check.collect_context", return_value=context), mock.patch(
+            "scripts.lifecycle._xanad._check.classify_manifest_entries",
+            return_value=({"missing": 0, "stale": 0, "malformed": 0, "retired": 0, "skipped": 0, "unknown": 0}, [], set()),
+        ), mock.patch(
+            "scripts.lifecycle._xanad._check.collect_unmanaged_files",
+            return_value=[],
+        ):
+            result = _check.build_check_result(Path("/workspace"), Path("/package"))
+
+        self.assertEqual(result["status"], "drift")
+
     def test_build_check_result_marks_drift_and_augments_skipped_and_unknown(self) -> None:
         context = {
             "warnings": [],

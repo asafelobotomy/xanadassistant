@@ -81,8 +81,8 @@ CHECKS: tuple[Check, ...] = (
     ),
     Check(
         name="parity",
-        description="Installed .github/ copies match source files (bypasses ownership skip model).",
-        command=("python3", "scripts/check_managed_parity.py"),
+        description="Fresh local install matches source files after lifecycle setup.",
+        command=("python3", "scripts/check_install_parity.py"),
     ),
 )
 CHECKS_BY_NAME = {check.name: check for check in CHECKS}
