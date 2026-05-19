@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
-"""xanadEval — static analysis for Copilot surface files.
+"""xanadEval — static analysis for Copilot surface files (part of xanadAssistant).
 
-Part of xanadAssistant. Installed to .github/tools/xanadEval/xanadEval.py
-in consumer workspaces.
-
-Commands:
-  [--format text|json] tokens <path>     Structural metrics
-  [--format text|json] check  <path>     Spec compliance + advisory checks
-  suggest <path> [--dry-run|--apply]     Scaffold an eval task suite
+Commands: tokens <path>, check <path>, suggest <path> [--dry-run|--apply]
 """
 from __future__ import annotations
 
@@ -30,20 +24,15 @@ def _read(path: str) -> str:
         return Path(path).read_text(encoding="utf-8")
     except FileNotFoundError:
         print(f"xanadEval: file not found: {path}", file=sys.stderr)
-        sys.exit(2)
     except UnicodeDecodeError:
         print(f"xanadEval: file is not valid UTF-8: {path}", file=sys.stderr)
-        sys.exit(2)
     except OSError as e:
         print(f"xanadEval: cannot read {path}: {e}", file=sys.stderr)
-        sys.exit(2)
+    sys.exit(2)
 
 
 def _parse_frontmatter(content: str) -> dict[str, str]:
-    """Return key/value pairs from YAML frontmatter delimited by ``---``.
-
-    Normalises BOM and CRLF line endings before parsing.
-    """
+    """Return key/value pairs from YAML frontmatter (normalises BOM and CRLF)."""
     content = content.lstrip("\ufeff").replace("\r\n", "\n")
     parts = content.split("---\n", 2)
     if len(parts) < 3:
@@ -62,21 +51,12 @@ def _token_estimate(content: str) -> int:
 
 def _yaml_str(value: str) -> str:
     """Escape a string for safe use as a YAML double-quoted scalar."""
-    escaped = (
-        value.replace("\\", "\\\\")
-        .replace('"', '\\"')
-        .replace("\n", "\\n")
-        .replace("\r", "\\r")
-    )
-    return f'"{escaped}"'
+    v = value.replace("\\", "\\\\").replace('"', '\\"')
+    return '"' + v.replace("\n", "\\n").replace("\r", "\\r") + '"'
 
 
 def _max_nesting_depth(content: str) -> int:
-    """Return the maximum list nesting depth in *content*.
-
-    Returns 0 when no list items are present; 1 for top-level-only lists;
-    2+ for nested lists.
-    """
+    """Maximum list nesting depth; 0 when no list items are present."""
     if not re.search(r"^[ ]*[-*]|^\d+\.", content, re.MULTILINE):
         return 0  # no list items at all
     depths = [
@@ -94,12 +74,9 @@ def cmd_tokens(path: str, fmt: str) -> int:
     content = _read(path)
     token_est = _token_estimate(content)
 
-    # Headings (any level)
     sections = len(re.findall(r"^#{1,6} ", content, re.MULTILINE))
-    # Opening fence lines; pairs = complete code blocks
     fences = re.findall(r"^```", content, re.MULTILINE)
     code_blocks = len(fences) // 2
-    # Workflow detected when ≥3 numbered list items are present anywhere in the file
     numbered = re.findall(r"^\s*\d+\. ", content, re.MULTILINE)
     workflow_detected = len(numbered) >= 3
     max_depth = _max_nesting_depth(content)
@@ -138,10 +115,7 @@ def cmd_tokens(path: str, fmt: str) -> int:
 
 
 def cmd_check(path: str, fmt: str) -> int:
-    """Spec compliance and advisory checks for the SKILL.md at *path*.
-
-    Exits non-zero when any spec check fails.
-    """
+    """Spec compliance and advisory checks; exits non-zero when a spec check fails."""
     content = _read(path)
     fm = _parse_frontmatter(content)
     name = fm.get("name", "")
@@ -152,102 +126,64 @@ def cmd_check(path: str, fmt: str) -> int:
     spec: list[tuple[str, bool, str]] = []
     advisory: list[tuple[str, bool, str]] = []
 
-    # ── Spec checks ───────────────────────────────────────────────────────────
     spec.append(("spec-frontmatter", bool(fm), "frontmatter present"))
     spec.append(("spec-name", bool(name), f"name: {name!r}"))
     spec.append(("spec-description", bool(description), "description present"))
     dir_name = Path(path).parent.name
-    spec.append(
-        (
-            "spec-dir-match",
-            name == dir_name or dir_name == ".",
-            f"name matches directory ({dir_name!r})",
-        )
-    )
-    spec.append(
-        (
-            "spec-token-budget",
-            token_est <= TOKEN_BUDGET,
-            f"token estimate {token_est:,} / {TOKEN_BUDGET:,}",
-        )
-    )
-    spec.append(
-        ("spec-verify-checklist", "## Verify" in content, "## Verify checklist present")
-    )
-    spec.append(
-        ("spec-when-to-use", "## When to use" in content, "## When to use present")
-    )
-    spec.append(
-        (
-            "spec-when-not-to-use",
-            "## When NOT to use" in content,
-            "## When NOT to use present",
-        )
-    )
+    spec.append((
+        "spec-dir-match", name == dir_name or dir_name == ".",
+        f"name matches directory ({dir_name!r})",
+    ))
+    spec.append((
+        "spec-token-budget", token_est <= TOKEN_BUDGET,
+        f"token estimate {token_est:,} / {TOKEN_BUDGET:,}",
+    ))
+    spec.append(("spec-verify-checklist", "## Verify" in content, "## Verify checklist present"))
+    spec.append(("spec-when-to-use", "## When to use" in content, "## When to use present"))
+    spec.append((
+        "spec-when-not-to-use", "## When NOT to use" in content,
+        "## When NOT to use present",
+    ))
 
-    # ── Advisory checks ───────────────────────────────────────────────────────
     modules = re.findall(r"^## Module \d+", content, re.MULTILINE)
     module_count = len(modules)
-    advisory.append(
-        (
-            "module-count",
-            2 <= module_count <= 6,
-            f"module count: {module_count} (2\u20136 is the acceptable range)",
-        )
-    )
+    advisory.append((
+        "module-count", 2 <= module_count <= 6,
+        f"module count: {module_count} (2\u20136 is the acceptable range)",
+    ))
 
     section_bodies = re.split(r"^## ", content, flags=re.MULTILINE)
     max_rules = max(
         (len(re.findall(r"^[-*] ", body, re.MULTILINE)) for body in section_bodies),
         default=0,
     )
-    advisory.append(
-        (
-            "over-specificity",
-            max_rules <= 10,
-            f"max rules per section: {max_rules} (threshold: 10)",
-        )
-    )
+    advisory.append((
+        "over-specificity", max_rules <= 10,
+        f"max rules per section: {max_rules} (threshold: 10)",
+    ))
 
     neg_hits = re.findall(
         r"\b(ignore|skip|bypass|override|never ask|always proceed)\b",
         content,
         re.IGNORECASE,
     )
-    advisory.append(
-        (
-            "negative-delta-risk",
-            len(neg_hits) == 0,
-            f"negative-delta patterns: {len(neg_hits)} found",
-        )
-    )
+    advisory.append((
+        "negative-delta-risk", len(neg_hits) == 0,
+        f"negative-delta patterns: {len(neg_hits)} found",
+    ))
 
     max_depth = _max_nesting_depth(content)
-    advisory.append(
-        (
-            "complexity",
-            max_depth <= 3,
-            f"max nesting depth: {max_depth} (threshold: 3)",
-        )
-    )
+    advisory.append((
+        "complexity", max_depth <= 3,
+        f"max nesting depth: {max_depth} (threshold: 3)",
+    ))
 
-    # eval-presence: advisory only — absence is informational, not a spec violation
     if name:
         eval_path = Path(path).parent.parent.parent / "evals" / name / "eval.yaml"
-        eval_present = eval_path.exists()
-        advisory.append(
-            (
-                "eval-presence",
-                eval_present,
-                (
-                    f"eval suite: found"
-                    if eval_present
-                    else f"eval suite: not found (expected at evals/{name}/eval.yaml)"
-                ),
-            )
-        )
+        found = eval_path.exists()
+        msg = "eval suite: found" if found else f"eval suite: not found (expected at evals/{name}/eval.yaml)"
+        advisory.append(("eval-presence", found, msg))
 
-    # ── Compliance level ──────────────────────────────────────────────────────
     spec_score = sum(1 for _, ok, _ in spec if ok) / len(spec)
     adv_score = sum(1 for _, ok, _ in advisory if ok) / len(advisory)
     weighted = spec_score * 0.7 + adv_score * 0.3
@@ -298,11 +234,7 @@ def cmd_check(path: str, fmt: str) -> int:
 
 
 def cmd_suggest(path: str, dry_run: bool) -> int:
-    """Scaffold a minimal eval task suite from frontmatter metadata.
-
-    With *dry_run* (default) prints to stdout.  With ``--apply`` writes files
-    to ``evals/<name>/`` relative to the skill's grandparent directory.
-    """
+    """Scaffold a minimal eval task suite; dry-run prints, --apply writes files."""
     content = _read(path)
     fm = _parse_frontmatter(content)
     name = fm.get("name") or Path(path).parent.name
@@ -320,25 +252,16 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
 
     eval_yaml = (
         f"name: {_yaml_str(name + '-eval')}\n"
-        f"description: {_yaml_str('Evaluates ' + name + ' skill behaviour')}\n"
-        f"\n"
-        f"graders:\n"
-        f"  - type: text\n"
-        f"    name: references_skill\n"
-        f"    config:\n"
-        f"      pattern: {_yaml_str('(?i)(' + re.escape(name) + '|skill)')}\n"
-        f"\n"
-        f"tasks:\n"
-        f'  - {_yaml_str("tasks/*.yaml")}\n'
+        f"description: {_yaml_str('Evaluates ' + name + ' skill behaviour')}\n\n"
+        f"graders:\n  - type: text\n    name: references_skill\n    config:\n"
+        f"      pattern: {_yaml_str('(?i)(' + re.escape(name) + '|skill)')}\n\n"
+        f"tasks:\n  - {_yaml_str('tasks/*.yaml')}\n"
     )
     task_yaml = (
         f"id: basic-invocation\n"
         f"description: {_yaml_str('Verify skill triggers on its primary use case')}\n"
-        f"prompt: |\n"
-        f"  {desc_short}\n"
-        f"tags:\n"
-        f"  - basic\n"
-        f"  - smoke\n"
+        f"prompt: |\n  {desc_short}\n"
+        f"tags:\n  - basic\n  - smoke\n"
     )
 
     if dry_run:
@@ -387,7 +310,6 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     def _add_format(p: argparse.ArgumentParser) -> None:
-        """Add a per-subparser --format flag that wins over the global one."""
         p.add_argument(
             "--format",
             choices=["text", "json"],

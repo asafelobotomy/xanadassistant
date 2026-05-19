@@ -11,8 +11,8 @@
     "hash": "sha256:17137a540a112c7cc32e4a30b2008ceb210e44cb695e1d26a424dc94db315844"
   },
   "timestamps": {
-    "appliedAt": "2026-05-19T15:11:24Z",
-    "updatedAt": "2026-05-19T15:11:24Z"
+    "appliedAt": "2026-05-19T16:41:58Z",
+    "updatedAt": "2026-05-19T16:41:58Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -46,16 +46,7 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [
-    {
-      "id": "tools.xanadEval.xanadEval.py",
-      "target": ".github/tools/xanadEval/xanadEval.py",
-      "sourceHash": "sha256:7ef0a0426fbf09a4dadb02ebd2e7aa6ee4e5eb2753fc17000f89d9a6c18e39cb",
-      "installedHash": "sha256:ddaa066fe6708e63d83c3653de39ef585e0008e1e6c65a07ea5054edf9a95945",
-      "ownershipMode": "local",
-      "status": "applied"
-    }
-  ],
+  "files": [],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -134,8 +125,5 @@
   ],
   "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {},
-  "lastBackup": {
-    "path": ".xanadAssistant/backups/2026-05-19T15-11-24Z"
-  }
+  "unknownValues": {}
 }

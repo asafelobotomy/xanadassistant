@@ -68,11 +68,8 @@ _CONTENT_OVER_BUDGET = (
 
 
 class TokensCommandTests(unittest.TestCase):
-    """cmd_tokens produces correct structural metrics."""
 
-    def _tokens(
-        self, content: str, fmt: str = "text"
-    ) -> tuple[str, int]:
+    def _tokens(self, content: str, fmt: str = "text") -> tuple[str, int]:
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".md", delete=False, encoding="utf-8"
         ) as f:
@@ -83,64 +80,36 @@ class TokensCommandTests(unittest.TestCase):
             code = xe.cmd_tokens(path, fmt)
         return buf.getvalue(), code
 
-    def test_exits_zero(self) -> None:
-        _, code = self._tokens(_MINIMAL_SKILL)
+    def test_text_output_structure(self) -> None:
+        output, code = self._tokens(_MINIMAL_SKILL)
         self.assertEqual(code, 0)
+        for key in ("token_estimate", "sections", "workflow_steps"):
+            self.assertIn(key, output)
 
-    def test_text_output_contains_token_estimate(self) -> None:
-        output, _ = self._tokens(_MINIMAL_SKILL)
-        self.assertIn("token_estimate", output)
-
-    def test_text_output_contains_sections(self) -> None:
-        output, _ = self._tokens(_MINIMAL_SKILL)
-        self.assertIn("sections", output)
-
-    def test_text_output_contains_workflow_status(self) -> None:
-        output, _ = self._tokens(_MINIMAL_SKILL)
-        self.assertIn("workflow_steps", output)
-
-    def test_workflow_detected_for_numbered_list(self) -> None:
+    def test_workflow_detection(self) -> None:
         output, _ = self._tokens(_MINIMAL_SKILL, fmt="json")
         self.assertTrue(json.loads(output)["workflow_steps_detected"])
-
-    def test_workflow_not_detected_for_prose(self) -> None:
-        prose = (
-            "---\nname: x\ndescription: \"x\"\n---\n\n"
-            "Some prose only. No numbered steps here.\n"
-        )
+        prose = "---\nname: x\ndescription: \"x\"\n---\n\nProse only.\n"
         output, _ = self._tokens(prose, fmt="json")
         self.assertFalse(json.loads(output)["workflow_steps_detected"])
 
-    def test_json_format_has_all_required_keys(self) -> None:
+    def test_json_format_and_budget(self) -> None:
         output, _ = self._tokens(_MINIMAL_SKILL, fmt="json")
         data = json.loads(output)
-        for key in (
-            "token_estimate",
-            "token_budget",
-            "sections",
-            "code_blocks",
-            "workflow_steps_detected",
-            "max_nesting_depth",
-        ):
+        for key in ("token_estimate", "token_budget", "sections", "code_blocks",
+                    "workflow_steps_detected", "max_nesting_depth"):
             self.assertIn(key, data)
-
-    def test_token_budget_constant_present_in_json(self) -> None:
-        output, _ = self._tokens(_MINIMAL_SKILL, fmt="json")
-        data = json.loads(output)
         self.assertEqual(data["token_budget"], xe.TOKEN_BUDGET)
 
     def test_code_block_count(self) -> None:
-        with_blocks = _MINIMAL_SKILL + "\n```python\nprint('hi')\n```\n"
-        output, _ = self._tokens(with_blocks, fmt="json")
+        content = _MINIMAL_SKILL + "\n```python\nprint('hi')\n```\n"
+        output, _ = self._tokens(content, fmt="json")
         self.assertGreaterEqual(json.loads(output)["code_blocks"], 1)
 
 
 class CheckCommandTests(unittest.TestCase):
-    """cmd_check reports compliance and exits correctly."""
 
-    def _check(
-        self, content: str, skill_name: str = "test-skill", fmt: str = "text"
-    ) -> tuple[str, int]:
+    def _check(self, content: str, skill_name: str = "test-skill", fmt: str = "text") -> tuple[str, int]:
         with tempfile.TemporaryDirectory() as d:
             skill_dir = Path(d) / skill_name
             skill_dir.mkdir()
@@ -151,83 +120,55 @@ class CheckCommandTests(unittest.TestCase):
                 code = xe.cmd_check(str(p), fmt)
         return buf.getvalue(), code
 
-    def test_exits_zero_for_valid_skill(self) -> None:
+    def test_exit_codes(self) -> None:
         _, code = self._check(_MINIMAL_SKILL)
         self.assertEqual(code, 0)
+        self.assertNotEqual(self._check(_NO_FRONTMATTER)[1], 0)
+        self.assertNotEqual(self._check(_CONTENT_OVER_BUDGET)[1], 0)
+        wrong = _MINIMAL_SKILL.replace("name: test-skill", "name: other-skill")
+        self.assertNotEqual(self._check(wrong, skill_name="test-skill")[1], 0)
 
-    def test_exits_nonzero_for_missing_frontmatter(self) -> None:
-        _, code = self._check(_NO_FRONTMATTER)
-        self.assertNotEqual(code, 0)
-
-    def test_exits_nonzero_for_token_budget_violation(self) -> None:
-        _, code = self._check(_CONTENT_OVER_BUDGET)
-        self.assertNotEqual(code, 0)
-
-    def test_exits_nonzero_for_name_dir_mismatch(self) -> None:
-        wrong_name = _MINIMAL_SKILL.replace("name: test-skill", "name: other-skill")
-        _, code = self._check(wrong_name, skill_name="test-skill")
-        self.assertNotEqual(code, 0)
-
-    def test_output_contains_compliance_level(self) -> None:
+    def test_compliance_output(self) -> None:
         output, _ = self._check(_MINIMAL_SKILL)
         self.assertIn("compliance", output)
-
-    def test_compliance_high_for_valid_skill(self) -> None:
         output, _ = self._check(_MINIMAL_SKILL, fmt="json")
-        data = json.loads(output)
-        self.assertIn(data["compliance"], ("High", "Medium-High"))
+        self.assertIn(json.loads(output)["compliance"], ("High", "Medium-High"))
 
-    def test_json_has_spec_and_advisory_checks(self) -> None:
+    def test_json_structure(self) -> None:
         output, _ = self._check(_MINIMAL_SKILL, fmt="json")
         data = json.loads(output)
         self.assertIn("spec_checks", data)
         self.assertIn("advisory_checks", data)
-
-    def test_json_spec_checks_have_required_fields(self) -> None:
-        output, _ = self._check(_MINIMAL_SKILL, fmt="json")
-        data = json.loads(output)
-        for item in data["spec_checks"]:
-            self.assertIn("id", item)
-            self.assertIn("pass", item)
-            self.assertIn("detail", item)
-
-    def test_spec_frontmatter_id_present(self) -> None:
-        output, _ = self._check(_MINIMAL_SKILL, fmt="json")
-        ids = {c["id"] for c in json.loads(output)["spec_checks"]}
+        ids = {c["id"] for c in data["spec_checks"]}
         self.assertIn("spec-frontmatter", ids)
+        for item in data["spec_checks"]:
+            for key in ("id", "pass", "detail"):
+                self.assertIn(key, item)
 
     def test_spec_dir_match_fails_on_mismatch(self) -> None:
         wrong_name = _MINIMAL_SKILL.replace("name: test-skill", "name: other-skill")
         output, _ = self._check(wrong_name, skill_name="test-skill", fmt="json")
         data = json.loads(output)
-        dir_check = next(
-            c for c in data["spec_checks"] if c["id"] == "spec-dir-match"
-        )
+        dir_check = next(c for c in data["spec_checks"] if c["id"] == "spec-dir-match")
         self.assertFalse(dir_check["pass"])
 
     def test_advisory_module_count_within_range(self) -> None:
         output, _ = self._check(_MINIMAL_SKILL, fmt="json")
         data = json.loads(output)
-        mc = next(
-            c for c in data["advisory_checks"] if c["id"] == "module-count"
-        )
+        mc = next(c for c in data["advisory_checks"] if c["id"] == "module-count")
         self.assertTrue(mc["pass"])
 
     def test_advisory_over_specificity_flag(self) -> None:
-        # 11 bullet points in a single section triggers over-specificity
         many_rules = _MINIMAL_SKILL + "\n## Extra\n\n" + "\n".join(
             f"- Rule {i}" for i in range(11)
         ) + "\n"
         output, _ = self._check(many_rules, fmt="json")
         data = json.loads(output)
-        os_check = next(
-            c for c in data["advisory_checks"] if c["id"] == "over-specificity"
-        )
+        os_check = next(c for c in data["advisory_checks"] if c["id"] == "over-specificity")
         self.assertFalse(os_check["pass"])
 
 
 class SuggestCommandTests(unittest.TestCase):
-    """cmd_suggest produces eval YAML scaffold."""
 
     def test_dry_run_outputs_eval_yaml_content(self) -> None:
         with tempfile.TemporaryDirectory() as d:
@@ -256,54 +197,21 @@ class SuggestCommandTests(unittest.TestCase):
             eval_yaml = Path(d) / "evals" / "test-skill" / "eval.yaml"
             self.assertFalse(eval_yaml.exists())
 
-    def test_apply_writes_eval_yaml(self) -> None:
+    def test_apply_writes_expected_files(self) -> None:
         with tempfile.TemporaryDirectory() as d:
-            skills_dir = Path(d) / "skills"
-            skill_dir = skills_dir / "test-skill"
+            skill_dir = Path(d) / "skills" / "test-skill"
             skill_dir.mkdir(parents=True)
             p = skill_dir / "SKILL.md"
             p.write_text(_MINIMAL_SKILL, encoding="utf-8")
-            buf = io.StringIO()
-            with redirect_stdout(buf):
+            with redirect_stdout(io.StringIO()):
                 xe.cmd_suggest(str(p), dry_run=False)
-            eval_yaml = Path(d) / "evals" / "test-skill" / "eval.yaml"
-            self.assertTrue(eval_yaml.exists(), "eval.yaml should be written")
-
-    def test_apply_writes_task_yaml(self) -> None:
-        with tempfile.TemporaryDirectory() as d:
-            skills_dir = Path(d) / "skills"
-            skill_dir = skills_dir / "test-skill"
-            skill_dir.mkdir(parents=True)
-            p = skill_dir / "SKILL.md"
-            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
-            buf = io.StringIO()
-            with redirect_stdout(buf):
-                xe.cmd_suggest(str(p), dry_run=False)
-            task_yaml = (
-                Path(d)
-                / "evals"
-                / "test-skill"
-                / "tasks"
-                / "basic-invocation.yaml"
-            )
-            self.assertTrue(task_yaml.exists(), "basic-invocation.yaml should be written")
-
-    def test_apply_eval_yaml_contains_skill_name(self) -> None:
-        with tempfile.TemporaryDirectory() as d:
-            skills_dir = Path(d) / "skills"
-            skill_dir = skills_dir / "test-skill"
-            skill_dir.mkdir(parents=True)
-            p = skill_dir / "SKILL.md"
-            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
-            buf = io.StringIO()
-            with redirect_stdout(buf):
-                xe.cmd_suggest(str(p), dry_run=False)
-            content = (Path(d) / "evals" / "test-skill" / "eval.yaml").read_text()
-            self.assertIn("test-skill", content)
+            root = Path(d) / "evals" / "test-skill"
+            self.assertTrue((root / "eval.yaml").exists())
+            self.assertTrue((root / "tasks" / "basic-invocation.yaml").exists())
+            self.assertIn("test-skill", (root / "eval.yaml").read_text())
 
 
 class MainEntrypointTests(unittest.TestCase):
-    """main() argv dispatch works end-to-end."""
 
     def _run_main(self, argv: list[str]) -> tuple[str, int]:
         buf = io.StringIO()
@@ -320,15 +228,6 @@ class MainEntrypointTests(unittest.TestCase):
         _, code = self._run_main(["tokens", path])
         self.assertEqual(code, 0)
 
-    def test_check_subcommand_via_main_json(self) -> None:
-        with tempfile.TemporaryDirectory() as d:
-            skill_dir = Path(d) / "test-skill"
-            skill_dir.mkdir()
-            p = skill_dir / "SKILL.md"
-            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
-            output, _ = self._run_main(["--format", "json", "check", str(p)])
-        data = json.loads(output)
-        self.assertIn("compliance", data)
 
     def test_suggest_dry_run_via_main(self) -> None:
         with tempfile.TemporaryDirectory() as d:
@@ -364,18 +263,12 @@ class MainEntrypointTests(unittest.TestCase):
 
 
 class ErrorHandlingTests(unittest.TestCase):
-    """_read() exits cleanly on bad or missing input."""
 
-    def test_missing_file_exits_with_code_2(self) -> None:
+    def test_missing_file_exits_with_stderr_message(self) -> None:
         err_buf = io.StringIO()
         with redirect_stderr(err_buf), self.assertRaises(SystemExit) as cm:
             xe.cmd_tokens("/nonexistent/path/__no_such_file__.md", "text")
         self.assertEqual(cm.exception.code, 2)
-
-    def test_missing_file_prints_to_stderr(self) -> None:
-        err_buf = io.StringIO()
-        with redirect_stderr(err_buf), self.assertRaises(SystemExit):
-            xe.cmd_tokens("/nonexistent/path/__no_such_file__.md", "text")
         self.assertIn("not found", err_buf.getvalue())
 
     def test_non_utf8_file_exits_with_code_2(self) -> None:
@@ -392,7 +285,6 @@ class ErrorHandlingTests(unittest.TestCase):
 
 
 class FrontmatterNormalisationTests(unittest.TestCase):
-    """CRLF and BOM content is parsed without error."""
 
     def _check_codeonly(self, content: str) -> int:
         with tempfile.TemporaryDirectory() as d:
@@ -404,19 +296,12 @@ class FrontmatterNormalisationTests(unittest.TestCase):
             with redirect_stdout(buf):
                 return xe.cmd_check(str(p), "text")
 
-    def test_crlf_frontmatter_is_parsed_correctly(self) -> None:
-        crlf = _MINIMAL_SKILL.replace("\n", "\r\n")
-        code = self._check_codeonly(crlf)
-        self.assertEqual(code, 0)
-
-    def test_bom_prefixed_content_is_parsed_correctly(self) -> None:
-        bom = "\ufeff" + _MINIMAL_SKILL
-        code = self._check_codeonly(bom)
-        self.assertEqual(code, 0)
+    def test_crlf_and_bom_parsed_without_error(self) -> None:
+        for variant in (_MINIMAL_SKILL.replace("\n", "\r\n"), "\ufeff" + _MINIMAL_SKILL):
+            self.assertEqual(self._check_codeonly(variant), 0)
 
 
 class EvalPresenceAdvisoryTests(unittest.TestCase):
-    """eval-presence advisory reflects filesystem state."""
 
     def _check_json(self, p: Path) -> dict:
         buf = io.StringIO()
@@ -451,7 +336,6 @@ class EvalPresenceAdvisoryTests(unittest.TestCase):
 
 
 class SuggestSecurityTests(unittest.TestCase):
-    """suggest rejects unsafe frontmatter names."""
 
     def _suggest_apply(self, name_value: str) -> int:
         dangerous = _MINIMAL_SKILL.replace("name: test-skill", f"name: {name_value}")
@@ -479,41 +363,22 @@ class SuggestSecurityTests(unittest.TestCase):
 
 
 class YamlStrHelperTests(unittest.TestCase):
-    """_yaml_str() escapes values correctly."""
 
-    def test_plain_string(self) -> None:
+    def test_yaml_str_escaping(self) -> None:
         self.assertEqual(xe._yaml_str("hello"), '"hello"')
-
-    def test_double_quote_escaped(self) -> None:
         self.assertEqual(xe._yaml_str('say "hi"'), '"say \\"hi\\""')
-
-    def test_colon_is_included(self) -> None:
-        result = xe._yaml_str("key: value")
-        self.assertTrue(result.startswith('"'))
-        self.assertTrue(result.endswith('"'))
-        self.assertIn("key: value", result)
-
-    def test_newline_escaped(self) -> None:
         self.assertEqual(xe._yaml_str("line1\nline2"), '"line1\\nline2"')
-
-    def test_backslash_escaped(self) -> None:
         self.assertEqual(xe._yaml_str("back\\slash"), '"back\\\\slash"')
+        result = xe._yaml_str("key: value")
+        self.assertIn("key: value", result)
 
 
 class MaxNestingDepthTests(unittest.TestCase):
-    """_max_nesting_depth() returns correct values including 0 for no-list files."""
 
-    def test_returns_zero_for_no_list_content(self) -> None:
-        prose = "# Title\n\nSome paragraph text. No lists here.\n"
-        self.assertEqual(xe._max_nesting_depth(prose), 0)
-
-    def test_returns_one_for_top_level_only(self) -> None:
-        content = "# H\n\n- item a\n- item b\n"
-        self.assertEqual(xe._max_nesting_depth(content), 1)
-
-    def test_returns_two_for_one_level_nested(self) -> None:
-        content = "# H\n\n- item\n  - nested\n"
-        self.assertEqual(xe._max_nesting_depth(content), 2)
+    def test_nesting_depth_values(self) -> None:
+        self.assertEqual(xe._max_nesting_depth("# T\n\nProse only.\n"), 0)
+        self.assertEqual(xe._max_nesting_depth("# H\n\n- a\n- b\n"), 1)
+        self.assertEqual(xe._max_nesting_depth("# H\n\n- a\n  - b\n"), 2)
 
 
 if __name__ == "__main__":

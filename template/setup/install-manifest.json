@@ -1676,7 +1676,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:ddaa066fe6708e63d83c3653de39ef585e0008e1e6c65a07ea5054edf9a95945"
+      "hash": "sha256:5b2d1b1ce79e3f053e0f2bbb3818d00c176d60c6c459279c497f3b5edfa78569"
     },
     {
       "id": "mcp-config.mcp.json",
