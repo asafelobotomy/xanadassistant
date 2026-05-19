@@ -64,7 +64,7 @@
         "{{agent:commit:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:b381d9932b121e275b092c767e6a6e33f63bb609886ee1682ec1bb56dfc44dac"
+      "hash": "sha256:df8327dd6f916d3e07dca86d3eabce2be83ebc0e8a9563a26d6898f88e690154"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -416,7 +416,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:7d0356644e782a0a5dd4c6b4ae156588fe1cf9866782808e6c3eb13fabd06889"
+      "hash": "sha256:1e44d939678eb2d48090c11e27dcd0f83f92239b503018c535f7711747bb59a7"
     },
     {
       "id": "hook-scripts.githubMcp.py",
@@ -1447,6 +1447,22 @@
       "tokens": [],
       "chmod": "none",
       "hash": "sha256:0b6d85b5b2341128f1da5d8332595b00a6a35101f3e5ed7afda6553c3dcc183b"
+    },
+    {
+      "id": "skills.promptReview.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "skills/promptReview/SKILL.md",
+      "target": ".github/skills/promptReview/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:f2254a7215e5c5b7a857b7412c417feaee935976adf47035e7a1d45c77e84b97"
     },
     {
       "id": "secure-skills.secretScanning.SKILL.md",

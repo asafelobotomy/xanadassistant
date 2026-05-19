@@ -172,6 +172,88 @@ class PromptContractTests(unittest.TestCase):
                 self.assertIn("rerun `plan setup`", content)
 
 
+class PromptReviewSkillContractTests(unittest.TestCase):
+    SKILL_PATH = REPO_ROOT / "skills" / "promptReview" / "SKILL.md"
+
+    def _content(self) -> str:
+        return self.SKILL_PATH.read_text(encoding="utf-8")
+
+    def test_prompt_review_skill_file_exists(self) -> None:
+        self.assertTrue(self.SKILL_PATH.exists(), "skills/promptReview/SKILL.md must exist")
+
+    def test_prompt_review_skill_has_required_frontmatter_fields(self) -> None:
+        content = self._content()
+        frontmatter = content.split("---\n", 2)[1]
+        self.assertIn("name: promptReview", frontmatter)
+        self.assertIn("description:", frontmatter)
+
+    def test_prompt_review_skill_covers_all_six_modules(self) -> None:
+        content = self._content()
+        self.assertIn("Module 1", content)
+        self.assertIn("Module 2", content)
+        self.assertIn("Module 3", content)
+        self.assertIn("Module 4", content)
+        self.assertIn("Module 5", content)
+        self.assertIn("Module 6", content)
+
+    def test_prompt_review_skill_names_all_six_traits(self) -> None:
+        content = self._content()
+        self.assertIn("Contradiction", content)
+        self.assertIn("Ambiguity", content)
+        self.assertIn("Persona", content)
+        self.assertIn("Cognitive Load", content)
+        self.assertIn("Coverage", content)
+        self.assertIn("Composition", content)
+
+    def test_prompt_review_skill_defines_finding_output_prefixes(self) -> None:
+        content = self._content()
+        self.assertIn("contradiction:", content)
+        self.assertIn("ambiguity:", content)
+        self.assertIn("persona:", content)
+        self.assertIn("cognitive-load:", content)
+        self.assertIn("coverage-gap:", content)
+        self.assertIn("composition:", content)
+
+    def test_prompt_review_skill_defines_severity_levels(self) -> None:
+        content = self._content()
+        for level in ("Critical", "High", "Medium", "Low"):
+            self.assertIn(level, content)
+
+    def test_prompt_review_skill_covers_all_four_file_types(self) -> None:
+        content = self._content()
+        self.assertIn(".prompt.md", content)
+        self.assertIn(".agent.md", content)
+        self.assertIn("SKILL.md", content)
+        self.assertIn(".instructions.md", content)
+
+    def test_prompt_review_skill_has_when_to_use_and_when_not_to_use(self) -> None:
+        content = self._content()
+        self.assertIn("## When to use", content)
+        self.assertIn("## When NOT to use", content)
+
+    def test_prompt_review_skill_has_verify_checklist(self) -> None:
+        content = self._content()
+        self.assertIn("## Verify", content)
+        self.assertIn("- [ ]", content)
+
+    def test_prompt_review_skill_composition_module_reads_imports(self) -> None:
+        content = self._content()
+        # Module 6 must describe resolving markdown links and token references
+        self.assertIn("Markdown link", content)
+        self.assertIn("{{", content)
+
+    def test_prompt_review_skill_defines_merge_decision_outcomes(self) -> None:
+        content = self._content()
+        self.assertIn("ready to merge", content)
+        self.assertIn("needs revision before merge", content)
+        self.assertIn("block", content)
+
+    def test_prompt_review_skill_cognitive_load_module_provides_thresholds(self) -> None:
+        content = self._content()
+        self.assertIn("nesting depth", content)
+        self.assertIn("threshold", content)
+
+
 class TemplateMcpJsonContractTests(unittest.TestCase):
     """Regression tests for template/vscode/mcp.json contract.
 
