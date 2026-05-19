@@ -9,6 +9,71 @@ from scripts.lifecycle._xanad import _conditions
 
 
 class AgentTokenRenderingTests(unittest.TestCase):
+    def test_resolve_token_values_supports_render_values_that_reference_pack_tokens(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "packs" / "core").mkdir(parents=True)
+            (root / "packs" / "core" / "tokens.json").write_text(
+                json.dumps(
+                    {
+                        "pack:commit-style": "Pack commit guidance.",
+                        "pack:secret-guard": "Pack secret guidance.",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            workspace = root / "workspace"
+            workspace.mkdir()
+
+            explicit_values = _conditions.resolve_token_values(
+                {
+                    "tokenRules": [
+                        {"token": "{{agent:commit:message-style}}"},
+                        {"token": "{{agent:commit:secret-guard}}"},
+                    ]
+                },
+                workspace,
+                {
+                    "agent.commit.messageStyle": "conventional-with-context",
+                    "agent.commit.secretGuardMode": "surface-and-stop",
+                },
+                package_root=root,
+                metadata={
+                    "agentRegistry": {
+                        "agents": [
+                            {
+                                "id": "commit",
+                                "status": "active",
+                                "customization": {
+                                    "tokenNamespace": "agent:commit",
+                                    "questions": [
+                                        {
+                                            "answerKey": "agent.commit.messageStyle",
+                                            "tokens": ["{{agent:commit:message-style}}"],
+                                            "fallbackToken": "{{pack:commit-style}}",
+                                            "render": {
+                                                "conventional-with-context": "{{pack:commit-style}}"
+                                            },
+                                        },
+                                        {
+                                            "answerKey": "agent.commit.secretGuardMode",
+                                            "tokens": ["{{agent:commit:secret-guard}}"],
+                                            "fallbackToken": "{{pack:secret-guard}}",
+                                            "render": {
+                                                "surface-and-stop": "{{pack:secret-guard}}"
+                                            },
+                                        },
+                                    ],
+                                },
+                            }
+                        ]
+                    }
+                },
+            )
+
+        self.assertEqual(explicit_values["{{agent:commit:message-style}}"], "Pack commit guidance.")
+        self.assertEqual(explicit_values["{{agent:commit:secret-guard}}"], "Pack secret guidance.")
+
     def test_resolve_token_values_renders_agent_tokens_and_falls_back_to_pack_values(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)

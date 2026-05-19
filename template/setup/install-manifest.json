@@ -64,7 +64,7 @@
         "{{agent:commit:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:b1d26247184fbe5c33c1b6636eebf4a12e97d2c801ab3cca0b2ad48967ace7d4"
+      "hash": "sha256:c96d07ac882280a79648583f4e7f7558e7ca669188c2701ede9b468e8399bc63"
     },
     {
       "id": "agents.debugger.agent.md",

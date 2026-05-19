@@ -62,8 +62,8 @@ user explicitly accepts any residual risk surfaced.
 2. Run `git status` and `git diff --cached --stat`.
 3. If nothing staged, show `git diff --stat` and ask which files to include.
 4. Write a commit message following the project's conventions (Conventional Commits 1.0 as default).
-5. **Present the message** to the user before committing. Do not commit without acknowledgement.
-6. Execute: for subject-only use `git commit -m "<subject>"`; for a body, pass `\n` directly in the message string when using the `git_commit` tool (subprocess preserves newlines correctly — no shell escaping needed); use `git commit -F <tmpfile>` via `runCommands` only when the tool is unavailable.
+5. **Present the message** to the user before committing. When using `askQuestions` for approval, include the exact proposed commit subject and body verbatim in the question or its supporting message block so the user can review the full text before answering. Do not commit without acknowledgement.
+6. Execute via `runCommands`: for subject-only use `git commit -m "<subject>"`; for a body, write the message to a temporary file and use `git commit -F <tmpfile>`.
 7. Report the short hash and subject after a successful commit.
 
 ## Push workflow
@@ -85,9 +85,9 @@ user explicitly accepts any residual risk surfaced.
 
 1. Confirm the base branch or commit with the user before starting.
 2. Recommend `--interactive` for squashing or reordering; use non-interactive for straightforward base updates.
-3. Execute via the `git_rebase` tool (`action="start"`, `onto=<base>`).
-4. On conflict, stop — list conflicting files and ask the user to resolve. Then continue with `git_rebase(action="continue")`.
-5. If the user wants to abort at any point, use `git_rebase(action="abort")`.
+3. Execute via `runCommands`: `git rebase <base>` for a straightforward rebase, or `git rebase --interactive <base>` when the user wants to edit history.
+4. On conflict, stop — list conflicting files and ask the user to resolve. Then continue with `git rebase --continue`.
+5. If the user wants to abort at any point, use `git rebase --abort`.
 6. After a successful rebase, remind the user that a force-push will be needed if the branch was already pushed — follow the `## Push workflow` force-push path (`--force-with-lease`).
 
 ## PR workflow

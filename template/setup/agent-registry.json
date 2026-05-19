@@ -38,7 +38,7 @@
               "{{agent:commit:message-style}}"
             ],
             "render": {
-              "conventional-with-context": "Write commit messages following Conventional Commits 1.0: a descriptive subject line (72 chars or fewer), a blank line, and a body explaining what changed and why when context is not obvious from the diff alone. Mark breaking changes with `!` after the type/scope (e.g. `feat!:`) or with a `BREAKING CHANGE:` footer in the body.",
+              "conventional-with-context": "{{pack:commit-style}}",
               "conventional-subject-first": "Write commit messages using Conventional Commits 1.0 with a precise subject line first. Add a body only when the diff does not already make the rationale obvious. Mark breaking changes with `!` after the type/scope (e.g. `feat!:`) or with a `BREAKING CHANGE:` footer in the body."
             }
           },
@@ -63,7 +63,7 @@
               "{{agent:commit:secret-guard}}"
             ],
             "render": {
-              "surface-and-stop": "Before staging or committing, check for hardcoded credentials, API keys, tokens, or private key material. Surface any probable secret by file and line before proceeding.",
+              "surface-and-stop": "{{pack:secret-guard}}",
               "refuse-on-probable-secret": "Before staging or committing, check for hardcoded credentials, API keys, tokens, or private key material. If any probable secret is found, stop the workflow and refuse to proceed until the user removes it or explicitly replaces it with a safe fixture."
             }
           }

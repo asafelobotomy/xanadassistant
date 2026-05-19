@@ -49,7 +49,7 @@ def _resolve_agent_rendered_value(question: dict, resolved_answers: dict, token_
     if isinstance(render_map, dict) and isinstance(answer_value, str):
         rendered = render_map.get(answer_value)
         if isinstance(rendered, str):
-            return rendered
+            return render_tokenized_text(rendered, token_values)
 
     if isinstance(answer_value, bool):
         return "true" if answer_value else "false"

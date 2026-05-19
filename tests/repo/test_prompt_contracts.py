@@ -9,6 +9,33 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class PromptContractTests(unittest.TestCase):
+    def test_commit_agent_does_not_reference_undeclared_git_tools(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+        frontmatter, body = content.split("---\n", 2)[1:]
+
+        match = re.search(r"^tools:\s*(\[[^\n]+\])$", frontmatter, re.MULTILINE)
+        self.assertIsNotNone(match)
+        declared_tools = {
+            token.strip()
+            for token in match.group(1).strip("[]").split(",")
+            if token.strip()
+        }
+
+        referenced_git_tools = {tool for tool in ("git_commit", "git_rebase") if tool in body}
+        undeclared = referenced_git_tools - declared_tools
+
+        self.assertEqual(
+            undeclared,
+            set(),
+            f"Commit agent references undeclared git tools: {sorted(undeclared)}",
+        )
+
+    def test_commit_agent_requires_showing_full_message_in_approval_prompt(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("include the exact proposed commit subject and body verbatim", content)
+        self.assertIn("before answering", content)
+
     def test_template_prompts_use_serialized_plan_setup_flow(self) -> None:
         prompt_paths = [
             REPO_ROOT / "template" / "prompts" / "bootstrap.md",
