@@ -1,6 +1,6 @@
 ---
 name: promptReview
-description: "Six-module quality review for .prompt.md, .agent.md, SKILL.md, and .instructions.md files — contradiction detection, ambiguity analysis, persona consistency, cognitive load, coverage gaps, and composition conflict analysis."
+description: "Six-module quality review for .prompt.md, .agent.md, SKILL.md, and .instructions.md files — contradiction detection, ambiguity analysis, persona consistency, cognitive load, coverage gaps, and composition conflict analysis. Augmented by waza automated checks and LLM-as-judge scoring when available."
 ---
 
 # Prompt Review
@@ -20,6 +20,33 @@ Systematic quality review of Copilot surface files. Run all six modules in seque
 - When the request is to *create or edit* a surface file — this skill reviews; use the `agent-customization` skill for authoring
 - When only YAML frontmatter syntax is in question — fix the syntax directly rather than running a full review
 - During a lifecycle operation already in progress
+
+---
+
+## Step 0 — Automated pre-scan (optional)
+
+If `waza` is installed (`waza --version`), run automated checks before starting the manual modules. Results feed directly into Modules 4, 5, and 7.
+
+**Install:** `curl -fsSL https://raw.githubusercontent.com/microsoft/waza/main/install.sh | bash`
+
+**For SKILL.md files — run all three:**
+```
+waza check <skill-path>          # compliance score, spec checks, advisory flags
+waza tokens profile <skill-path> # token count, section count, workflow-step detection
+waza quality <skill-path>        # LLM-as-judge: clarity, completeness, trigger precision, scope, anti-patterns
+```
+
+**For .agent.md, .prompt.md, and .instructions.md — run token profile only:**
+```
+waza tokens profile <file-path>  # structural metrics; check/quality require SKILL.md frontmatter
+```
+
+Record before proceeding to Module 1:
+- **`waza check`**: compliance level (Low / Medium / Medium-High / High), any failing spec checks, advisory flags (`complexity`, `module-count`, `over-specificity`, `negative-delta-risk`)
+- **`waza tokens profile`**: exact token count, section count, code block count, workflow-step detection status
+- **`waza quality`** (SKILL.md only): per-dimension scores for clarity, completeness, trigger precision, scope coverage, anti-patterns
+
+Any failing `waza check` spec check is automatically a **Module 5 finding (High)**. Any token budget violation is automatically a **Module 4 finding (block)**.
 
 ---
 
@@ -105,6 +132,13 @@ Warn when the prompt's structural complexity makes it difficult to apply reliabl
 
 A **warning** means "consider simplifying"; a **block** means "this complexity level makes reliable execution unlikely — restructure before merging".
 
+**Augmentation with waza:** When `waza tokens profile` output is available from Step 0, use those exact figures instead of estimating:
+- Token count for budget headroom
+- Section count and code block count as proxies for structural density
+- If waza reports no workflow steps detected, emit `cognitive-load: warning` — the file may lack clear procedure structure
+
+Cross-reference `waza check` advisory findings: `complexity` classification, `module-count` (2–3 reference modules is optimal), `over-specificity` (excessive rigidity that reduces adaptability), and `negative-delta-risk` (instructions that may worsen agent behavior). Each advisory finding with status ✗ maps to a `cognitive-load: warning` or `cognitive-load: block` finding here.
+
 **Also flag:**
 - Tables with more than 10 rows that do not have an obvious sort or lookup key
 - Sentences over 40 words
@@ -137,6 +171,8 @@ Identify gaps in the file's stated intent: scenarios that should be handled but 
 *Skill files (`SKILL.md`):*
 - [ ] A `## Verify` checklist is present
 - [ ] Every step either has a success criterion or delegates to a fallback
+- [ ] `waza check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings here
+- [ ] If an eval suite is expected: `waza check` eval-presence check passes; absence is a Medium-severity finding
 
 *Instructions files (`.instructions.md`):*
 - [ ] `applyTo:` pattern is present and non-empty
@@ -176,6 +212,30 @@ Severity: Critical for direct behavioral contradiction; High for shadowing; Medi
 
 ---
 
+## Module 7 — LLM-as-judge validation
+
+> Applies to SKILL.md files when `waza` is installed and `waza quality` output was collected in Step 0. Skip for .agent.md, .prompt.md, and .instructions.md files.
+
+Use `waza quality` output to validate and extend findings from Modules 1–5. The judge scores five dimensions that map directly to the manual modules:
+
+| waza quality dimension | Primary module | Interpretation |
+|---|---|---|
+| Clarity | Module 2 — Ambiguity | Low score confirms ambiguity findings; score ≤ 0.5 = High severity |
+| Completeness | Module 5 — Coverage | Low score confirms coverage-gap findings |
+| Trigger precision | Module 3 — Persona | Low score signals over-broad scope or persona confusion |
+| Scope coverage | Module 5 — Coverage | Low score confirms intent-handling gaps |
+| Anti-patterns | Module 1 — Contradiction | Anti-patterns detected by the judge may surface contradictions missed manually |
+
+For each dimension with a low or failing score, add a corroborating finding to the corresponding module with the note `(waza quality score: <value>)`.
+
+**Eval scaffolding:** If Module 5 found coverage gaps, run `waza suggest --dry-run <skill-path>` to identify expected eval tasks. Each expected task that does not yet exist is an actionable next step — emit:
+
+`coverage-gap: [low] evals/ — Eval task expected by waza suggest but absent: <description>. Run: waza suggest --apply`
+
+**Output:** Findings from this module use the same prefix as the module they corroborate (e.g. `ambiguity:`, `coverage-gap:`) with `(waza quality)` appended to the description.
+
+---
+
 ## Finding output format
 
 Produce a consolidated findings table after running all six modules:
@@ -208,3 +268,7 @@ Decision rules:
 - [ ] Every coverage-gap finding includes a suggested addition
 - [ ] The consolidated findings table is present
 - [ ] The summary line states a clear merge decision
+- [ ] Step 0 pre-scan was run or `waza` unavailability was noted explicitly before Module 1
+- [ ] If waza was available: failing `waza check` spec checks are mapped to Module 5 findings
+- [ ] If waza was available: `waza tokens profile` figures were used in Module 4 instead of estimates
+- [ ] If waza quality was run (SKILL.md only): LLM-as-judge scores are incorporated into corresponding module findings

@@ -1462,7 +1462,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:f2254a7215e5c5b7a857b7412c417feaee935976adf47035e7a1d45c77e84b97"
+      "hash": "sha256:1b8a274df1dcf4a49f6c90b0373e0bf4150074fd26abb72dba479f33c8a80561"
     },
     {
       "id": "secure-skills.secretScanning.SKILL.md",

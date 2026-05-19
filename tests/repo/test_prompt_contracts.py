@@ -253,6 +253,48 @@ class PromptReviewSkillContractTests(unittest.TestCase):
         self.assertIn("nesting depth", content)
         self.assertIn("threshold", content)
 
+    def test_prompt_review_skill_references_waza_check_command(self) -> None:
+        content = self._content()
+        self.assertIn("waza check", content)
+
+    def test_prompt_review_skill_references_waza_quality_command(self) -> None:
+        content = self._content()
+        self.assertIn("waza quality", content)
+
+    def test_prompt_review_skill_references_waza_tokens_profile(self) -> None:
+        content = self._content()
+        self.assertIn("waza tokens profile", content)
+
+    def test_prompt_review_skill_references_waza_suggest_for_eval_scaffolding(self) -> None:
+        content = self._content()
+        self.assertIn("waza suggest", content)
+
+    def test_prompt_review_skill_has_step_zero_automated_prescan(self) -> None:
+        content = self._content()
+        self.assertIn("Step 0", content)
+        self.assertIn("pre-scan", content)
+
+    def test_prompt_review_skill_has_module_seven_llm_as_judge(self) -> None:
+        content = self._content()
+        self.assertIn("Module 7", content)
+        self.assertIn("LLM-as-judge", content)
+
+    def test_prompt_review_skill_maps_waza_quality_dimensions_to_modules(self) -> None:
+        content = self._content()
+        self.assertIn("Clarity", content)
+        self.assertIn("Completeness", content)
+        self.assertIn("Trigger precision", content)
+        self.assertIn("Scope coverage", content)
+        self.assertIn("Anti-patterns", content)
+
+    def test_prompt_review_skill_verify_checklist_covers_waza_steps(self) -> None:
+        content = self._content()
+        verify_section = content.split("## Verify", 1)[1]
+        self.assertIn("Step 0 pre-scan", verify_section)
+        self.assertIn("waza check", verify_section)
+        self.assertIn("waza tokens profile", verify_section)
+        self.assertIn("waza quality", verify_section)
+
 
 class TemplateMcpJsonContractTests(unittest.TestCase):
     """Regression tests for template/vscode/mcp.json contract.
