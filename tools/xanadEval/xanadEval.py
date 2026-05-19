@@ -5,9 +5,9 @@ Part of xanadAssistant. Installed to .github/tools/xanadEval/xanadEval.py
 in consumer workspaces.
 
 Commands:
-  tokens <path> [--format json|text]   Structural metrics (token estimate, sections, …)
-  check  <path> [--format json|text]   Spec compliance + advisory checks
-  suggest <path> [--dry-run|--apply]   Scaffold an eval task suite from frontmatter
+  [--format text|json] tokens <path>     Structural metrics
+  [--format text|json] check  <path>     Spec compliance + advisory checks
+  suggest <path> [--dry-run|--apply]     Scaffold an eval task suite
 """
 from __future__ import annotations
 
@@ -26,11 +26,25 @@ _CHARS_PER_TOKEN: int = 4
 
 
 def _read(path: str) -> str:
-    return Path(path).read_text(encoding="utf-8")
+    try:
+        return Path(path).read_text(encoding="utf-8")
+    except FileNotFoundError:
+        print(f"xanadEval: file not found: {path}", file=sys.stderr)
+        sys.exit(2)
+    except UnicodeDecodeError:
+        print(f"xanadEval: file is not valid UTF-8: {path}", file=sys.stderr)
+        sys.exit(2)
+    except OSError as e:
+        print(f"xanadEval: cannot read {path}: {e}", file=sys.stderr)
+        sys.exit(2)
 
 
 def _parse_frontmatter(content: str) -> dict[str, str]:
-    """Return key/value pairs from YAML frontmatter delimited by ``---``."""
+    """Return key/value pairs from YAML frontmatter delimited by ``---``.
+
+    Normalises BOM and CRLF line endings before parsing.
+    """
+    content = content.lstrip("\ufeff").replace("\r\n", "\n")
     parts = content.split("---\n", 2)
     if len(parts) < 3:
         return {}
@@ -46,7 +60,25 @@ def _token_estimate(content: str) -> int:
     return len(content) // _CHARS_PER_TOKEN
 
 
+def _yaml_str(value: str) -> str:
+    """Escape a string for safe use as a YAML double-quoted scalar."""
+    escaped = (
+        value.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+    )
+    return f'"{escaped}"'
+
+
 def _max_nesting_depth(content: str) -> int:
+    """Return the maximum list nesting depth in *content*.
+
+    Returns 0 when no list items are present; 1 for top-level-only lists;
+    2+ for nested lists.
+    """
+    if not re.search(r"^[ ]*[-*]|^\d+\.", content, re.MULTILINE):
+        return 0  # no list items at all
     depths = [
         len(m.group(1)) // 2
         for m in re.finditer(r"^( +)[-*\d]", content, re.MULTILINE)
@@ -67,7 +99,7 @@ def cmd_tokens(path: str, fmt: str) -> int:
     # Opening fence lines; pairs = complete code blocks
     fences = re.findall(r"^```", content, re.MULTILINE)
     code_blocks = len(fences) // 2
-    # Workflow detected when ≥3 consecutive numbered list items exist
+    # Workflow detected when ≥3 numbered list items are present anywhere in the file
     numbered = re.findall(r"^\s*\d+\. ", content, re.MULTILINE)
     workflow_detected = len(numbered) >= 3
     max_depth = _max_nesting_depth(content)
@@ -160,7 +192,7 @@ def cmd_check(path: str, fmt: str) -> int:
         (
             "module-count",
             2 <= module_count <= 6,
-            f"module count: {module_count} (2\u20136 is optimal)",
+            f"module count: {module_count} (2\u20136 is the acceptable range)",
         )
     )
 
@@ -198,6 +230,22 @@ def cmd_check(path: str, fmt: str) -> int:
             f"max nesting depth: {max_depth} (threshold: 3)",
         )
     )
+
+    # eval-presence: advisory only — absence is informational, not a spec violation
+    if name:
+        eval_path = Path(path).parent.parent.parent / "evals" / name / "eval.yaml"
+        eval_present = eval_path.exists()
+        advisory.append(
+            (
+                "eval-presence",
+                eval_present,
+                (
+                    f"eval suite: found"
+                    if eval_present
+                    else f"eval suite: not found (expected at evals/{name}/eval.yaml)"
+                ),
+            )
+        )
 
     # ── Compliance level ──────────────────────────────────────────────────────
     spec_score = sum(1 for _, ok, _ in spec if ok) / len(spec)
@@ -259,24 +307,33 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
     fm = _parse_frontmatter(content)
     name = fm.get("name") or Path(path).parent.name
     description = fm.get("description", "")
+
+    # Validate name before using in path construction or YAML output.
+    if not name or "/" in name or "\\" in name or name.startswith("."):
+        print(
+            f"xanadEval suggest: unsafe or empty skill name {name!r}",
+            file=sys.stderr,
+        )
+        return 2
+
     desc_short = (description[:100] + "...") if len(description) > 100 else description
 
     eval_yaml = (
-        f"name: {name}-eval\n"
-        f'description: "Evaluates {name} skill behaviour"\n'
+        f"name: {_yaml_str(name + '-eval')}\n"
+        f"description: {_yaml_str('Evaluates ' + name + ' skill behaviour')}\n"
         f"\n"
         f"graders:\n"
         f"  - type: text\n"
         f"    name: references_skill\n"
         f"    config:\n"
-        f"      pattern: \"(?i)({re.escape(name)}|skill)\"\n"
+        f"      pattern: {_yaml_str('(?i)(' + re.escape(name) + '|skill)')}\n"
         f"\n"
         f"tasks:\n"
-        f'  - "tasks/*.yaml"\n'
+        f'  - {_yaml_str("tasks/*.yaml")}\n'
     )
     task_yaml = (
         f"id: basic-invocation\n"
-        f'description: "Verify skill triggers on its primary use case"\n'
+        f"description: {_yaml_str('Verify skill triggers on its primary use case')}\n"
         f"prompt: |\n"
         f"  {desc_short}\n"
         f"tags:\n"
@@ -329,35 +386,49 @@ def main(argv: list[str] | None = None) -> int:
 
     sub = parser.add_subparsers(dest="cmd", required=True)
 
+    def _add_format(p: argparse.ArgumentParser) -> None:
+        """Add a per-subparser --format flag that wins over the global one."""
+        p.add_argument(
+            "--format",
+            choices=["text", "json"],
+            default=argparse.SUPPRESS,
+            dest="fmt",
+            help="Output format (default: text); overrides the global --format flag",
+        )
+
     p_tok = sub.add_parser(
         "tokens",
         help="Structural metrics: token estimate, sections, code blocks, workflow steps",
     )
     p_tok.add_argument("path", help="Path to the surface file")
+    _add_format(p_tok)
 
     p_chk = sub.add_parser(
         "check",
         help="Spec compliance and advisory checks (exits non-zero on spec failure)",
     )
     p_chk.add_argument("path", help="Path to the SKILL.md file")
+    _add_format(p_chk)
 
     p_sug = sub.add_parser(
         "suggest",
         help="Scaffold a minimal eval task suite from frontmatter metadata",
     )
     p_sug.add_argument("path", help="Path to the SKILL.md file")
-    p_sug.add_argument(
+    mode = p_sug.add_mutually_exclusive_group()
+    mode.add_argument(
         "--dry-run",
-        action="store_true",
-        default=True,
+        dest="apply",
+        action="store_false",
         help="Print scaffolded YAML to stdout without writing files (default)",
     )
-    p_sug.add_argument(
+    mode.add_argument(
         "--apply",
+        dest="apply",
         action="store_true",
-        default=False,
-        help="Write scaffolded files to evals/<name>/ (overrides --dry-run)",
+        help="Write scaffolded files to evals/<name>/",
     )
+    p_sug.set_defaults(apply=False)
 
     args = parser.parse_args(argv)
 

@@ -99,7 +99,14 @@ Severity: Medium if the inconsistency is detectable mid-conversation; Low if it 
 
 Warn when the prompt's structural complexity makes it difficult to apply reliably.
 
-**Gather metrics.** Run `python3 .github/tools/xanadEval/xanadEval.py tokens <path>` for token estimate, section count, code block count, and workflow-step detection; use those figures in place of manual estimation. For SKILL.md files, also run `python3 .github/tools/xanadEval/xanadEval.py check <path>` for advisory flags. When xanadEval is unavailable, apply the thresholds below by inspection.
+**Gather metrics.** Run these commands from the workspace root:
+
+```
+python3 .github/tools/xanadEval/xanadEval.py tokens <path>
+python3 .github/tools/xanadEval/xanadEval.py check <path>
+```
+
+`tokens` gives token estimate, section count, code block count, and workflow-step detection; use those figures in place of manual estimation. For SKILL.md files, `check` produces spec compliance and advisory flags (`module-count`, `over-specificity`, `complexity`, `eval-presence`, etc.). When xanadEval is unavailable, apply the thresholds below by inspection.
 
 **Metrics — warn or block per section:**
 
@@ -115,7 +122,7 @@ A **warning** means "consider simplifying"; a **block** means "this complexity l
 
 **xanadEval check advisory flags (SKILL.md only)** — each finding with status ✗ maps to a `cognitive-load: warning` or `cognitive-load: block`:
 - `complexity` — structural complexity exceeds heuristic threshold
-- `module-count` — more than 3 reference modules (2–3 is optimal)
+- `module-count` — fewer than 2 or more than 6 modules (2–6 is the acceptable range)
 - `over-specificity` — excessive rigidity that reduces adaptability
 - `negative-delta-risk` — instructions that may worsen agent behavior
 
@@ -156,8 +163,8 @@ After completing the checklist, rate overall coverage Completeness (LLM-as-judge
 - [ ] A `## Verify` checklist is present
 - [ ] Every step either has a success criterion or delegates to a fallback
 - [ ] `xanadEval check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings here
-  - [ ] If an eval suite is expected: `xanadEval check` eval-presence check passes; absence is a Medium-severity finding
-  - [ ] If coverage gaps were found: run `python3 .github/tools/xanadEval/xanadEval.py suggest --dry-run <path>`; each expected eval task not yet present is a Low-severity finding
+  - [ ] If an eval suite is expected: `xanadEval check` `eval-presence` advisory passes; absence is a Medium-severity finding
+  - [ ] If coverage gaps were found: run `python3 .github/tools/xanadEval/xanadEval.py suggest --dry-run <path>` from the workspace root; each expected eval task not yet present is a Low-severity finding. If xanadEval is unavailable, note the gap manually.
 
 *Instructions files (`.instructions.md`):*
 - [ ] `applyTo:` pattern is present and non-empty

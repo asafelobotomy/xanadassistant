@@ -1463,7 +1463,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:fee923f973c583a8e43e18100cc22f06f59c6efe4d648e374076c788559bd64b"
+      "hash": "sha256:58284e788272d81fda8813596eada45865fcf4fb195f3352d7fbe44a63b14d27"
     },
     {
       "id": "secure-skills.secretScanning.SKILL.md",
@@ -1676,7 +1676,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:7ef0a0426fbf09a4dadb02ebd2e7aa6ee4e5eb2753fc17000f89d9a6c18e39cb"
+      "hash": "sha256:ddaa066fe6708e63d83c3653de39ef585e0008e1e6c65a07ea5054edf9a95945"
     },
     {
       "id": "mcp-config.mcp.json",

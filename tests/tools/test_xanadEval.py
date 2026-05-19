@@ -6,7 +6,7 @@ import json
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 # Resolve the tool without installing it as a package.
@@ -339,6 +339,181 @@ class MainEntrypointTests(unittest.TestCase):
             output, code = self._run_main(["suggest", "--dry-run", str(p)])
         self.assertEqual(code, 0)
         self.assertIn("eval.yaml", output)
+
+    def test_format_flag_accepted_after_subcommand(self) -> None:
+        with tempfile.TemporaryDirectory() as d:
+            skill_dir = Path(d) / "test-skill"
+            skill_dir.mkdir()
+            p = skill_dir / "SKILL.md"
+            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
+            output, code = self._run_main(["check", str(p), "--format", "json"])
+        self.assertEqual(code, 0)
+        data = json.loads(output)
+        self.assertIn("compliance", data)
+
+    def test_format_flag_before_subcommand_still_works(self) -> None:
+        with tempfile.TemporaryDirectory() as d:
+            skill_dir = Path(d) / "test-skill"
+            skill_dir.mkdir()
+            p = skill_dir / "SKILL.md"
+            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
+            output, code = self._run_main(["--format", "json", "check", str(p)])
+        self.assertEqual(code, 0)
+        data = json.loads(output)
+        self.assertIn("compliance", data)
+
+
+class ErrorHandlingTests(unittest.TestCase):
+    """_read() exits cleanly on bad or missing input."""
+
+    def test_missing_file_exits_with_code_2(self) -> None:
+        err_buf = io.StringIO()
+        with redirect_stderr(err_buf), self.assertRaises(SystemExit) as cm:
+            xe.cmd_tokens("/nonexistent/path/__no_such_file__.md", "text")
+        self.assertEqual(cm.exception.code, 2)
+
+    def test_missing_file_prints_to_stderr(self) -> None:
+        err_buf = io.StringIO()
+        with redirect_stderr(err_buf), self.assertRaises(SystemExit):
+            xe.cmd_tokens("/nonexistent/path/__no_such_file__.md", "text")
+        self.assertIn("not found", err_buf.getvalue())
+
+    def test_non_utf8_file_exits_with_code_2(self) -> None:
+        with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
+            f.write(b"\xff\xfe binary rubbish \x00\x01\x02")
+            path = f.name
+        try:
+            err_buf = io.StringIO()
+            with redirect_stderr(err_buf), self.assertRaises(SystemExit) as cm:
+                xe.cmd_tokens(path, "text")
+            self.assertEqual(cm.exception.code, 2)
+        finally:
+            Path(path).unlink(missing_ok=True)
+
+
+class FrontmatterNormalisationTests(unittest.TestCase):
+    """CRLF and BOM content is parsed without error."""
+
+    def _check_codeonly(self, content: str) -> int:
+        with tempfile.TemporaryDirectory() as d:
+            skill_dir = Path(d) / "test-skill"
+            skill_dir.mkdir()
+            p = skill_dir / "SKILL.md"
+            p.write_bytes(content.encode("utf-8"))
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                return xe.cmd_check(str(p), "text")
+
+    def test_crlf_frontmatter_is_parsed_correctly(self) -> None:
+        crlf = _MINIMAL_SKILL.replace("\n", "\r\n")
+        code = self._check_codeonly(crlf)
+        self.assertEqual(code, 0)
+
+    def test_bom_prefixed_content_is_parsed_correctly(self) -> None:
+        bom = "\ufeff" + _MINIMAL_SKILL
+        code = self._check_codeonly(bom)
+        self.assertEqual(code, 0)
+
+
+class EvalPresenceAdvisoryTests(unittest.TestCase):
+    """eval-presence advisory reflects filesystem state."""
+
+    def _check_json(self, p: Path) -> dict:
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            xe.cmd_check(str(p), "json")
+        return json.loads(buf.getvalue())
+
+    def test_eval_presence_absent_when_no_evals_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as d:
+            skill_dir = Path(d) / "skills" / "test-skill"
+            skill_dir.mkdir(parents=True)
+            p = skill_dir / "SKILL.md"
+            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
+            data = self._check_json(p)
+        ep = next(c for c in data["advisory_checks"] if c["id"] == "eval-presence")
+        self.assertFalse(ep["pass"])
+        self.assertIn("not found", ep["detail"])
+
+    def test_eval_presence_passes_when_eval_yaml_exists(self) -> None:
+        with tempfile.TemporaryDirectory() as d:
+            skill_dir = Path(d) / "skills" / "test-skill"
+            skill_dir.mkdir(parents=True)
+            p = skill_dir / "SKILL.md"
+            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
+            eval_dir = Path(d) / "evals" / "test-skill"
+            eval_dir.mkdir(parents=True)
+            (eval_dir / "eval.yaml").write_text("name: test-skill-eval\n", encoding="utf-8")
+            data = self._check_json(p)
+        ep = next(c for c in data["advisory_checks"] if c["id"] == "eval-presence")
+        self.assertTrue(ep["pass"])
+        self.assertIn("found", ep["detail"])
+
+
+class SuggestSecurityTests(unittest.TestCase):
+    """suggest rejects unsafe frontmatter names."""
+
+    def _suggest_apply(self, name_value: str) -> int:
+        dangerous = _MINIMAL_SKILL.replace("name: test-skill", f"name: {name_value}")
+        with tempfile.TemporaryDirectory() as d:
+            skill_dir = Path(d) / "test-skill"
+            skill_dir.mkdir()
+            p = skill_dir / "SKILL.md"
+            p.write_text(dangerous, encoding="utf-8")
+            buf = io.StringIO()
+            err_buf = io.StringIO()
+            with redirect_stdout(buf), redirect_stderr(err_buf):
+                return xe.cmd_suggest(str(p), dry_run=False)
+
+    def test_dotdot_name_rejected(self) -> None:
+        self.assertEqual(self._suggest_apply("../evil"), 2)
+
+    def test_slash_in_name_rejected(self) -> None:
+        self.assertEqual(self._suggest_apply("a/b"), 2)
+
+    def test_backslash_in_name_rejected(self) -> None:
+        self.assertEqual(self._suggest_apply("a\\\\b"), 2)
+
+    def test_dot_prefix_rejected(self) -> None:
+        self.assertEqual(self._suggest_apply(".hidden"), 2)
+
+
+class YamlStrHelperTests(unittest.TestCase):
+    """_yaml_str() escapes values correctly."""
+
+    def test_plain_string(self) -> None:
+        self.assertEqual(xe._yaml_str("hello"), '"hello"')
+
+    def test_double_quote_escaped(self) -> None:
+        self.assertEqual(xe._yaml_str('say "hi"'), '"say \\"hi\\""')
+
+    def test_colon_is_included(self) -> None:
+        result = xe._yaml_str("key: value")
+        self.assertTrue(result.startswith('"'))
+        self.assertTrue(result.endswith('"'))
+        self.assertIn("key: value", result)
+
+    def test_newline_escaped(self) -> None:
+        self.assertEqual(xe._yaml_str("line1\nline2"), '"line1\\nline2"')
+
+    def test_backslash_escaped(self) -> None:
+        self.assertEqual(xe._yaml_str("back\\slash"), '"back\\\\slash"')
+
+
+class MaxNestingDepthTests(unittest.TestCase):
+    """_max_nesting_depth() returns correct values including 0 for no-list files."""
+
+    def test_returns_zero_for_no_list_content(self) -> None:
+        prose = "# Title\n\nSome paragraph text. No lists here.\n"
+        self.assertEqual(xe._max_nesting_depth(prose), 0)
+
+    def test_returns_one_for_top_level_only(self) -> None:
+        content = "# H\n\n- item a\n- item b\n"
+        self.assertEqual(xe._max_nesting_depth(content), 1)
+
+    def test_returns_two_for_one_level_nested(self) -> None:
+        content = "# H\n\n- item\n  - nested\n"
+        self.assertEqual(xe._max_nesting_depth(content), 2)
 
 
 if __name__ == "__main__":
