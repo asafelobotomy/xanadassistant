@@ -42,7 +42,7 @@ class DriftPreflightTests(unittest.TestCase):
                 return subprocess.CompletedProcess(command, 0)
 
             with mock.patch("scripts.drift_preflight.subprocess.run", side_effect=fake_run):
-                exit_code = drift_preflight.run(repo_root, ["loc", "tests"])
+                exit_code = drift_preflight.run(repo_root, ["loc", "tests"], stderr=io.StringIO())
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(
@@ -63,13 +63,13 @@ class DriftPreflightTests(unittest.TestCase):
                 return subprocess.CompletedProcess(command, 0)
 
             with mock.patch("scripts.drift_preflight.subprocess.run", side_effect=fake_run) as run_mock:
-                exit_code = drift_preflight.run(repo_root, ["loc", "tests"])
+                exit_code = drift_preflight.run(repo_root, ["loc", "tests"], stderr=io.StringIO())
 
         self.assertEqual(exit_code, 7)
         self.assertEqual(run_mock.call_count, 1)
 
     def test_main_rejects_missing_repo_root(self) -> None:
-        exit_code = drift_preflight.main(["--repo-root", "/path/that/does/not/exist"])
+        exit_code = drift_preflight.main(["--repo-root", "/path/that/does/not/exist"], stderr=io.StringIO())
 
         self.assertEqual(exit_code, 2)
 
@@ -102,13 +102,14 @@ class DriftPreflightTests(unittest.TestCase):
             with self.subTest(job=required_job):
                 self.assertIn(f"      - {required_job}", release_block)
 
-    def test_release_job_is_guarded_on_version_bumps_and_missing_release(self) -> None:
+    def test_release_job_targets_head_version_and_skips_existing_releases(self) -> None:
         workflow = self._read_ci_workflow()
 
         self.assertIn("if: github.event_name == 'push' && github.ref == 'refs/heads/main'", workflow)
-        self.assertIn("if ! grep -Fxq VERSION <<<\"$changed_files\"; then", workflow)
-        self.assertIn("if: steps.version.outputs.version_changed == 'true'", workflow)
-        self.assertIn("if: steps.version.outputs.version_changed == 'true' && steps.release_state.outputs.exists != 'true'", workflow)
+        self.assertIn("python3 scripts/release_decision.py --repo-root . --github-output \"$GITHUB_OUTPUT\"", workflow)
+        self.assertNotIn("git diff --name-only \"$before\" \"$GITHUB_SHA\"", workflow)
+        self.assertNotIn("version_changed=false", workflow)
+        self.assertIn("if: steps.release_decision.outputs.should_publish == 'true'", workflow)
 
     def test_release_job_builds_changelog_from_previous_tag(self) -> None:
         workflow = self._read_ci_workflow()

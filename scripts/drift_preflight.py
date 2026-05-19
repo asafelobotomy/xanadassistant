@@ -18,6 +18,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TextIO
 
 
 @dataclass(frozen=True)
@@ -98,19 +99,32 @@ def _selected_checks(selected_names: list[str] | None) -> list[Check]:
     return [CHECKS_BY_NAME[name] for name in selected_names]
 
 
-def run(repo_root: Path, selected_names: list[str] | None = None) -> int:
+def run(
+    repo_root: Path,
+    selected_names: list[str] | None = None,
+    *,
+    stderr: TextIO | None = None,
+) -> int:
+    stderr = stderr or sys.stderr
     selected_checks = _selected_checks(selected_names)
     for check in selected_checks:
-        print(f"==> {check.name}: {_command_text(check.command)}", file=sys.stderr)
+        print(f"==> {check.name}: {_command_text(check.command)}", file=stderr)
         result = subprocess.run(check.command, cwd=repo_root)
         if result.returncode != 0:
-            print(f"\nDrift preflight FAILED at '{check.name}'.", file=sys.stderr)
+            print(f"\nDrift preflight FAILED at '{check.name}'.", file=stderr)
             return result.returncode
-    print("\nDrift preflight PASSED.", file=sys.stderr)
+    print("\nDrift preflight PASSED.", file=stderr)
     return 0
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(
+    argv: list[str] | None = None,
+    *,
+    stdout: TextIO | None = None,
+    stderr: TextIO | None = None,
+) -> int:
+    stdout = stdout or sys.stdout
+    stderr = stderr or sys.stderr
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", default=".", help="Repository root to validate.")
     parser.add_argument(
@@ -125,15 +139,15 @@ def main(argv: list[str] | None = None) -> int:
 
     repo_root = Path(args.repo_root).resolve()
     if not repo_root.is_dir():
-        print(f"Repository root does not exist: {repo_root}", file=sys.stderr)
+        print(f"Repository root does not exist: {repo_root}", file=stderr)
         return 2
 
     if args.list:
         for check in CHECKS:
-            print(f"{check.name}\t{check.description}\t{_command_text(check.command)}")
+            print(f"{check.name}\t{check.description}\t{_command_text(check.command)}", file=stdout)
         return 0
 
-    return run(repo_root, args.check or None)
+    return run(repo_root, args.check or None, stderr=stderr)
 
 
 if __name__ == "__main__":  # pragma: no cover
