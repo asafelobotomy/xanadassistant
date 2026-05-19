@@ -1,0 +1,14 @@
+id: basic-invocation
+description: "Verify skill runs all five steps and produces a Verify checklist outcome"
+prompt: |
+  Run the lifecycleAudit skill before proposing an update operation on the current
+  workspace. Run inspect and check, classify the install state, surface findings,
+  and confirm Verify checklist items are satisfied.
+expected:
+  - "installState"
+  - "check.status"
+  - "repairReasons"
+  - "needsMigration"
+tags:
+  - basic
+  - smoke

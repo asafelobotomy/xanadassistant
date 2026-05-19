@@ -1,0 +1,11 @@
+name: "lifecycleAudit-eval"
+description: "Evaluates lifecycleAudit skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(lifecycleAudit|skill)"
+
+tasks:
+  - "tasks/*.yaml"

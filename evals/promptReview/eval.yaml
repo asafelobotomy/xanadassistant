@@ -1,0 +1,11 @@
+name: "promptReview-eval"
+description: "Evaluates promptReview skill behaviour"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(promptReview|skill)"
+
+tasks:
+  - "tasks/*.yaml"

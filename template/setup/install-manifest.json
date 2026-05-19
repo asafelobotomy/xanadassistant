@@ -65,7 +65,7 @@
         "{{agent:commit:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:df8327dd6f916d3e07dca86d3eabce2be83ebc0e8a9563a26d6898f88e690154"
+      "hash": "sha256:67a92e1a144be593300ee43ee2e2357f090b25cfe67afadbdbb634671be41453"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -1320,7 +1320,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:5b194927dd73d9e611e683f034bbb9dcc2424efba2bb70c6adf3a0850a1900a4"
+      "hash": "sha256:f727a4b7beb8d9659e768680f933fc625ee31a7d5ebee9aaa678532fe4b3d461"
     },
     {
       "id": "mlops-skills.mlopsDataPipelines.SKILL.md",
@@ -1480,7 +1480,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:58284e788272d81fda8813596eada45865fcf4fb195f3352d7fbe44a63b14d27"
+      "hash": "sha256:762b9f9ee84f83514985f2672b8928a1e75b857d2ec10c8a272edacef4210e7b"
     },
     {
       "id": "secure-skills.secretScanning.SKILL.md",

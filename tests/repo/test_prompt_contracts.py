@@ -288,7 +288,7 @@ class PromptReviewSkillContractTests(unittest.TestCase):
         content = self._content()
         self.assertIn("Clarity", content)
         self.assertIn("Completeness", content)
-        self.assertIn("Trigger precision", content)
+        self.assertIn("scope-precision", content)
         self.assertIn("Scope coverage", content)
         self.assertIn("Anti-patterns", content)
 

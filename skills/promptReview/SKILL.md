@@ -1,6 +1,6 @@
 ---
 name: promptReview
-description: "Six-module quality review for .prompt.md, .agent.md, SKILL.md, and .instructions.md files — contradiction detection, ambiguity analysis, persona consistency, cognitive load, coverage gaps, and composition conflict analysis. Integrates xanadEval-backed metrics and LLM-as-judge scoring throughout each module."
+description: "Six-module quality review for .prompt.md, .agent.md, SKILL.md, and .instructions.md files — contradiction detection, ambiguity analysis, persona consistency, cognitive load, coverage gaps, and composition conflict analysis. Integrates xanadEval-backed metrics and LLM-as-judge scoring in Modules 1–5."
 ---
 
 # Prompt Review
@@ -79,7 +79,7 @@ Severity: High if the ambiguity causes the agent to silently skip a required ste
 
 Verify that the file presents a coherent, stable identity and tone throughout.
 
-After completing the checklist, rate persona stability (LLM-as-judge): **Stable / Drifting / Conflicted**. A low Trigger precision result — over-broad scope or persona confusion — maps to Drifting (Medium) or Conflicted (High).
+After completing the checklist, rate persona stability (LLM-as-judge): **Stable / Drifting / Conflicted**. A low scope-precision result — over-broad "When to use" definition, or the file assigns multiple distinct personas to the same agent — maps to Drifting (Medium) or Conflicted (High).
 
 **What to look for:**
 
@@ -118,15 +118,19 @@ python3 .github/tools/xanadEval/xanadEval.py check <path>
 | Compound conditionals (AND/OR chains per sentence) | > 2 | > 3 |
 | Repeated constraints across sections | 3+ occurrences | 5+ occurrences |
 
-A **warning** means "consider simplifying"; a **block** means "this complexity level makes reliable execution unlikely — restructure before merging".
+Emit `cognitive-load: warning` for any metric at or above the warning threshold. Emit `cognitive-load: block` when the block threshold is reached — complexity at that level makes reliable execution unlikely and the file must be restructured before merging.
 
-**xanadEval check advisory flags (SKILL.md only)** — each finding with status ✗ maps to a `cognitive-load: warning` or `cognitive-load: block`:
-- `complexity` — structural complexity exceeds heuristic threshold
-- `module-count` — fewer than 2 or more than 6 modules (2–6 is the acceptable range)
-- `over-specificity` — excessive rigidity that reduces adaptability
-- `negative-delta-risk` — instructions that may worsen agent behavior
+**xanadEval check advisory flags (SKILL.md only)** — each ✗ maps to the severity shown:
 
-If xanadEval reports no workflow steps detected, emit `cognitive-load: warning` — the file may lack clear procedure structure.
+| Advisory flag | Level | Meaning |
+|---|---|---|
+| `complexity` | block | Structural complexity exceeds heuristic threshold |
+| `module-count` | warning | Fewer than 2 or more than 6 modules (acceptable range: 2–6) |
+| `over-specificity` | warning | Excessive rigidity that reduces adaptability |
+| `negative-delta-risk` | warning | Instructions that could cause the agent to refuse valid work, be less helpful in its target domain, or add friction without a stated safety benefit |
+| `max-rules-per-section` | block | Rules per section exceeds the block threshold — cross-reference the metric table above |
+
+If xanadEval reports no workflow steps detected on an agent or prompt file, emit `cognitive-load: warning` — the file may lack clear procedure structure. For skill files, `workflow_steps: not detected` is expected and does not generate a warning.
 
 **Also flag:**
 - Tables with more than 10 rows that do not have an obvious sort or lookup key
@@ -141,7 +145,7 @@ If xanadEval reports no workflow steps detected, emit `cognitive-load: warning` 
 
 Identify gaps in the file's stated intent: scenarios that should be handled but are not.
 
-After completing the checklist, rate overall coverage Completeness (LLM-as-judge): **Complete / Gaps-present / Incomplete**. Gaps-present or Incomplete confirms coverage-gap findings. Also rate Scope coverage: is the file's scope well-defined, or does it bleed into adjacent agent territory?
+After completing the checklist, rate overall coverage Completeness (LLM-as-judge): **Complete / Gaps-present / Incomplete**. Gaps-present or Incomplete confirms coverage-gap findings. Also rate Scope coverage: is the file's scope well-defined, or does it bleed into adjacent agent territory? Output: `scope-coverage: [well-defined | bleeding] — <description>`. Bleeding scope is a Medium-severity coverage-gap finding.
 
 **Checklist — run for every file type:**
 
@@ -162,8 +166,8 @@ After completing the checklist, rate overall coverage Completeness (LLM-as-judge
 *Skill files (`SKILL.md`):*
 - [ ] A `## Verify` checklist is present
 - [ ] Every step either has a success criterion or delegates to a fallback
-- [ ] `xanadEval check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings here
-  - [ ] If an eval suite is expected: `xanadEval check` `eval-presence` advisory passes; absence is a Medium-severity finding
+- [ ] `xanadEval check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings here. If xanadEval is unavailable, skip and emit: `coverage-gap: [medium] spec-compliance — xanadEval unavailable; spec checks could not be run`.
+    - [ ] If an eval suite is expected: `xanadEval check` `eval-presence` advisory passes; absence is a Medium-severity finding. If xanadEval is unavailable, note the gap manually.
   - [ ] If coverage gaps were found: run `python3 .github/tools/xanadEval/xanadEval.py suggest --dry-run <path>` from the workspace root; each expected eval task not yet present is a Low-severity finding. If xanadEval is unavailable, note the gap manually.
 
 *Instructions files (`.instructions.md`):*

@@ -1,0 +1,16 @@
+id: basic-invocation
+description: "Verify skill runs all six modules and produces a findings table with a merge decision"
+prompt: |
+  Run the promptReview skill on skills/promptReview/SKILL.md. Produce a consolidated findings
+  table covering all six modules and close with a summary line stating the merge decision.
+expected:
+  - "Module 1"
+  - "Module 2"
+  - "Module 3"
+  - "Module 4"
+  - "Module 5"
+  - "Module 6"
+  - "Result:"
+tags:
+  - basic
+  - smoke
