@@ -93,6 +93,11 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Workspace MCP (pre-existing): grew with command hardening.
     "mcp/scripts/xanadWorkspaceMcp.py": 425,
     ".github/mcp/scripts/xanadWorkspaceMcp.py": 425,
+    # Git MCP server: grew with structured mutation envelopes, _run_flags_completed,
+    # _mutation_result helper, git_diff_staged_stat / git_diff_unstaged_stat tools,
+    # and extended stash/rebase/push tool surface for the Commit-agent migration.
+    "mcp/scripts/gitMcp.py": 550,
+    ".github/mcp/scripts/gitMcp.py": 550,
 }
 
 

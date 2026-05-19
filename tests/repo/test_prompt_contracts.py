@@ -21,7 +21,7 @@ class PromptContractTests(unittest.TestCase):
             if token.strip()
         }
 
-        referenced_git_tools = {tool for tool in ("git_commit", "git_rebase") if tool in body}
+        referenced_git_tools = set(re.findall(r"\bgit_[a-z0-9_]+\b", body))
         undeclared = referenced_git_tools - declared_tools
 
         self.assertEqual(
@@ -29,6 +29,68 @@ class PromptContractTests(unittest.TestCase):
             set(),
             f"Commit agent references undeclared git tools: {sorted(undeclared)}",
         )
+
+    def test_commit_agent_prefers_git_mcp_for_opening_inspection(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("Prefer `git_status`", content)
+        self.assertIn("`git_diff_staged_stat`", content)
+        self.assertIn("`git_diff_unstaged_stat`", content)
+
+    def test_commit_agent_prefers_git_mcp_for_selective_unstage_and_stash_actions(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("Prefer `git_reset`", content)
+        self.assertIn("`git_stash_apply`", content)
+        self.assertIn("`git_stash_drop`", content)
+
+    def test_commit_agent_prefers_git_mcp_for_exact_tag_push(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("Prefer `git_push_tag`", content)
+
+    def test_commit_agent_prefers_git_mcp_for_straightforward_pushes(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("Prefer `git_push`", content)
+
+    def test_commit_agent_prefers_git_mcp_for_noninteractive_commit_and_rebase(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("Prefer `git_commit`", content)
+        self.assertIn("Prefer `git_rebase`", content)
+
+    def test_commit_agent_prefers_structured_stash_mutation_tools(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("structured envelope", content)
+        self.assertIn("`git_stash_apply`", content)
+        self.assertIn("`git_stash_drop`", content)
+
+    def test_commit_agent_consumes_structured_push_and_rebase_fields(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("`status`", content)
+        self.assertIn("`summary`", content)
+        self.assertIn("`stderr`", content)
+        self.assertIn("failed `git_push`", content)
+        self.assertIn("failed `git_rebase`", content)
+
+    def test_commit_agent_prefers_structured_pull_results(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("Prefer `git_pull`", content)
+        self.assertIn("failed `git_pull`", content)
+
+    def test_commit_agent_prefers_git_mcp_for_fetch_branch_and_stash_workflows(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+
+        self.assertIn("Prefer `git_fetch`", content)
+        self.assertIn("Prefer `git_create_branch`", content)
+        self.assertIn("Prefer `git_checkout`", content)
+        self.assertIn("Prefer `git_delete_branch`", content)
+        self.assertIn("Prefer `git_stash`", content)
+        self.assertIn("Prefer `git_stash_pop`", content)
 
     def test_commit_agent_requires_showing_full_message_in_approval_prompt(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")

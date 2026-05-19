@@ -64,7 +64,7 @@
         "{{agent:commit:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:c96d07ac882280a79648583f4e7f7558e7ca669188c2701ede9b468e8399bc63"
+      "hash": "sha256:b381d9932b121e275b092c767e6a6e33f63bb609886ee1682ec1bb56dfc44dac"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -416,7 +416,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:02181555c1868209e1e0ebefe227819bb2c3298a0fcc88bcaa7c7c3df009c682"
+      "hash": "sha256:7d0356644e782a0a5dd4c6b4ae156588fe1cf9866782808e6c3eb13fabd06889"
     },
     {
       "id": "hook-scripts.githubMcp.py",

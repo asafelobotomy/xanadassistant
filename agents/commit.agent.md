@@ -5,7 +5,7 @@ argument-hint: "Describe the git task: commit, push, preflight, PR, branch, tag,
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions]
+tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_diff_staged_stat, git_diff_unstaged_stat, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_stash, git_stash_pop, git_stash_apply, git_stash_drop, git_push_tag, git_push]
 agents: [Explore, Review, Debugger]
 user-invocable: true
 ---
@@ -59,36 +59,42 @@ user explicitly accepts any residual risk surfaced.
 ## Commit workflow
 
 1. Run the secret-guard check over all candidate files before staging anything. Surface any probable secret to the user and stop until resolved.
-2. Run `git status` and `git diff --cached --stat`.
-3. If nothing staged, show `git diff --stat` and ask which files to include.
-4. Write a commit message following the project's conventions (Conventional Commits 1.0 as default).
-5. **Present the message** to the user before committing. When using `askQuestions` for approval, include the exact proposed commit subject and body verbatim in the question or its supporting message block so the user can review the full text before answering. Do not commit without acknowledgement.
-6. Execute via `runCommands`: for subject-only use `git commit -m "<subject>"`; for a body, write the message to a temporary file and use `git commit -F <tmpfile>`.
-7. Report the short hash and subject after a successful commit.
+2. Prefer `git_status` and `git_diff_staged_stat` for the opening inspection summary instead of shelling out for `git status` and `git diff --cached --stat`.
+3. If nothing staged, prefer `git_diff_unstaged_stat` to show `git diff --stat`, then ask which files to include.
+4. When the user wants to unstage only part of the staged set, Prefer `git_reset` with explicit file paths instead of shelling out for a selective reset.
+5. Write a commit message following the project's conventions (Conventional Commits 1.0 as default).
+6. **Present the message** to the user before committing. When using `askQuestions` for approval, include the exact proposed commit subject and body verbatim in the question or its supporting message block so the user can review the full text before answering. Do not commit without acknowledgement.
+7. Prefer `git_commit` for the final non-interactive commit step so the result comes back as a structured envelope instead of raw terminal text.
+8. Report the short hash and subject after a successful commit.
 
 ## Push workflow
 
 1. Show `git log origin/<branch>..HEAD --oneline` (unpushed commits).
 2. Confirm target branch and remote.
-3. Execute `git push`. For new branches: `git push --set-upstream origin <branch>`.
-4. For force-push after rebase or amend: use `git push --force-with-lease` by default.
+3. Prefer `git_push` for straightforward non-interactive pushes so the result comes back as a structured envelope instead of raw terminal text.
+4. For new branches, Prefer `git_push` with `set_upstream=True`.
+5. For force-push after rebase or amend, Prefer `git_push` with `force_with_lease=True` by default.
+6. If a failed `git_push` returns `status` = `failed`, surface its `summary` and `stderr` immediately instead of paraphrasing raw terminal text.
 
 ## Pull workflow
 
-1. Run `git fetch origin` to update remote refs without modifying the working tree.
+1. Prefer `git_fetch` to update remote refs without modifying the working tree.
 2. Determine the merge strategy: prefer `git pull --rebase` for linear history on feature branches; use plain `git pull` (merge) for long-lived integration branches.
 3. Confirm the strategy with the user if the branch has diverged significantly.
-4. Execute the pull. On conflict, stop immediately — list conflicting files and ask the user how to resolve before continuing.
-5. After conflict resolution verify with `git status` before finalising (`git rebase --continue` or `git merge --continue`).
+4. Prefer `git_pull` for straightforward non-interactive pull actions so the result comes back as a structured envelope.
+5. If a failed `git_pull` returns `status` = `failed`, surface its `summary` and `stderr` immediately before asking the user how to resolve the pull strategy or conflicts.
+6. After conflict resolution verify with `git status` before finalising (`git rebase --continue` or `git merge --continue`).
 
 ## Rebase workflow
 
 1. Confirm the base branch or commit with the user before starting.
 2. Recommend `--interactive` for squashing or reordering; use non-interactive for straightforward base updates.
-3. Execute via `runCommands`: `git rebase <base>` for a straightforward rebase, or `git rebase --interactive <base>` when the user wants to edit history.
-4. On conflict, stop — list conflicting files and ask the user to resolve. Then continue with `git rebase --continue`.
-5. If the user wants to abort at any point, use `git rebase --abort`.
-6. After a successful rebase, remind the user that a force-push will be needed if the branch was already pushed — follow the `## Push workflow` force-push path (`--force-with-lease`).
+3. Prefer `git_rebase` for straightforward non-interactive rebase actions (`start`, `continue`, `abort`, `skip`) so the result comes back as a structured envelope.
+4. Use `runCommands` for `git rebase --interactive <base>` when the user wants to edit history.
+5. On conflict, stop — list conflicting files and ask the user to resolve. Then continue with `git_rebase` action `continue`.
+6. If the user wants to abort at any point, use `git_rebase` action `abort`.
+7. After a successful rebase, remind the user that a force-push will be needed if the branch was already pushed — follow the `## Push workflow` force-push path (`--force-with-lease`).
+8. If a failed `git_rebase` returns `status` = `failed`, surface its `summary` and `stderr` immediately before asking the user how to proceed.
 
 ## PR workflow
 
@@ -99,14 +105,21 @@ user explicitly accepts any residual risk surfaced.
 
 ## Branch workflow
 
-- **Create**: `git checkout -b <name>`. Offer to stash if uncommitted changes exist.
-- **Delete**: use `git branch -d` (safe) by default; only `-D` with explicit approval.
-- **Switch**: `git checkout <branch>`.
+- **Create**: Prefer `git_create_branch`. Offer to stash if uncommitted changes exist before creating the branch.
+- **Delete**: Prefer `git_delete_branch` with safe delete by default; only use force delete with explicit approval.
+- **Switch**: Prefer `git_checkout` for switching to an existing branch.
+
+## Stash workflow
+
+1. Prefer `git_stash` to create a stash entry.
+2. Prefer `git_stash_apply` for non-destructive stash restore when the user wants to keep the stash entry; it returns a structured envelope instead of raw terminal text.
+3. Prefer `git_stash_drop` only after explicit confirmation, because dropping a stash is destructive; it also returns a structured envelope.
+4. Prefer `git_stash_pop` as the combined apply-and-drop path when the user explicitly wants that behavior.
 
 ## Tag / release workflow
 
 1. Confirm the exact version string (semver preferred).
-2. Tag: `git tag -a v<version> -m "<subject>"` → `git push origin v<version>`.
+2. Tag: create the tag with `git tag -a v<version> -m "<subject>"`, then Prefer `git_push_tag` to publish exactly `v<version>` to the confirmed remote instead of pushing tags broadly.
 3. Release: show full release notes draft and wait for approval before `gh release create`.
 
 ## Handoffs
