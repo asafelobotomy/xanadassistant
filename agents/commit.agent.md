@@ -68,7 +68,11 @@ user explicitly accepts any residual risk surfaced.
 4. When a full unified diff of unstaged or staged changes is needed, prefer `git_diff_unstaged` or `git_diff_staged` instead of shelling out for `git diff`.
 5. When the user wants to unstage only part of the staged set, Prefer `git_reset` with explicit file paths instead of shelling out for a selective reset.
 6. Write a commit message following the project's conventions (Conventional Commits 1.0 as default).
-7. **Present the message** to the user before committing. When using `askQuestions` for approval, include the exact proposed commit subject and body verbatim in the question or the `message` field of the `askQuestions` call so the user can review the full text before answering. Do not commit without acknowledgement.
+7. **Present the message** to the user before committing. When using `askQuestions` for approval:
+   - Set `question` to a short approval prompt (e.g. "Approve this commit message, or provide adjustments?").
+   - Set `message` to a fenced markdown code block containing the **full proposed commit message** — subject line, blank line, and body — verbatim. The `message` field is mandatory; never leave it empty.
+   - Include "Approve — commit now" and "Edit before committing" as options.
+   - Do not commit without acknowledgement.
 8. Prefer `git_commit` for the final non-interactive commit step so the result comes back as a structured envelope instead of raw terminal text.
 9. Report the short hash and subject after a successful commit, using `git_log` with `max_count=1` to confirm the new commit.
 

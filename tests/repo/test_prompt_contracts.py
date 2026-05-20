@@ -107,8 +107,17 @@ class PromptContractTests(unittest.TestCase):
     def test_commit_agent_requires_showing_full_message_in_approval_prompt(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
 
-        self.assertIn("include the exact proposed commit subject and body verbatim", content)
-        self.assertIn("before answering", content)
+        # The agent must instruct that the full proposed message is shown verbatim
+        # before the user approves — either via the legacy phrasing or the current one.
+        shows_verbatim = (
+            "include the exact proposed commit subject and body verbatim" in content
+            or "full proposed commit message" in content
+        )
+        self.assertTrue(shows_verbatim, "commit.agent.md must require showing the full message verbatim")
+        self.assertTrue(
+            "before answering" in content or "Do not commit without acknowledgement" in content,
+            "commit.agent.md must require acknowledgement before committing",
+        )
 
     def test_template_prompts_use_serialized_plan_setup_flow(self) -> None:
         prompt_paths = [
