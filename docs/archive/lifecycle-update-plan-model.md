@@ -135,7 +135,7 @@ Required suites:
 - every plugin-delivered surface appears in the correct plugin manifest
 - every MCP config executable path has a matching manifest entry
 - `inspect` reports existing repo state without writing
-- `check` reports missing, stale, malformed, skipped, retired, and unknown surfaces without writing
+- `health-check` reports missing, stale, malformed, skipped, retired, and unknown surfaces without writing
 - simulated stale consumer install updates cleanly to current version
 - malformed legacy version files repair into structured lockfiles
 - update mode creates backups before writes

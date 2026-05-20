@@ -167,7 +167,7 @@ If one of these steps is still unstable, Phase 0 is not done.
 
 ### Phase 0 Checklist
 
-- [x] Define final command list for `inspect`, `interview`, `plan`, `apply`, `check`, `update`, `repair`, and `factory-restore`.
+- [x] Define final command list for `inspect`, `interview`, `plan`, `apply`, `health-check`, `health-report`, `update`, `repair`, and `factory-restore`.
 - [x] Freeze CLI flags for source selection, output format, non-interactive mode, dry-run mode, answer files, plan files, report files, and UI mode.
 - [x] Write `docs/contracts/cli-surface.md` with command, flag, input, and output expectations.
 - [x] Define protocol event types for JSON Lines output.

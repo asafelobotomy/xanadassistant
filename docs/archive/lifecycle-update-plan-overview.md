@@ -144,7 +144,7 @@ python3 xanadAssistant.py inspect --workspace .
 python3 xanadAssistant.py interview --workspace . --mode setup
 python3 xanadAssistant.py plan setup --workspace . --answers answers.json --plan-out plan.json
 python3 xanadAssistant.py apply --workspace . --plan plan.json
-python3 xanadAssistant.py check --workspace .
+python3 xanadAssistant.py health-check --workspace .
 python3 xanadAssistant.py update --workspace .
 python3 xanadAssistant.py repair --workspace .
 python3 xanadAssistant.py factory-restore --workspace .

@@ -54,7 +54,7 @@ Build the read-only engine first so inspection, drift detection, and question ge
 - workspace inspector
 - legacy install reader
 - `inspect`
-- `check`
+- `health-check`
 - `interview`
 - `--ui quiet`
 - initial `--ui agent`
@@ -67,7 +67,7 @@ Build the read-only engine first so inspection, drift detection, and question ge
 - [x] Parse legacy `.github/copilot-version.md` when present.
 - [x] Parse existing future lockfile when present.
 - [x] Implement structured `inspect` output.
-- [x] Implement `check` classification: missing, stale, malformed, skipped, retired, unmanaged, unknown.
+- [x] Implement `health-check` classification: missing, stale, malformed, skipped, retired, unmanaged, unknown.
 - [x] Implement question emission based on interview schema.
 - [x] Emit JSON and JSON Lines outputs.
 - [x] Emit concise `--ui agent` preflight summaries to the visible terminal.
@@ -75,7 +75,7 @@ Build the read-only engine first so inspection, drift detection, and question ge
 ### Phase 3 Validation Gate
 
 - [x] No command in this phase writes to the workspace.
-- [x] `inspect` and `check` produce actionable structured output on clean, stale, and malformed fixtures.
+- [x] `inspect` and `health-check` produce actionable structured output on clean, stale, and malformed fixtures.
 - [x] Interview output can drive a future non-interactive plan step without conversational heuristics.
 
 ### Phase 3 Test Checklist
@@ -99,7 +99,7 @@ The current validated inputs for Phase 4 are:
 - contract docs and protocol examples under `docs/contracts/`
 - deterministic policy and manifest generation
 - metadata registries for packs, profiles, and catalog discovery
-- read-only `inspect`, `check`, and `interview`
+- read-only `inspect`, `health-check`, and `interview`
 - manifest freshness coverage
 - temporary-workspace fixture strategy for unit-level planning tests
 
@@ -148,7 +148,7 @@ The main missing behavior has shifted from planning to execution: `plan setup`, 
 
 Build the write engine with backups, strategy execution, lockfile output, and validation.
 
-Current validated scope in this phase: public `apply` now drives the setup slice end to end for the currently supported setup actions. Top-level `update`, `repair`, and `factory-restore` also execute end to end for the currently modeled surfaces through the same planning and write engine. The write path creates backup roots, writes add/replace setup targets, renders tokenized prompt content, performs deterministic `merge-json-object` writes for MCP config, preserves explicit user-owned Markdown blocks during managed instruction updates, backs up and purges unmanaged lookalikes during `factory-restore`, writes structured lockfile state, generates `.github/copilot-version.md`, emits apply reports, supports `--report-out`, and validates the resulting workspace with `check`.
+Current validated scope in this phase: public `apply` now drives the setup slice end to end for the currently supported setup actions. Top-level `update`, `repair`, and `factory-restore` also execute end to end for the currently modeled surfaces through the same planning and write engine. The write path creates backup roots, writes add/replace setup targets, renders tokenized prompt content, performs deterministic `merge-json-object` writes for MCP config, preserves explicit user-owned Markdown blocks during managed instruction updates, backs up and purges unmanaged lookalikes during `factory-restore`, writes structured lockfile state, generates `.github/copilot-version.md`, emits apply reports, supports `--report-out`, and validates the resulting workspace with `health-check`.
 
 ### Phase 5 Deliverables
 

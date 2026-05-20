@@ -12,7 +12,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `Deps` | yes | Scanning workspace dependencies, auditing installed packages, checking for vulnerabilities, suggesting updates or alternatives, and installing/updating/repairing/removing packages |
 | `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, architecture lookup, dependency tracing, example search, and repository structure questions |
 | `Review` | yes | Code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, and test coverage review |
-| `xanadLifecycle` | yes | `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and `health check` for xanadAssistant-managed surfaces |
+| `xanadLifecycle` | yes | `inspect`, `health-check`, `health-report`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and health-check workflows for xanadAssistant-managed surfaces |
 | `Triage` | no | First-pass complexity classification — determines whether a task needs a direct answer, targeted edit, single agent, or multi-agent plan |
 | `Debugger` | no | Root-cause diagnosis, failing tests, regression triage, broken commands, unclear behavior reproduction, and minimal fix-path isolation |
 | `Organise` | no | Subagent-only structural worker — moving files, regrouping folders, fixing caller paths after a file move |
@@ -33,7 +33,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
 | Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanadAssistant inspect, check, plan, apply, update, repair, factory-restore, or health check | `xanadLifecycle` |
+| xanadAssistant inspect, health-check, health-report, plan, apply, update, repair, factory-restore, or a health-check workflow | `xanadLifecycle` |
 
 ## Handoff Rules
 
@@ -75,7 +75,7 @@ Use these patterns when a task crosses specialist boundaries but should still st
 | `Commit` | `Explore` | Scope of staged changes is unclear before committing |
 | `Commit` | `Review` | User requests a diff review before the commit is made |
 | `Commit` | `Debugger` | A git command fails unexpectedly and the cause is unclear |
-| `xanadLifecycle` | `Debugger` | `inspect`, `check`, `plan`, `apply`, `update`, or `repair` results are surprising or failing and the control path is unclear |
+| `xanadLifecycle` | `Debugger` | `inspect`, `health-check`, `health-report`, `plan`, `apply`, `update`, or `repair` results are surprising or failing and the control path is unclear |
 | `xanadLifecycle` | `Planner` | Repair, update, migration, or factory-restore work needs phased remediation before execution |
 | `xanadLifecycle` | `Explore` | Workspace inventory is needed before a lifecycle operation can be scoped or validated |
 | `Cleaner` | `Commit` | Cleanup scope is approved and changes are ready to stage |

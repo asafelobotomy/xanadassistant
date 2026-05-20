@@ -36,7 +36,7 @@ Deliverables:
 - Implement package resolution for local `--package-root` first.
 - Implement workspace inspector.
 - Implement lockfile parser and legacy version-file reader.
-- Implement `inspect` and `check` with JSON output.
+- Implement `inspect` and `health-check` with JSON output.
 - Implement interview schema emission.
 - Add `--ui quiet` and initial `--ui agent` output.
 
@@ -137,7 +137,7 @@ The smallest valuable implementation should include:
 - generated manifest
 - lockfile schema
 - `inspect`
-- `check`
+- `health-check`
 - `interview` question emission
 - `plan setup`
 - `--ui quiet`
@@ -151,7 +151,7 @@ This proves the contract before writing files.
 1. Define schemas and protocol fixtures.
 2. Write manifest policy and generator.
 3. Add fixture consumer repositories for clean, stale, malformed, and locally customized installs.
-4. Implement read-only `inspect` and `check`.
+4. Implement read-only `inspect` and `health-check`.
 5. Implement interview question emission.
 6. Implement plan generation.
 7. Implement backups and apply strategies.

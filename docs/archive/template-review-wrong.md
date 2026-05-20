@@ -117,7 +117,7 @@ cognitive overhead at the cost of less precise scoping.
 
 ### X1 — Machine-readable lifecycle protocol
 
-`plan`, `inspect`, `check` all emit structured JSON. State is deterministic and
+`plan`, `inspect`, `health-check` all emit structured JSON. State is deterministic and
 testable. The copilot-instructions-template's setup is entirely agent-prose-driven;
 there is no equivalent of `plan repair --json` that can be asserted against in a test.
 
