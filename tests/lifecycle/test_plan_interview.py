@@ -43,8 +43,8 @@ class InterviewAnswerResolutionTests(unittest.TestCase):
             "canonicalSurfaces": ["mcp-config"],
         }
         metadata = {
-            "profileRegistry": {"profiles": [{"id": "balanced", "status": "active"}, {"id": "old", "status": "retired"}]},
-            "packRegistry": {"packs": [{"id": "tdd", "optional": True, "status": "active"}, {"id": "dead", "optional": True, "status": "retired"}]},
+            "profileRegistry": {"profiles": [{"id": "balanced", "name": "Balanced", "summary": "Balanced defaults.", "status": "active"}, {"id": "old", "name": "Old", "summary": "Retired.", "status": "retired"}]},
+            "packRegistry": {"packs": [{"id": "tdd", "name": "TDD", "summary": "Test-driven defaults.", "optional": True, "status": "active"}, {"id": "dead", "name": "Dead", "summary": "Retired.", "optional": True, "status": "retired"}]},
             "agentRegistry": {
                 "agents": [
                     {
@@ -311,6 +311,66 @@ class InterviewAnswerResolutionTests(unittest.TestCase):
         self.assertEqual(resolved["profile.selected"], "balanced")
         self.assertEqual(unresolved, ["ownership.skills"])
         self.assertEqual(unknown_ids, ["extra.answer"])
+
+
+class InterviewQuestionFormattingTests(unittest.TestCase):
+    """Verify wording and option-format changes applied to base interview questions."""
+
+    def _base_questions(self) -> list[dict]:
+        policy = {
+            "ownershipDefaults": {"agents": "plugin-backed-copilot-format", "skills": "plugin-backed-copilot-format"},
+            "canonicalSurfaces": ["mcp-config"],
+        }
+        metadata = {
+            "profileRegistry": {
+                "profiles": [
+                    {"id": "balanced", "name": "Balanced", "summary": "Balanced detail and guidance.", "status": "active"},
+                    {"id": "lean", "name": "Lean", "summary": "Concise output.", "status": "active"},
+                ]
+            },
+            "packRegistry": {
+                "packs": [
+                    {"id": "tdd", "name": "TDD", "summary": "Test-driven defaults.", "optional": True, "status": "active"},
+                    {"id": "secure", "name": "Secure", "summary": "Security-first defaults.", "optional": True, "status": "active"},
+                ]
+            },
+        }
+        return _interview.build_interview_questions(policy, metadata, "setup")
+
+    def test_profile_selected_options_are_labeled_objects(self) -> None:
+        questions = self._base_questions()
+        q = next(q for q in questions if q["id"] == "profile.selected")
+        self.assertTrue(
+            all(isinstance(o, dict) and "id" in o and "label" in o and "description" in o for o in q["options"]),
+            "profile.selected options must be {id, label, description} objects",
+        )
+        self.assertNotIn("{mode}", q["prompt"], "prompt must not contain the {mode} template variable")
+
+    def test_packs_selected_options_are_labeled_objects(self) -> None:
+        questions = self._base_questions()
+        q = next(q for q in questions if q["id"] == "packs.selected")
+        self.assertTrue(
+            all(isinstance(o, dict) and "id" in o and "label" in o and "description" in o for o in q["options"]),
+            "packs.selected options must be {id, label, description} objects",
+        )
+        self.assertNotIn("{mode}", q["prompt"], "prompt must not contain the {mode} template variable")
+
+    def test_ownership_options_are_labeled_objects(self) -> None:
+        policy = {
+            "ownershipDefaults": {"agents": "local", "skills": "local"},
+            "canonicalSurfaces": [],
+        }
+        metadata = {"profileRegistry": {"profiles": []}, "packRegistry": {"packs": []}}
+        questions = _interview.build_interview_questions(policy, metadata, "setup")
+        for surface in ("agents", "skills"):
+            q = next(q for q in questions if q["id"] == f"ownership.{surface}")
+            self.assertTrue(
+                all(isinstance(o, dict) and "id" in o and "label" in o and "description" in o for o in q["options"]),
+                f"ownership.{surface} options must be labeled objects",
+            )
+            ids = [o["id"] for o in q["options"]]
+            self.assertIn("local", ids)
+            self.assertIn("plugin-backed-copilot-format", ids)
 
 
 if __name__ == "__main__":

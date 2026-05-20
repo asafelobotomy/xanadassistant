@@ -21,10 +21,11 @@ files directly when the lifecycle engine can express the same change.
 
 When the workspace `xanadTools` MCP server is connected and can resolve a local
 package root or a supported remote source, prefer its `lifecycle_inspect`,
-`lifecycle_interview`, `lifecycle_plan_setup`, `lifecycle_apply`, `lifecycle_check`,
+`lifecycle_check`, `lifecycle_interview`, `lifecycle_plan_setup`, `lifecycle_setup`,
 `lifecycle_update`, `lifecycle_repair`, and `lifecycle_factory_restore` tools.
-Fall back to direct CLI invocation when MCP is unavailable or package source
-resolution is missing.
+(`lifecycle_apply` is a retired compatibility stub that returns `unavailable` —
+do not use it for new operations.) Fall back to direct CLI invocation when MCP
+is unavailable or package source resolution is missing.
 
 ## Trigger phrases
 
@@ -336,7 +337,7 @@ file contents, project names, or secrets are included.
 
 1. **Collect** — run `health-check --json` and parse `result.issueTitle`, `result.issueBody`, and `result.issueLabels`.
 2. **Preview** — show the user exactly what will be submitted. Require explicit confirmation before any write.
-3. **Submit** (on confirmation only) — call `github.create_issue` with `owner="asafelobotomy"`, `repo="xanadassistant"`, `title=result.issueTitle`, `body=result.issueBody`, `labels=result.issueLabels`.
+3. **Submit** (on confirmation only) — call `create_issue` via the `github` MCP server with `owner="asafelobotomy"`, `repo="xanadassistant"`, `title=result.issueTitle`, `body=result.issueBody`, `labels=result.issueLabels`. If the `github` MCP server is unavailable, present the issue title and body to the user and ask them to open it manually at `https://github.com/asafelobotomy/xanadassistant/issues/new`.
 4. **Report** the created issue URL to the user.
 
 Never submit without user approval. Never include workspace file paths, project
@@ -355,6 +356,6 @@ Do not interpret manifests, copy files, or modify `.github/` contents directly.
 At the start of every lifecycle task, call `memory_dump(agent="xanadLifecycle")`.
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
-- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` to verify its age.
+- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
 
 When you learn something durable about a workspace (install state, known repair paths, workspace-specific conventions), call `memory_set(agent="xanadLifecycle", key=..., value=...)` before finishing.

@@ -72,7 +72,7 @@ For each declared package, assess:
 
 ### 3a — Vulnerability check
 
-Use `mcp_security_query_osv` if the security MCP companion is connected;
+Use `query_osv` (via the `security` MCP server) if the security MCP companion is connected;
 otherwise fall back to `pip-audit` (Python), `npm audit` (Node.js), or
 `osv-scanner` (all ecosystems). Query at minimum every package that is:
 - Pinned to a version older than 6 months
@@ -89,7 +89,7 @@ Fix: upgrade to <version>
 
 ### 3b — Health check
 
-Use `mcp_security_query_deps` if the security MCP companion is connected;
+Use `query_deps` (via the `security` MCP server) if the security MCP companion is connected;
 otherwise fetch package metadata from the ecosystem registry directly
 (`pip index versions`, `npm view`, `cargo search`, etc.) or via `search`.
 Retrieve deps.dev signals for each package:
@@ -195,6 +195,6 @@ Use the audit summary format defined in `## Reporting format`. Outside of full a
 At the start of every task, call `memory_dump(agent="deps")`.
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
-- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` to verify its age.
+- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="deps", key=..., value=...)` before finishing.

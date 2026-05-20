@@ -37,27 +37,37 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
     })
 
     # ── simple ───────────────────────────────────────────────────────────────
-    profile_options = [profile["id"] for profile in profile_registry.get("profiles", []) if profile.get("status") == "active"]
+    profile_options = [
+        {"id": p["id"], "label": p["name"], "description": p["summary"]}
+        for p in profile_registry.get("profiles", [])
+        if p.get("status") == "active"
+    ]
     if profile_options:
+        profile_ids = [o["id"] for o in profile_options]
+        default_profile = "balanced" if "balanced" in profile_ids else profile_ids[0]
         questions.append({
             "id": "profile.selected",
             "kind": "choice",
             "batch": "simple",
-            "prompt": f"Which behavior profile should {mode} use?",
+            "prompt": "Which behavior profile should this workspace use?",
             "required": True,
             "options": profile_options,
-            "recommended": "balanced" if "balanced" in profile_options else profile_options[0],
-            "default": "balanced" if "balanced" in profile_options else profile_options[0],
+            "recommended": default_profile,
+            "default": default_profile,
             "requiredFor": ["profile"],
         })
 
-    optional_packs = [pack["id"] for pack in pack_registry.get("packs", []) if pack.get("optional", False) and pack.get("status") == "active"]
+    optional_packs = [
+        {"id": p["id"], "label": p["name"], "description": p["summary"]}
+        for p in pack_registry.get("packs", [])
+        if p.get("optional", False) and p.get("status") == "active"
+    ]
     if optional_packs:
         questions.append({
             "id": "packs.selected",
             "kind": "multi-choice",
             "batch": "simple",
-            "prompt": f"Which optional packs should {mode} use?",
+            "prompt": "Which optional packs would you like to enable for this workspace?",
             "required": False,
             "options": optional_packs,
             "recommended": [],
@@ -76,9 +86,20 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
             "id": f"ownership.{surface}",
             "kind": "choice",
             "batch": "advanced",
-            "prompt": f"How should {surface} be owned for this workspace?",
+            "prompt": f"How should {surface} files be managed in this workspace?",
             "required": True,
-            "options": ["local", "plugin-backed-copilot-format"],
+            "options": [
+                {
+                    "id": "local",
+                    "label": "Local",
+                    "description": "Managed by xanadAssistant — files are installed to .github/ and tracked in the lockfile.",
+                },
+                {
+                    "id": "plugin-backed-copilot-format",
+                    "label": "Extension-backed",
+                    "description": "Managed by the Copilot extension — files use extension format and are registered as Copilot-provided.",
+                },
+            ],
             "recommended": ownership_defaults[surface],
             "default": ownership_defaults[surface],
             "requiredFor": [surface],

@@ -118,6 +118,108 @@ class GenerateManifestPackValidationTests(unittest.TestCase):
         return _CopiedPackageRoot()
 
 
+class ExcludeGlobsTests(unittest.TestCase):
+    """generate_manifest respects excludeGlobs in surface specs."""
+
+    def _make_package_root(self, tmp_path: Path) -> Path:
+        """Build a minimal package root with a tools surface containing two files."""
+        repo_root = Path(__file__).resolve().parents[2]
+
+        for name in ("agents", "mcp", "packs", "skills", "template"):
+            shutil.copytree(repo_root / name, tmp_path / name)
+        shutil.copy2(repo_root / "VERSION", tmp_path / "VERSION")
+
+        # Create a tools surface with two directories: kept/ and excluded/
+        (tmp_path / "tools" / "kept").mkdir(parents=True)
+        (tmp_path / "tools" / "kept" / "helper.py").write_text("# kept\n")
+        (tmp_path / "tools" / "excluded").mkdir(parents=True)
+        (tmp_path / "tools" / "excluded" / "tool.py").write_text("# excluded\n")
+
+        return tmp_path
+
+    def test_excluded_globs_are_omitted_from_managed_files(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            pkg = self._make_package_root(Path(raw_tmp))
+
+            policy_path = pkg / "template/setup/install-policy.json"
+            policy = json.loads(policy_path.read_text(encoding="utf-8"))
+            policy["surfaceSources"]["tools"]["excludeGlobs"] = ["excluded/**"]
+            policy["generationSettings"]["unmanagedSourceExcludes"].append("tools/excluded/**")
+            policy_path.write_text(json.dumps(policy, indent=2) + "\n", encoding="utf-8")
+
+            with mock.patch.object(
+                generate_manifest_module,
+                "parse_args",
+                return_value=Namespace(
+                    package_root=str(pkg),
+                    policy="template/setup/install-policy.json",
+                    manifest_out=None,
+                ),
+            ):
+                result = main()
+
+            self.assertEqual(result, 0)
+            manifest = json.loads((pkg / "template/setup/install-manifest.json").read_text())
+            targets = [e["target"] for e in manifest["managedFiles"]]
+            self.assertFalse(
+                any("excluded" in t for t in targets),
+                f"excluded/ files should not appear in managedFiles; got: {[t for t in targets if 'excluded' in t]}",
+            )
+            self.assertTrue(
+                any("kept" in t for t in targets),
+                "kept/ files should still appear in managedFiles",
+            )
+
+    def test_no_exclude_globs_includes_all_surface_files(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            pkg = self._make_package_root(Path(raw_tmp))
+
+            policy_path = pkg / "template/setup/install-policy.json"
+            policy = json.loads(policy_path.read_text(encoding="utf-8"))
+            # Remove excludeGlobs (if any) so both dirs are included
+            policy["surfaceSources"]["tools"].pop("excludeGlobs", None)
+            policy["generationSettings"]["unmanagedSourceExcludes"] = [
+                p for p in policy["generationSettings"]["unmanagedSourceExcludes"]
+                if "xanadEval" not in p
+            ]
+            policy_path.write_text(json.dumps(policy, indent=2) + "\n", encoding="utf-8")
+
+            with mock.patch.object(
+                generate_manifest_module,
+                "parse_args",
+                return_value=Namespace(
+                    package_root=str(pkg),
+                    policy="template/setup/install-policy.json",
+                    manifest_out=None,
+                ),
+            ):
+                result = main()
+
+            self.assertEqual(result, 0)
+            manifest = json.loads((pkg / "template/setup/install-manifest.json").read_text())
+            targets = [e["target"] for e in manifest["managedFiles"]]
+            self.assertTrue(
+                any("excluded" in t for t in targets),
+                "Without excludeGlobs, excluded/ files should appear in managedFiles",
+            )
+            self.assertTrue(
+                any("kept" in t for t in targets),
+                "Without excludeGlobs, kept/ files should also appear in managedFiles",
+            )
+
+    def test_xanadeeval_absent_from_real_manifest(self) -> None:
+        """xanadEval must not appear in the committed install-manifest.json."""
+        repo_root = Path(__file__).resolve().parents[2]
+        manifest = json.loads(
+            (repo_root / "template/setup/install-manifest.json").read_text(encoding="utf-8")
+        )
+        targets = [e["target"] for e in manifest["managedFiles"]]
+        self.assertFalse(
+            any("xanadEval" in t for t in targets),
+            f"xanadEval should be excluded from the install manifest; found: {[t for t in targets if 'xanadEval' in t]}",
+        )
+
+
 class _CopiedPackageRoot:
     def __enter__(self) -> Path:
         self._tmpdir = tempfile.TemporaryDirectory()

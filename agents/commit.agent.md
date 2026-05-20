@@ -139,6 +139,6 @@ user explicitly accepts any residual risk surfaced.
 At the start of every task — before the `## On every invocation` steps — call `memory_dump(agent="commit")`.
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
-- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` to verify its age.
+- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
 
 When you learn something specific to this workspace's commands, tool versions, paths, or established conventions, call `memory_set(agent="commit", key=..., value=...)` before finishing.

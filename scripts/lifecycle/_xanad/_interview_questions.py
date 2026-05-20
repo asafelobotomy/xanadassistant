@@ -40,7 +40,7 @@ def personalisation_questions() -> list[dict]:
             "id": "agent.persona",
             "kind": "choice",
             "batch": "advanced",
-            "prompt": "What tone should the assistant use?",
+            "prompt": "What interaction style should the assistant use?",
             "required": False,
             "default": "professional",
             "recommended": "professional",
@@ -104,7 +104,8 @@ def mcp_servers_question() -> dict:
         "recommended": [],
         "default": [],
         "reason": (
-            "The memory, git, web, time, and security servers are always enabled when MCP is on. "
+            "The xanadTools, git, web, devDocs, time, memory, security, filesystem, and sequential-thinking servers "
+            "are always enabled when MCP is on. "
             "GitHub (requires GITHUB_TOKEN) and SQLite (workspace-specific) ship disabled "
             "by default in .vscode/mcp.json. Select them here to enable, or toggle the "
             '"disabled" flag directly in .vscode/mcp.json at any time.'
@@ -126,8 +127,8 @@ def mcp_question() -> dict:
         "reason": (
             "Enabling MCP installs all hook scripts and .vscode/mcp.json atomically. "
             "Always-on servers: xanadWorkspaceMcp.py (lifecycle), memoryMcp.py (persistent SQLite-backed agent memory under .github/xanadAssistant/memory), gitMcp.py (git), "
-            "webMcp.py (search + fetch), timeMcp.py (time/duration), "
-            "securityMcp.py (OSV + deps.dev), sequentialThinkingMcp.py (reasoning). "
+            "webMcp.py (search + fetch), devDocsMcp.py (API/framework docs), timeMcp.py (time/duration), "
+            "securityMcp.py (OSV + deps.dev), filesystemMcp.py (sandboxed workspace file access), sequentialThinkingMcp.py (reasoning). "
             "Optional servers (disabled by default): githubMcp.py (GitHub REST API, requires GITHUB_TOKEN), "
             "sqliteMcp.py (workspace-local SQLite inspection). "
             "Outbound access is governed by each server at call time."

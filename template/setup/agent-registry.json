@@ -21,17 +21,19 @@
             "id": "message-style",
             "answerKey": "agent.commit.messageStyle",
             "kind": "choice",
-            "prompt": "How should the Commit agent shape commit messages by default?",
+            "prompt": "How should the Commit agent format commit messages by default?",
             "required": false,
             "fallbackToken": "{{pack:commit-style}}",
             "options": [
               {
                 "id": "conventional-with-context",
-                "label": "Conventional with context"
+                "label": "Conventional with context",
+                "description": "Conventional Commits format with a body explaining intent and rationale when the diff alone does not make it clear."
               },
               {
                 "id": "conventional-subject-first",
-                "label": "Conventional subject first"
+                "label": "Conventional subject first",
+                "description": "Conventional Commits with a precise subject line first; body only when the diff does not make the rationale obvious."
               }
             ],
             "tokens": [
@@ -52,11 +54,13 @@
             "options": [
               {
                 "id": "surface-and-stop",
-                "label": "Surface and stop"
+                "label": "Surface and stop",
+                "description": "Report the suspected secret and pause the workflow; let the user decide how to proceed."
               },
               {
                 "id": "refuse-on-probable-secret",
-                "label": "Refuse on probable secret"
+                "label": "Refuse on probable secret",
+                "description": "Refuse to stage or commit whenever probable secrets are detected, until they are removed or replaced."
               }
             ],
             "tokens": [
@@ -85,17 +89,19 @@
             "id": "output-style",
             "answerKey": "agent.docs.outputStyle",
             "kind": "choice",
-            "prompt": "How should the Docs agent shape its writing style by default?",
+            "prompt": "What writing style should the Docs agent use by default?",
             "required": false,
             "fallbackToken": "{{pack:output-style}}",
             "options": [
               {
                 "id": "corpus-match",
-                "label": "Match the surrounding corpus"
+                "label": "Match the surrounding corpus",
+                "description": "Follow the surrounding document style — Markdown with headers, numbered steps, and minimal runnable examples."
               },
               {
                 "id": "concise-guides",
-                "label": "Short, instructional guides"
+                "label": "Short, instructional guides",
+                "description": "Compact sections with imperative steps and minimal prose, optimised for task completion over narrative context."
               }
             ],
             "tokens": [
@@ -130,11 +136,13 @@
             "options": [
               {
                 "id": "full-phased",
-                "label": "Full phased plans"
+                "label": "Full phased plans",
+                "description": "Numbered phases each with name, affected files, ordered steps, stop condition, risks, and a falsifying check."
               },
               {
                 "id": "tight-phased",
-                "label": "Tighter phased plans"
+                "label": "Tighter phased plans",
+                "description": "Short numbered phases with goal, affected files, concrete steps, and a single narrow verification check."
               }
             ],
             "tokens": [
@@ -169,11 +177,13 @@
             "options": [
               {
                 "id": "concise-results",
-                "label": "Concise results"
+                "label": "Concise results",
+                "description": "Workspace-relative paths and line numbers; best match first; tables only when they materially help."
               },
               {
                 "id": "context-rich",
-                "label": "Context-rich results"
+                "label": "Context-rich results",
+                "description": "Paths, line numbers, and Markdown tables grouping related findings; structured with the most relevant match first."
               }
             ],
             "tokens": [
@@ -202,17 +212,19 @@
             "id": "reporting-threshold",
             "answerKey": "agent.review.reportingThreshold",
             "kind": "choice",
-            "prompt": "How aggressive should the Review agent be when reporting findings?",
+            "prompt": "How broadly should the Review agent report findings by default?",
             "required": false,
             "fallbackToken": "{{pack:review-depth}}",
             "options": [
               {
                 "id": "advisory-and-up",
-                "label": "Advisory and up"
+                "label": "Advisory and up",
+                "description": "Report all findings at Advisory severity and above; prioritise Critical and High."
               },
               {
                 "id": "medium-and-up",
-                "label": "Medium and up"
+                "label": "Medium and up",
+                "description": "Report Medium severity and above; mention Low and Advisory findings only when they affect follow-up risk."
               }
             ],
             "tokens": [

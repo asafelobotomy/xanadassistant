@@ -190,7 +190,10 @@ def generate_manifest(package_root: Path, policy: dict) -> dict:
         if strategy not in WRITE_STRATEGIES:
             raise ValueError(f"Unsupported write strategy for {surface_name}: {strategy}")
 
+        exclude_globs = source_spec.get("excludeGlobs", [])
         for file_path, relative_path in iter_source_files(base_path, source_spec["kind"]):
+            if exclude_globs and is_excluded_path(normalize_relpath(relative_path), exclude_globs):
+                continue
             managed_files.append(
                 {
                     "id": build_file_id(surface_name, relative_path),

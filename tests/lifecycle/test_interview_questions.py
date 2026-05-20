@@ -21,6 +21,20 @@ class InterviewQuestionsTests(unittest.TestCase):
         self.assertIn("workspace-local", sqlite_option["description"])
         self.assertIn("read-only", sqlite_option["description"])
 
+    def test_mcp_question_discloses_devdocs_and_filesystem_in_always_on_list(self) -> None:
+        question = interview_questions.mcp_question()
+        reason = question["reason"]
+
+        self.assertIn("devDocsMcp.py", reason)
+        self.assertIn("filesystemMcp.py", reason)
+
+    def test_mcp_servers_reason_lists_all_always_on_servers(self) -> None:
+        question = interview_questions.mcp_servers_question()
+        reason = question["reason"]
+
+        for server in ("xanadTools", "git", "web", "devDocs", "time", "memory", "security", "filesystem", "sequential-thinking"):
+            self.assertIn(server, reason, f"\"{server}\" must appear in mcp.servers reason text")
+
 
 if __name__ == "__main__":
     unittest.main()
