@@ -9,7 +9,6 @@ import re
 import sys
 from pathlib import Path
 
-import _common
 from _common import (
     TOKEN_BUDGET,
     _count_tokens, _max_nesting_depth, _parse_frontmatter,

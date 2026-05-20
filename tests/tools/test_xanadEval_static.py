@@ -25,6 +25,7 @@ class TokensCommandTests(unittest.TestCase):
         ) as f:
             f.write(content)
             path = f.name
+        self.addCleanup(Path(path).unlink, missing_ok=True)
         buf = io.StringIO()
         with redirect_stdout(buf):
             code = xe.cmd_tokens(path, fmt)

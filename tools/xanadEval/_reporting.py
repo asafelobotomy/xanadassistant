@@ -168,6 +168,9 @@ def cmd_compare(
             "status": status,
         })
 
+    if not results:
+        print("xanadEval compare: no files were successfully compared", file=sys.stderr)
+        return 2
     exit_code = 1 if (threshold is not None and any_over_threshold) else 0
 
     if fmt == "json":

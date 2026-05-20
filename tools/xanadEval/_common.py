@@ -127,6 +127,10 @@ def _call_model(messages: list[dict], model: str, token: str) -> str:
     except urllib.error.HTTPError as e:
         body = e.read().decode(errors="replace")
         raise RuntimeError(f"HTTP {e.code}: {body[:200]}") from e
+    except urllib.error.URLError as e:
+        raise RuntimeError(f"Network error: {e.reason}") from e
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"Invalid JSON response from API: {e}") from e
     except (KeyError, IndexError) as e:
         raise RuntimeError(f"Unexpected response format: {e}") from e
 
@@ -136,9 +140,13 @@ def _load_spec(path: str) -> dict:
     text = Path(path).read_text(encoding="utf-8")
     if _yaml is not None:
         result = _yaml.safe_load(text)
-        if isinstance(result, dict):
-            return result
-    return json.loads(text)
+    else:
+        result = json.loads(text)
+    if not isinstance(result, dict):
+        raise ValueError(
+            f"eval spec must be a mapping, got {type(result).__name__}"
+        )
+    return result
 
 
 def _load_tasks(eval_dir: Path, task_refs: list) -> list[dict]:

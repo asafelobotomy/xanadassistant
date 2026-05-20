@@ -38,6 +38,9 @@ def cmd_results_list(results_dir: str, fmt: str) -> int:
             })
         except (OSError, json.JSONDecodeError):
             continue
+    if not records:
+        print(f"xanadEval results: no valid result files in {results_dir}", file=sys.stderr)
+        return 1
     if fmt == "json":
         print(json.dumps(records, indent=2))
     else:

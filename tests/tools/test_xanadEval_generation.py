@@ -112,6 +112,7 @@ class MainEntrypointTests(unittest.TestCase):
         ) as f:
             f.write(_MINIMAL_SKILL)
             path = f.name
+        self.addCleanup(Path(path).unlink, missing_ok=True)
         _, code = self._run_main(["tokens", path])
         self.assertEqual(code, 0)
 

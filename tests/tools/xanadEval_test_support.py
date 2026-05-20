@@ -147,7 +147,9 @@ class DynamicTestBase:
             mode="w", suffix=".md", delete=False, encoding="utf-8"
         ) as f:
             f.write(_MINIMAL_SKILL)
-            return f.name
+            path = f.name
+        self.addCleanup(os.unlink, path)
+        return path
 
 
 __all__ = [
