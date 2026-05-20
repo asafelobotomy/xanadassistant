@@ -12,7 +12,6 @@ class PromptContractTests(unittest.TestCase):
     def test_commit_agent_does_not_reference_undeclared_git_tools(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
         frontmatter, body = content.split("---\n", 2)[1:]
-
         match = re.search(r"^tools:\s*(\[[^\n]+\])$", frontmatter, re.MULTILINE)
         self.assertIsNotNone(match)
         declared_tools = {
@@ -20,10 +19,8 @@ class PromptContractTests(unittest.TestCase):
             for token in match.group(1).strip("[]").split(",")
             if token.strip()
         }
-
         referenced_git_tools = set(re.findall(r"\bgit_[a-z0-9_]+\b", body))
         undeclared = referenced_git_tools - declared_tools
-
         self.assertEqual(
             undeclared,
             set(),
@@ -32,44 +29,37 @@ class PromptContractTests(unittest.TestCase):
 
     def test_commit_agent_prefers_git_mcp_for_opening_inspection(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("Prefer `git_status`", content)
         self.assertIn("`git_diff_staged_stat`", content)
         self.assertIn("`git_diff_unstaged_stat`", content)
 
     def test_commit_agent_prefers_git_mcp_for_selective_unstage_and_stash_actions(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("Prefer `git_reset`", content)
         self.assertIn("`git_stash_apply`", content)
         self.assertIn("`git_stash_drop`", content)
 
     def test_commit_agent_prefers_git_mcp_for_exact_tag_push(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("Prefer `git_push_tag`", content)
 
     def test_commit_agent_prefers_git_mcp_for_straightforward_pushes(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("Prefer `git_push`", content)
 
     def test_commit_agent_prefers_git_mcp_for_noninteractive_commit_and_rebase(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("Prefer `git_commit`", content)
         self.assertIn("Prefer `git_rebase`", content)
 
     def test_commit_agent_prefers_structured_stash_mutation_tools(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("structured envelope", content)
         self.assertIn("`git_stash_apply`", content)
         self.assertIn("`git_stash_drop`", content)
 
     def test_commit_agent_consumes_structured_push_and_rebase_fields(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("`status`", content)
         self.assertIn("`summary`", content)
         self.assertIn("`stderr`", content)
@@ -78,7 +68,6 @@ class PromptContractTests(unittest.TestCase):
 
     def test_commit_agent_prefers_structured_pull_results(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("Prefer `git_pull`", content)
         self.assertIn("failed `git_pull`", content)
 
@@ -94,19 +83,16 @@ class PromptContractTests(unittest.TestCase):
 
     def test_commit_agent_prefers_git_log_and_diff_for_inspection(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("Prefer `git_log`", content)
         self.assertIn("`git_diff_unstaged`", content)
         self.assertIn("`git_diff_staged`", content)
 
     def test_commit_agent_prefers_git_add_for_staging(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("`git_add`", content)
 
     def test_commit_agent_requires_showing_full_message_in_approval_prompt(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         # The agent must instruct that the full proposed message is shown verbatim
         # before the user approves — either via the legacy phrasing or the current one.
         shows_verbatim = (
@@ -119,12 +105,23 @@ class PromptContractTests(unittest.TestCase):
             "commit.agent.md must require acknowledgement before committing",
         )
 
+    def test_repo_copilot_instructions_use_canonical_preflight_before_commit(self) -> None:
+        instruction_paths = [
+            REPO_ROOT / "template" / "copilot-instructions.md",
+            REPO_ROOT / ".github" / "copilot-instructions.md",
+        ]
+
+        for instruction_path in instruction_paths:
+            with self.subTest(path=instruction_path):
+                content = instruction_path.read_text(encoding="utf-8")
+                self.assertIn("python3 scripts/drift_preflight.py", content)
+                self.assertIn("before commit", content.lower())
+
     def test_template_prompts_use_serialized_plan_setup_flow(self) -> None:
         prompt_paths = [
             REPO_ROOT / "template" / "prompts" / "bootstrap.md",
             REPO_ROOT / "template" / "prompts" / "setup.md",
         ]
-
         for prompt_path in prompt_paths:
             with self.subTest(prompt=prompt_path.name):
                 content = prompt_path.read_text(encoding="utf-8")
@@ -135,7 +132,6 @@ class PromptContractTests(unittest.TestCase):
 
     def test_readme_uses_serialized_plan_setup_flow(self) -> None:
         content = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
-
         self.assertIn("--plan-out .xanadAssistant/tmp/setup-plan.json", content)
         self.assertIn("--plan .xanadAssistant/tmp/setup-plan.json --json", content)
         self.assertIn("xanadBootstrap.py setup --workspace . \\", content)
@@ -144,7 +140,6 @@ class PromptContractTests(unittest.TestCase):
     def test_active_docs_do_not_teach_apply_as_supported_command(self) -> None:
         readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
         cli_surface = (REPO_ROOT / "docs" / "contracts" / "cli-surface.md").read_text(encoding="utf-8")
-
         self.assertNotIn("| `update` | Inspect + plan + apply in one step. |", readme)
         self.assertNotIn("| `repair` | Inspect + repair plan + apply in one step. |", readme)
         self.assertNotIn("4. Run `apply`", readme)

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.1.0",
-  "packageVersion": "0.3.5",
+  "packageVersion": "0.3.6",
   "policySchemaVersion": "0.1.0",
   "sourceRoots": {
     "template": "template",
@@ -248,7 +248,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:3dbb850fda1d7ede2171b101bda935d2428732d9b778333ce4bee75d6d0f2439"
+      "hash": "sha256:5202b2581eae783c4cf468b3b7db228c27853f1ed36d4938ffedeeccdf4b7c44"
     },
     {
       "id": "instructions.scripts.instructions.md",

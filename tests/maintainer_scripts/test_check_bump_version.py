@@ -171,6 +171,28 @@ class CheckBumpVersionTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 1)
 
+    def test_check_mode_reports_stale_summary_when_only_summary_hash_drifts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = Path(tmpdir)
+            _write_repo_fixture(
+                repo_root,
+                version="1.2.3",
+                manifest_version="1.2.3",
+                summary_version="1.2.3",
+                summary_manifest_hash="sha256:stale",
+            )
+
+            stderr = io.StringIO()
+            exit_code = check_bump_version.main(
+                ["--repo-root", str(repo_root), "--check"],
+                stdout=io.StringIO(),
+                stderr=stderr,
+                quiet=True,
+            )
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn(".github/copilot-version.md", stderr.getvalue())
+
     def test_main_restores_artifacts_when_later_write_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_root = Path(tmpdir)

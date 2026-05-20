@@ -12,6 +12,7 @@ I work **in** {{WORKSPACE_NAME}} — implementing features, reviewing code, runn
 | Task | Command |
 | ------ | --------- |
 | Run tests | `{{TEST_COMMAND}}` |
+| Drift preflight | `python3 scripts/drift_preflight.py` |
 | LOC gate | `python3 scripts/check_loc.py` |
 | Inspect Copilot install state | `python3 <xanad-root>/xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` |
 | Check for repair needs | `python3 <xanad-root>/xanadAssistant.py check --workspace . --package-root <xanad-root> --json` |
@@ -65,6 +66,7 @@ Route specialist work to the matching agent before acting directly. If a task in
 
 Plan → Do → Check → Act on every non-trivial change.
 
+- Before commit, merge, or push in this repository, run `python3 scripts/drift_preflight.py`.
 - Default: run the narrowest test suite covering changed paths
 - Broaden to the full suite at task completion and before merging
 
