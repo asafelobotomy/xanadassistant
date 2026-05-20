@@ -15,7 +15,7 @@ I work **in** {{WORKSPACE_NAME}} — implementing features, reviewing code, runn
 | Drift preflight | `python3 scripts/drift_preflight.py` |
 | LOC gate | `python3 scripts/check_loc.py` |
 | Inspect Copilot install state | `python3 <xanad-root>/xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` |
-| Check for repair needs | `python3 <xanad-root>/xanadAssistant.py check --workspace . --package-root <xanad-root> --json` |
+| Check for repair needs | `python3 <xanad-root>/xanadAssistant.py health-check --workspace . --package-root <xanad-root> --json` |
 
 ## Lifecycle Operations
 
@@ -36,7 +36,7 @@ Do not edit files under `.github/agents/`, `.github/skills/`, `.github/mcp/`, or
 
 **Conditional behaviors:**
 - **If `xanadTools` MCP is available** and can resolve a local xanadAssistant package root or a supported remote source, setup-oriented lifecycle operations may use its `lifecycle.*` tools instead of shelling out directly. If `xanadTools` MCP is unavailable, fall back to `xanadAssistant.py` directly.
-- **If `inspect` or `check` reports `package_name_mismatch` or `successor_cleanup_required`**, the workspace is being migrated from `copilot-instructions-template`; use `repair` or `update` so xanadAssistant can archive predecessor-owned files and install the current bundle atomically.
+- **If `inspect` or `health-check` reports `package_name_mismatch` or `successor_cleanup_required`**, the workspace is being migrated from `copilot-instructions-template`; use `repair` or `update` so xanadAssistant can archive predecessor-owned files and install the current bundle atomically.
 
 ## Agent Routing
 
@@ -112,4 +112,4 @@ See `## Agent Routing` for the authoritative routing table; this section is a qu
 - `Planner` — produce scoped execution plans for multi-step work before implementation
 - `Researcher` — gather source-backed external constraints before implementation or review
 - `Review` — code, architecture, security, and regression-risk review; handles codebase audits
-- `xanadLifecycle` — handles all `inspect`, `check`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and **health check** requests
+- `xanadLifecycle` — handles all `inspect`, `health-check`, `health-report`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and **health check** requests

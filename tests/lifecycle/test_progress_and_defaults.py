@@ -42,7 +42,7 @@ class ProgressTests(unittest.TestCase):
                     )
                     _progress.emit_agent_progress(
                         {
-                            "command": "check",
+                            "command": "health-check",
                             "status": "drift",
                             "result": {"summary": {"missing": 2}},
                         }

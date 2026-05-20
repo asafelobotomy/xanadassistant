@@ -28,6 +28,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts import check_managed_parity
+from scripts.lifecycle._xanad._errors import LifecycleCommandError
 from scripts.lifecycle._xanad._execute_apply import build_setup_result
 from scripts.lifecycle._xanad._plan_b import build_plan_result
 
@@ -42,24 +43,32 @@ def run(package_root: Path) -> int:
     with tempfile.TemporaryDirectory() as tmpdir:
         workspace = Path(tmpdir)
         answers_path = _write_answers_file(workspace)
-        plan_payload = build_plan_result(
-            workspace,
-            package_root,
-            "setup",
-            str(answers_path),
-            True,
-        )
+        try:
+            plan_payload = build_plan_result(
+                workspace,
+                package_root,
+                "setup",
+                str(answers_path),
+                True,
+            )
+        except LifecycleCommandError as error:
+            print(f"Setup plan failed: {error.message}", file=sys.stderr)
+            return 4
         if plan_payload["result"].get("conflictDetails"):
             print("Setup plan unexpectedly requires conflict resolution.", file=sys.stderr)
             return 4
         plan_path = workspace / "setup-plan.json"
         plan_path.write_text(json.dumps(plan_payload, indent=2) + "\n", encoding="utf-8")
-        build_setup_result(
-            workspace,
-            package_root,
-            dry_run=False,
-            plan_path=str(plan_path),
-        )
+        try:
+            build_setup_result(
+                workspace,
+                package_root,
+                dry_run=False,
+                plan_path=str(plan_path),
+            )
+        except LifecycleCommandError as error:
+            print(f"Setup apply failed: {error.message}", file=sys.stderr)
+            return 4
         return check_managed_parity.run(package_root, workspace)
 
 

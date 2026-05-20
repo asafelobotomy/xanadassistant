@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest import mock
 
 from scripts import check_install_parity
+from scripts.lifecycle._xanad._errors import LifecycleCommandError
 
 
 class CheckInstallParityTests(unittest.TestCase):
@@ -44,6 +45,32 @@ class CheckInstallParityTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 4)
         build_setup.assert_not_called()
+        parity_run.assert_not_called()
+
+    def test_run_returns_exit_4_when_plan_raises_lifecycle_error(self) -> None:
+        with mock.patch(
+            "scripts.check_install_parity.build_plan_result",
+            side_effect=LifecycleCommandError("contract_input_failure", "plan failed", 4),
+        ), mock.patch("scripts.check_install_parity.build_setup_result") as build_setup, mock.patch(
+            "scripts.check_install_parity.check_managed_parity.run"
+        ) as parity_run:
+            exit_code = check_install_parity.run(Path("/package"))
+
+        self.assertEqual(exit_code, 4)
+        build_setup.assert_not_called()
+        parity_run.assert_not_called()
+
+    def test_run_returns_exit_4_when_setup_apply_raises_lifecycle_error(self) -> None:
+        with mock.patch(
+            "scripts.check_install_parity.build_plan_result",
+            return_value={"result": {"conflictDetails": []}},
+        ), mock.patch(
+            "scripts.check_install_parity.build_setup_result",
+            side_effect=LifecycleCommandError("apply_failure", "setup failed", 5),
+        ), mock.patch("scripts.check_install_parity.check_managed_parity.run") as parity_run:
+            exit_code = check_install_parity.run(Path("/package"))
+
+        self.assertEqual(exit_code, 4)
         parity_run.assert_not_called()
 
     def test_main_returns_exit_2_for_missing_package_root(self) -> None:

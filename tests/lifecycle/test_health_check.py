@@ -47,7 +47,7 @@ def _mock_check_result(status: str = "clean") -> dict:
     if status != "clean":
         entries.append({"surface": "skills", "target": ".github/skills/ciPreflight/SKILL.md", "status": "stale"})
     return {
-        "command": "check",
+        "command": "health-check",
         "status": status,
         "warnings": [],
         "errors": [],
@@ -77,6 +77,24 @@ def _patch_all(context: dict | None = None, check: dict | None = None, source: d
 
 
 class HealthCheckReportFieldsTests(unittest.TestCase):
+    def test_build_health_check_report_reuses_collected_context_for_check(self) -> None:
+        context = _mock_context()
+        check = _mock_check_result()
+        with mock.patch(
+            "scripts.lifecycle._xanad._health_check.collect_context",
+            return_value=context,
+        ) as collect_context, mock.patch(
+            "scripts.lifecycle._xanad._health_check.build_check_result",
+            return_value=check,
+        ) as build_check_result, mock.patch(
+            "scripts.lifecycle._xanad._health_check.build_source_summary",
+            return_value=_mock_source_summary(),
+        ):
+            build_health_check_report(Path("."), _PKG_ROOT)
+
+        collect_context.assert_called_once_with(Path("."), _PKG_ROOT)
+        build_check_result.assert_called_once_with(Path("."), _PKG_ROOT, context=context)
+
     def test_build_health_check_report_returns_required_top_level_keys(self) -> None:
         with _patch_all():
             report = build_health_check_report(Path("."), _PKG_ROOT)
@@ -216,7 +234,7 @@ class HealthCheckResultPayloadTests(unittest.TestCase):
     def test_build_health_check_result_returns_command_field(self) -> None:
         with _patch_all():
             payload = build_health_check_result(Path("."), _PKG_ROOT)
-        self.assertEqual(payload["command"], "health-check")
+        self.assertEqual(payload["command"], "health-report")
 
     def test_build_health_check_result_status_is_ok(self) -> None:
         with _patch_all():
@@ -243,12 +261,12 @@ class HealthCheckResultPayloadTests(unittest.TestCase):
         self.assertNotIn("/home/user/xanadassistant", str(payload))
 
 
-class HealthCheckCLIIntegrationTests(unittest.TestCase):
-    """Verify the health-check subcommand is reachable via the CLI."""
+class HealthReportCLIIntegrationTests(unittest.TestCase):
+    """Verify the health-report subcommand is reachable via the CLI."""
 
-    def test_health_check_subcommand_help_exits_cleanly(self) -> None:
+    def test_health_report_subcommand_help_exits_cleanly(self) -> None:
         result = subprocess.run(
-            [sys.executable, "xanadAssistant.py", "health-check", "--help"],
+            [sys.executable, "xanadAssistant.py", "health-report", "--help"],
             capture_output=True,
             text=True,
             cwd=str(_REPO_ROOT),
@@ -256,9 +274,9 @@ class HealthCheckCLIIntegrationTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertIn("--label", result.stdout)
 
-    def test_health_check_subcommand_requires_workspace(self) -> None:
+    def test_health_report_subcommand_requires_workspace(self) -> None:
         result = subprocess.run(
-            [sys.executable, "xanadAssistant.py", "health-check"],
+            [sys.executable, "xanadAssistant.py", "health-report"],
             capture_output=True,
             text=True,
             cwd=str(_REPO_ROOT),

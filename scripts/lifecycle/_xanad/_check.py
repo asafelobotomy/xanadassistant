@@ -17,8 +17,8 @@ DRIFT_WARNING_CODES = {
 }
 
 
-def build_check_result(workspace: Path, package_root: Path) -> dict:
-    context = collect_context(workspace, package_root)
+def build_check_result(workspace: Path, package_root: Path, *, context: dict | None = None) -> dict:
+    context = context if context is not None else collect_context(workspace, package_root)
     counts, entries, managed_targets = classify_manifest_entries(workspace, context["manifestWithStatus"])
     unmanaged_files = collect_unmanaged_files(workspace, context["manifestWithStatus"], managed_targets)
     counts["unmanaged"] = len(unmanaged_files)
@@ -56,7 +56,7 @@ def build_check_result(workspace: Path, package_root: Path) -> dict:
         status = "drift"
 
     return {
-        "command": "check",
+        "command": "health-check",
         "workspace": str(workspace),
         "source": build_source_summary(package_root),
         "status": status,

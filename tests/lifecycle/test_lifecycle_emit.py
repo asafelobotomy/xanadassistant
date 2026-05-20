@@ -29,11 +29,21 @@ class LifecycleEmitTests(unittest.TestCase):
                     "contracts": {"cli": True},
                 },
             },
-            "check": {
-                "command": "check",
+            "health-check": {
+                "command": "health-check",
                 "status": "drift",
                 "warnings": [{"code": "warn", "message": "w", "details": {}}],
                 "result": {"summary": {"missing": 1}, "unmanagedFiles": []},
+            },
+            "health-report": {
+                "command": "health-report",
+                "status": "ok",
+                "warnings": [],
+                "result": {
+                    "check": {"status": "drift"},
+                    "issueTitle": "[Health Check] xanadAssistant 0.3.6 — drift",
+                    "issueLabels": ["health-check-report"],
+                },
             },
             "interview": {
                 "command": "interview",
@@ -95,7 +105,8 @@ class LifecycleEmitTests(unittest.TestCase):
         }
         expected_types = {
             "inspect": ["phase", "inspect-summary", "receipt"],
-            "check": ["phase", "warning", "check-summary", "receipt"],
+            "health-check": ["phase", "warning", "check-summary", "receipt"],
+            "health-report": ["phase", "health-report-summary", "receipt"],
             "interview": ["phase", "question", "receipt"],
             "plan": ["phase", "inspect-summary", "question", "phase", "plan-summary", "receipt"],
             "apply": ["phase", "apply-report", "receipt"],

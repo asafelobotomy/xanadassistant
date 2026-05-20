@@ -45,11 +45,6 @@ CHECKS: tuple[Check, ...] = (
         command=("python3", "scripts/check_loc.py"),
     ),
     Check(
-        name="tests",
-        description="Full unittest suite.",
-        command=("python3", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"),
-    ),
-    Check(
         name="freshness",
         description="Generated manifest/catalog freshness against policy and templates.",
         command=(
@@ -72,7 +67,7 @@ CHECKS: tuple[Check, ...] = (
         command=(
             "python3",
             "xanadAssistant.py",
-            "check",
+            "health-check",
             "--workspace",
             ".",
             "--package-root",
@@ -84,6 +79,11 @@ CHECKS: tuple[Check, ...] = (
         name="parity",
         description="Fresh local install matches source files after lifecycle setup.",
         command=("python3", "scripts/check_install_parity.py"),
+    ),
+    Check(
+        name="tests",
+        description="Full unittest suite.",
+        command=("python3", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"),
     ),
 )
 CHECKS_BY_NAME = {check.name: check for check in CHECKS}

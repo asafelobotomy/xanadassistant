@@ -167,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def _run_lifecycle(args: argparse.Namespace) -> int:
     """Inner lifecycle dispatch — separated so main() can close _State.log_file on exit."""
-    write_commands = {"setup", "update", "repair", "factory-restore"}
+    write_commands = {"setup"}
     workspace = resolve_workspace(args.workspace, create=args.command in write_commands)
     if args.json and args.json_lines:
         payload, exit_code = build_error_payload(
@@ -221,12 +221,12 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
         emit_payload(payload, args.ui, use_json_lines)
         return 0
 
-    if args.command == "check":
+    if args.command == "health-check":
         try:
             payload = build_check_result(workspace, package_root)
         except LifecycleCommandError as error:
             payload, exit_code = build_error_payload(
-                "check", workspace, package_root,
+                "health-check", workspace, package_root,
                 error.code, error.message, error.exit_code, details=error.details,
             )
             emit_payload(payload, args.ui, use_json_lines)
@@ -281,7 +281,7 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
             "factory-restore",
         )
 
-    if args.command == "health-check":
+    if args.command == "health-report":
         from scripts.lifecycle._xanad._health_check import build_health_check_result
         try:
             payload = build_health_check_result(
@@ -289,11 +289,13 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
             )
         except LifecycleCommandError as error:
             payload, exit_code = build_error_payload(
-                "health-check", workspace, package_root,
+                "health-report", workspace, package_root,
                 error.code, error.message, error.exit_code, details=error.details,
             )
+            _attach_output_path(args.report_out, payload, "reportOut")
             emit_payload(payload, args.ui, use_json_lines)
             return exit_code
+        _attach_output_path(args.report_out, payload, "reportOut")
         emit_payload(payload, args.ui, use_json_lines)
         return 0
 

@@ -42,11 +42,12 @@ When changing source, follow this order:
 Default order:
 
 1. `attention-budget`
-2. `loc`
-3. `tests`
+2. `version-bump`
+3. `loc`
 4. `freshness`
 5. `workspace-drift`
 6. `parity`
+7. `tests`
 
 Usage:
 

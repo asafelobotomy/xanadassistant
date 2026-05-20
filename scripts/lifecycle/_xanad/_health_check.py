@@ -151,7 +151,7 @@ def build_health_check_report(workspace: Path, package_root: Path, label: str | 
     content, project names, absolute paths, and secrets are excluded.
     """
     context = collect_context(workspace, package_root)
-    check_result = build_check_result(workspace, package_root)
+    check_result = build_check_result(workspace, package_root, context=context)
     source_summary = build_source_summary(package_root)
 
     install_meta = _extract_install_metadata(context["lockfileState"], context["installState"])
@@ -192,10 +192,10 @@ def build_health_check_report(workspace: Path, package_root: Path, label: str | 
 
 
 def build_health_check_result(workspace: Path, package_root: Path, label: str | None = None) -> dict:
-    """Return a lifecycle-standard command payload for the health-check command."""
+    """Return a lifecycle-standard command payload for the health-report command."""
     report = build_health_check_report(workspace, package_root, label=label)
     return {
-        "command": "health-check",
+        "command": "health-report",
         "workspace": _REDACTED_WORKSPACE,
         "source": _sanitize_source_summary(build_source_summary(package_root)),
         "status": "ok",

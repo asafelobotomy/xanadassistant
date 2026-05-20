@@ -47,7 +47,7 @@ Commands may refine reporting details later, but these meanings should remain st
 `7`
 
 - Managed drift or stale state detected.
-- Use when `check` or another read-only command determines the install is not current.
+- Use when `health-check` or another read-only command determines the install is not current.
 
 `8`
 

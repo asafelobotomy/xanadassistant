@@ -54,7 +54,7 @@ body:
     id: label
     attributes:
       label: Workspace Label
-      description: Optional alias provided via --label when running the health-check command.
+      description: Optional alias provided via --label when running the health-report command.
       placeholder: "e.g. my-project"
     validations:
       required: false
@@ -62,7 +62,7 @@ body:
     id: full_report
     attributes:
       label: Full Health Check Report (JSON)
-      description: Paste the `result` block from `xanadAssistant health-check --json` output here.
+      description: Paste the `result` block from `xanadAssistant health-report --json` output here.
       render: json
     validations:
       required: false

@@ -53,6 +53,20 @@ class DriftPreflightTests(unittest.TestCase):
             ],
         )
 
+    def test_default_check_order_matches_maintenance_policy(self) -> None:
+        self.assertEqual(
+            [check.name for check in drift_preflight.CHECKS],
+            [
+                "attention-budget",
+                "version-bump",
+                "loc",
+                "freshness",
+                "workspace-drift",
+                "parity",
+                "tests",
+            ],
+        )
+
     def test_run_stops_at_first_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_root = Path(tmpdir)

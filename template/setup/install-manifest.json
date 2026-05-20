@@ -64,7 +64,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:23472f927b6a9ec9745c37d24879855b0e7d1ea9817102d61c7b4dba1304c923"
+      "hash": "sha256:3dfdb6c0092e7ce4a5bcf524bf049e2bfb6dc66ad1b989149a2c13d40ef7d881"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -224,7 +224,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:630a5191609481231f818b834229190c009e0b651a0d610e88122b802871c4b1"
+      "hash": "sha256:99e10b975d33fb6cd213d51e075bcd5ba62b9bfb104da57cffa0fd0403e83e0e"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -248,7 +248,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:5202b2581eae783c4cf468b3b7db228c27853f1ed36d4938ffedeeccdf4b7c44"
+      "hash": "sha256:f4141a47d8079bf99c919c9ac7872b26d84f634f5821d4ac2106773b1623a06d"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -1309,7 +1309,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:35b6929cda79902c1dffc5e79312c17ba8d20d895f779941bc0feaec3f1b1b82"
+      "hash": "sha256:bc3d37143f3232cf8f2ed1419519254c919628bb4dc5eed3741392926db81209"
     },
     {
       "id": "mlops-skills.mlopsDataPipelines.SKILL.md",

@@ -98,12 +98,12 @@ class MainDispatchTests(unittest.TestCase):
         self.assertEqual(exit_code, 2)
         self.assertTrue(emit_payload.called)
 
-    def test_main_returns_drift_exit_code_for_check(self) -> None:
+    def test_main_returns_drift_exit_code_for_health_check(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir, mock.patch(
             "scripts.lifecycle._xanad._main.build_check_result",
             return_value={"status": "drift", "warnings": [], "errors": [], "result": {}},
         ), mock.patch("scripts.lifecycle._xanad._main.emit_payload"):
-            exit_code = main(["check", "--workspace", tmpdir, "--package-root", tmpdir])
+            exit_code = main(["health-check", "--workspace", tmpdir, "--package-root", tmpdir])
 
         self.assertEqual(exit_code, 7)
 
@@ -118,6 +118,18 @@ class MainDispatchTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         payload = emit_payload.call_args.args[0]
         self.assertEqual(payload["result"]["planOut"], str(Path(plan_out).resolve()))
+
+    def test_main_health_report_attaches_report_out_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir, mock.patch(
+            "scripts.lifecycle._xanad._health_check.build_health_check_result",
+            return_value={"command": "health-report", "workspace": tmpdir, "warnings": [], "errors": [], "result": {}},
+        ), mock.patch("scripts.lifecycle._xanad._main.emit_payload") as emit_payload:
+            report_out = str(Path(tmpdir) / "health-report.json")
+            exit_code = main(["health-report", "--workspace", tmpdir, "--package-root", tmpdir, "--report-out", report_out])
+
+        self.assertEqual(exit_code, 0)
+        payload = emit_payload.call_args.args[0]
+        self.assertEqual(payload["result"]["reportOut"], str(Path(report_out).resolve()))
 
     def test_main_handles_log_file_open_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir, mock.patch(
@@ -246,7 +258,7 @@ class MainDispatchTests(unittest.TestCase):
 
     def test_main_handles_check_and_plan_errors_and_nonzero_plan_results(self) -> None:
         cases = [
-            (["check", "--workspace", None, "--package-root", None], "scripts.lifecycle._xanad._main.build_check_result", "check failed"),
+            (["health-check", "--workspace", None, "--package-root", None], "scripts.lifecycle._xanad._main.build_check_result", "check failed"),
             (["plan", "setup", "--workspace", None, "--package-root", None], "scripts.lifecycle._xanad._main.build_plan_result", "plan failed"),
         ]
 
@@ -285,6 +297,21 @@ class MainDispatchTests(unittest.TestCase):
 
             self.assertEqual(exit_code, 0)
             self.assertEqual(run_exec.call_args.args[4], command)
+
+    def test_main_does_not_create_missing_workspace_for_non_setup_write_commands(self) -> None:
+        for command in ("update", "repair", "factory-restore"):
+            with self.subTest(command=command), tempfile.TemporaryDirectory() as tmpdir, mock.patch(
+                "scripts.lifecycle._xanad._main.resolve_effective_package_root",
+                return_value=self._resolved_package_root(tmpdir),
+            ), mock.patch(
+                "scripts.lifecycle._xanad._main._run_execution_command",
+                return_value=0,
+            ):
+                workspace = Path(tmpdir) / "missing-workspace"
+                exit_code = main([command, "--workspace", str(workspace), "--package-root", tmpdir])
+
+            self.assertEqual(exit_code, 0)
+            self.assertFalse(workspace.exists())
 
 
 if __name__ == "__main__":

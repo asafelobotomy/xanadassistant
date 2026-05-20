@@ -21,7 +21,7 @@ def emit_json_lines(payload: dict) -> None:
             },
             {"type": "receipt", "command": command, "sequence": 3, "status": payload["status"]},
         ]
-    elif command == "check":
+    elif command == "health-check":
         events = [
             {"type": "phase", "command": command, "sequence": 1, "phase": "Preflight"},
             {
@@ -29,6 +29,18 @@ def emit_json_lines(payload: dict) -> None:
                 "status": payload["status"],
                 "summary": payload["result"]["summary"],
                 "unmanagedFiles": payload["result"]["unmanagedFiles"],
+            },
+            {"type": "receipt", "command": command, "sequence": 3, "status": payload["status"]},
+        ]
+    elif command == "health-report":
+        events = [
+            {"type": "phase", "command": command, "sequence": 1, "phase": "Report"},
+            {
+                "type": "health-report-summary", "command": command, "sequence": 2,
+                "status": payload["status"],
+                "healthStatus": payload["result"]["check"]["status"],
+                "issueTitle": payload["result"]["issueTitle"],
+                "issueLabels": payload["result"]["issueLabels"],
             },
             {"type": "receipt", "command": command, "sequence": 3, "status": payload["status"]},
         ]

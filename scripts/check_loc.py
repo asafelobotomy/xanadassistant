@@ -33,7 +33,7 @@ WARN_LIMIT_OVERRIDES = {
 
     # ── Top-level project docs ─────────────────────────────────────────────────────
     "README.md": 330,
-    "docs/plans/memory-mcp.md": 300,
+    "docs/archive/memory-mcp.md": 300,
 
     # ── Consumer MCP scripts (single-file delivery) ───────────────────────────────
     # Consumer workspaces receive these MCP servers as single files, so they need a little

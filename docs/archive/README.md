@@ -22,6 +22,8 @@ Current archived documents:
 - `lifecycle-update-plan-overview.md`
 - `lifecycle-update-plan-phases.md`
 - `lifecycle-update-plan-resolution.md`
+- `memory-mcp.md`
+- `memory-v1-contract.md`
 - `memory-review-adopt.md`
 - `template-review-right.md`
 - `template-review-wrong.md`

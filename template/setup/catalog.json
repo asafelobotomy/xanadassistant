@@ -11,7 +11,11 @@
       "category": "read-only"
     },
     {
-      "id": "check",
+      "id": "health-check",
+      "category": "read-only"
+    },
+    {
+      "id": "health-report",
       "category": "read-only"
     },
     {

@@ -22,11 +22,11 @@ The lifecycle engine must expose these commands:
 - `plan repair`
 - `plan factory-restore`
 - `setup`
-- `check`
+- `health-check`
 - `update`
 - `repair`
 - `factory-restore`
-- `health-check`
+- `health-report`
 
 ## Command Intent
 
@@ -56,7 +56,7 @@ The lifecycle engine must expose these commands:
 - Creates a backup before the first managed write.
 - Produces a machine-readable report and writes installed state when successful.
 
-`check`
+`health-check`
 
 - Performs read-only drift and validity classification.
 - Classifies managed state as clean, missing, stale, malformed, retired, skipped, unmanaged, or unknown.
@@ -74,7 +74,7 @@ The lifecycle engine must expose these commands:
 
 - Performs backup plus purge plus reinstall according to policy and approval rules.
 
-`health-check`
+`health-report`
 
 - Collects a workspace health check report for maintainers.
 - Must not write managed files to the workspace.

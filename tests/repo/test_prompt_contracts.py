@@ -43,6 +43,10 @@ class PromptContractTests(unittest.TestCase):
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
         self.assertIn("Prefer `git_push_tag`", content)
 
+    def test_commit_agent_prefers_git_mcp_for_tag_creation(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+        self.assertIn("Prefer `git_tag`", content)
+
     def test_commit_agent_prefers_git_mcp_for_straightforward_pushes(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
         self.assertIn("Prefer `git_push`", content)
@@ -71,9 +75,14 @@ class PromptContractTests(unittest.TestCase):
         self.assertIn("Prefer `git_pull`", content)
         self.assertIn("failed `git_pull`", content)
 
+    def test_commit_agent_prefers_structured_pr_creation_over_gh(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+        self.assertIn("structured GitHub PR creation surface", content)
+        self.assertIn("`githubRepo`", content)
+        self.assertIn("`gh pr create` only when no structured GitHub tool is available", content)
+
     def test_commit_agent_prefers_git_mcp_for_fetch_branch_and_stash_workflows(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-
         self.assertIn("Prefer `git_fetch`", content)
         self.assertIn("Prefer `git_create_branch`", content)
         self.assertIn("Prefer `git_checkout`", content)
@@ -93,8 +102,7 @@ class PromptContractTests(unittest.TestCase):
 
     def test_commit_agent_requires_showing_full_message_in_approval_prompt(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        # The agent must instruct that the full proposed message is shown verbatim
-        # before the user approves — either via the legacy phrasing or the current one.
+        # The agent must require showing the full proposed message verbatim before approval.
         shows_verbatim = (
             "include the exact proposed commit subject and body verbatim" in content
             or "full proposed commit message" in content
@@ -110,7 +118,6 @@ class PromptContractTests(unittest.TestCase):
             REPO_ROOT / "template" / "copilot-instructions.md",
             REPO_ROOT / ".github" / "copilot-instructions.md",
         ]
-
         for instruction_path in instruction_paths:
             with self.subTest(path=instruction_path):
                 content = instruction_path.read_text(encoding="utf-8")
@@ -148,9 +155,9 @@ class PromptContractTests(unittest.TestCase):
 
     def test_cli_surface_documents_health_check_command(self) -> None:
         cli_surface = (REPO_ROOT / "docs" / "contracts" / "cli-surface.md").read_text(encoding="utf-8")
-
         self.assertIn("- `health-check`", cli_surface)
-        self.assertIn("`health-check`", cli_surface)
+        self.assertIn("- `health-report`", cli_surface)
+        self.assertIn("`health-report`", cli_surface)
         self.assertIn("Collects a workspace health check report for maintainers.", cli_surface)
 
     def test_readme_and_protocol_document_agent_follow_up_customization(self) -> None:
@@ -167,7 +174,6 @@ class PromptContractTests(unittest.TestCase):
             REPO_ROOT / "template" / "prompts" / "bootstrap.md",
             REPO_ROOT / "template" / "prompts" / "setup.md",
         ]
-
         for prompt_path in prompt_paths:
             with self.subTest(prompt=prompt_path.name):
                 content = prompt_path.read_text(encoding="utf-8")
@@ -242,7 +248,6 @@ class PromptReviewSkillContractTests(unittest.TestCase):
 
     def test_prompt_review_skill_composition_module_reads_imports(self) -> None:
         content = self._content()
-        # Module 6 must describe resolving markdown links and token references
         self.assertIn("Markdown link", content)
         self.assertIn("{{", content)
 

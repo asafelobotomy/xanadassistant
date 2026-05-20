@@ -107,7 +107,7 @@ python3 xanadAssistant.py <command> --workspace <path> --package-root <path> [--
 | Command | Description |
 | --- | --- |
 | `inspect` | Read-only. Report install state, managed-file findings, and repair needs. |
-| `check` | Read-only. Classify each managed file as clean, stale, missing, malformed, or retired. |
+| `health-check` | Read-only. Classify each managed file as clean, stale, missing, malformed, or retired. |
 | `interview` | Read-only. Emit structured questions needed to complete a lifecycle mode. |
 | `plan setup` | Compute a first-time install plan without writing anything. |
 | `plan update` | Compute an update plan without writing anything. |
@@ -117,7 +117,7 @@ python3 xanadAssistant.py <command> --workspace <path> --package-root <path> [--
 | `update` | Inspect + plan + write in one step. |
 | `repair` | Inspect + repair plan + write in one step. |
 | `factory-restore` | Backup + purge + reinstall from policy. |
-| `health-check` | Collect a maintainer-facing health check report without writing managed files. |
+| `health-report` | Collect a maintainer-facing health check report without writing managed files. |
 
 Stale `apply` invocations are retired and return structured migration guidance. Use `setup` for serialized setup plans.
 
@@ -145,10 +145,10 @@ python3 scripts/check_bump_version.py
 python3 xanadAssistant.py inspect --workspace . --package-root . --json
 
 # Check this workspace
-python3 xanadAssistant.py check --workspace . --package-root . --json
+python3 xanadAssistant.py health-check --workspace . --package-root . --json
 
 # Build a shareable maintainer health report for this workspace
-python3 xanadAssistant.py health-check --workspace . --package-root . --json
+python3 xanadAssistant.py health-report --workspace . --package-root . --json
 
 # Plan a setup into another workspace
 python3 xanadAssistant.py plan setup --workspace <path> --package-root . --json --non-interactive

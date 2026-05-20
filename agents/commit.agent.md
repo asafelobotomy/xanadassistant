@@ -5,7 +5,7 @@ argument-hint: "Describe the git task: commit, push, preflight, PR, branch, tag,
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_stash, git_stash_pop, git_stash_apply, git_stash_drop, git_push_tag, git_push]
+tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_stash, git_stash_pop, git_stash_apply, git_stash_drop, git_tag, git_push_tag, git_push]
 agents: [Explore, Review, Debugger]
 user-invocable: true
 ---
@@ -121,7 +121,8 @@ user explicitly accepts any residual risk surfaced.
 1. Confirm source branch, target branch, title, and body.
 2. Check for `.github/pull_request_template.md`; use it as the body skeleton if present.
 3. Ask whether to create as draft or ready for review.
-4. Create via `gh pr create` or `githubRepo` tool.
+4. Prefer the structured GitHub PR creation surface — use `githubRepo`, or the repo-local `github` MCP `create_pull_request` tool when connected.
+5. Fall back to `gh pr create` only when no structured GitHub tool is available.
 
 ## Branch workflow
 
@@ -139,7 +140,7 @@ user explicitly accepts any residual risk surfaced.
 ## Tag / release workflow
 
 1. Confirm the exact version string (semver preferred).
-2. Tag: create the tag with `git tag -a v<version> -m "<subject>"`, then Prefer `git_push_tag` to publish exactly `v<version>` to the confirmed remote instead of pushing tags broadly.
+2. Tag: Prefer `git_tag` to create the tag first, using an annotated message when the user wants a release-style tag. Then Prefer `git_push_tag` to publish exactly `v<version>` to the confirmed remote instead of pushing tags broadly.
 3. Release: show full release notes draft and wait for approval before `gh release create`.
 
 ## Handoffs

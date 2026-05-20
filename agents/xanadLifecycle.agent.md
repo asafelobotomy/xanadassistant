@@ -40,8 +40,9 @@ is unavailable or package source resolution is missing.
 - Update to the latest version → run `update`
 - Repair a broken or incomplete install → run `repair`
 - Restore to factory defaults → run `factory-restore`
-- Check current workspace state → run `inspect` or `check`
-- Run a lifecycle **health check** / submit a health check report → run the `health-check` command (see `## Health check workflow`)
+- Check current workspace state → run `inspect` or `health-check`
+- Run a lifecycle **health check** → run the `health-check` command
+- Submit a health check report → run the `health-report` command (see `## Health check workflow`)
 - Natural-language requests to add a convention or preference to instructions are not lifecycle operations; do not invoke this agent for phrases like `Remember this for next time` or `Add this to your instructions`.
 
 ## Cold-start (blank workspace)
@@ -257,7 +258,7 @@ python3 xanadAssistant.py inspect \
   --ui agent --json-lines
 
 # Drift check (exits 7 if not clean)
-python3 xanadAssistant.py check \
+python3 xanadAssistant.py health-check \
   --workspace <consumer-repo-path> \
   --package-root <xanadAssistant-checkout> \
   --ui agent --json-lines
@@ -318,7 +319,7 @@ python3 xanadAssistant.py factory-restore \
   --non-interactive --ui agent --json-lines
 
 # Collect a workspace health check report (read-only)
-python3 xanadAssistant.py health-check \
+python3 xanadAssistant.py health-report \
   --workspace <consumer-repo-path> \
   --package-root <xanadAssistant-checkout> \
   [--label <workspace-alias>] --json
@@ -339,10 +340,10 @@ python3 xanadAssistant.py apply \
 
 ## Health check workflow
 
-The `health-check` command collects xanadAssistant-only lifecycle state — no workspace
+The `health-report` command collects xanadAssistant-only lifecycle state — no workspace
 file contents, project names, or secrets are included.
 
-1. **Collect** — run `health-check --json` and parse `result.issueTitle`, `result.issueBody`, and `result.issueLabels`.
+1. **Collect** — run `health-report --json` and parse `result.issueTitle`, `result.issueBody`, and `result.issueLabels`.
 2. **Preview** — show the user exactly what will be submitted. Require explicit confirmation before any write.
 3. **Submit** (on confirmation only) — call `create_issue` via the `github` MCP server with `owner="asafelobotomy"`, `repo="xanadassistant"`, `title=result.issueTitle`, `body=result.issueBody`, `labels=result.issueLabels`. If the `github` MCP server is unavailable, present the issue title and body to the user and ask them to open it manually at `https://github.com/asafelobotomy/xanadassistant/issues/new`.
 4. **Report** the created issue URL to the user.

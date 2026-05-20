@@ -124,7 +124,7 @@ Run `xanadAssistant.py setup --json` with optional `--plan`, `--dry-run` flags.
 
 ### `lifecycle_check`
 
-Run `xanadAssistant.py check --json`. No additional inputs beyond the shared schema.
+Run `xanadAssistant.py health-check --json`. No additional inputs beyond the shared schema.
 
 ### Retired Tool Tombstones
 
@@ -151,7 +151,7 @@ Run `xanadAssistant.py factory-restore --json`. No additional inputs beyond the 
 
 ### `workspace_show_install_state`
 
-Return the current lifecycle install state for the workspace without the full `check` payload. Input: no arguments beyond optional `packageRoot`. Output should include `installState` and the lifecycle `status` (`clean` or `drift`).
+Return the current lifecycle install state for the workspace without the full `health-check` payload. Input: no arguments beyond optional `packageRoot`. Output should include `installState` and the lifecycle `status` (`clean` or `drift`).
 
 ### `workspace_validate_lockfile`
 

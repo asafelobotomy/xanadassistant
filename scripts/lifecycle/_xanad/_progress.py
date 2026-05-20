@@ -59,7 +59,7 @@ def emit_agent_progress(payload: dict) -> None:
             out(_warn(f"  Warnings: {len(payload['warnings'])}"))
         return
 
-    if payload["command"] == "check":
+    if payload["command"] == "health-check":
         out(_phase("Preflight"))
         check_status = payload["status"]
         out(f"  Check status: {_ok(check_status) if check_status == 'clean' else _warn(check_status)}")
