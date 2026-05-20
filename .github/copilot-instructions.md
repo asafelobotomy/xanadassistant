@@ -58,7 +58,7 @@ Route specialist work to the matching agent before acting directly. If a task in
 ## Coding Conventions
 
 - Language: **Python** · Package manager: **pip**
-- **Testing**: Always — write tests alongside every code change.
+- **Testing**: Write tests alongside every code change.
 - Read before modifying — never edit a file whose current content you have not read in this task
 - No silent error swallowing
 
@@ -67,7 +67,7 @@ Route specialist work to the matching agent before acting directly. If a task in
 Plan → Do → Check → Act on every non-trivial change.
 
 - Before commit, merge, or push in this repository, run `python3 scripts/drift_preflight.py`.
-- Default: run the narrowest test suite covering changed paths
+- Default: run the single test module or test class that directly covers the changed code (see `tests.instructions.md` for the full test-scope policy)
 - Broaden to the full suite at task completion and before merging
 
 ## Operating Modes

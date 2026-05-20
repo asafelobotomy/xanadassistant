@@ -25,7 +25,7 @@ _AGENT_PERSONA_LABELS: dict[str, str] = {
 }
 
 _TESTING_PHILOSOPHY_LABELS: dict[str, str] = {
-    "always": "Always — write tests alongside every code change.",
+    "always": "Write tests alongside every code change.",
     "suggest": "Suggest — propose tests but do not block on them.",
     "skip": "Skip — do not write or suggest tests unless asked.",
 }

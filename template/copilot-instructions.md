@@ -67,7 +67,7 @@ Route specialist work to the matching agent before acting directly. If a task in
 Plan → Do → Check → Act on every non-trivial change.
 
 - Before commit, merge, or push in this repository, run `python3 scripts/drift_preflight.py`.
-- Default: run the narrowest test suite covering changed paths
+- Default: run the single test module or test class that directly covers the changed code (see `tests.instructions.md` for the full test-scope policy)
 - Broaden to the full suite at task completion and before merging
 
 ## Operating Modes
