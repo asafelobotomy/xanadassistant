@@ -97,6 +97,42 @@ class ResultsCommandTests(DynamicTestBase, unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("?", buf.getvalue())
 
+    def test_results_view_string_pass_rate_returns_0(self) -> None:
+        """cmd_results_view must display '?' when pass_rate is a non-numeric string."""
+        with tempfile.TemporaryDirectory() as d:
+            result = {
+                "eval": "evals/test-skill/eval.yaml",
+                "skill": "test-skill",
+                "model": "gpt-4o-mini",
+                "timestamp": "2026-05-20T12:00:00Z",
+                "summary": {"total": 1, "passed": 0, "pass_rate": "bad", "score": 0.0},
+                "tasks": [],
+            }
+            result_path = Path(d) / "run.json"
+            result_path.write_text(json.dumps(result), encoding="utf-8")
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = xe.cmd_results_view(str(result_path), "text")
+        self.assertEqual(code, 0)
+        self.assertIn("?", buf.getvalue())
+
+    def test_results_list_string_numeric_fields_returns_0(self) -> None:
+        """cmd_results_list must not crash when summary numeric fields are non-numeric strings."""
+        with tempfile.TemporaryDirectory() as d:
+            dp = Path(d)
+            result = {
+                "eval": "evals/test-skill/eval.yaml",
+                "skill": "test-skill",
+                "model": "gpt-4o-mini",
+                "timestamp": "2026-05-20T12:00:00Z",
+                "summary": {"total": 1, "passed": 0, "pass_rate": "bad", "score": "bad"},
+                "tasks": [],
+            }
+            (dp / "run-result.json").write_text(json.dumps(result), encoding="utf-8")
+            with redirect_stdout(io.StringIO()):
+                code = xe.cmd_results_list(str(dp), "text")
+        self.assertEqual(code, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -10,6 +10,12 @@ from pathlib import Path
 
 from _common import _DEFAULT_RESULTS_DIR  # noqa: F401  (re-exported for consumers)
 
+def _as_float(value: object) -> float | None:
+    """Return *value* as float, or None if it cannot be converted."""
+    try:
+        return float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
 
 # ── results list ──────────────────────────────────────────────────────────────
 
@@ -46,8 +52,10 @@ def cmd_results_list(results_dir: str, fmt: str) -> int:
     else:
         print(f"xanadEval results \u2014 {results_dir}")
         for r in records:
-            pr = f"{r['pass_rate']:.0%}" if r["pass_rate"] is not None else "?"
-            sc = f"{r['score']:.3f}" if r["score"] is not None else "?"
+            pr_v = _as_float(r["pass_rate"])
+            sc_v = _as_float(r["score"])
+            pr = f"{pr_v:.0%}" if pr_v is not None else "?"
+            sc = f"{sc_v:.3f}" if sc_v is not None else "?"
             print(f"  {r['file']:<60}  {pr}  score: {sc}")
     return 0
 
@@ -66,13 +74,12 @@ def cmd_results_view(results_path: str, fmt: str) -> int:
         print(json.dumps(data, indent=2))
     else:
         summary = data.get("summary", {})
-        pr = summary.get("pass_rate")
+        pr_v = _as_float(summary.get("pass_rate"))
         print(f"xanadEval results view \u2014 {Path(results_path).name}")
         print(f"  skill:     {data.get('skill', '?')}")
         print(f"  model:     {data.get('model', '?')}")
         print(f"  timestamp: {data.get('timestamp', '?')}")
-        if pr is not None:
-            print(f"  pass_rate: {pr:.0%}")
+        print(f"  pass_rate: {pr_v:.0%}" if pr_v is not None else "  pass_rate: ?")
         print(f"  score:     {summary.get('score', '?')}")
         print()
         for t in data.get("tasks", []):
@@ -115,10 +122,8 @@ def cmd_compare_results(files: list[str], fmt: str) -> int:
         for tid in sorted(set(base_tasks) | set(compare_tasks)):
             if tid in base_tasks and tid in compare_tasks:
                 bt, ct = base_tasks[tid], compare_tasks[tid]
-                _bs = bt.get("score")
-                _cs = ct.get("score")
-                _bs_f = float(_bs) if _bs is not None else 0.0
-                _cs_f = float(_cs) if _cs is not None else 0.0
+                _bs_f = _as_float(bt.get("score")) or 0.0
+                _cs_f = _as_float(ct.get("score")) or 0.0
                 deltas.append({
                     "task": tid,
                     "baseline_score": _bs_f,
@@ -166,14 +171,23 @@ def cmd_compare_results(files: list[str], fmt: str) -> int:
         bpr = base_s.get("pass_rate")
         print("xanadEval results compare")
         print(f"  baseline: {base_name}")
-        print(f"    pass_rate: {bpr:.0%}  score: {base_s.get('score', '?')}"
-              if bpr is not None else f"    {base_s}")
+        bpr_v = _as_float(bpr)
+        bsc_v = _as_float(base_s.get("score"))
+        bsc_str = f"{bsc_v:.3f}" if bsc_v is not None else "?"
+        if bpr_v is not None:
+            print(f"    pass_rate: {bpr_v:.0%}  score: {bsc_str}")
+        else:
+            print(f"    {base_s}")
         for fname, fdata in loaded[1:]:
             fs = fdata.get("summary", {})
-            fpr = fs.get("pass_rate")
+            fpr_v = _as_float(fs.get("pass_rate"))
+            fsc_v = _as_float(fs.get("score"))
+            fsc_str = f"{fsc_v:.3f}" if fsc_v is not None else "?"
             print(f"  compare:  {fname}")
-            print(f"    pass_rate: {fpr:.0%}  score: {fs.get('score', '?')}"
-                  if fpr is not None else f"    {fs}")
+            if fpr_v is not None:
+                print(f"    pass_rate: {fpr_v:.0%}  score: {fsc_str}")
+            else:
+                print(f"    {fs}")
         if deltas:
             print("\n  task deltas:")
             for d in deltas:

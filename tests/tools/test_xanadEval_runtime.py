@@ -193,6 +193,23 @@ class RunCommandTests(DynamicTestBase, unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("cannot save", err.getvalue())
 
+    def test_run_symlink_task_escape_rejected(self) -> None:
+        """A task symlink pointing outside the eval directory must be rejected."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                self._write_skill(dp)
+                eval_path = self._write_eval(dp)
+                eval_dir = eval_path.parent
+                outside = dp / "secret.yaml"
+                outside.write_text(json.dumps({"id": "evil", "prompt": "p"}), encoding="utf-8")
+                (eval_dir / "tasks" / "link.yaml").symlink_to(outside)
+                err = io.StringIO()
+                with redirect_stderr(err):
+                    code = xe.cmd_run(str(eval_path), "gpt-4o-mini", 1, "text")
+        self.assertEqual(code, 2)
+        self.assertIn("cannot load tasks", err.getvalue())
+
 
 class GradeCommandTests(DynamicTestBase, unittest.TestCase):
     """Tests for cmd_grade — re-running graders on existing results."""

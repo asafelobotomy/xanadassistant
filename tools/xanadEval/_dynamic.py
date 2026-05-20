@@ -15,8 +15,8 @@ from pathlib import Path
 import _common
 from _common import (
     _DEFAULT_MODEL, _DEFAULT_RESULTS_DIR,
-    _aggregate_trials, _get_token, _load_spec, _load_tasks, _run_graders,
-    _yaml,
+    _aggregate_trials, _atomic_write_text, _get_token, _load_spec, _load_tasks,
+    _run_graders, _yaml,
 )
 
 # ── bind_api ──────────────────────────────────────────────────────────────────
@@ -50,7 +50,14 @@ def cmd_run(eval_path: str, model: str, trials: int, fmt: str) -> int:
         return 2
 
     eval_dir = Path(eval_path).parent
-    skill_name = spec.get("name", eval_dir.name)
+    raw_skill_name = spec.get("name", eval_dir.name)
+    if not isinstance(raw_skill_name, str) or not raw_skill_name:
+        print(
+            "xanadEval run: eval spec field 'name' must be a non-empty string",
+            file=sys.stderr,
+        )
+        return 2
+    skill_name = raw_skill_name
     safe_skill_name = re.sub(r"[^a-zA-Z0-9._-]", "-", skill_name)
     graders_spec = spec.get("graders", [])
 
@@ -134,14 +141,11 @@ def cmd_run(eval_path: str, model: str, trials: int, fmt: str) -> int:
     ts = _now.strftime("%Y%m%dT%H%M%S")
     safe_model = re.sub(r"[^a-zA-Z0-9._-]", "-", model)
     result_file = results_dir / f"{safe_skill_name}-{ts}-{safe_model}.json"
-    _tmp = result_file.with_suffix(".tmp")
     try:
         results_dir.mkdir(parents=True, exist_ok=True)
-        _tmp.write_text(json.dumps(result, indent=2), encoding="utf-8")
-        os.replace(_tmp, result_file)
+        _atomic_write_text(result_file, json.dumps(result, indent=2))
     except OSError as e:
         print(f"xanadEval run: cannot save results: {e}", file=sys.stderr)
-        _tmp.unlink(missing_ok=True)
         return 2
 
     if fmt == "json":
@@ -218,13 +222,10 @@ def cmd_grade(eval_path: str, results_path: str, model: str | None, fmt: str) ->
                     "score": avg_score},
     }
     _dest = Path(results_path)
-    _tmp = _dest.with_suffix(".tmp")
     try:
-        _tmp.write_text(json.dumps(result, indent=2), encoding="utf-8")
-        os.replace(_tmp, _dest)
+        _atomic_write_text(_dest, json.dumps(result, indent=2))
     except OSError as e:
         print(f"xanadEval grade: cannot save results: {e}", file=sys.stderr)
-        _tmp.unlink(missing_ok=True)
         return 2
 
     if fmt == "json":
