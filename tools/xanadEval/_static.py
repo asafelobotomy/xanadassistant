@@ -275,15 +275,19 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
         print(negative_task_yaml)
     else:
         eval_dir = skill_dir_parent.parent / "evals" / name
-        eval_dir.mkdir(parents=True, exist_ok=True)
-        (eval_dir / "tasks").mkdir(exist_ok=True)
-        (eval_dir / "eval.yaml").write_text(eval_yaml, encoding="utf-8")
-        (eval_dir / "tasks" / "positive-trigger-1.yaml").write_text(
-            positive_task_yaml, encoding="utf-8"
-        )
-        (eval_dir / "tasks" / "negative-trigger-1.yaml").write_text(
-            negative_task_yaml, encoding="utf-8"
-        )
+        try:
+            eval_dir.mkdir(parents=True, exist_ok=True)
+            (eval_dir / "tasks").mkdir(exist_ok=True)
+            (eval_dir / "eval.yaml").write_text(eval_yaml, encoding="utf-8")
+            (eval_dir / "tasks" / "positive-trigger-1.yaml").write_text(
+                positive_task_yaml, encoding="utf-8"
+            )
+            (eval_dir / "tasks" / "negative-trigger-1.yaml").write_text(
+                negative_task_yaml, encoding="utf-8"
+            )
+        except OSError as e:
+            print(f"xanadEval suggest: cannot write eval files: {e}", file=sys.stderr)
+            return 2
         print(f"Written: {eval_dir / 'eval.yaml'}")
         print(f"Written: {eval_dir / 'tasks' / 'positive-trigger-1.yaml'}")
         print(f"Written: {eval_dir / 'tasks' / 'negative-trigger-1.yaml'}")

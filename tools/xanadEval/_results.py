@@ -77,8 +77,9 @@ def cmd_results_view(results_path: str, fmt: str) -> int:
         print()
         for t in data.get("tasks", []):
             icon = "\u2713" if t.get("passed") else "\u2717"
-            score = t.get("score", 0)
-            print(f"  {icon} {t.get('id', '?'):<40}  score: {score:.3f}")
+            score = t.get("score")
+            score_str = f"{score:.3f}" if isinstance(score, (int, float)) else "?"
+            print(f"  {icon} {t.get('id', '?'):<40}  score: {score_str}")
             for g in t.get("graders", []):
                 g_icon = "\u2713" if g.get("pass") else ("?" if g.get("pass") is None else "\u2717")
                 note = (

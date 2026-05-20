@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _common import _count_tokens, _parse_frontmatter
+from _common import _count_tokens, _load_spec, _load_tasks, _parse_frontmatter
 from _static import _build_check_result
 
 
@@ -39,9 +39,19 @@ def cmd_coverage(root: str, fmt: str) -> int:
         eval_yaml_path = skill_root / "evals" / name / "eval.yaml"
         task_count = 0
         if eval_yaml_path.exists():
-            tasks_dir = eval_yaml_path.parent / "tasks"
-            if tasks_dir.is_dir():
-                task_count = sum(1 for f in tasks_dir.glob("*.yaml"))
+            try:
+                spec = _load_spec(str(eval_yaml_path))
+                task_refs = spec.get("tasks", [])
+                if task_refs:
+                    task_count = len(_load_tasks(eval_yaml_path.parent, task_refs))
+                else:
+                    tasks_dir = eval_yaml_path.parent / "tasks"
+                    if tasks_dir.is_dir():
+                        task_count = sum(1 for _ in tasks_dir.glob("*.yaml"))
+            except Exception:
+                tasks_dir = eval_yaml_path.parent / "tasks"
+                if tasks_dir.is_dir():
+                    task_count = sum(1 for _ in tasks_dir.glob("*.yaml"))
 
         if not eval_yaml_path.exists():
             status = "missing"
@@ -269,6 +279,10 @@ document.getElementById('summary').textContent =
 </body></html>"""
 
     out_path = output or "xanadEval-report.html"
-    Path(out_path).write_text(html, encoding="utf-8")
+    try:
+        Path(out_path).write_text(html, encoding="utf-8")
+    except OSError as e:
+        print(f"xanadEval report: cannot write {out_path}: {e}", file=sys.stderr)
+        return 2
     print(f"Written: {out_path}  ({passed}/{total} checks passing)")
     return 0

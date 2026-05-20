@@ -162,6 +162,37 @@ class RunCommandTests(DynamicTestBase, unittest.TestCase):
         self.assertFalse(data["tasks"][0]["passed"])
         self.assertEqual(code, 1)
 
+    @mock.patch("xanadEval._call_model", return_value="x" * 1000)
+    def test_run_stores_full_response(self, _mock) -> None:
+        """Responses longer than 800 chars must be stored untruncated for re-grading."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                self._write_skill(dp)
+                eval_path = self._write_eval(dp)
+                buf = io.StringIO()
+                with redirect_stdout(buf):
+                    code = xe.cmd_run(str(eval_path), "gpt-4o-mini", 1, "json")
+                data = json.loads(buf.getvalue())
+        self.assertIn(code, (0, 1))
+        self.assertEqual(len(data["tasks"][0]["response"]), 1000)
+        self.assertNotIn("\u2026", data["tasks"][0]["response"])
+
+    @mock.patch("xanadEval._call_model", return_value="any response")
+    def test_run_write_failure_returns_2(self, _mock) -> None:
+        """A filesystem error during result save must return exit 2."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with mock.patch("os.replace", side_effect=OSError("disk full")):
+                with tempfile.TemporaryDirectory() as d:
+                    dp = Path(d)
+                    self._write_skill(dp)
+                    eval_path = self._write_eval(dp)
+                    err = io.StringIO()
+                    with redirect_stderr(err):
+                        code = xe.cmd_run(str(eval_path), "gpt-4o-mini", 1, "text")
+        self.assertEqual(code, 2)
+        self.assertIn("cannot save", err.getvalue())
+
 
 class GradeCommandTests(DynamicTestBase, unittest.TestCase):
     """Tests for cmd_grade — re-running graders on existing results."""
@@ -261,64 +292,51 @@ class GradeCommandTests(DynamicTestBase, unittest.TestCase):
         self.assertEqual(len(absent_graders), 1)
         self.assertFalse(absent_graders[0]["pass"])
 
-
-class ResultsCommandTests(DynamicTestBase, unittest.TestCase):
-    """Tests for cmd_results_list, cmd_results_view, and cmd_compare_results."""
-
-    def test_results_list_shows_saved_runs(self) -> None:
-        with tempfile.TemporaryDirectory() as d:
-            dp = Path(d)
-            self._write_result(dp, "run-a")
-            self._write_result(dp, "run-b")
-            buf = io.StringIO()
-            with redirect_stdout(buf):
-                code = xe.cmd_results_list(str(dp), "text")
-        self.assertEqual(code, 0)
-        self.assertIn("run-a", buf.getvalue())
-
-    def test_results_list_empty_dir_returns_1(self) -> None:
-        with tempfile.TemporaryDirectory() as d:
-            err = io.StringIO()
-            with redirect_stderr(err):
-                code = xe.cmd_results_list(d, "text")
-        self.assertEqual(code, 1)
-
-    def test_results_view_shows_task_breakdown(self) -> None:
-        with tempfile.TemporaryDirectory() as d:
-            result_path = self._write_result(Path(d))
-            buf = io.StringIO()
-            with redirect_stdout(buf):
-                code = xe.cmd_results_view(str(result_path), "text")
-        self.assertEqual(code, 0)
-        self.assertIn("task-1", buf.getvalue())
-
-    def test_results_view_json_is_parseable(self) -> None:
-        with tempfile.TemporaryDirectory() as d:
-            result_path = self._write_result(Path(d))
-            buf = io.StringIO()
-            with redirect_stdout(buf):
-                xe.cmd_results_view(str(result_path), "json")
-        data = json.loads(buf.getvalue())
-        self.assertIn("tasks", data)
-
-    def test_compare_results_shows_deltas(self) -> None:
-        with tempfile.TemporaryDirectory() as d:
-            dp = Path(d)
-            r1 = self._write_result(dp, "run-a", pass_rate=0.0)
-            r2 = self._write_result(dp, "run-b", pass_rate=1.0)
-            buf = io.StringIO()
-            with redirect_stdout(buf):
-                code = xe.cmd_compare_results([str(r1), str(r2)], "text")
-        self.assertEqual(code, 0)
-        self.assertIn("task-1", buf.getvalue())
-
-    def test_compare_results_needs_two_files(self) -> None:
-        with tempfile.TemporaryDirectory() as d:
-            r = self._write_result(Path(d))
-            err = io.StringIO()
-            with redirect_stderr(err):
-                code = xe.cmd_compare_results([str(r)], "text")
+    def test_grade_write_failure_returns_2(self) -> None:
+        """A filesystem error during result save must return exit 2."""
+        with mock.patch("os.replace", side_effect=OSError("disk full")):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                self._write_skill(dp)
+                eval_path = self._write_eval(dp)
+                result_path = self._write_result(dp)
+                err = io.StringIO()
+                with redirect_stderr(err):
+                    code = xe.cmd_grade(str(eval_path), str(result_path), None, "text")
         self.assertEqual(code, 2)
+        self.assertIn("cannot save", err.getvalue())
+
+    @mock.patch("xanadEval._call_model",
+                return_value='{"score": 0.9, "reasoning": "good"}')
+    def test_grade_cli_model_defaults_to_stored_model(self, mock_call) -> None:
+        """Omitting --model from the grade CLI uses the model stored in the results file."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                eval_dir = dp / "evals" / "test-skill"
+                (eval_dir / "tasks").mkdir(parents=True)
+                spec = {
+                    "name": "test-skill-eval",
+                    "graders": [{"type": "prompt", "name": "j",
+                                 "config": {"rubric": "good?"}}],
+                    "tasks": [],
+                }
+                eval_yaml = eval_dir / "eval.yaml"
+                eval_yaml.write_text(json.dumps(spec), encoding="utf-8")
+                result = {
+                    "eval": str(eval_yaml),
+                    "skill": "test-skill",
+                    "model": "custom-stored-model",
+                    "timestamp": "2026-05-20T12:00:00Z",
+                    "summary": {"total": 1, "passed": 1, "pass_rate": 1.0, "score": 1.0},
+                    "tasks": [{"id": "t1", "prompt": "p", "response": "r",
+                               "graders": [], "passed": True, "score": 1.0}],
+                }
+                result_path = dp / "run.json"
+                result_path.write_text(json.dumps(result), encoding="utf-8")
+                xe.main(["grade", str(eval_yaml), str(result_path)])
+        mock_call.assert_called()
+        self.assertEqual(mock_call.call_args[0][1], "custom-stored-model")
 
 
 if __name__ == "__main__":

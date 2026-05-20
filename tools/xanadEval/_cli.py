@@ -164,7 +164,12 @@ def main(argv: list[str] | None = None) -> int:
     p_grd.add_argument("eval_path", metavar="eval.yaml", help="Path to the eval spec")
     p_grd.add_argument("results_path", metavar="results.json",
                        help="Path to the results file to re-grade")
-    _add_model(p_grd)
+    p_grd.add_argument(
+        "--model",
+        default=None,
+        metavar="MODEL",
+        help="Override the model for prompt graders (default: use model from results file)",
+    )
     _add_format(p_grd)
 
     p_qlt = sub.add_parser(

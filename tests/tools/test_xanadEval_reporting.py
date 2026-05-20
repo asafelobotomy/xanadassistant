@@ -7,6 +7,7 @@ import os
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
@@ -235,6 +236,23 @@ class ReportCommandTests(unittest.TestCase):
                 xe.cmd_report([str(p)], output=out)
             html = Path(out).read_text(encoding="utf-8")
         self.assertNotIn("</script><script>alert", html)
+
+    def test_report_write_failure_returns_2(self) -> None:
+        """An OSError writing the HTML output file returns exit 2."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill_dir = root / "skills" / "test-skill"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            p = skill_dir / "SKILL.md"
+            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
+            out = str(root / "report.html")
+            with mock.patch.object(Path, "write_text",
+                                   side_effect=OSError("Permission denied")):
+                err_buf = io.StringIO()
+                with redirect_stderr(err_buf):
+                    code = xe.cmd_report([str(p)], out)
+        self.assertEqual(code, 2)
+        self.assertIn("cannot write", err_buf.getvalue())
 
 
 if __name__ == "__main__":

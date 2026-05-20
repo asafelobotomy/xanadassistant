@@ -108,8 +108,8 @@ def cmd_run(eval_path: str, model: str, trials: int, fmt: str) -> int:
         score = (sum(g["score"] for g in graded) / len(graded)) if graded else 0.0
         task_results.append({
             "id": task_id,
-            "prompt": prompt[:300] + "\u2026" if len(prompt) > 300 else prompt,
-            "response": response[:800] + "\u2026" if len(response) > 800 else response,
+            "prompt": prompt,
+            "response": response,
             "graders": grader_results,
             "passed": passed,
             "score": round(score, 3),
@@ -131,13 +131,18 @@ def cmd_run(eval_path: str, model: str, trials: int, fmt: str) -> int:
     }
 
     results_dir = eval_dir.parent.parent / _DEFAULT_RESULTS_DIR
-    results_dir.mkdir(parents=True, exist_ok=True)
     ts = _now.strftime("%Y%m%dT%H%M%S")
     safe_model = re.sub(r"[^a-zA-Z0-9._-]", "-", model)
     result_file = results_dir / f"{safe_skill_name}-{ts}-{safe_model}.json"
     _tmp = result_file.with_suffix(".tmp")
-    _tmp.write_text(json.dumps(result, indent=2), encoding="utf-8")
-    os.replace(_tmp, result_file)
+    try:
+        results_dir.mkdir(parents=True, exist_ok=True)
+        _tmp.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        os.replace(_tmp, result_file)
+    except OSError as e:
+        print(f"xanadEval run: cannot save results: {e}", file=sys.stderr)
+        _tmp.unlink(missing_ok=True)
+        return 2
 
     if fmt == "json":
         print(json.dumps(result, indent=2))
@@ -214,8 +219,13 @@ def cmd_grade(eval_path: str, results_path: str, model: str | None, fmt: str) ->
     }
     _dest = Path(results_path)
     _tmp = _dest.with_suffix(".tmp")
-    _tmp.write_text(json.dumps(result, indent=2), encoding="utf-8")
-    os.replace(_tmp, _dest)
+    try:
+        _tmp.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        os.replace(_tmp, _dest)
+    except OSError as e:
+        print(f"xanadEval grade: cannot save results: {e}", file=sys.stderr)
+        _tmp.unlink(missing_ok=True)
+        return 2
 
     if fmt == "json":
         print(json.dumps(result, indent=2))

@@ -6,6 +6,7 @@ import json
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
@@ -96,6 +97,21 @@ class SuggestCommandTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("skills", err.getvalue())
         self.assertIn("eval.yaml", buf.getvalue())
+
+    def test_suggest_apply_write_failure_returns_2(self) -> None:
+        """An OSError writing eval scaffold files returns exit 2."""
+        with tempfile.TemporaryDirectory() as d:
+            skill_dir = Path(d) / "skills" / "test-skill"
+            skill_dir.mkdir(parents=True)
+            p = skill_dir / "SKILL.md"
+            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
+            with mock.patch.object(Path, "write_text",
+                                   side_effect=OSError("disk full")):
+                err_buf = io.StringIO()
+                with redirect_stderr(err_buf):
+                    code = xe.cmd_suggest(str(p), dry_run=False)
+        self.assertEqual(code, 2)
+        self.assertIn("cannot write", err_buf.getvalue())
 
 
 class MainEntrypointTests(unittest.TestCase):
@@ -257,6 +273,50 @@ class CoverageCommandTests(unittest.TestCase):
                 code = xe.main(["coverage", str(root)])
         self.assertEqual(code, 0)
         self.assertIn("alpha", buf.getvalue())
+
+    def test_coverage_counts_inline_tasks(self) -> None:
+        """Inline dict tasks in the eval spec must be counted (not only *.yaml files)."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._make_skill(root, "alpha")
+            eval_dir = root / "evals" / "alpha"
+            eval_dir.mkdir(parents=True)
+            spec = {
+                "name": "alpha-eval",
+                "tasks": [
+                    {"id": "t1", "prompt": "p1"},
+                    {"id": "t2", "prompt": "p2"},
+                ],
+            }
+            (eval_dir / "eval.yaml").write_text(json.dumps(spec), encoding="utf-8")
+            output, code = self._coverage(root, fmt="json")
+        data = json.loads(output)
+        alpha = next(s for s in data["skills"] if s["name"] == "alpha")
+        self.assertEqual(alpha["task_count"], 2)
+        self.assertEqual(alpha["status"], "covered")
+        self.assertEqual(code, 0)
+
+    def test_coverage_counts_json_task_files(self) -> None:
+        """Tasks referenced via a glob (*.json) must be counted, not only *.yaml files."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self._make_skill(root, "alpha")
+            eval_dir = root / "evals" / "alpha"
+            (eval_dir / "tasks").mkdir(parents=True)
+            spec = {
+                "name": "alpha-eval",
+                "tasks": ["tasks/*.json"],
+            }
+            (eval_dir / "eval.yaml").write_text(json.dumps(spec), encoding="utf-8")
+            (eval_dir / "tasks" / "t1.json").write_text(
+                json.dumps({"id": "t1", "prompt": "p"}), encoding="utf-8"
+            )
+            output, code = self._coverage(root, fmt="json")
+        data = json.loads(output)
+        alpha = next(s for s in data["skills"] if s["name"] == "alpha")
+        self.assertEqual(alpha["task_count"], 1)
+        self.assertEqual(alpha["status"], "covered")
+        self.assertEqual(code, 0)
 
 
 if __name__ == "__main__":
