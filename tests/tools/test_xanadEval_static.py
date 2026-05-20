@@ -257,6 +257,8 @@ class MaxNestingDepthTests(unittest.TestCase):
         self.assertEqual(xe._max_nesting_depth("# T\n\nProse only.\n"), 0)
         self.assertEqual(xe._max_nesting_depth("# H\n\n- a\n- b\n"), 1)
         self.assertEqual(xe._max_nesting_depth("# H\n\n- a\n  - b\n"), 2)
+        # Indented lines inside fenced code blocks must not contribute to depth.
+        self.assertEqual(xe._max_nesting_depth("# H\n\n```yaml\n  - a:\n    - b\n```\n- outer\n"), 1)
 
 
 if __name__ == "__main__":

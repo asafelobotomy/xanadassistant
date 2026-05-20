@@ -1,0 +1,16 @@
+name: "Docs-eval"
+description: "Evaluates Docs agent behaviour"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?i)(Docs|agent)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

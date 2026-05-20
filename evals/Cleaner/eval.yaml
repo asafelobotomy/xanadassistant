@@ -1,0 +1,16 @@
+name: "Cleaner-eval"
+description: "Evaluates Cleaner agent behaviour"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?i)(Cleaner|agent)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

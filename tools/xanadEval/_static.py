@@ -67,49 +67,104 @@ def cmd_tokens(path: str, fmt: str) -> int:
 def _build_check_result(
     content: str, path: str
 ) -> tuple[list[tuple[str, bool, str]], list[tuple[str, bool, str]], str]:
-    """Run spec and advisory checks on *content*; return (spec, advisory, compliance_level)."""
+    """Run spec and advisory checks on *content*; return (spec, advisory, compliance_level).
+
+    File-type detection: files whose name ends in ``.agent.md`` are checked
+    against agent conventions; all other files are checked against SKILL.md
+    conventions.  The two sets share the same universal checks but differ in
+    the structure-specific checks that follow.
+    """
     fm = _parse_frontmatter(content)
     name = fm.get("name", "")
     description = fm.get("description", "")
     token_count = _count_tokens(content)
+    is_agent = Path(path).name.endswith(".agent.md")
 
     # (id, passed, detail)
     spec: list[tuple[str, bool, str]] = []
     advisory: list[tuple[str, bool, str]] = []
 
+    # ── universal spec checks ─────────────────────────────────────────────────
     spec.append(("spec-frontmatter", bool(fm), "frontmatter present"))
     spec.append(("spec-name", bool(name), f"name: {name!r}"))
     spec.append(("spec-description", bool(description), "description present"))
-    dir_name = Path(path).parent.name
-    spec.append((
-        "spec-dir-match", name == dir_name or dir_name == ".",
-        f"name matches directory ({dir_name!r})",
-    ))
-    spec.append((
-        "spec-token-budget", token_count <= TOKEN_BUDGET,
-        f"token count {token_count:,} / {TOKEN_BUDGET:,}",
-    ))
-    spec.append(("spec-verify-checklist", "## Verify" in content, "## Verify checklist present"))
-    spec.append(("spec-when-to-use", "## When to use" in content, "## When to use present"))
-    spec.append((
-        "spec-when-not-to-use", "## When NOT to use" in content,
-        "## When NOT to use present",
-    ))
-    has_steps = "## Steps" in content or bool(
-        re.search(r"^## Module \d+", content, re.MULTILINE)
-    )
-    spec.append((
-        "spec-steps-or-modules", has_steps,
-        "workflow structure present (## Steps or ## Module N)",
-    ))
 
-    modules = re.findall(r"^## Module \d+", content, re.MULTILINE)
-    module_count = len(modules)
-    advisory.append((
-        "module-count", 2 <= module_count <= 6,
-        f"module count: {module_count} (2\u20136 is the acceptable range)",
-    ))
+    # ── file-type-specific spec checks ───────────────────────────────────────
+    if is_agent:
+        # Agents live flat in agents/; check filename instead of parent dir.
+        # Comparison is case-insensitive: frontmatter names are title-case
+        # (e.g. "Cleaner") but filenames are lowercase ("cleaner.agent.md"),
+        # while mixed-case names like "xanadLifecycle" preserve their case.
+        actual_fname = Path(path).name
+        spec.append((
+            "spec-filename-match",
+            actual_fname.lower() == f"{name.lower()}.agent.md",
+            f"filename matches name ({actual_fname!r})",
+        ))
 
+        spec.append((
+            "spec-token-budget", token_count <= TOKEN_BUDGET,
+            f"token count {token_count:,} / {TOKEN_BUDGET:,}",
+        ))
+
+        # Agents define use-cases via "Your role:" prose or an explicit list.
+        has_use = "Your role:" in content or "Use this agent for" in content
+        spec.append(("spec-when-to-use", has_use, "role / use-case statement present"))
+
+        # Agents should explicitly list what they must NOT do.
+        has_not_use = "Do not use this agent for" in content
+        spec.append((
+            "spec-when-not-to-use", has_not_use,
+            "exclusion list present (\"Do not use this agent for\")",
+        ))
+
+        # Agents must contain a numbered workflow (regardless of heading name).
+        numbered = re.findall(r"^\s*\d+\. ", content, re.MULTILINE)
+        spec.append((
+            "spec-workflow-steps", len(numbered) >= 2,
+            f"numbered workflow steps: {len(numbered)} found (minimum 2)",
+        ))
+
+        # Advisory: agents must document their memory integration.
+        advisory.append((
+            "memory-section", "## Memory" in content,
+            "## Memory section present",
+        ))
+    else:
+        dir_name = Path(path).parent.name
+        spec.append((
+            "spec-dir-match", name == dir_name or dir_name == ".",
+            f"name matches directory ({dir_name!r})",
+        ))
+
+        spec.append((
+            "spec-token-budget", token_count <= TOKEN_BUDGET,
+            f"token count {token_count:,} / {TOKEN_BUDGET:,}",
+        ))
+
+        spec.append(("spec-verify-checklist", "## Verify" in content, "## Verify checklist present"))
+        spec.append(("spec-when-to-use", "## When to use" in content, "## When to use present"))
+        spec.append((
+            "spec-when-not-to-use", "## When NOT to use" in content,
+            "## When NOT to use present",
+        ))
+        has_steps = "## Steps" in content or bool(
+            re.search(r"^## Module \d+", content, re.MULTILINE)
+        )
+        spec.append((
+            "spec-steps-or-modules", has_steps,
+            "workflow structure present (## Steps or ## Module N)",
+        ))
+
+        # Advisory: SKILL.md files should have 2–6 modules.
+        modules = re.findall(r"^## Module \d+", content, re.MULTILINE)
+        module_count = len(modules)
+        advisory.append((
+            "module-count", 2 <= module_count <= 6,
+            f"module count: {module_count} (2\u20136 is the acceptable range)",
+        ))
+
+    # ── shared advisory checks ────────────────────────────────────────────────
     advisory.append((
         "description-quality", len(description) >= 20,
         f"description length: {len(description)} chars (minimum 20)",
@@ -142,7 +197,12 @@ def _build_check_result(
     ))
 
     if name:
-        eval_path = Path(path).parent.parent.parent / "evals" / name / "eval.yaml"
+        # Agents live one level below the repo root (agents/).
+        # Skills live two levels below (skills/<name>/SKILL.md).
+        if is_agent:
+            eval_path = Path(path).parent.parent / "evals" / name / "eval.yaml"
+        else:
+            eval_path = Path(path).parent.parent.parent / "evals" / name / "eval.yaml"
         found = eval_path.exists()
         msg = (
             "eval suite: found"
@@ -212,6 +272,7 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
     fm = _parse_frontmatter(content)
     name = fm.get("name") or Path(path).parent.name
     description = fm.get("description", "")
+    is_agent = Path(path).name.endswith(".agent.md")
 
     # Validate name before using in path construction or YAML output.
     if not name or "/" in name or "\\" in name or name.startswith("."):
@@ -222,15 +283,16 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
         return 2
 
     desc_short = (description[:100] + "...") if len(description) > 100 else description
+    kind = "agent" if is_agent else "skill"
 
     eval_yaml = (
         f"name: {_yaml_str(name + '-eval')}\n"
-        f"description: {_yaml_str('Evaluates ' + name + ' skill behaviour')}\n\n"
+        f"description: {_yaml_str('Evaluates ' + name + ' ' + kind + ' behaviour')}\n\n"
         f"graders:\n"
         f"  - type: text\n"
-        f"    name: references_skill\n"
+        f"    name: references_{kind}\n"
         f"    config:\n"
-        f"      pattern: {_yaml_str('(?i)(' + re.escape(name) + '|skill)')}\n\n"
+        f"      pattern: {_yaml_str('(?i)(' + re.escape(name) + '|' + kind + ')')}\n\n"
         f"  - type: behavior\n"
         f"    name: completion_bound\n"
         f"    config:\n"
@@ -239,27 +301,33 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
     )
     positive_task_yaml = (
         f"id: positive-trigger-1\n"
-        f"description: {_yaml_str('Verify skill triggers on its primary use case')}\n"
+        f"description: {_yaml_str('Verify ' + kind + ' triggers on its primary use case')}\n"
         f"prompt: |\n  {desc_short}\n"
         f"tags:\n  - basic\n  - smoke\n  - positive\n"
     )
     negative_task_yaml = (
         f"id: negative-trigger-1\n"
-        f"description: {_yaml_str('Verify skill does NOT trigger on an unrelated request')}\n"
+        f"description: {_yaml_str('Verify ' + kind + ' does NOT trigger on an unrelated request')}\n"
         f"prompt: |\n  What is the current time and date?\n"
         f"expected_absent:\n  - {_yaml_str('(?i)(' + re.escape(name) + ')')}\n"
         f"tags:\n  - smoke\n  - negative\n"
     )
 
-    # Canonical layout: <repo-root>/skills/<name>/SKILL.md → <repo-root>/evals/<name>/
-    skill_dir_parent = Path(path).parent.parent  # expected: .../skills/
-    if skill_dir_parent.name != "skills":
-        print(
-            f"xanadEval suggest: SKILL.md is not under a 'skills/' directory "
-            f"(found: {skill_dir_parent.name!r}); output paths are relative to "
-            f"{skill_dir_parent.parent}",
-            file=sys.stderr,
-        )
+    # Resolve the eval directory.
+    # Agents:  agents/{name}.agent.md  → {repo-root}/evals/{name}/
+    # Skills:  skills/{name}/SKILL.md  → {repo-root}/evals/{name}/
+    if is_agent:
+        eval_dir = Path(path).parent.parent / "evals" / name
+    else:
+        skill_dir_parent = Path(path).parent.parent  # expected: .../skills/
+        if skill_dir_parent.name != "skills":
+            print(
+                f"xanadEval suggest: SKILL.md is not under a 'skills/' directory "
+                f"(found: {skill_dir_parent.name!r}); output paths are relative to "
+                f"{skill_dir_parent.parent}",
+                file=sys.stderr,
+            )
+        eval_dir = skill_dir_parent.parent / "evals" / name
 
     if dry_run:
         label = Path(path).name
@@ -274,7 +342,6 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
         print()
         print(negative_task_yaml)
     else:
-        eval_dir = skill_dir_parent.parent / "evals" / name
         try:
             eval_dir.mkdir(parents=True, exist_ok=True)
             (eval_dir / "tasks").mkdir(exist_ok=True)

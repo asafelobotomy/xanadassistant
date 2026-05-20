@@ -1,0 +1,8 @@
+id: positive-trigger-1
+description: "Verify agent triggers on its primary use case"
+prompt: |
+  Use when: drafting or updating documentation, walkthroughs, migration notes, contract explanations, ...
+tags:
+  - basic
+  - smoke
+  - positive

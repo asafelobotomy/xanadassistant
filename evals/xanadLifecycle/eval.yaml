@@ -1,0 +1,16 @@
+name: "xanadLifecycle-eval"
+description: "Evaluates xanadLifecycle agent behaviour"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?i)(xanadLifecycle|agent)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

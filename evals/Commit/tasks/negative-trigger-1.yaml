@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify agent does NOT trigger on an unrelated request"
+prompt: |
+  What is the current time and date?
+expected_absent:
+  - "(?i)(Commit)"
+tags:
+  - smoke
+  - negative

@@ -1,0 +1,8 @@
+id: positive-trigger-1
+description: "Verify agent triggers on its primary use case"
+prompt: |
+  Use when: researching external documentation, upstream behavior, GitHub sources, version-specific co...
+tags:
+  - basic
+  - smoke
+  - positive

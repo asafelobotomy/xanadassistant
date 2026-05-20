@@ -1,0 +1,16 @@
+name: "Researcher-eval"
+description: "Evaluates Researcher agent behaviour"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?i)(Researcher|agent)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

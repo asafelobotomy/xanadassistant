@@ -1,0 +1,16 @@
+name: "Debugger-eval"
+description: "Evaluates Debugger agent behaviour"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?i)(Debugger|agent)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

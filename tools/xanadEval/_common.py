@@ -107,11 +107,14 @@ def _yaml_str(value: str) -> str:
 
 def _max_nesting_depth(content: str) -> int:
     """Maximum list nesting depth; 0 when no list items are present."""
-    if not re.search(r"^[ ]*[-*]|^\d+\.", content, re.MULTILINE):
+    # Strip fenced code blocks so indented lines inside them are not
+    # mistaken for nested list items.
+    stripped = re.sub(r"```.*?```", "", content, flags=re.DOTALL)
+    if not re.search(r"^[ ]*[-*]|^\d+\.", stripped, re.MULTILINE):
         return 0
     depths = [
         len(m.group(1)) // 2
-        for m in re.finditer(r"^( +)[-*\d]", content, re.MULTILINE)
+        for m in re.finditer(r"^( +)[-*\d]", stripped, re.MULTILINE)
     ]
     return max(depths, default=0) + 1
 

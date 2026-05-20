@@ -34,7 +34,7 @@ Do not use this agent for:
 
 1. Call `memory_dump(agent="cleaner")` before using any tools (see `## Memory`).
 2. Classify the request: dry-run inventory, targeted prune, deletion, or hygiene check?
-3. Check reversibility: tracked deletions always require the approval gate — do not skip it.
+3. Check reversibility: tracked deletions always require the approval gate — this gate is mandatory.
 
 ## Guidelines
 
