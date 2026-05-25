@@ -5,7 +5,7 @@ argument-hint: "Describe the research target: remote source behavior, MCP patter
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, codebase, search, runCommands, githubRepo, fetch, webSearch]
+tools: [agent, codebase, search, runCommands, githubRepo, fetch, webSearch, resolve_library_id, query_docs, get_repo, get_file_contents, search_code, list_issues, get_issue, list_pull_requests, get_pull_request, list_releases, list_workflow_runs, memory_dump, memory_set, elapsed]
 agents: [Explore, Planner, Review, Docs]
 user-invocable: false
 ---

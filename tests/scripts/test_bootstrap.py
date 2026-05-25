@@ -95,6 +95,20 @@ class BootstrapCommandTests(unittest.TestCase):
         self.assertEqual(build_command.call_args.args[0], package_root)
         self.assertEqual(build_command.call_args.args[1].command, "setup")
 
+    def test_main_rejects_retired_apply_command_at_parse_time(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir, mock.patch(
+            "sys.argv",
+            [
+                "xanadBootstrap.py",
+                "apply",
+                "--workspace",
+                tmpdir,
+            ],
+        ), self.assertRaises(SystemExit) as excinfo:
+            _bootstrap.main()
+
+        self.assertEqual(excinfo.exception.code, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

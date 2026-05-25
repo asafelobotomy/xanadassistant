@@ -1,0 +1,12 @@
+id: positive-trigger-2
+description: "Verify Debugger agent prefers structured filesystem MCP inspection before generic shell fallback"
+prompt: |
+  Which agent should diagnose a failing test before implementation, and if the filesystem server is connected should it prefer read_file, list_directory, search_files, and file_info before falling back to runCommands?
+expected:
+  - "Debugger"
+  - "filesystem"
+  - "runCommands"
+tags:
+  - basic
+  - smoke
+  - positive

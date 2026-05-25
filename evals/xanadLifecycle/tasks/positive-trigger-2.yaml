@@ -1,0 +1,12 @@
+id: positive-trigger-2
+description: "Verify agent prefers lifecycle MCP tools before shell fallback"
+prompt: |
+  Which agent should use lifecycle_inspect and lifecycle_update from xanadTools before shelling out directly for xanadAssistant maintenance work?
+expected:
+  - "xanadLifecycle"
+  - "lifecycle_inspect"
+  - "lifecycle_update"
+tags:
+  - smoke
+  - positive
+  - mcp

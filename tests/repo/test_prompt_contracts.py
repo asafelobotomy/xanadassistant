@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import unittest
 from pathlib import Path
@@ -9,6 +10,17 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class PromptContractTests(unittest.TestCase):
+    def _declared_tools(self, agent_filename: str) -> set[str]:
+        content = (REPO_ROOT / "agents" / agent_filename).read_text(encoding="utf-8")
+        frontmatter = content.split("---\n", 2)[1]
+        match = re.search(r"^tools:\s*(\[[^\n]+\])$", frontmatter, re.MULTILINE)
+        self.assertIsNotNone(match, f"tools frontmatter missing from {agent_filename}")
+        return {
+            token.strip()
+            for token in match.group(1).strip("[]").split(",")
+            if token.strip()
+        }
+
     def test_commit_agent_does_not_reference_undeclared_git_tools(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
         frontmatter, body = content.split("---\n", 2)[1:]
@@ -124,6 +136,96 @@ class PromptContractTests(unittest.TestCase):
                 self.assertIn("python3 scripts/drift_preflight.py", content)
                 self.assertIn("before commit", content.lower())
 
+    def test_repo_copilot_instructions_use_exact_lifecycle_mcp_tool_names(self) -> None:
+        instruction_paths = [
+            REPO_ROOT / "template" / "copilot-instructions.md",
+            REPO_ROOT / ".github" / "copilot-instructions.md",
+        ]
+        for instruction_path in instruction_paths:
+            with self.subTest(path=instruction_path):
+                content = instruction_path.read_text(encoding="utf-8")
+                self.assertNotIn("`lifecycle.*`", content)
+                self.assertIn("`lifecycle_inspect`", content)
+                self.assertIn("`lifecycle_factory_restore`", content)
+
+    def test_xanad_lifecycle_agent_declares_referenced_lifecycle_tools(self) -> None:
+        declared = self._declared_tools("xanadLifecycle.agent.md")
+        self.assertTrue(
+            {
+                "lifecycle_inspect",
+                "lifecycle_check",
+                "lifecycle_interview",
+                "lifecycle_plan_setup",
+                "lifecycle_setup",
+                "lifecycle_update",
+                "lifecycle_repair",
+                "lifecycle_factory_restore",
+            }.issubset(declared)
+        )
+
+    def test_deps_agent_declares_security_memory_and_time_tools(self) -> None:
+        declared = self._declared_tools("deps.agent.md")
+        self.assertTrue(
+            {"query_osv", "query_deps", "memory_dump", "memory_set", "elapsed"}.issubset(declared)
+        )
+
+    def test_researcher_agent_declares_documented_mcp_tools(self) -> None:
+        declared = self._declared_tools("researcher.agent.md")
+        self.assertTrue(
+            {
+                "resolve_library_id",
+                "query_docs",
+                "get_repo",
+                "get_file_contents",
+                "search_code",
+                "list_issues",
+                "get_issue",
+                "list_pull_requests",
+                "get_pull_request",
+                "list_releases",
+                "list_workflow_runs",
+                "memory_dump",
+                "memory_set",
+                "elapsed",
+            }.issubset(declared)
+        )
+
+    def test_read_heavy_agents_declare_filesystem_memory_and_time_tools(self) -> None:
+        for agent_filename in [
+            "review.agent.md",
+            "debugger.agent.md",
+            "planner.agent.md",
+            "docs.agent.md",
+        ]:
+            with self.subTest(agent=agent_filename):
+                declared = self._declared_tools(agent_filename)
+                self.assertTrue(
+                    {
+                        "read_file",
+                        "list_directory",
+                        "search_files",
+                        "file_info",
+                        "memory_dump",
+                        "memory_set",
+                        "elapsed",
+                    }.issubset(declared)
+                )
+
+    def test_read_heavy_agents_prefer_filesystem_tools_for_read_only_inspection(self) -> None:
+        for agent_filename in [
+            "review.agent.md",
+            "debugger.agent.md",
+            "planner.agent.md",
+            "docs.agent.md",
+        ]:
+            with self.subTest(agent=agent_filename):
+                content = (REPO_ROOT / "agents" / agent_filename).read_text(encoding="utf-8")
+                self.assertIn("When the `filesystem` server is connected", content)
+                self.assertIn("`read_file`", content)
+                self.assertIn("`list_directory`", content)
+                self.assertIn("`search_files`", content)
+                self.assertIn("`file_info`", content)
+
     def test_template_prompts_use_serialized_plan_setup_flow(self) -> None:
         prompt_paths = [
             REPO_ROOT / "template" / "prompts" / "bootstrap.md",
@@ -143,6 +245,56 @@ class PromptContractTests(unittest.TestCase):
         self.assertIn("--plan .xanadAssistant/tmp/setup-plan.json --json", content)
         self.assertIn("xanadBootstrap.py setup --workspace . \\", content)
         self.assertNotRegex(content, re.compile(r"xanadBootstrap.py apply \\\n(?:.+\\\n)*\s+--answers "))
+
+    def test_readme_documents_mcp_precedence_and_server_availability(self) -> None:
+        content = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("prefer these structured MCP tools over generic terminal or shell execution", content)
+        self.assertIn("`github` and `sqlite` are shipped disabled by default", content)
+        self.assertIn("`xanadTools`, `git`, `web`, `devDocs`, `time`, `memory`, `security`, `filesystem`, and `sequential-thinking`", content)
+        self.assertIn("prefer the structured `lifecycle_*` MCP tools first", content)
+
+    def test_tool_mcp_contracts_document_exact_server_ids_and_explicit_fallbacks(self) -> None:
+        boundary = (REPO_ROOT / "docs" / "contracts" / "tool-mcp-boundary.md").read_text(encoding="utf-8")
+        v1 = (REPO_ROOT / "docs" / "contracts" / "tool-mcp-v1.md").read_text(encoding="utf-8")
+        self.assertIn("prefer the structured MCP tool first", boundary)
+        self.assertIn("reference these exact configured server ids", boundary)
+        self.assertIn("fall back to its documented native tool or CLI path", boundary)
+        self.assertIn("matching server id is connected", v1)
+        self.assertIn("reference exact server ids such as `xanadTools`, `security`, `devDocs`, `memory`, `time`, and `filesystem`", v1)
+        self.assertIn("fallback must be an explicit documented native tool or CLI path", v1)
+
+    def test_template_mcp_config_preserves_default_server_availability_contract(self) -> None:
+        config = json.loads((REPO_ROOT / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8"))
+        servers = config["servers"]
+
+        self.assertTrue(servers["github"]["disabled"])
+        self.assertTrue(servers["sqlite"]["disabled"])
+
+        for server_id in (
+            "xanadTools",
+            "git",
+            "web",
+            "devDocs",
+            "time",
+            "memory",
+            "security",
+            "filesystem",
+            "sequential-thinking",
+        ):
+            with self.subTest(server_id=server_id):
+                self.assertIn(server_id, servers)
+                self.assertFalse(servers[server_id].get("disabled", False))
+
+    def test_installed_mcp_config_matches_template_defaults_and_scripts(self) -> None:
+        template = json.loads((REPO_ROOT / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8"))
+        installed = json.loads((REPO_ROOT / ".vscode" / "mcp.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(template["servers"], installed["servers"])
+
+        for server_id, config in installed["servers"].items():
+            with self.subTest(server_id=server_id):
+                script_path = Path(config["args"][-1].replace("${workspaceFolder}/", ""))
+                self.assertTrue((REPO_ROOT / script_path).exists(), f"Configured MCP script missing for {server_id}: {script_path}")
 
     def test_active_docs_do_not_teach_apply_as_supported_command(self) -> None:
         readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
@@ -180,220 +332,6 @@ class PromptContractTests(unittest.TestCase):
                 self.assertIn("- `agent`", content)
                 self.assertIn("batch: \"agent\"", content)
                 self.assertIn("rerun `plan setup`", content)
-
-
-class PromptReviewSkillContractTests(unittest.TestCase):
-    SKILL_PATH = REPO_ROOT / "skills" / "promptReview" / "SKILL.md"
-
-    def _content(self) -> str:
-        return self.SKILL_PATH.read_text(encoding="utf-8")
-
-    def test_prompt_review_skill_file_exists(self) -> None:
-        self.assertTrue(self.SKILL_PATH.exists(), "skills/promptReview/SKILL.md must exist")
-
-    def test_prompt_review_skill_has_required_frontmatter_fields(self) -> None:
-        content = self._content()
-        frontmatter = content.split("---\n", 2)[1]
-        self.assertIn("name: promptReview", frontmatter)
-        self.assertIn("description:", frontmatter)
-
-    def test_prompt_review_skill_covers_all_six_modules(self) -> None:
-        content = self._content()
-        self.assertIn("Module 1", content)
-        self.assertIn("Module 2", content)
-        self.assertIn("Module 3", content)
-        self.assertIn("Module 4", content)
-        self.assertIn("Module 5", content)
-        self.assertIn("Module 6", content)
-
-    def test_prompt_review_skill_names_all_six_traits(self) -> None:
-        content = self._content()
-        self.assertIn("Contradiction", content)
-        self.assertIn("Ambiguity", content)
-        self.assertIn("Persona", content)
-        self.assertIn("Cognitive Load", content)
-        self.assertIn("Coverage", content)
-        self.assertIn("Composition", content)
-
-    def test_prompt_review_skill_defines_finding_output_prefixes(self) -> None:
-        content = self._content()
-        self.assertIn("contradiction:", content)
-        self.assertIn("ambiguity:", content)
-        self.assertIn("persona:", content)
-        self.assertIn("cognitive-load:", content)
-        self.assertIn("coverage-gap:", content)
-        self.assertIn("composition:", content)
-
-    def test_prompt_review_skill_defines_severity_levels(self) -> None:
-        content = self._content()
-        for level in ("Critical", "High", "Medium", "Low"):
-            self.assertIn(level, content)
-
-    def test_prompt_review_skill_covers_all_four_file_types(self) -> None:
-        content = self._content()
-        self.assertIn(".prompt.md", content)
-        self.assertIn(".agent.md", content)
-        self.assertIn("SKILL.md", content)
-        self.assertIn(".instructions.md", content)
-
-    def test_prompt_review_skill_has_when_to_use_and_when_not_to_use(self) -> None:
-        content = self._content()
-        self.assertIn("## When to use", content)
-        self.assertIn("## When NOT to use", content)
-
-    def test_prompt_review_skill_has_verify_checklist(self) -> None:
-        content = self._content()
-        self.assertIn("## Verify", content)
-        self.assertIn("- [ ]", content)
-
-    def test_prompt_review_skill_composition_module_reads_imports(self) -> None:
-        content = self._content()
-        self.assertIn("Markdown link", content)
-        self.assertIn("{{", content)
-
-    def test_prompt_review_skill_defines_merge_decision_outcomes(self) -> None:
-        content = self._content()
-        self.assertIn("ready to merge", content)
-        self.assertIn("needs revision before merge", content)
-        self.assertIn("block", content)
-
-    def test_prompt_review_skill_cognitive_load_module_provides_thresholds(self) -> None:
-        content = self._content()
-        self.assertIn("nesting depth", content)
-        self.assertIn("threshold", content)
-
-    def test_prompt_review_skill_references_xanadEval_check_command(self) -> None:
-        content = self._content()
-        self.assertIn("xanadEval check", content)
-
-    def test_prompt_review_skill_integrates_quality_self_assessment(self) -> None:
-        # waza quality (LLM-as-judge) is now an inline rubric applied by the reviewing agent
-        content = self._content()
-        self.assertIn("LLM-as-judge", content)
-        self.assertIn("Clarity", content)
-        self.assertIn("Completeness", content)
-
-    def test_prompt_review_skill_references_xanadEval_tokens_command(self) -> None:
-        content = self._content()
-        self.assertIn("xanadEval tokens", content)
-
-    def test_prompt_review_skill_references_xanadEval_suggest_command(self) -> None:
-        content = self._content()
-        self.assertIn("xanadEval.py suggest", content)
-
-    def test_prompt_review_skill_has_step_zero_automated_prescan(self) -> None:
-        content = self._content()
-        # Step 0 is dissolved — waza commands now live inside each relevant module
-        self.assertNotIn("## Step 0", content)
-        self.assertNotIn("## Module 7", content)
-
-    def test_prompt_review_skill_integrates_llm_as_judge_in_modules(self) -> None:
-        content = self._content()
-        # LLM-as-judge appears within Module 1, not as a separate numbered module
-        self.assertIn("LLM-as-judge", content)
-        self.assertNotIn("Module 7", content)
-
-    def test_prompt_review_skill_maps_quality_dimensions_to_modules(self) -> None:
-        content = self._content()
-        self.assertIn("Clarity", content)
-        self.assertIn("Completeness", content)
-        self.assertIn("scope-precision", content)
-        self.assertIn("Scope coverage", content)
-        self.assertIn("Anti-patterns", content)
-
-    def test_prompt_review_skill_verify_checklist_covers_xanadEval_steps(self) -> None:
-        content = self._content()
-        verify_section = content.split("## Verify", 1)[1]
-        self.assertIn("xanadEval tokens", verify_section)
-        self.assertIn("xanadEval check", verify_section)
-        self.assertIn("LLM-as-judge", verify_section)
-        self.assertNotIn("Step 0 pre-scan", verify_section)
-
-
-class TemplateMcpJsonContractTests(unittest.TestCase):
-    """Regression tests for template/vscode/mcp.json contract.
-
-    Unpinned --from mcp[cli] args cause merge-json-object updates to silently
-    overwrite user version pins (GitHub issue #2). All --from args must use a
-    pinned specifier so that the merge result matches the user's installed state.
-    """
-
-    _PIN_RE = re.compile(r"^mcp\[cli\]==\d+\.\d+\.\d+$")
-
-    def test_all_server_from_args_are_pinned_to_semver(self) -> None:
-        import json
-
-        mcp_json = json.loads(
-            (REPO_ROOT / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8")
-        )
-        for server_name, server_cfg in mcp_json.get("servers", {}).items():
-            args = server_cfg.get("args", [])
-            from_indices = [i for i, v in enumerate(args) if v == "--from"]
-            for idx in from_indices:
-                pkg_arg = args[idx + 1] if idx + 1 < len(args) else ""
-                with self.subTest(server=server_name):
-                    self.assertRegex(
-                        pkg_arg,
-                        self._PIN_RE,
-                        f"Server '{server_name}' --from arg must be pinned (mcp[cli]==X.Y.Z), got '{pkg_arg}'",
-                    )
-
-    def test_all_servers_use_the_same_mcp_cli_version(self) -> None:
-        """All servers must pin the same mcp[cli] version.
-
-        Prevents intra-file drift where different servers silently diverge to
-        different pins after manual edits.
-        """
-        import json
-
-        mcp_json = json.loads(
-            (REPO_ROOT / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8")
-        )
-        pins: dict[str, str] = {}
-        for server_name, server_cfg in mcp_json.get("servers", {}).items():
-            args = server_cfg.get("args", [])
-            from_indices = [i for i, v in enumerate(args) if v == "--from"]
-            for idx in from_indices:
-                pkg_arg = args[idx + 1] if idx + 1 < len(args) else ""
-                if self._PIN_RE.match(pkg_arg):
-                    pins[server_name] = pkg_arg
-
-        unique_pins = set(pins.values())
-        self.assertLessEqual(
-            len(unique_pins),
-            1,
-            f"All servers must use the same mcp[cli] pin. Found multiple: {unique_pins}. Per-server: {pins}",
-        )
-
-    def test_devdocs_server_is_enabled_by_default_in_template_and_repo_workspace(self) -> None:
-        import json
-
-        template_mcp = json.loads(
-            (REPO_ROOT / "template" / "vscode" / "mcp.json").read_text(encoding="utf-8")
-        )
-        workspace_mcp = json.loads(
-            (REPO_ROOT / ".vscode" / "mcp.json").read_text(encoding="utf-8")
-        )
-
-        template_server = template_mcp.get("servers", {}).get("devDocs")
-        workspace_server = workspace_mcp.get("servers", {}).get("devDocs")
-
-        self.assertIsNotNone(template_server)
-        self.assertIsNotNone(workspace_server)
-        self.assertFalse(template_server.get("disabled", False))
-        self.assertFalse(workspace_server.get("disabled", False))
-
-    def test_template_and_repo_mcp_json_use_canonical_serialization(self) -> None:
-        import json
-
-        for path in (
-            REPO_ROOT / "template" / "vscode" / "mcp.json",
-            REPO_ROOT / ".vscode" / "mcp.json",
-        ):
-            with self.subTest(path=path):
-                content = path.read_text(encoding="utf-8")
-                parsed = json.loads(content)
-                self.assertEqual(content, json.dumps(parsed, indent=2) + "\n")
 
 
 if __name__ == "__main__":

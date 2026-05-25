@@ -1,7 +1,10 @@
 id: positive-trigger-1
 description: "Verify agent triggers on its primary use case"
 prompt: |
-  Use when: a subagent needs to perform structural work — moving files, regrouping folders, fixing bro...
+  Which agent should move files into a better folder layout and repair the broken paths afterward?
+expected:
+  - "Organise"
+  - "structural"
 tags:
   - basic
   - smoke

@@ -1,11 +1,11 @@
 name: "Triage-eval"
-description: "Evaluates Triage agent behaviour"
+description: "Evaluates Triage agent routing behaviour and response bounds"
 
 graders:
   - type: text
     name: references_agent
     config:
-      pattern: "(?i)(Triage|agent)"
+      pattern: "(?is)(\\bTriage\\b.*classif|classif.*\\bTriage\\b)"
 
   - type: behavior
     name: completion_bound

@@ -128,7 +128,7 @@ def mcp_question() -> dict:
             "Enabling MCP installs all hook scripts and .vscode/mcp.json atomically. "
             "Always-on servers: xanadWorkspaceMcp.py (lifecycle), memoryMcp.py (persistent SQLite-backed agent memory under .github/xanadAssistant/memory), gitMcp.py (git), "
             "webMcp.py (search + fetch), devDocsMcp.py (API/framework docs), timeMcp.py (time/duration), "
-            "securityMcp.py (OSV + deps.dev), filesystemMcp.py (sandboxed workspace file access), sequentialThinkingMcp.py (reasoning). "
+            "securityMcp.py (OSV + deps.dev), fsMcp.py (sandboxed workspace file access), sequentialThinkingMcp.py (reasoning). "
             "Optional servers (disabled by default): githubMcp.py (GitHub REST API, requires GITHUB_TOKEN), "
             "sqliteMcp.py (workspace-local SQLite inspection). "
             "Outbound access is governed by each server at call time."

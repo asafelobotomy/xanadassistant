@@ -1,7 +1,10 @@
 id: positive-trigger-1
 description: "Verify agent triggers on its primary use case"
 prompt: |
-  Use when: broad read-only codebase exploration, architecture lookup, file discovery, symbol discover...
+  Which agent should handle broad read-only codebase exploration to find files, symbols, and architecture entry points?
+expected:
+  - "Explore"
+  - "read-only"
 tags:
   - basic
   - smoke

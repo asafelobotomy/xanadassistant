@@ -26,7 +26,7 @@ class InterviewQuestionsTests(unittest.TestCase):
         reason = question["reason"]
 
         self.assertIn("devDocsMcp.py", reason)
-        self.assertIn("filesystemMcp.py", reason)
+        self.assertIn("fsMcp.py", reason)
 
     def test_mcp_servers_reason_lists_all_always_on_servers(self) -> None:
         question = interview_questions.mcp_servers_question()

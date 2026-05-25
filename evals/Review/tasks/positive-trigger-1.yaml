@@ -1,7 +1,10 @@
 id: positive-trigger-1
 description: "Verify agent triggers on its primary use case"
 prompt: |
-  Use when: code review, PR review, diff review, architecture review, security review, maintainability...
+  Which agent should handle a repository-wide code review of a pull request diff and stay read-only by default?
+expected:
+  - "Review"
+  - "read-only"
 tags:
   - basic
   - smoke

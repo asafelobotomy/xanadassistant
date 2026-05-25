@@ -1,7 +1,10 @@
 id: positive-trigger-1
 description: "Verify agent triggers on its primary use case"
 prompt: |
-  Use when: diagnosing failures, isolating root causes, triaging regressions, reproducing broken behav...
+  Which agent should diagnose a failing test and isolate the root cause before implementation starts?
+expected:
+  - "Debugger"
+  - "diagnose"
 tags:
   - basic
   - smoke

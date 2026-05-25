@@ -80,7 +80,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:6641bd7b2564e808456cb31c150b8861364fd0110aefbb9e5a0be58b4f46b148"
+      "hash": "sha256:fc07441834b9589b4024f988147da861d35172055f50dea3c54101ef1106eebe"
     },
     {
       "id": "agents.deps.agent.md",
@@ -96,7 +96,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:9238349598eb6515af11e49b3cac36498eec57c89cf2db73abd05dfa2bbf609d"
+      "hash": "sha256:a33064d523d84cba6433cbc3dc144faaef40d5baa5512875b2084af50623362b"
     },
     {
       "id": "agents.docs.agent.md",
@@ -112,7 +112,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:2c3dbd509d3b5c3771d82d223e8eb88bcc1ab53fe8700f02de0f6dbdb77fd239"
+      "hash": "sha256:eac1a36f3b059cc69e05b4efbce97037c9bca91d7f95b89e8c07572fa5393a3c"
     },
     {
       "id": "agents.explore.agent.md",
@@ -160,7 +160,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:b3082cbc6c394297ff14e50b8067dd5b91bbb8729f08e1a911e004f43e180a78"
+      "hash": "sha256:4f4e1a62ef5d59512e749150168b9f495e3234eac6ade244b1f3993637ae8c18"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -176,7 +176,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:796459ff7e99d1c254c739c1b1f28c1864fefbf1002064b8f9e2bd0f83cff7a4"
+      "hash": "sha256:66519427564a6f327aabc41749c4ec36e9b9e5cd35af621186f7a415f90cadd9"
     },
     {
       "id": "agents.review.agent.md",
@@ -192,7 +192,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:4ef9e0c2ecba44abd4ac532d3e2ec3bd01735ef6e190eef7427b74815633e776"
+      "hash": "sha256:504875c9caa5cb2590cf2ab9a5783e72e7e0b32672359ed35b7cc939541254e2"
     },
     {
       "id": "agents.triage.agent.md",
@@ -224,7 +224,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:99e10b975d33fb6cd213d51e075bcd5ba62b9bfb104da57cffa0fd0403e83e0e"
+      "hash": "sha256:36efc70835fe4b29cf33b901478c8188d0ddbc03ae72045bf4f03584bcaeb98a"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -248,7 +248,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:00d0d2c73de643cd5b48c951258e61a17e90f0ffc91a1807ca2dc91d2a4b1d04"
+      "hash": "sha256:223b73ccaf4ba8c6c16725395ad164811dcb9e20f6caf37e7a35897dd8567e47"
     },
     {
       "id": "instructions.agents.instructions.md",

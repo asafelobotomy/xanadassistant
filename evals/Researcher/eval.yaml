@@ -1,11 +1,11 @@
 name: "Researcher-eval"
-description: "Evaluates Researcher agent behaviour"
+description: "Evaluates Researcher agent routing behaviour and response bounds"
 
 graders:
   - type: text
     name: references_agent
     config:
-      pattern: "(?i)(Researcher|agent)"
+      pattern: "(?is)(\\bResearcher\\b.*research|research.*\\bResearcher\\b)"
 
   - type: behavior
     name: completion_bound

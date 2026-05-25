@@ -1,11 +1,11 @@
 name: "Debugger-eval"
-description: "Evaluates Debugger agent behaviour"
+description: "Evaluates Debugger agent routing behaviour and response bounds"
 
 graders:
   - type: text
     name: references_agent
     config:
-      pattern: "(?i)(Debugger|agent)"
+      pattern: "(?is)(\\bDebugger\\b.*diagnos|diagnos.*\\bDebugger\\b)"
 
   - type: behavior
     name: completion_bound

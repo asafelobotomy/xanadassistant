@@ -5,7 +5,7 @@ argument-hint: "Describe the documentation target: contract doc, migration note,
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, editFiles, codebase, search, runCommands]
+tools: [agent, editFiles, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
 agents: [Researcher, Review, Explore, Planner]
 user-invocable: true
 ---
@@ -31,6 +31,7 @@ Do not use this agent for:
 
 - Prefer documentation files, guides, prompts, instructions, and user-facing examples over code changes.
 - Keep the scope on explanation, discoverability, migration guidance, and examples.
+- When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for repo inspection before falling back to `runCommands`.
 - Use `Researcher` when the docs depend on current external references, upstream behavior, or version-specific constraints.
 - Use `Explore` when documentation accuracy requires confirming local implementation details across multiple files.
 - Use `Review` when the draft needs a quality pass for clarity, correctness, or missing caveats.

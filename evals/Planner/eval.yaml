@@ -1,11 +1,11 @@
 name: "Planner-eval"
-description: "Evaluates Planner agent behaviour"
+description: "Evaluates Planner agent routing behaviour and response bounds"
 
 graders:
   - type: text
     name: references_agent
     config:
-      pattern: "(?i)(Planner|agent)"
+      pattern: "(?is)(\\bPlanner\\b.*plan|plan.*\\bPlanner\\b)"
 
   - type: behavior
     name: completion_bound

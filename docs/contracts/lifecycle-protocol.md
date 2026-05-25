@@ -59,6 +59,7 @@ Initial Phase 0 protocol examples should cover these event types:
 - `phase`
 - `inspect-summary`
 - `check-summary`
+- `health-report-summary`
 - `question`
 - `plan-summary`
 - `warning`
@@ -71,7 +72,7 @@ Initial Phase 0 protocol examples should cover these event types:
 `phase`
 
 - Announces a stable lifecycle phase transition.
-- Uses one of these labels when applicable: `Preflight`, `Interview`, `Plan`, `Apply`, `Validate`, `Receipt`.
+- Uses one of these labels when applicable: `Preflight`, `Interview`, `Plan`, `Apply`, `Validate`, `Report`, `Receipt`.
 
 `inspect-summary`
 
@@ -82,6 +83,11 @@ Initial Phase 0 protocol examples should cover these event types:
 
 - Reports read-only drift classification results.
 - Should summarize clean, missing, stale, malformed, retired, unmanaged, skipped, and unknown counts when available.
+
+`health-report-summary`
+
+- Reports read-only maintainer-facing health-report results.
+- Should summarize the overall report status, the nested health-check status, and any generated issue metadata such as title or labels.
 
 `question`
 

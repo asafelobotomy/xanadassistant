@@ -1,25 +1,16 @@
 from __future__ import annotations
 
-import importlib.util
-import sys
 import unittest
-from pathlib import Path
+
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
 
 
 def load_lean_test_reporter_module():
-    repo_root = Path(__file__).resolve().parents[3]
-    module_path = repo_root / "packs" / "lean" / "mcp" / "leanTestReporter.py"
-    scripts_dir = module_path.parent
-    sys.path.insert(0, str(scripts_dir))
-    try:
-        spec = importlib.util.spec_from_file_location("test_leanTestReporter", module_path)
-        if spec is None or spec.loader is None:
-            raise RuntimeError("Failed to load leanTestReporter.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-    finally:
-        sys.path.pop(0)
+    return load_mcp_script_module(
+        "packs/lean/mcp/leanTestReporter.py",
+        "test_leanTestReporter",
+        "leanTestReporter.py",
+    )
 
 
 LEAN_TEST_REPORTER_MODULE = load_lean_test_reporter_module()

@@ -1,7 +1,10 @@
 id: positive-trigger-1
 description: "Verify agent triggers on its primary use case"
 prompt: |
-  Use when: scanning workspace dependencies, auditing installed packages, checking for vulnerabilities...
+  Which agent should audit workspace dependencies, check for vulnerabilities, and suggest package updates?
+expected:
+  - "Deps"
+  - "dependencies"
 tags:
   - basic
   - smoke

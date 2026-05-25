@@ -24,6 +24,7 @@ The visible terminal should use these stable phase labels when applicable:
 - `Plan`
 - `Apply`
 - `Validate`
+- `Report`
 - `Receipt`
 
 ## Stream Split

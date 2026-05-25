@@ -1,11 +1,11 @@
 name: "Cleaner-eval"
-description: "Evaluates Cleaner agent behaviour"
+description: "Evaluates Cleaner agent routing behaviour and response bounds"
 
 graders:
   - type: text
     name: references_agent
     config:
-      pattern: "(?i)(Cleaner|agent)"
+      pattern: "(?is)(\\bCleaner\\b.*repository hygiene|repository hygiene.*\\bCleaner\\b)"
 
   - type: behavior
     name: completion_bound

@@ -1,0 +1,12 @@
+id: positive-trigger-2
+description: "Verify agent prefers devDocs MCP tools before broad web fallback"
+prompt: |
+  Which agent should use resolve_library_id and query_docs from devDocs first, and fall back to broader web research only when DevDocs does not cover the target?
+expected:
+  - "Researcher"
+  - "resolve_library_id"
+  - "query_docs"
+tags:
+  - smoke
+  - positive
+  - mcp

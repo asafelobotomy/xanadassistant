@@ -1,7 +1,10 @@
 id: positive-trigger-1
 description: "Verify agent triggers on its primary use case"
 prompt: |
-  Use when: breaking down complex work into scoped execution plans, file lists, risks, verification st...
+  Which agent should break a multi-file remediation into phases, risks, and verification steps before implementation?
+expected:
+  - "Planner"
+  - "plan"
 tags:
   - basic
   - smoke

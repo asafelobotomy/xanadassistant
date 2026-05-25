@@ -3,7 +3,7 @@ description: "Verify agent does NOT trigger on an unrelated request"
 prompt: |
   What is the current time and date?
 expected_absent:
-  - "(?i)(Deps)"
+  - "(?i)\\bDeps\\b"
 tags:
   - smoke
   - negative

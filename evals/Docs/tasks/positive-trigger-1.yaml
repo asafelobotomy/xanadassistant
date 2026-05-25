@@ -1,7 +1,10 @@
 id: positive-trigger-1
 description: "Verify agent triggers on its primary use case"
 prompt: |
-  Use when: drafting or updating documentation, walkthroughs, migration notes, contract explanations, ...
+  Which agent should draft a migration guide and update README documentation for users?
+expected:
+  - "Docs"
+  - "documentation"
 tags:
   - basic
   - smoke

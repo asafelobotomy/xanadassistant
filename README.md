@@ -44,6 +44,13 @@ When hooks are enabled at setup time, xanadAssistant registers these MCP servers
 
 All servers use the `stdio` transport via `uvx`; server ids match `.vscode/mcp.json`, and servers that need workspace scoping receive the relevant environment variables such as `WORKSPACE_ROOT` or `FS_ALLOWED_ROOT`.
 
+Agents should prefer these structured MCP tools over generic terminal or shell execution when the matching server is connected and the task fits the server's contract. If a required server is unavailable or disabled, agents must fall back to the documented native tool or CLI path for that workflow rather than guessing a new shell command.
+
+Default availability matters:
+
+- `github` and `sqlite` are shipped disabled by default in `.vscode/mcp.json` and should be treated as optional until enabled.
+- `xanadTools`, `git`, `web`, `devDocs`, `time`, `memory`, `security`, `filesystem`, and `sequential-thinking` are the default-on server ids agents should reference in prompts and docs.
+
 ## Requirements
 
 - Python 3.10+
@@ -95,6 +102,8 @@ Once installed, use Copilot prompts for day-to-day operations: `/setup` (install
 ## CLI reference
 
 > **Note:** Consumer setup and updates run through the `xanadLifecycle` Copilot agent. The CLI is for maintainers and advanced use.
+
+When the `xanadTools` server is connected, lifecycle-oriented agents should prefer the structured `lifecycle_*` MCP tools first and use the CLI as a fallback only when MCP resolution is unavailable.
 
 Point `xanadAssistant.py` at a consumer workspace and at its own repo root:
 

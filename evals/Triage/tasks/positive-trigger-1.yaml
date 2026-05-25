@@ -1,7 +1,10 @@
 id: positive-trigger-1
 description: "Verify agent triggers on its primary use case"
 prompt: |
-  Use when: you need a first-pass complexity assessment before choosing an execution path — simple pro...
+  Which agent should classify a task's complexity and recommend whether to answer directly or hand it off?
+expected:
+  - "Triage"
+  - "classif"
 tags:
   - basic
   - smoke

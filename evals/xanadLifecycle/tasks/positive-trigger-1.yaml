@@ -1,7 +1,10 @@
 id: positive-trigger-1
 description: "Verify agent triggers on its primary use case"
 prompt: |
-  Use when: set up xanadAssistant, inspect workspace, run lifecycle check, interview, plan setup, appl...
+  Which agent should inspect a workspace, run a lifecycle check, and coordinate xanadAssistant update or repair work?
+expected:
+  - "xanadLifecycle"
+  - "lifecycle"
 tags:
   - basic
   - smoke

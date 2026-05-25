@@ -5,7 +5,7 @@ argument-hint: "Describe the review scope: file path, PR, diff, audit focus, or 
 model:
   - GPT-5.4
   - Claude Sonnet 4.6
-tools: [agent, codebase, search, runCommands]
+tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
 agents: [Explore, Debugger, Planner, Researcher]
 user-invocable: true
 ---
@@ -64,6 +64,8 @@ When the scope includes design or architecture:
 2. Check whether the implementation honours them.
 3. Flag anywhere the abstraction boundary is leaking.
 4. Note any surface that will be hard to change later without breaking callers.
+
+When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for read-only inspection over `runCommands`.
 
 ## Summary
 

@@ -34,11 +34,15 @@ The primary source is the rendered `.github/copilot-instructions.md` file, espec
 
 If a command is not present there, the tool must report `unavailable` rather than guessing.
 
+Agent and prompt guidance should therefore treat MCP tools as the preferred path only when the matching server id is connected and the exported tool name is known exactly. If that condition is not met, the caller should use the documented fallback path instead of inventing a shell command.
+
 ## V1 Server Identity
 
 The initial workspace-local stdio server should use a concise first-party name such as `xanadTools`.
 
 It should expose only a small `tools` primitive surface in V1.
+
+The configured server id is part of the public integration surface. Agents and docs should reference exact server ids such as `xanadTools`, `security`, `devDocs`, `memory`, `time`, and `filesystem`, not internal implementation names or wildcard-style shorthand.
 
 Resources, prompts, and apps are out of scope for the first executable slice.
 
@@ -183,6 +187,8 @@ V1 tools must follow these restrictions:
 When a tool cannot safely resolve its underlying command, it must return `unavailable` with an explanation.
 
 It must not fall back to inferred shell commands.
+
+That rule applies symmetrically to agent guidance: when the preferred MCP tool is unavailable, the fallback must be an explicit documented native tool or CLI path, not an improvised shell equivalent.
 
 ## Upgrade Path
 

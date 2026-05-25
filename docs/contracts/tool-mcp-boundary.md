@@ -22,6 +22,8 @@ The goal is not to collect generic third-party tools. The goal is to expose stab
 
 The `xanadTools` workspace MCP must expose semantic workflow tools, not arbitrary shell access.
 
+When a workflow has both a structured MCP tool and a generic native tool, agents should prefer the structured MCP tool first because it carries the narrower contract, typed inputs, and safer output shape. Generic shell or terminal execution is a fallback only when the relevant MCP server is unavailable, disabled, or lacks the needed workflow.
+
 Good MCP tools for `xanadTools` express a stable repo-owned action such as `lifecycle_inspect` or `workspace_run_check_loc`.
 
 Bad `xanadTools` tools simply proxy generic host capabilities such as:
@@ -46,6 +48,8 @@ Recommended first domains:
 ## V1 Server Shape
 
 The initial shape is one workspace-local stdio MCP server (`xanadTools`), managed by the lifecycle engine and referenced from `.vscode/mcp.json`. Companion servers are shipped alongside it and registered in the same MCP config under the IDs `git`, `web`, `devDocs`, `time`, `memory`, `security`, `github`, `sqlite`, and `sequential-thinking`. Internal FastMCP server names may differ from those registered config IDs.
+
+Agents, prompts, docs, and evals should reference these exact configured server ids and exported tool names. Ambiguous shorthand such as `lifecycle.*` weakens tool awareness and should not be used in normative guidance.
 
 The complete `xanadTools` tool set is (see `tool-mcp-v1.md` for V1 vs Extended delivery history):
 
@@ -112,6 +116,7 @@ Lifecycle correctness must not depend on the MCP server being available.
 - The lifecycle CLI remains authoritative for inspect, check, plan, apply, update, repair, and restore.
 - A default install may include a managed first-party MCP entry.
 - Disabling or removing the MCP server must not make the workspace lifecycle state incorrect.
+- If a server is disabled by default or unavailable at runtime, the corresponding agent must fall back to its documented native tool or CLI path rather than assuming MCP availability.
 
 ## Anti-Bloat Rule
 

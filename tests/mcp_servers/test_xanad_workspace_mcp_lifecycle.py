@@ -235,6 +235,28 @@ class XanadWorkspaceMcpLifecycleTests(XanadWorkspaceMcpTestCaseMixin, unittest.T
                 self.assertEqual(unavailable_cli["status"], "unavailable")
                 self.assertIn("cli missing", unavailable_cli["summary"])
 
+    def test_run_lifecycle_command_uses_explicit_cli_resolution_without_remote_fallback(self) -> None:
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with self._workspace_ready(module), mock.patch.object(
+                    module,
+                    "resolve_lifecycle_package_root",
+                    return_value=(Path("/tmp/pkg"), None),
+                ), mock.patch.object(
+                    module,
+                    "resolve_lifecycle_cli",
+                    return_value=(None, "cli missing"),
+                ) as resolve_cli, mock.patch.object(
+                    module,
+                    "run_argv",
+                    side_effect=AssertionError("should not execute a guessed shell fallback"),
+                ):
+                    result = module.run_lifecycle_command("inspect")
+
+                self.assertEqual(result["status"], "unavailable")
+                self.assertIn("cli missing", result["summary"])
+                resolve_cli.assert_called_once_with(Path("/tmp/pkg"))
+
     def test_run_lifecycle_command_rejects_invalid_plan_path(self) -> None:
         for module in self.MODULES:
             with self.subTest(module=module.__name__):

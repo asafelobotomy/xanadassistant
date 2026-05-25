@@ -1,11 +1,11 @@
 name: "Commit-eval"
-description: "Evaluates Commit agent behaviour"
+description: "Evaluates Commit agent routing behaviour and response bounds"
 
 graders:
   - type: text
     name: references_agent
     config:
-      pattern: "(?i)(Commit|agent)"
+      pattern: "(?is)(\\bCommit\\b.*git|git.*\\bCommit\\b)"
 
   - type: behavior
     name: completion_bound

@@ -3,7 +3,7 @@
 Version: 0.3.6
 Profile: balanced
 Selected packs: none
-Applied at: 2026-05-20T18:45:29Z
+Applied at: 2026-05-25T22:23:38Z
 Lockfile: .github/xanadAssistant-lock.json
 
 ```json
@@ -11,7 +11,7 @@ Lockfile: .github/xanadAssistant-lock.json
   "version": "0.3.6",
   "profile": "balanced",
   "selectedPacks": [],
-  "manifestHash": "sha256:a21e91a2d2172bae1229b2812b432304694407066aade53289df3e3e139270bf",
-  "appliedAt": "2026-05-20T18:45:29Z"
+  "manifestHash": "sha256:5054fa5edfd9472e405379ffe99b2c453ecbc85abc702799746601db7afc801b",
+  "appliedAt": "2026-05-25T22:23:38Z"
 }
 ```

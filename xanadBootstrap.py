@@ -32,7 +32,7 @@ from pathlib import Path
 _DEFAULT_SOURCE = "github:asafelobotomy/xanadassistant"
 _DEFAULT_CACHE_ROOT = Path.home() / ".xanadAssistant" / "pkg-cache"
 _VERSION = "0.1.1"
-_SUPPORTED_COMMANDS = ("inspect", "interview", "plan", "setup", "apply")
+_SUPPORTED_COMMANDS = ("inspect", "interview", "plan", "setup")
 
 
 # ---------------------------------------------------------------------------
