@@ -1,6 +1,7 @@
 ---
 name: mlopsDataPipelines
 description: "Data pipeline conventions — versioning, feature engineering discipline, and leakage prevention."
+type: reference
 ---
 
 # mlopsDataPipelines

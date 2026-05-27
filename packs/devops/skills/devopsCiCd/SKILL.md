@@ -1,6 +1,7 @@
 ---
 name: devopsCiCd
 description: "CI/CD pipeline patterns — GitHub Actions, stage design, environment gates, and artifact discipline."
+type: reference
 ---
 
 # devopsCiCd
@@ -33,7 +34,7 @@ Structure pipelines in ordered stages. Each stage must pass before the next runs
 | **Deploy (staging)** | Verify in production-like env | Smoke tests, E2E tests |
 | **Deploy (production)** | Release to users | Canary, blue/green, or rolling |
 
-Never skip a stage to speed up delivery. Add a manual approval gate before production deploys when the risk surface is high.
+Every stage must complete before the next begins; shortcutting a stage to speed up delivery invalidates the pipeline. Add a manual approval gate before production deploys when the risk surface is high.
 
 ## GitHub Actions conventions
 

@@ -22,7 +22,7 @@ knowledge of the project's specific tooling or conventions.
 - When the workspace has a project-specific preflight skill — prefer that skill
   over this generic one (it will know the project's exact commands and repair
   steps)
-- When the user has explicitly asked to skip verification
+- When the user has explicitly asked to forgo verification
 - When there is nothing staged and no proposed file list to verify against
 
 ## Steps
@@ -34,7 +34,7 @@ Use workspace file search tools to list files under `.github/workflows/`.
 For each file found, read its full contents with file-reading tools.
 
 **Keep** a file if its `on:` key includes `push` or `pull_request`.
-**Skip** a file that only triggers on `schedule`, `workflow_dispatch`,
+**Exclude** a file that only triggers on `schedule`, `workflow_dispatch`,
 `release`, or deployment events — those require infrastructure or secrets that
 cannot be reproduced locally.
 
@@ -64,8 +64,8 @@ Run `git diff --cached --name-only` with a terminal tool to get the staged file
 list.
 
 Narrow the extracted check list by that scope:
-- Skip Python-specific checks if no `.py` files or test-config files are staged
-- Skip Node checks if no `.js`, `.ts`, or `package.json` are staged
+- Exclude Python-specific checks when no `.py` files or test-config files are staged
+- Exclude Node checks when no `.js`, `.ts`, or `package.json` are staged
 - Keep any check whose scope cannot be narrowed (e.g. a global lint or a
   manifest freshness gate that affects the whole repo)
 
@@ -97,7 +97,7 @@ first blocker before running later tiers:
    (e.g. `ruff check`, `eslint`, `golangci-lint`, budget/LOC scripts)
 2. **Type checks** — moderate cost (e.g. `mypy`, `tsc --noEmit`)
 3. **Unit tests** — moderate to expensive
-4. **Integration / e2e tests** — most expensive; skip if not in scope of
+4. **Integration / e2e tests** — most expensive; exclude if not in scope of
    staged changes
 
 When tier assignment is ambiguous, prefer the order commands appear in the
@@ -114,16 +114,15 @@ Run each command with a terminal tool. For each result:
 | Unit or lint failure | Delegate to `Debugger` with the exact failure output and staged file list; apply the minimal fix returned; re-run the failing check. If `Debugger` cannot isolate a fix, surface the raw failure output to the user and ask whether to block the commit or accept residual risk. |
 | Budget / LOC / format violation | Surface the exact violation output to the user; ask whether to fix now or accept residual risk before proceeding |
 | Template-safety violation (unresolved `{{}}` tokens in a template file) | Block the commit until resolved |
-| Step requires secrets or infra (detected mid-run) | Skip; note in summary — not a blocker |
+| Step requires secrets or infra (detected mid-run) | Note in summary — not a blocker |
 | Any other nonzero exit | Surface exact stdout + stderr; use `vscode_askQuestions` if user input is required |
 
 ### 6. Return a summary to the caller
 
 Return:
 - The workflow files read and the commands extracted from them (or "detected
-  from project structure" if Step 4 was used)
-- Which checks were skipped, and why
-- Whether any artifacts were regenerated and staged
+  from project structure" if Step 3 was used)
+- Which checks were excluded and why; whether any artifacts were regenerated and staged
 - A clear **pass**, **block**, or **residual-risk** outcome for the caller to
   act on
 

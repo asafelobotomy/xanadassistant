@@ -1,6 +1,7 @@
 ---
 name: ossChangelog
 description: "OSS changelog workflow — Keep a Changelog format, versioning discipline, and generating entries from git history."
+type: reference
 ---
 
 # ossChangelog

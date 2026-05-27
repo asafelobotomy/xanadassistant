@@ -1,6 +1,7 @@
 ---
 name: shapeupCycleWork
 description: "Execute and track work during a Shape Up cycle. Use when managing in-cycle scope, using hill charts, applying scope hammering, or deciding whether to invoke the circuit breaker."
+type: reference
 ---
 
 # Shape Up — Cycle Execution

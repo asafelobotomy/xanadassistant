@@ -1,6 +1,7 @@
 ---
 name: leanAndon
 description: "Andon cord protocol — defines when to stop and ask versus when to proceed autonomously."
+type: reference
 ---
 
 # Lean Andon

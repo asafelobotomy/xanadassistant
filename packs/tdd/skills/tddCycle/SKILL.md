@@ -1,6 +1,7 @@
 ---
 name: tddCycle
 description: "Red-Green-Refactor cycle discipline — one failing test at a time, minimal implementation, optional commit boundary on green."
+type: reference
 ---
 
 # TDD Cycle

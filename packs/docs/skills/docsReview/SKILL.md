@@ -1,6 +1,7 @@
 ---
 name: docsReview
 description: "Documentation review checklist — accuracy, completeness, clarity, and link health."
+type: reference
 ---
 
 # docsReview

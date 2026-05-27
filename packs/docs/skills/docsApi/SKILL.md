@@ -1,6 +1,7 @@
 ---
 name: docsApi
 description: "API and code documentation — docstring conventions, OpenAPI patterns, and parameter table format."
+type: reference
 ---
 
 # docsApi

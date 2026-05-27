@@ -1,6 +1,7 @@
 ---
 name: leanOutput
 description: "Output discipline — lean factual responses with no filler, summaries as counts, and omitted routine narration."
+type: reference
 ---
 
 # Lean Output
@@ -21,8 +22,8 @@ description: "Output discipline — lean factual responses with no filler, summa
 - Prefer one-line descriptions over multi-sentence explanations.
 - Summarize plan writes as counts only (added: N, replaced: N) without per-file listings unless explicitly asked.
 - Omit receipt detail when the action is routine and the status is ok.
-- Keep validation output to pass/fail with the error only; skip success narration.
-- Omit unchanged-state commentary unless ambiguity exists (e.g., skip "no changes needed" when it is obvious).
+- Keep validation output to pass/fail with the error only; omit success narration.
+- Omit unchanged-state commentary unless ambiguity exists (e.g., omit "no changes needed" when it is obvious).
 - Drop filler phrases such as "I will now", "Here is", and "As requested".
 
 ## Verify

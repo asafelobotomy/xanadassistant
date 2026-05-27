@@ -1,6 +1,7 @@
 ---
 name: leanVerification
 description: "Test and validation reporting — pass/fail only, with minimal output for passing runs and concise failure triage."
+type: reference
 ---
 
 # Lean Verification

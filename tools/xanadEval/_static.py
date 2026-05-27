@@ -79,6 +79,7 @@ def _build_check_result(
     description = fm.get("description", "")
     token_count = _count_tokens(content)
     is_agent = Path(path).name.endswith(".agent.md")
+    is_reference = not is_agent and fm.get("type", "") == "reference"
 
     # (id, passed, detail)
     spec: list[tuple[str, bool, str]] = []
@@ -152,7 +153,7 @@ def _build_check_result(
             re.search(r"^## Module \d+", content, re.MULTILINE)
         )
         spec.append((
-            "spec-steps-or-modules", has_steps,
+            "spec-steps-or-modules", has_steps or is_reference,
             "workflow structure present (## Steps or ## Module N)",
         ))
 
@@ -160,7 +161,7 @@ def _build_check_result(
         modules = re.findall(r"^## Module \d+", content, re.MULTILINE)
         module_count = len(modules)
         advisory.append((
-            "module-count", 2 <= module_count <= 6,
+            "module-count", is_reference or 2 <= module_count <= 6,
             f"module count: {module_count} (2\u20136 is the acceptable range)",
         ))
 

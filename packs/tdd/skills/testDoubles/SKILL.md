@@ -1,6 +1,7 @@
 ---
 name: testDoubles
 description: "Test double selection — stubs, mocks, fakes, and spies for test isolation and determinism."
+type: reference
 ---
 
 # Test Doubles

@@ -71,7 +71,7 @@ After completing the checklist, score overall directive Clarity on a 0–1 scale
 
 **Output:** `ambiguity: [severity] <section> — <description>. Suggested rewrite: <rewrite>`.
 
-Severity: High if the ambiguity causes the agent to silently skip a required step; Medium otherwise.
+Severity: High if the ambiguity causes the agent to silently omit a required step; Medium otherwise.
 
 ---
 
@@ -147,9 +147,7 @@ Identify gaps in the file's stated intent: scenarios that should be handled but 
 
 After completing the checklist, rate overall coverage Completeness (LLM-as-judge): **Complete / Gaps-present / Incomplete**. Gaps-present or Incomplete confirms coverage-gap findings. Also rate Scope coverage: is the file's scope well-defined, or does it bleed into adjacent agent territory? Output: `scope-coverage: [well-defined | bleeding] — <description>`. Bleeding scope is a Medium-severity coverage-gap finding.
 
-### Universal coverage checklist
-
-Run for every file type:
+Run for every file type. Also apply ## File-type Coverage Checks below for the specific file type under review.
 
 - [ ] At least one clear "happy path" is described from trigger to completion
 - [ ] At least one explicit failure or error path is described (what to do when a step cannot complete)
@@ -158,7 +156,15 @@ Run for every file type:
 - [ ] Every external dependency (another agent, MCP server, external API) has a documented failure path
 - [ ] If the file declares a multi-step workflow, the last step has a defined termination condition
 
-### File-type-specific checks
+**Output:** `coverage-gap: [severity] <section> — <description>. Suggested addition: <addition>`.
+
+Severity: High if the gap leaves an error path unhandled; Medium if it is a missing best-practice section; Low otherwise.
+
+---
+
+## File-type Coverage Checks
+
+Apply after Module 5 for the specific file type under review.
 
 *Agent files (`.agent.md`):*
 - [ ] Handoffs are defined for at least: scope-unclear, unexpected-failure, and out-of-domain cases
@@ -168,7 +174,7 @@ Run for every file type:
 *Skill files (`SKILL.md`):*
 - [ ] A `## Verify` checklist is present
 - [ ] Every step either has a success criterion or delegates to a fallback
-- [ ] `xanadEval check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings here. If xanadEval is unavailable, skip and emit: `coverage-gap: [medium] spec-compliance — xanadEval unavailable; spec checks could not be run`.
+- [ ] `xanadEval check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings here. If xanadEval is unavailable, emit: `coverage-gap: [medium] spec-compliance — xanadEval unavailable; spec checks could not be run`.
     - [ ] If an eval suite is expected: `xanadEval check` `eval-presence` advisory passes; absence is a Medium-severity finding. If xanadEval is unavailable, note the gap manually.
   - [ ] If coverage gaps were found: run `python3 .github/tools/xanadEval/xanadEval.py suggest --dry-run <path>` from the workspace root; each expected eval task not yet present is a Low-severity finding. If xanadEval is unavailable, note the gap manually.
 
@@ -177,8 +183,6 @@ Run for every file type:
 - [ ] Rules are expressed as imperatives, not preferences ("Do X", not "You might want to X")
 
 **Output:** `coverage-gap: [severity] <section> — <description>. Suggested addition: <addition>`.
-
-Severity: High if the gap leaves an error path unhandled; Medium if it is a missing best-practice section; Low otherwise.
 
 ---
 
@@ -197,7 +201,7 @@ Use workspace file-reading tools to read each referenced file. If a referenced f
 
 For each (parent, import) pair, check:
 - **Direct contradiction**: a rule in the parent negates a rule in the import for the same condition
-- **Shadowing**: a local rule restates and subtly changes a rule from the import, creating a silent override
+- **Shadowing**: a local rule restates and subtly changes a rule from the import, creating an undetected conflict
 - **Duplicate rules that have drifted**: the same rule appears in both files but with different wording that may produce different behavior
 - **Circular reference**: the import references back to the parent or creates a cycle
 - **Pack token conflicts**: a `{{token}}` expanded from the active pack contradicts a hardcoded directive in the body
@@ -237,7 +241,7 @@ Decision rules:
 
 - [ ] All six modules run and each produced at least a "no findings" row
 - [ ] Module 4: `xanadEval tokens` figures used, or xanadEval unavailability noted
-- [ ] For SKILL.md files: `xanadEval check` spec violations mapped to Module 5 findings
+- [ ] For SKILL.md files: `xanadEval check` spec violations reported as coverage-gap findings
 - [ ] For SKILL.md files: LLM-as-judge quality ratings (contradiction risk, Clarity score, persona stability, coverage Completeness) applied in Modules 1/2/3/5
 - [ ] Composition imports resolved — linked files read before reporting conflict findings
 - [ ] Every ambiguity finding includes a rewrite suggestion

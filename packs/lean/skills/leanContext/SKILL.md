@@ -1,6 +1,7 @@
 ---
 name: leanContext
 description: "Context window hygiene — keep working context tight, current, and actionable."
+type: reference
 ---
 
 # Lean Context

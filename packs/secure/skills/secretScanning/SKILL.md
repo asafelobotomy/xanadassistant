@@ -1,6 +1,7 @@
 ---
 name: secretScanning
 description: "Secret scanning — detect credential leakage before version control with pre-commit discipline."
+type: reference
 ---
 
 # Secret Scanning

@@ -1,6 +1,7 @@
 ---
 name: mlopsReview
 description: "ML code review checklist — data leakage, bias, reproducibility, and serving risk."
+type: reference
 ---
 
 # mlopsReview

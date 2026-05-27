@@ -1,6 +1,7 @@
 ---
 name: dependencyAudit
 description: "Dependency vulnerability audit — OSV.dev queries for lockfile packages and CVE triage."
+type: reference
 ---
 
 # Dependency Audit

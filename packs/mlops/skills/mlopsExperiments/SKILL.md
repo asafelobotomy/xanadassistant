@@ -1,6 +1,7 @@
 ---
 name: mlopsExperiments
 description: "ML experiment tracking — reproducibility, hyperparameter discipline, and metric logging conventions."
+type: reference
 ---
 
 # mlopsExperiments

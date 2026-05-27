@@ -1,6 +1,7 @@
 ---
 name: mlopsModelServing
 description: "Model serving — registry, versioning, A/B testing, canary deployments, and drift monitoring."
+type: reference
 ---
 
 # mlopsModelServing

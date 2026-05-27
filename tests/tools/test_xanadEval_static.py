@@ -128,6 +128,15 @@ class CheckCommandTests(unittest.TestCase):
         check = next(c for c in data["spec_checks"] if c["id"] == "spec-steps-or-modules")
         self.assertFalse(check["pass"])
 
+    def test_spec_steps_or_modules_exempt_for_reference_skill(self) -> None:
+        ref_skill = "---\nname: test-skill\ntype: reference\ndescription: \"A reference skill with no procedural steps\"\n---\n\n# T\n\n## When to use\n\n- yes\n\n## When NOT to use\n\n- no\n\n## Verify\n\n- [ ] ok\n"
+        output, _ = self._check(ref_skill, fmt="json")
+        data = json.loads(output)
+        wf_check = next(c for c in data["spec_checks"] if c["id"] == "spec-steps-or-modules")
+        self.assertTrue(wf_check["pass"])
+        mc_check = next(c for c in data["advisory_checks"] if c["id"] == "module-count")
+        self.assertTrue(mc_check["pass"])
+
     def test_advisory_description_quality_short_description(self) -> None:
         short_desc = _MINIMAL_SKILL.replace(
             'description: "A minimal skill used for xanadEval unit tests"',

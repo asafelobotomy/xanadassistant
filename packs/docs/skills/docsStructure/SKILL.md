@@ -1,6 +1,7 @@
 ---
 name: docsStructure
 description: "Documentation structure — Diátaxis framework, README anatomy, ADR format, and section ordering."
+type: reference
 ---
 
 # docsStructure

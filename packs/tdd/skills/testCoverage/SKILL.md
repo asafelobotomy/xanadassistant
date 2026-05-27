@@ -1,6 +1,7 @@
 ---
 name: testCoverage
 description: "Test coverage analysis — coverage as diagnostic tool, gap identification, and assertion strength."
+type: reference
 ---
 
 # Test Coverage

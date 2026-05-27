@@ -1,6 +1,7 @@
 ---
 name: ossContributing
 description: "OSS contributing workflow — CONTRIBUTING.md structure, DCO/CLA guidance, and contributor onboarding checklist."
+type: reference
 ---
 
 # ossContributing

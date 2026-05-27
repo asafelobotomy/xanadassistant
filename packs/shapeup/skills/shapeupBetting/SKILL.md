@@ -1,6 +1,7 @@
 ---
 name: shapeupBetting
 description: "Run or participate in a Shape Up betting table. Use when evaluating pitches for the next cycle, setting appetite, sizing teams, or deciding which pitches to bet on."
+type: reference
 ---
 
 # Shape Up — Betting Table

@@ -1,6 +1,7 @@
 ---
 name: secureReview
 description: "Security-focused code review against OWASP Top 10:2025 — finding classification and output format."
+type: reference
 ---
 
 # Secure Review
@@ -55,7 +56,7 @@ When writing new code (not reviewing), apply these without annotation unless the
 - No sensitive data in logs, URLs, or error messages
 - Dependency versions pinned to a specific release, not a range that includes major versions
 
-## What to skip
+## What to exclude
 
 Do not report findings that are purely stylistic, have no security relevance, or require access to runtime configuration you cannot see. Speculation is not a finding.
 

@@ -1,6 +1,7 @@
 ---
 name: threatModel
 description: "STRIDE threat modeling — trust boundaries, asset identification, and threat classification for features."
+type: reference
 ---
 
 # Threat Model
