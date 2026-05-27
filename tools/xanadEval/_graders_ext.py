@@ -4,7 +4,9 @@ Internal implementation detail — import ``xanadEval`` directly, not this modul
 """
 from __future__ import annotations
 
+import json
 import re
+import subprocess
 from collections import Counter
 from pathlib import Path
 
@@ -505,10 +507,11 @@ def _grade_tool_constraint(
     """
     expect = list(config.get("expect_tools", []))
     reject = list(config.get("reject_tools", []))
-    if not expect and not reject:
+    max_calls = config.get("max_calls")
+    if not expect and not reject and max_calls is None:
         return (
             False, 0.0,
-            "tool_constraint grader: at least one of expect_tools/reject_tools is required",
+            "tool_constraint grader: at least one of expect_tools/reject_tools/max_calls is required",
         )
 
     raw = list((ctx or {}).get("tool_calls", []))
@@ -533,6 +536,11 @@ def _grade_tool_constraint(
         checks.append(any(_match(spec, c) for c in raw))
     for spec in reject:
         checks.append(not any(_match(spec, c) for c in raw))
+    if max_calls is not None:
+        try:
+            checks.append(len(raw) <= int(max_calls))
+        except (TypeError, ValueError):
+            pass
 
     if not checks:
         return False, 0.0, "tool_constraint grader: no checks derived from config"
@@ -540,3 +548,161 @@ def _grade_tool_constraint(
     passed = all(checks)
     score = round(sum(1 for c in checks if c) / len(checks), 3)
     return passed, score, f"{sum(checks)}/{len(checks)} constraint checks passed"
+
+
+# ── _grade_script ──────────────────────────────────────────────────────────────────────────────
+
+
+def _grade_script(
+    config: dict,
+    ctx: dict | None = None,
+) -> tuple[bool, float, str]:
+    """External script grader: serialise ctx as JSON to stdin, parse JSON from stdout.
+
+    Config keys:
+      - ``command``  — required executable name or path
+      - ``args``     — list of additional arguments (default: [])
+      - ``timeout``  — max execution time in seconds (default: 30)
+
+    The script receives a JSON object via stdin with keys: ``output``, ``transcript``,
+    ``tool_calls``, ``errors``, ``duration_ms``.  If stdout is valid JSON with
+    ``score`` and ``passed`` keys those values are used; otherwise exit code 0 = pass (1.0).
+
+    Expected stdout JSON: ``{"score": float, "passed": bool, "message": str}``.
+    """
+    command = str(config.get("command", "")).strip()
+    if not command:
+        return False, 0.0, "script grader: 'command' is required"
+    args = [str(a) for a in config.get("args", [])]
+    timeout = int(config.get("timeout", 30))
+    _ctx = ctx or {}
+    payload = json.dumps({
+        "output": _ctx.get("output", ""),
+        "transcript": _ctx.get("transcript", []),
+        "tool_calls": _ctx.get("tool_calls", []),
+        "errors": _ctx.get("errors", []),
+        "duration_ms": _ctx.get("duration_ms", 0),
+    })
+    try:
+        result = subprocess.run(
+            [command] + args,
+            input=payload,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except FileNotFoundError:
+        return False, 0.0, f"script grader: command not found: {command!r}"
+    except subprocess.TimeoutExpired:
+        return False, 0.0, f"script grader: timed out after {timeout}s"
+    except OSError as e:
+        return False, 0.0, f"script grader: {e}"
+    stdout = (result.stdout or "").strip()
+    try:
+        out = json.loads(stdout) if stdout else {}
+        if isinstance(out, dict) and "score" in out:
+            score = max(0.0, min(1.0, float(out["score"])))
+            passed = bool(out.get("passed", score >= 0.5))
+            return passed, round(score, 3), str(out.get("message", ""))
+    except (json.JSONDecodeError, TypeError, ValueError):
+        pass
+    passed = result.returncode == 0
+    feedback = (stdout or (result.stderr or "").strip())[:500]
+    return passed, 1.0 if passed else 0.0, feedback
+
+
+# ── _grade_human ──────────────────────────────────────────────────────────────────────────────
+
+
+def _grade_human(
+    config: dict,
+    ctx: dict | None = None,
+) -> tuple[bool | None, float | None, dict]:
+    """Human-in-the-loop grader: returns a pending marker with criteria for review.
+
+    This grader always returns ``pass=None, score=None`` — scoring must be resolved
+    externally (e.g. via the ``workspace_grade_human`` MCP tool).
+
+    Config keys:
+      - ``criteria``     — list of criterion strings to display to the reviewer
+      - ``instructions`` — free-text instructions for the reviewer (optional)
+    """
+    criteria = list(config.get("criteria", []))
+    instructions = str(config.get("instructions", ""))
+    payload: dict = {"pending": True, "criteria": criteria}
+    if instructions:
+        payload["instructions"] = instructions
+    return None, None, payload
+
+
+# ── _grade_skill_invocation ──────────────────────────────────────────────────────────────────
+
+
+def _grade_skill_invocation(
+    config: dict,
+    ctx: dict | None = None,
+) -> tuple[bool, float, str]:
+    """Validate which skills or agents were invoked during execution.
+
+    Config keys:
+      - ``required_skills``  — list of skill names that MUST have been invoked
+      - ``forbidden_skills`` — list of skill names that MUST NOT have been invoked
+      - ``mode``             — ``exact_match``, ``in_order``, or ``any_order`` (default: ``any_order``)
+      - ``allow_extra``      — whether extra invocations beyond required are ok (default: ``True``)
+
+    Actual invocations are read from ``ctx["skill_invocations"]`` — a list of
+    skill name strings written by the agent runner or MCP interceptor.
+
+    Scoring: F1 score of required skills; ``allow_extra: false`` penalises extra calls.
+    Forbidden invocations are a hard fail (score 0.0).
+    """
+    required = [str(s) for s in config.get("required_skills", [])]
+    forbidden = [str(s) for s in config.get("forbidden_skills", [])]
+    if not required and not forbidden:
+        return (
+            False, 0.0,
+            "skill_invocation grader: required_skills or forbidden_skills is required",
+        )
+    mode = str(config.get("mode", "any_order")).lower()
+    if mode not in ("exact_match", "in_order", "any_order"):
+        return False, 0.0, f"skill_invocation grader: unknown mode {mode!r}"
+    allow_extra = bool(config.get("allow_extra", True))
+
+    actual = [str(s) for s in list((ctx or {}).get("skill_invocations", []))]
+
+    forbidden_hit = [s for s in actual if s in forbidden]
+    if forbidden_hit:
+        return False, 0.0, f"skill_invocation grader: forbidden skills invoked: {forbidden_hit}"
+
+    if not required:
+        return True, 1.0, "no required skills; 0 forbidden violations"
+
+    if mode == "exact_match":
+        tp = sum(1 for a, e in zip(actual, required) if a == e)
+        matched = actual == required
+    elif mode == "in_order":
+        tp = 0
+        ai = 0
+        for e in required:
+            while ai < len(actual):
+                if actual[ai] == e:
+                    tp += 1
+                    ai += 1
+                    break
+                ai += 1
+        matched = tp == len(required)
+    else:  # any_order
+        req_c = Counter(required)
+        act_c = Counter(actual)
+        tp = sum(min(v, act_c[k]) for k, v in req_c.items())
+        matched = all(act_c[k] >= v for k, v in req_c.items())
+
+    precision = tp / len(actual) if actual else 0.0
+    recall = tp / len(required)
+    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+    if not allow_extra and len(actual) > len(required):
+        f1 = round(f1 * (len(required) / len(actual)), 3)
+    return matched, round(f1, 3), (
+        f"precision={precision:.3f} recall={recall:.3f} f1={f1:.3f}"
+        f" tp={tp} required={len(required)} actual={len(actual)}"
+    )

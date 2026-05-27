@@ -90,15 +90,19 @@ WARN_LIMIT_OVERRIDES = {
 
     # ── xanadEval tool and test modules ───────────────────────────────────────────
     # _common.py: grew with retry logic, new grader types, and extended _run_graders dispatch.
-    "tools/xanadEval/_common.py": 560,
-    # graders_ext module: trigger/file/diff/code/action_sequence/tool_constraint graders.
-    "tools/xanadEval/_graders_ext.py": 480,
-    # graders test: grew with new json_schema and program grader test classes.
-    "tests/tools/test_xanadEval_graders.py": 380,
+    "tools/xanadEval/_common.py": 700,
+    # graders_ext module: trigger/file/diff/code/action_sequence/tool_constraint/script/human/skill_invocation.
+    "tools/xanadEval/_graders_ext.py": 740,
+    # graders test: grew with LlmGraderTests and LlmComparisonGraderTests.
+    "tests/tools/test_xanadEval_graders.py": 480,
     # runtime test: grew with RetryTests, ExpectedFieldTests, TagsFilterTests.
     "tests/tools/test_xanadEval_runtime.py": 510,
     # graders_ext test: trigger, file, diff, code, action_sequence, tool_constraint tests.
     "tests/tools/test_xanadEval_graders_ext.py": 560,
+    # graders_ext2 test: script, human, skill_invocation, max_calls tests.
+    "tests/tools/test_xanadEval_graders_ext2.py": 300,
+    # workspace_grade_human MCP tests.
+    "tests/mcp_servers/test_xanad_workspace_mcp_grade_human.py": 200,
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.
@@ -106,9 +110,9 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     ".github/mcp/scripts/webMcp.py": 510,
     # Web MCP test suite: expanded to cover new fetch, retry, and search paths.
     "tests/mcp_servers/test_web_mcp.py": 470,
-    # Workspace MCP (pre-existing): grew with command hardening.
-    "mcp/scripts/xanadWorkspaceMcp.py": 425,
-    ".github/mcp/scripts/xanadWorkspaceMcp.py": 425,
+    # Workspace MCP (pre-existing): grew with command hardening and workspace_grade_human.
+    "mcp/scripts/xanadWorkspaceMcp.py": 540,
+    ".github/mcp/scripts/xanadWorkspaceMcp.py": 540,
     # Git MCP server: grew with structured mutation envelopes, _run_flags_completed,
     # _mutation_result helper, git_diff_staged_stat / git_diff_unstaged_stat tools,
     # extended stash/rebase/push tool surface for the Commit-agent migration,
@@ -117,16 +121,22 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     ".github/mcp/scripts/gitMcp.py": 600,
     # xanadEval _common.py: grew with retry logic in _call_model, text/behavior grader
     # overhauls (AND semantics, not_contains, regex_match/not_match, partial scoring,
-    # min_tokens), new grader types (_grade_json_schema, _grade_program), and extended
-    # _run_graders dispatch for trigger/file/diff/code/action_sequence/tool_constraint.
-    "tools/xanadEval/_common.py": 600,
-    # xanadEval _graders_ext.py: all six extended grader types.
-    "tools/xanadEval/_graders_ext.py": 550,
+    # min_tokens), new grader types (_grade_json_schema, _grade_program, _grade_llm,
+    # _grade_llm_comparison), and extended _run_graders dispatch for all grader types.
+    "tools/xanadEval/_common.py": 760,
+    # xanadEval _graders_ext.py: all nine extended grader types (adds script/human/skill_invocation).
+    "tools/xanadEval/_graders_ext.py": 800,
+    # graders test: grew with LlmGraderTests and LlmComparisonGraderTests.
+    "tests/tools/test_xanadEval_graders.py": 520,
+    # graders_ext2 test: new test module for script/human/skill_invocation/max_calls.
+    "tests/tools/test_xanadEval_graders_ext2.py": 340,
     # xanadEval runtime tests: grew with RetryTests, ExpectedFieldTests, TagsFilterTests
     # covering the new _call_model retry, expected task field, and --tags filter features.
     "tests/tools/test_xanadEval_runtime.py": 540,
-    # graders_ext tests: all six extended grader unit test classes.
+    # graders_ext tests: all nine extended grader unit test classes.
     "tests/tools/test_xanadEval_graders_ext.py": 700,
+    # workspace_grade_human MCP tests.
+    "tests/mcp_servers/test_xanad_workspace_mcp_grade_human.py": 220,
 }
 
 

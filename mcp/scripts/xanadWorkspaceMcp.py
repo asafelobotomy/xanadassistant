@@ -319,6 +319,57 @@ def tool_workspace_show_install_state(arguments: dict) -> dict:
         return result
     sub = payload.get("result", {})
     return {"status": "ok", "summary": result["summary"], "installState": sub.get("installState"), "drift": payload.get("status")}
+def tool_workspace_grade_human(arguments: dict) -> dict:
+    results_path_arg = arguments.get("resultsPath", "")
+    task_id = str(arguments.get("taskId", ""))
+    score_raw = arguments.get("score")
+    rationale = str(arguments.get("rationale", ""))
+    if not isinstance(score_raw, (int, float)):
+        return build_tool_result(status="unavailable", summary="score must be a number.")
+    if not workspace_root_valid():
+        return build_tool_result(status="unavailable", summary=WORKSPACE_ROOT_UNAVAILABLE)
+    resolved_path, error = _resolve_workspace_file(results_path_arg, "resultsPath")
+    if error is not None or resolved_path is None:
+        return error or build_tool_result(status="unavailable", summary="resultsPath could not be resolved.")
+    try:
+        data = json.loads(resolved_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        return build_tool_result(status="failed", summary=f"Cannot read results file: {exc}")
+    if not isinstance(data, dict) or not isinstance(data.get("tasks"), list):
+        return build_tool_result(status="failed", summary="resultsPath does not contain a valid xanadEval results file.")
+    score_clamped = max(0.0, min(1.0, float(score_raw)))
+    patched = False
+    for task in data["tasks"]:
+        if str(task.get("id", "")) != task_id:
+            continue
+        for grader in task.get("graders", []):
+            if grader.get("type") == "human" and grader.get("pending"):
+                grader["pass"] = score_clamped >= 0.5
+                grader["score"] = round(score_clamped, 3)
+                grader["pending"] = False
+                if rationale:
+                    grader["rationale"] = rationale
+                patched = True
+        if patched:
+            graders = task.get("graders", [])
+            scores = [g["score"] for g in graders if g.get("score") is not None]
+            passes = [g["pass"] for g in graders if g.get("pass") is not None]
+            task["score"] = round(sum(scores) / len(scores), 3) if scores else None
+            task["passed"] = all(passes) if passes else None
+        break
+    if not patched:
+        return build_tool_result(
+            status="failed",
+            summary=f"No pending human grader found for task {task_id!r} in {results_path_arg}.",
+        )
+    try:
+        resolved_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    except OSError as exc:
+        return build_tool_result(status="failed", summary=f"Cannot write results file: {exc}")
+    return build_tool_result(
+        status="ok",
+        summary=f"Patched human grader for task {task_id!r}: score={score_clamped:.3f}, pass={score_clamped >= 0.5}.",
+    )
 class ToolResult(BaseModel):
     model_config = ConfigDict(extra="allow")
 def _tool_result(payload: dict) -> ToolResult: return ToolResult.model_validate(payload)
@@ -406,6 +457,19 @@ def lifecycle_repair(packageRoot: str | None = None, source: str | None = None, 
 def lifecycle_factory_restore(packageRoot: str | None = None, source: str | None = None, version: str | None = None, ref: str | None = None, nonInteractive: bool | None = None) -> ToolResult:
     """Reinstall the managed surfaces from scratch using the workspace's recorded answers."""
     return _lifecycle_tool("factory-restore", package_root_arg=packageRoot, source_arg=source, version_arg=version, ref_arg=ref, non_interactive=nonInteractive)
+
+
+@mcp.tool()
+def workspace_grade_human(resultsPath: str, taskId: str, score: float, rationale: str = "") -> ToolResult:
+    """Resolve a pending human grader result in a xanadEval results file.
+
+    Reads resultsPath, finds the task with the given taskId, patches its
+    pending human grader entry with the provided score (0.0–1.0) and optional
+    rationale, and writes the file back.  pass is set to score >= 0.5.
+    """
+    return _tool_result(tool_workspace_grade_human(
+        {"resultsPath": resultsPath, "taskId": taskId, "score": score, "rationale": rationale}
+    ))
 
 
 if __name__ == "__main__":  # pragma: no cover

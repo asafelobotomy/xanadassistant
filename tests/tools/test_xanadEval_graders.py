@@ -372,5 +372,77 @@ class ProgramGraderTests(unittest.TestCase):
         self.assertTrue(results[0]["pass"])
 
 
+class LlmGraderTests(DynamicTestBase, unittest.TestCase):
+    """Unit tests for _grade_llm (LLM-as-judge with rubric 1\u20135 \u2192 0\u20131)."""
+
+    @mock.patch("xanadEval._call_model", return_value='{"score": 5, "reasoning": "excellent"}')
+    def test_score_5_normalises_to_1(self, _m) -> None:
+        passed, score, reasoning = xe._grade_llm(
+            "great response", {"rubric": "Rate quality"}, "gpt-4o-mini", "tok"
+        )
+        self.assertTrue(passed)
+        self.assertAlmostEqual(score, 1.0)
+        self.assertIn("excellent", reasoning)
+
+    @mock.patch("xanadEval._call_model", return_value='{"score": 1, "reasoning": "poor"}')
+    def test_score_1_normalises_to_0(self, _m) -> None:
+        passed, score, _ = xe._grade_llm(
+            "bad response", {"rubric": "Rate quality", "threshold": 0.1}, "gpt-4o-mini", "tok"
+        )
+        self.assertFalse(passed)
+        self.assertAlmostEqual(score, 0.0)
+
+    @mock.patch("xanadEval._call_model", return_value='{"score": 3, "reasoning": "ok"}')
+    def test_score_3_normalises_to_half(self, _m) -> None:
+        _, score, _ = xe._grade_llm(
+            "ok response", {"rubric": "Rate quality"}, "gpt-4o-mini", "tok"
+        )
+        self.assertAlmostEqual(score, 0.5)
+
+    def test_missing_rubric_fails(self) -> None:
+        passed, score, feedback = xe._grade_llm("r", {}, "gpt-4o-mini", "tok")
+        self.assertFalse(passed)
+        self.assertIn("rubric", feedback)
+
+    def test_run_graders_skips_llm_without_token(self) -> None:
+        graders = [{"type": "llm", "name": "j", "config": {"rubric": "Is it good?"}}]
+        results = xe._run_graders("any", graders, "gpt-4o-mini", "")
+        self.assertIsNone(results[0]["pass"])
+        self.assertIn("skipped", results[0])
+
+
+class LlmComparisonGraderTests(DynamicTestBase, unittest.TestCase):
+    """Unit tests for _grade_llm_comparison (response vs reference)."""
+
+    @mock.patch("xanadEval._call_model", return_value='{"score": 4, "reasoning": "close"}')
+    def test_score_4_normalises_correctly(self, _m) -> None:
+        passed, score, reasoning = xe._grade_llm_comparison(
+            "good response", {"reference": "ideal answer"}, "gpt-4o-mini", "tok"
+        )
+        self.assertTrue(passed)
+        self.assertAlmostEqual(score, 0.75)
+        self.assertIn("close", reasoning)
+
+    def test_missing_reference_fails(self) -> None:
+        passed, score, feedback = xe._grade_llm_comparison("r", {}, "gpt-4o-mini", "tok")
+        self.assertFalse(passed)
+        self.assertIn("reference", feedback)
+
+    def test_run_graders_skips_llm_comparison_without_token(self) -> None:
+        graders = [{"type": "llm_comparison", "name": "cmp",
+                    "config": {"reference": "expected output"}}]
+        results = xe._run_graders("any", graders, "gpt-4o-mini", "")
+        self.assertIsNone(results[0]["pass"])
+        self.assertIn("skipped", results[0])
+
+    @mock.patch("xanadEval._call_model", return_value="not valid json at all")
+    def test_unexpected_response_fails_gracefully(self, _m) -> None:
+        passed, score, feedback = xe._grade_llm_comparison(
+            "response", {"reference": "ideal"}, "gpt-4o-mini", "tok"
+        )
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+
+
 if __name__ == "__main__":
     unittest.main()

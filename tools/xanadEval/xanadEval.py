@@ -30,7 +30,8 @@ from _common import (
     _get_token, _call_model, _load_spec, _load_tasks, _extract_first_json_object,
     _read, _parse_frontmatter, _count_tokens, _yaml_str, _max_nesting_depth,
     _grade_text, _grade_behavior, _grade_json_schema, _grade_program,
-    _grade_prompt_judge, _run_graders, _aggregate_trials,
+    _grade_prompt_judge, _grade_llm, _grade_llm_comparison,
+    _run_graders, _aggregate_trials,
 )
 _token_estimate = _count_tokens  # backwards-compatibility alias (renamed in refactor)
 
@@ -38,6 +39,7 @@ import _graders_ext
 from _graders_ext import (
     _grade_trigger, _grade_file, _grade_diff,
     _grade_code, _grade_action_sequence, _grade_tool_constraint,
+    _grade_script, _grade_human, _grade_skill_invocation,
     _tokenize, _parse_use_for_phrases,
 )
 
