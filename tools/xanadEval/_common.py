@@ -623,13 +623,13 @@ def _run_graders(
                     rec["feedback"] = feedback
                 results.append(rec)
             elif gtype == "script":
-                passed, score, feedback = _grade_script(config, ctx)
+                passed, score, feedback = _grade_script(config, response=response, ctx=ctx)
                 rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
                 if feedback:
                     rec["feedback"] = feedback
                 results.append(rec)
             elif gtype == "human":
-                _, _, details = _grade_human(config, ctx)
+                _, _, details = _grade_human(config, ctx=ctx)
                 rec = {"type": gtype, "name": gname, "pass": None, "score": None, "pending": True}
                 if details.get("criteria"):
                     rec["criteria"] = details["criteria"]
@@ -637,7 +637,7 @@ def _run_graders(
                     rec["instructions"] = details["instructions"]
                 results.append(rec)
             else:  # skill_invocation
-                passed, score, feedback = _grade_skill_invocation(config, ctx)
+                passed, score, feedback = _grade_skill_invocation(config, ctx=ctx)
                 rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
                 if feedback:
                     rec["feedback"] = feedback

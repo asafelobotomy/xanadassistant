@@ -555,6 +555,8 @@ def _grade_tool_constraint(
 
 def _grade_script(
     config: dict,
+    *,
+    response: str = "",
     ctx: dict | None = None,
 ) -> tuple[bool, float, str]:
     """External script grader: serialise ctx as JSON to stdin, parse JSON from stdout.
@@ -564,8 +566,8 @@ def _grade_script(
       - ``args``     — list of additional arguments (default: [])
       - ``timeout``  — max execution time in seconds (default: 30)
 
-    The script receives a JSON object via stdin with keys: ``output``, ``transcript``,
-    ``tool_calls``, ``errors``, ``duration_ms``.  If stdout is valid JSON with
+    The script receives a JSON object via stdin with keys: ``response``, ``output``,
+    ``transcript``, ``tool_calls``, ``errors``, ``duration_ms``.  If stdout is valid JSON with
     ``score`` and ``passed`` keys those values are used; otherwise exit code 0 = pass (1.0).
 
     Expected stdout JSON: ``{"score": float, "passed": bool, "message": str}``.
@@ -574,9 +576,13 @@ def _grade_script(
     if not command:
         return False, 0.0, "script grader: 'command' is required"
     args = [str(a) for a in config.get("args", [])]
-    timeout = int(config.get("timeout", 30))
+    try:
+        timeout = int(config.get("timeout", 30))
+    except (TypeError, ValueError):
+        return False, 0.0, "script grader: 'timeout' must be an integer"
     _ctx = ctx or {}
     payload = json.dumps({
+        "response": response,
         "output": _ctx.get("output", ""),
         "transcript": _ctx.get("transcript", []),
         "tool_calls": _ctx.get("tool_calls", []),
@@ -616,6 +622,8 @@ def _grade_script(
 
 def _grade_human(
     config: dict,
+    *,
+    response: str = "",
     ctx: dict | None = None,
 ) -> tuple[bool | None, float | None, dict]:
     """Human-in-the-loop grader: returns a pending marker with criteria for review.
@@ -640,6 +648,8 @@ def _grade_human(
 
 def _grade_skill_invocation(
     config: dict,
+    *,
+    response: str = "",
     ctx: dict | None = None,
 ) -> tuple[bool, float, str]:
     """Validate which skills or agents were invoked during execution.
@@ -702,6 +712,7 @@ def _grade_skill_invocation(
     f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
     if not allow_extra and len(actual) > len(required):
         f1 = round(f1 * (len(required) / len(actual)), 3)
+        matched = False
     return matched, round(f1, 3), (
         f"precision={precision:.3f} recall={recall:.3f} f1={f1:.3f}"
         f" tp={tp} required={len(required)} actual={len(actual)}"

@@ -362,6 +362,15 @@ def tool_workspace_grade_human(arguments: dict) -> dict:
             status="failed",
             summary=f"No pending human grader found for task {task_id!r} in {results_path_arg}.",
         )
+    if "summary" in data:
+        all_tasks = data["tasks"]
+        total = len(all_tasks)
+        t_scores = [t["score"] for t in all_tasks if t.get("score") is not None]
+        t_passes = [t["passed"] for t in all_tasks if t.get("passed") is not None]
+        passed_count = sum(1 for p in t_passes if p)
+        avg_score = round(sum(t_scores) / len(t_scores), 3) if t_scores else None
+        pass_rate = round(passed_count / total, 3) if total else 0.0
+        data["summary"].update({"total": total, "passed": passed_count, "pass_rate": pass_rate, "score": avg_score})
     try:
         resolved_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     except OSError as exc:

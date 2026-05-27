@@ -175,6 +175,36 @@ class WorkspaceGradeHumanTests(XanadWorkspaceMcpTestCaseMixin, unittest.TestCase
                     self.assertAlmostEqual(task["score"], 0.75)  # (1.0 + 0.5) / 2
                     self.assertTrue(task["passed"])
 
+    def test_summary_updated_after_patch(self) -> None:
+        """Top-level summary block is recomputed after a human grader is patched."""
+        for module in self.MODULES:
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as d:
+                    data = {
+                        "summary": {"total": 1, "passed": 0, "pass_rate": 0.0, "score": None},
+                        "tasks": [{
+                            "id": "t",
+                            "graders": [
+                                {"type": "human", "name": "h", "pass": None,
+                                 "score": None, "pending": True},
+                            ],
+                            "passed": None,
+                            "score": None,
+                        }],
+                    }
+                    p = Path(d) / "r.json"
+                    p.write_text(json.dumps(data), encoding="utf-8")
+                    with self._workspace_ready(module), mock.patch.object(
+                        module, "WORKSPACE_ROOT", Path(d)
+                    ):
+                        module.tool_workspace_grade_human(
+                            {"resultsPath": str(p), "taskId": "t", "score": 1.0, "rationale": ""}
+                        )
+                    saved = json.loads(p.read_text())
+                    self.assertEqual(saved["summary"]["passed"], 1)
+                    self.assertAlmostEqual(saved["summary"]["score"], 1.0)
+                    self.assertAlmostEqual(saved["summary"]["pass_rate"], 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()

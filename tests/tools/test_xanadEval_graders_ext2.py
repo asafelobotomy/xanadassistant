@@ -92,6 +92,26 @@ class ScriptGraderTests(unittest.TestCase):
         self.assertFalse(passed)
         self.assertIn("timed out", feedback)
 
+    def test_invalid_timeout_returns_grader_tuple(self) -> None:
+        passed, score, feedback = _grade_script(
+            {"command": sys.executable, "timeout": "bad"}
+        )
+        self.assertFalse(passed)
+        self.assertIn("timeout", feedback)
+
+    def test_response_included_in_stdin_payload(self) -> None:
+        """Script stdin JSON contains the task response under 'response' key."""
+        script = (
+            "import sys, json; d=json.loads(sys.stdin.read()); "
+            "sys.stdout.write(json.dumps({'score': 1.0 if d.get('response')=='EXPECTED' else 0.0, 'passed': True}))"
+        )
+        passed, score, _ = _grade_script(
+            {"command": sys.executable, "args": ["-c", script]},
+            response="EXPECTED",
+        )
+        self.assertTrue(passed)
+        self.assertAlmostEqual(score, 1.0)
+
     def test_run_graders_dispatches_script(self) -> None:
         graders = [{"type": "script", "name": "s",
                     "config": {"command": sys.executable,
@@ -201,7 +221,7 @@ class SkillInvocationGraderTests(unittest.TestCase):
         self.assertFalse(passed_wrong)
 
     def test_allow_extra_false_penalises_extras(self) -> None:
-        _, score_strict, _ = _grade_skill_invocation(
+        passed_strict, score_strict, _ = _grade_skill_invocation(
             {"required_skills": ["A"], "allow_extra": False},
             ctx={"skill_invocations": ["A", "B", "C"]},
         )
@@ -209,6 +229,7 @@ class SkillInvocationGraderTests(unittest.TestCase):
             {"required_skills": ["A"], "allow_extra": True},
             ctx={"skill_invocations": ["A", "B", "C"]},
         )
+        self.assertFalse(passed_strict)
         self.assertLess(score_strict, score_loose)
 
     def test_unknown_mode_fails(self) -> None:
