@@ -21,25 +21,96 @@ class GraderUnitTests(DynamicTestBase, unittest.TestCase):
     # ── grade_text ───────────────────────────────────────────────────────────
 
     def test_grade_text_matches_pattern(self) -> None:
-        self.assertTrue(xe._grade_text("response about skills", {"pattern": "(?i)skill"}))
-        self.assertFalse(xe._grade_text("response about topics", {"pattern": "(?i)skill"}))
+        passed, _ = xe._grade_text("response about skills", {"pattern": "(?i)skill"})
+        self.assertTrue(passed)
+        passed, _ = xe._grade_text("response about topics", {"pattern": "(?i)skill"})
+        self.assertFalse(passed)
 
-    def test_grade_text_matches_contains(self) -> None:
-        self.assertTrue(xe._grade_text("Hello world", {"contains": ["world"]}))
-        self.assertFalse(xe._grade_text("Hello world", {"contains": ["missing"]}))
+    def test_grade_text_contains_and_semantics(self) -> None:
+        """All items in 'contains' must be present (AND semantics)."""
+        passed, score = xe._grade_text("Hello world", {"contains": ["world"]})
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
+        passed, score = xe._grade_text("Hello world", {"contains": ["missing"]})
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+        # Both items must appear — partial match → fail with partial score
+        passed, score = xe._grade_text("Hello world", {"contains": ["hello", "missing"]})
+        self.assertFalse(passed)
+        self.assertAlmostEqual(score, 0.5)
+
+    def test_grade_text_not_contains(self) -> None:
+        """not_contains: listed strings must NOT appear."""
+        passed, score = xe._grade_text("Hello world", {"not_contains": ["missing"]})
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
+        passed, score = xe._grade_text("Hello world", {"not_contains": ["world"]})
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+
+    def test_grade_text_regex_match(self) -> None:
+        """regex_match: all patterns must match."""
+        passed, score = xe._grade_text("error: code 404", {"regex_match": [r"\d+"]})
+        self.assertTrue(passed)
+        passed, score = xe._grade_text("no numbers here", {"regex_match": [r"\d+"]})
+        self.assertFalse(passed)
+        # Two patterns: only first matches → partial score
+        passed, score = xe._grade_text("error 404", {
+            "regex_match": [r"\d+", r"(?i)success"]
+        })
+        self.assertFalse(passed)
+        self.assertAlmostEqual(score, 0.5)
+
+    def test_grade_text_regex_not_match(self) -> None:
+        """regex_not_match: none of the patterns may match."""
+        passed, _ = xe._grade_text("clean output", {"regex_not_match": [r"(?i)error"]})
+        self.assertTrue(passed)
+        passed, _ = xe._grade_text("fatal error occurred", {"regex_not_match": [r"(?i)error"]})
+        self.assertFalse(passed)
+
+    def test_grade_text_partial_scoring_mixed(self) -> None:
+        """Multiple checks across keys contribute to partial score."""
+        # contains "hello" ✓, not_contains "world" ✗ (world IS present)
+        passed, score = xe._grade_text("hello world", {
+            "contains": ["hello"],
+            "not_contains": ["world"],
+        })
+        self.assertFalse(passed)
+        self.assertAlmostEqual(score, 0.5)
 
     def test_grade_text_no_criteria_passes(self) -> None:
-        self.assertTrue(xe._grade_text("anything", {}))
+        passed, score = xe._grade_text("anything", {})
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
 
     # ── grade_behavior ───────────────────────────────────────────────────────
 
     def test_grade_behavior_checks_token_budget(self) -> None:
         long_response = "word " * 500
-        self.assertFalse(xe._grade_behavior(long_response, {"max_tokens": 10}))
-        self.assertTrue(xe._grade_behavior("ok", {"max_tokens": 10000}))
+        passed, _ = xe._grade_behavior(long_response, {"max_tokens": 10})
+        self.assertFalse(passed)
+        passed, _ = xe._grade_behavior("ok", {"max_tokens": 10000})
+        self.assertTrue(passed)
 
-    def test_grade_behavior_no_max_tokens_passes(self) -> None:
-        self.assertTrue(xe._grade_behavior("anything", {"max_tool_calls": 5}))
+    def test_grade_behavior_min_tokens(self) -> None:
+        passed, score = xe._grade_behavior("short", {"min_tokens": 10000})
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+        passed, score = xe._grade_behavior("short", {"min_tokens": 1})
+        self.assertTrue(passed)
+
+    def test_grade_behavior_partial_score_max_and_min(self) -> None:
+        """Both max_tokens and min_tokens can be configured; partial scoring applies."""
+        # response within min but over max → one check fails
+        long = "word " * 100
+        passed, score = xe._grade_behavior(long, {"min_tokens": 1, "max_tokens": 5})
+        self.assertFalse(passed)
+        self.assertAlmostEqual(score, 0.5)
+
+    def test_grade_behavior_no_constraints_passes(self) -> None:
+        passed, score = xe._grade_behavior("anything", {"max_tool_calls": 5})
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
 
     # ── run_graders ──────────────────────────────────────────────────────────
 
@@ -197,6 +268,108 @@ class GraderUnitTests(DynamicTestBase, unittest.TestCase):
             eval_dir.mkdir(parents=True)
             with self.assertRaises(ValueError):
                 xe._load_tasks(eval_dir, ["/etc/passwd"])
+
+
+class JSONSchemaGraderTests(unittest.TestCase):
+    """Tests for the json_schema grader type via _grade_json_schema and _run_graders."""
+
+    def test_invalid_json_fails(self) -> None:
+        passed, score, feedback = xe._grade_json_schema("not json", {})
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+        self.assertIn("JSON", feedback)
+
+    def test_valid_json_no_schema_passes(self) -> None:
+        passed, score, _ = xe._grade_json_schema('{"status": "ok"}', {})
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
+
+    def test_valid_json_with_inline_schema_passes(self) -> None:
+        schema = {
+            "type": "object",
+            "required": ["status"],
+            "properties": {"status": {"type": "string"}},
+        }
+        response = json.dumps({"status": "ok"})
+        try:
+            import jsonschema  # noqa: F401
+            passed, score, _ = xe._grade_json_schema(response, {"schema": schema})
+            self.assertTrue(passed)
+            self.assertEqual(score, 1.0)
+        except ImportError:
+            self.skipTest("jsonschema not installed")
+
+    def test_valid_json_schema_violation_fails(self) -> None:
+        schema = {
+            "type": "object",
+            "required": ["status"],
+            "properties": {"status": {"type": "integer"}},
+        }
+        response = json.dumps({"status": "not-an-int"})
+        try:
+            import jsonschema  # noqa: F401
+            passed, score, feedback = xe._grade_json_schema(response, {"schema": schema})
+            self.assertFalse(passed)
+            self.assertEqual(score, 0.0)
+            self.assertTrue(feedback)
+        except ImportError:
+            self.skipTest("jsonschema not installed")
+
+    def test_missing_schema_file_fails(self) -> None:
+        passed, score, feedback = xe._grade_json_schema(
+            '{"x": 1}', {"schema_file": "/nonexistent/schema.json"}
+        )
+        self.assertFalse(passed)
+        self.assertIn("schema_file", feedback)
+
+    def test_run_graders_json_schema_type_recognised(self) -> None:
+        """json_schema grader must be dispatched (not skipped) via _run_graders."""
+        graders = [{"type": "json_schema", "name": "valid_json", "config": {}}]
+        results = xe._run_graders('{"key": "value"}', graders, "gpt-4o-mini", "")
+        self.assertEqual(len(results), 1)
+        self.assertIsNotNone(results[0]["pass"])
+        self.assertTrue(results[0]["pass"])
+
+    def test_run_graders_json_schema_invalid_response(self) -> None:
+        graders = [{"type": "json_schema", "name": "valid_json", "config": {}}]
+        results = xe._run_graders("plain text", graders, "gpt-4o-mini", "")
+        self.assertFalse(results[0]["pass"])
+        self.assertEqual(results[0]["score"], 0.0)
+
+
+class ProgramGraderTests(unittest.TestCase):
+    """Tests for the program grader type via _grade_program and _run_graders."""
+
+    def test_exit_zero_passes(self) -> None:
+        passed, score, _ = xe._grade_program("hello", {"command": "true"})
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
+
+    def test_exit_nonzero_fails(self) -> None:
+        passed, score, _ = xe._grade_program("hello", {"command": "false"})
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+
+    def test_missing_command_field_fails(self) -> None:
+        passed, score, feedback = xe._grade_program("hello", {})
+        self.assertFalse(passed)
+        self.assertIn("command", feedback)
+
+    def test_missing_executable_fails_gracefully(self) -> None:
+        passed, score, feedback = xe._grade_program(
+            "hello", {"command": "__nonexistent_cmd_xyz__"}
+        )
+        self.assertFalse(passed)
+        self.assertIn("not found", feedback)
+
+    def test_run_graders_program_type_recognised(self) -> None:
+        """program grader must be dispatched (not skipped) via _run_graders."""
+        graders = [{"type": "program", "name": "always_pass",
+                    "config": {"command": "true"}}]
+        results = xe._run_graders("any", graders, "gpt-4o-mini", "")
+        self.assertEqual(len(results), 1)
+        self.assertIsNotNone(results[0]["pass"])
+        self.assertTrue(results[0]["pass"])
 
 
 if __name__ == "__main__":

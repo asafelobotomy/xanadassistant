@@ -7,6 +7,7 @@ import os
 import sys
 import tempfile
 import unittest
+import urllib.error
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
@@ -354,6 +355,181 @@ class GradeCommandTests(DynamicTestBase, unittest.TestCase):
                 xe.main(["grade", str(eval_yaml), str(result_path)])
         mock_call.assert_called()
         self.assertEqual(mock_call.call_args[0][1], "custom-stored-model")
+
+
+class RetryTests(DynamicTestBase, unittest.TestCase):
+    """Tests for _call_model retry behaviour on transient HTTP errors."""
+
+    def _make_http_error(self, code: int) -> urllib.error.HTTPError:
+        import io as _io
+        return urllib.error.HTTPError(
+            url="https://example.com",
+            code=code,
+            msg=str(code),
+            hdrs={},  # type: ignore[arg-type]
+            fp=_io.BytesIO(b"transient"),
+        )
+
+    @mock.patch("time.sleep")
+    def test_retries_on_429_and_succeeds(self, mock_sleep) -> None:
+        """_call_model must retry on 429 and return the first successful response."""
+        import urllib.error as _ue
+        err = self._make_http_error(429)
+        with mock.patch("urllib.request.urlopen") as mock_open:
+            # Fail once then succeed
+            import io as _io
+            import json as _json
+            ok_body = _json.dumps(
+                {"choices": [{"message": {"content": "ok response"}}]}
+            ).encode()
+            mock_open.side_effect = [err, mock.MagicMock(
+                __enter__=lambda s: s,
+                __exit__=mock.Mock(return_value=False),
+                read=lambda: ok_body,
+            )]
+            result = xe._call_model(
+                [{"role": "user", "content": "hi"}], "gpt-4o-mini", "fake-token"
+            )
+        self.assertEqual(result, "ok response")
+        mock_sleep.assert_called_once_with(2)  # first retry backoff: 2^1 = 2s
+
+    @mock.patch("time.sleep")
+    def test_raises_after_max_retries(self, _mock_sleep) -> None:
+        """_call_model must raise RuntimeError after exhausting retries."""
+        err = self._make_http_error(429)
+        with mock.patch("urllib.request.urlopen", side_effect=err):
+            with self.assertRaises(RuntimeError):
+                xe._call_model(
+                    [{"role": "user", "content": "hi"}], "gpt-4o-mini", "fake-token"
+                )
+
+    @mock.patch("time.sleep")
+    def test_does_not_retry_on_401(self, mock_sleep) -> None:
+        """A non-retryable status (401) must raise immediately without retrying."""
+        err = self._make_http_error(401)
+        with mock.patch("urllib.request.urlopen", side_effect=err):
+            with self.assertRaises(RuntimeError) as cm:
+                xe._call_model(
+                    [{"role": "user", "content": "hi"}], "gpt-4o-mini", "fake-token"
+                )
+        mock_sleep.assert_not_called()
+        self.assertIn("401", str(cm.exception))
+
+
+class ExpectedFieldTests(DynamicTestBase, unittest.TestCase):
+    """Tests for the 'expected' task field in cmd_run."""
+
+    @mock.patch("xanadEval._call_model", return_value="The Commit agent handles this.")
+    def test_expected_field_graded_when_present(self, _mock) -> None:
+        """Tasks with an 'expected' list must produce grader records of type 'expected'."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                self._write_skill(dp)
+                eval_dir = dp / "evals" / "test-skill"
+                (eval_dir / "tasks").mkdir(parents=True)
+                spec = {
+                    "name": "test-skill-eval",
+                    "graders": [],
+                    "tasks": ["tasks/*.yaml"],
+                }
+                (eval_dir / "eval.yaml").write_text(json.dumps(spec), encoding="utf-8")
+                task = {
+                    "id": "task-with-expected",
+                    "prompt": "Which agent?",
+                    "expected": ["Commit"],
+                }
+                (eval_dir / "tasks" / "t1.yaml").write_text(
+                    json.dumps(task), encoding="utf-8"
+                )
+                buf = io.StringIO()
+                with redirect_stdout(buf):
+                    code = xe.cmd_run(str(eval_dir / "eval.yaml"), "gpt-4o-mini", 1, "json")
+                data = json.loads(buf.getvalue())
+        graders = data["tasks"][0]["graders"]
+        expected_graders = [g for g in graders if g.get("type") == "expected"]
+        self.assertEqual(len(expected_graders), 1)
+        self.assertEqual(expected_graders[0]["name"], "Commit")
+        self.assertTrue(expected_graders[0]["pass"])
+        self.assertEqual(code, 0)
+
+    @mock.patch("xanadEval._call_model", return_value="unrelated response")
+    def test_expected_field_fails_when_missing_from_response(self, _mock) -> None:
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                self._write_skill(dp)
+                eval_dir = dp / "evals" / "test-skill"
+                (eval_dir / "tasks").mkdir(parents=True)
+                spec = {"name": "test-skill-eval", "graders": [], "tasks": ["tasks/*.yaml"]}
+                (eval_dir / "eval.yaml").write_text(json.dumps(spec), encoding="utf-8")
+                task = {"id": "t1", "prompt": "?", "expected": ["MissingKeyword"]}
+                (eval_dir / "tasks" / "t1.yaml").write_text(
+                    json.dumps(task), encoding="utf-8"
+                )
+                buf = io.StringIO()
+                with redirect_stdout(buf):
+                    code = xe.cmd_run(str(eval_dir / "eval.yaml"), "gpt-4o-mini", 1, "json")
+                data = json.loads(buf.getvalue())
+        expected_graders = [g for g in data["tasks"][0]["graders"]
+                            if g.get("type") == "expected"]
+        self.assertFalse(expected_graders[0]["pass"])
+        self.assertEqual(code, 1)
+
+
+class TagsFilterTests(DynamicTestBase, unittest.TestCase):
+    """Tests for the --tags filter in cmd_run."""
+
+    def _write_two_task_eval(self, d: Path) -> Path:
+        self._write_skill(d)
+        eval_dir = d / "evals" / "test-skill"
+        (eval_dir / "tasks").mkdir(parents=True)
+        spec = {
+            "name": "test-skill-eval",
+            "graders": [{"type": "text", "name": "g", "config": {"pattern": "."}}],
+            "tasks": ["tasks/*.yaml"],
+        }
+        (eval_dir / "eval.yaml").write_text(json.dumps(spec), encoding="utf-8")
+        # smoke-tagged task
+        (eval_dir / "tasks" / "smoke.yaml").write_text(
+            json.dumps({"id": "smoke-1", "prompt": "p", "tags": ["smoke"]}),
+            encoding="utf-8",
+        )
+        # extended task — no smoke tag
+        (eval_dir / "tasks" / "extended.yaml").write_text(
+            json.dumps({"id": "extended-1", "prompt": "p2", "tags": ["extended"]}),
+            encoding="utf-8",
+        )
+        return eval_dir / "eval.yaml"
+
+    @mock.patch("xanadEval._call_model", return_value="any response here")
+    def test_tags_filter_runs_only_matching_tasks(self, _mock) -> None:
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                eval_path = self._write_two_task_eval(dp)
+                buf = io.StringIO()
+                with redirect_stdout(buf):
+                    xe.cmd_run(str(eval_path), "gpt-4o-mini", 1, "json",
+                               tags=["smoke"])
+                data = json.loads(buf.getvalue())
+        task_ids = [t["id"] for t in data["tasks"]]
+        self.assertIn("smoke-1", task_ids)
+        self.assertNotIn("extended-1", task_ids)
+
+    @mock.patch("xanadEval._call_model", return_value="any response here")
+    def test_no_tags_runs_all_tasks(self, _mock) -> None:
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                eval_path = self._write_two_task_eval(dp)
+                buf = io.StringIO()
+                with redirect_stdout(buf):
+                    xe.cmd_run(str(eval_path), "gpt-4o-mini", 1, "json", tags=None)
+                data = json.loads(buf.getvalue())
+        task_ids = [t["id"] for t in data["tasks"]]
+        self.assertIn("smoke-1", task_ids)
+        self.assertIn("extended-1", task_ids)
 
 
 if __name__ == "__main__":

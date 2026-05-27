@@ -7,8 +7,10 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
 import sys
 import tempfile
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -128,30 +130,41 @@ def _get_token() -> str | None:
 
 
 def _call_model(messages: list[dict], model: str, token: str) -> str:
-    """POST to GitHub Models (OpenAI-compatible) and return the assistant reply."""
+    """POST to GitHub Models (OpenAI-compatible) and return the assistant reply.
+
+    Retries up to 3 times with exponential back-off on HTTP 429 and 5xx responses.
+    """
     payload = json.dumps({"model": model, "messages": messages}).encode()
-    req = urllib.request.Request(
-        _GITHUB_MODELS_URL,
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-        },
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310
-            data = json.loads(resp.read())
-            return data["choices"][0]["message"]["content"]
-    except urllib.error.HTTPError as e:
-        body = e.read().decode(errors="replace")
-        raise RuntimeError(f"HTTP {e.code}: {body[:200]}") from e
-    except urllib.error.URLError as e:
-        raise RuntimeError(f"Network error: {e.reason}") from e
-    except json.JSONDecodeError as e:
-        raise RuntimeError(f"Invalid JSON response from API: {e}") from e
-    except (KeyError, IndexError) as e:
-        raise RuntimeError(f"Unexpected response format: {e}") from e
+    last_error: Exception | None = None
+    for attempt in range(3):
+        if attempt > 0:
+            time.sleep(2 ** attempt)  # 2s, 4s
+        req = urllib.request.Request(
+            _GITHUB_MODELS_URL,
+            data=payload,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310
+                resp_data = json.loads(resp.read())
+                return resp_data["choices"][0]["message"]["content"]
+        except urllib.error.HTTPError as e:
+            body = e.read().decode(errors="replace")
+            if e.code in (429, 500, 502, 503, 504) and attempt < 2:
+                last_error = RuntimeError(f"HTTP {e.code}: {body[:200]}")
+                continue
+            raise RuntimeError(f"HTTP {e.code}: {body[:200]}") from e
+        except urllib.error.URLError as e:
+            raise RuntimeError(f"Network error: {e.reason}") from e
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"Invalid JSON response from API: {e}") from e
+        except (KeyError, IndexError) as e:
+            raise RuntimeError(f"Unexpected response format: {e}") from e
+    raise last_error  # type: ignore[misc]
 
 
 def _load_spec(path: str) -> dict:
@@ -226,23 +239,71 @@ def _extract_first_json_object(text: str) -> dict | None:
 # ── Graders ───────────────────────────────────────────────────────────────────
 
 
-def _grade_text(response: str, config: dict) -> bool:
-    """Pass when the response matches any 'contains' substring or 'pattern' regex."""
+def _grade_text(response: str, config: dict) -> tuple[bool, float]:
+    """Return (passed, partial_score) based on text matching constraints.
+
+    Each configured key contributes one or more checks.  All checks must pass
+    for *passed* to be ``True``; the score is ``passed_checks / total_checks``.
+
+    Supported keys:
+      - ``contains``       — list of substrings that MUST appear (AND, case-insensitive)
+      - ``not_contains``   — list of substrings that MUST NOT appear (case-insensitive)
+      - ``pattern``        — single regex pattern that MUST match
+      - ``regex_match``    — list of regex patterns that ALL must match
+      - ``regex_not_match``— list of regex patterns that MUST NOT match
+    """
+    checks: list[bool] = []
+
+    for item in config.get("contains", []):
+        checks.append(str(item).lower() in response.lower())
+
+    for item in config.get("not_contains", []):
+        checks.append(str(item).lower() not in response.lower())
+
     pattern = config.get("pattern")
-    contains = config.get("contains", [])
-    if pattern and re.search(pattern, response):
-        return True
-    if contains and any(str(c).lower() in response.lower() for c in contains):
-        return True
-    return not pattern and not contains
+    if pattern:
+        checks.append(bool(re.search(pattern, response)))
+
+    for pat in config.get("regex_match", []):
+        checks.append(bool(re.search(str(pat), response)))
+
+    for pat in config.get("regex_not_match", []):
+        checks.append(not bool(re.search(str(pat), response)))
+
+    if not checks:
+        return True, 1.0
+
+    passed = all(checks)
+    score = round(sum(1 for c in checks if c) / len(checks), 3)
+    return passed, score
 
 
-def _grade_behavior(response: str, config: dict) -> bool:
-    """Pass when the response respects a token budget (tool-call counts unavailable)."""
+def _grade_behavior(response: str, config: dict) -> tuple[bool, float]:
+    """Return (passed, partial_score) based on response-size constraints.
+
+    Supported keys:
+      - ``max_tokens`` — upper bound on token count
+      - ``min_tokens`` — lower bound on token count
+
+    (Tool-call counts and duration require agent-runtime integration not
+    available to xanadEval and are therefore not supported.)
+    """
+    checks: list[bool] = []
+
     max_tokens = config.get("max_tokens")
     if max_tokens is not None:
-        return _count_tokens(response) <= int(max_tokens)
-    return True
+        checks.append(_count_tokens(response) <= int(max_tokens))
+
+    min_tokens = config.get("min_tokens")
+    if min_tokens is not None:
+        checks.append(_count_tokens(response) >= int(min_tokens))
+
+    if not checks:
+        return True, 1.0
+
+    passed = all(checks)
+    score = round(sum(1 for c in checks if c) / len(checks), 3)
+    return passed, score
 
 
 def _grade_prompt_judge(
@@ -275,6 +336,80 @@ def _grade_prompt_judge(
     return False, 0.0
 
 
+def _grade_json_schema(response: str, config: dict) -> tuple[bool, float, str]:
+    """Validate that *response* is valid JSON, optionally matching an inline schema.
+
+    Returns ``(passed, score, feedback)``.
+
+    If the ``jsonschema`` package is available, a ``schema`` or ``schema_file``
+    config key triggers full JSON Schema validation.  Without ``jsonschema``,
+    only JSON format is validated.
+    """
+    try:
+        obj = json.loads(response)
+    except json.JSONDecodeError as e:
+        return False, 0.0, f"Not valid JSON: {e}"
+
+    schema: dict | None = config.get("schema")
+    schema_file: str = config.get("schema_file", "")
+
+    if schema is None and schema_file:
+        try:
+            schema = json.loads(Path(schema_file).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as e:
+            return False, 0.0, f"Cannot load schema_file {schema_file!r}: {e}"
+
+    if schema is not None:
+        try:
+            import jsonschema as _js  # type: ignore[import]
+            try:
+                _js.validate(obj, schema)
+                return True, 1.0, "JSON matches schema"
+            except _js.ValidationError as ve:
+                return False, 0.0, f"Schema validation failed: {ve.message}"
+        except ImportError:
+            pass  # jsonschema not installed — fall through to format-only pass
+
+    return True, 1.0, "Valid JSON"
+
+
+def _grade_program(response: str, config: dict) -> tuple[bool, float, str]:
+    """Run an external program; pass *response* via stdin.
+
+    Returns ``(passed, score, feedback)``.
+
+    Config keys:
+      - ``command``  — required executable name or path
+      - ``args``     — list of additional arguments (default: [])
+      - ``timeout``  — max execution time in seconds (default: 30)
+
+    Exit code 0 → pass (score 1.0); non-zero → fail (score 0.0).
+    stdout/stderr output is captured as feedback.
+    """
+    command = str(config.get("command", "")).strip()
+    if not command:
+        return False, 0.0, "program grader: 'command' is required"
+    args = [str(a) for a in config.get("args", [])]
+    timeout = int(config.get("timeout", 30))
+    try:
+        result = subprocess.run(
+            [command] + args,
+            input=response,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        passed = result.returncode == 0
+        feedback = (result.stdout or result.stderr or "").strip()[:500]
+        return passed, 1.0 if passed else 0.0, feedback
+    except FileNotFoundError:
+        return False, 0.0, f"program grader: command not found: {command!r}"
+    except subprocess.TimeoutExpired:
+        return False, 0.0, f"program grader: timed out after {timeout}s"
+    except OSError as e:
+        return False, 0.0, f"program grader: {e}"
+
+
 def _run_graders(
     response: str, graders_spec: list[dict], model: str, token: str
 ) -> list[dict]:
@@ -285,13 +420,23 @@ def _run_graders(
         gname = g.get("name", gtype)
         config = g.get("config", {})
         if gtype == "text":
-            passed = _grade_text(response, config)
-            results.append({"type": gtype, "name": gname, "pass": passed,
-                            "score": 1.0 if passed else 0.0})
+            passed, score = _grade_text(response, config)
+            results.append({"type": gtype, "name": gname, "pass": passed, "score": score})
         elif gtype == "behavior":
-            passed = _grade_behavior(response, config)
-            results.append({"type": gtype, "name": gname, "pass": passed,
-                            "score": 1.0 if passed else 0.0})
+            passed, score = _grade_behavior(response, config)
+            results.append({"type": gtype, "name": gname, "pass": passed, "score": score})
+        elif gtype == "json_schema":
+            passed, score, feedback = _grade_json_schema(response, config)
+            rec: dict = {"type": gtype, "name": gname, "pass": passed, "score": score}
+            if feedback:
+                rec["feedback"] = feedback
+            results.append(rec)
+        elif gtype == "program":
+            passed, score, feedback = _grade_program(response, config)
+            rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
+            if feedback:
+                rec["feedback"] = feedback
+            results.append(rec)
         elif gtype == "prompt":
             if token:
                 try:

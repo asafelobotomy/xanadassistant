@@ -34,7 +34,13 @@ def bind_api(m: object) -> None:
 # ── run ───────────────────────────────────────────────────────────────────────
 
 
-def cmd_run(eval_path: str, model: str, trials: int, fmt: str) -> int:
+def cmd_run(
+    eval_path: str,
+    model: str,
+    trials: int,
+    fmt: str,
+    tags: list[str] | None = None,
+) -> int:
     """Execute eval tasks against GitHub Models and save results."""
     token = _get_token()
     if not token:
@@ -77,6 +83,12 @@ def cmd_run(eval_path: str, model: str, trials: int, fmt: str) -> int:
 
     task_results: list[dict] = []
     for task in tasks:
+        # ── tag filter ────────────────────────────────────────────────────────
+        if tags:
+            task_tags = task.get("tags", [])
+            if not any(t in task_tags for t in tags):
+                continue
+
         task_id = task.get("id", "?")
         prompt = str(task.get("prompt", ""))
         messages: list[dict] = []
@@ -95,6 +107,7 @@ def cmd_run(eval_path: str, model: str, trials: int, fmt: str) -> int:
 
         response = responses[0] if responses else ""
         absent_patterns = [str(p) for p in task.get("expected_absent", [])]
+        expected_patterns = [str(p) for p in task.get("expected", [])]
         all_trial_graders: list[list[dict]] = []
         for resp in responses:
             trial_gr = _run_graders(resp, graders_spec, model, token)
@@ -102,6 +115,10 @@ def cmd_run(eval_path: str, model: str, trials: int, fmt: str) -> int:
                 hit = bool(re.search(pattern, resp, re.IGNORECASE))
                 trial_gr.append({"type": "expected_absent", "name": pattern,
                                  "pass": not hit, "score": 0.0 if hit else 1.0})
+            for pattern in expected_patterns:
+                hit = pattern.lower() in resp.lower()
+                trial_gr.append({"type": "expected", "name": pattern,
+                                 "pass": hit, "score": 1.0 if hit else 0.0})
             all_trial_graders.append(trial_gr)
 
         grader_results = (

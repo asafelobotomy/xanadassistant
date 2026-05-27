@@ -155,6 +155,13 @@ def main(argv: list[str] | None = None) -> int:
         "--trials", type=int, default=1, metavar="N",
         help="Number of trials per task (default: 1)",
     )
+    p_run.add_argument(
+        "--tags",
+        nargs="*",
+        default=None,
+        metavar="TAG",
+        help="Only run tasks with at least one of these tags (e.g. --tags smoke positive)",
+    )
     _add_format(p_run)
 
     p_grd = sub.add_parser(
@@ -229,7 +236,8 @@ def main(argv: list[str] | None = None) -> int:
             report_paths = [str(p) for p in Path(".").rglob("SKILL.md")]
         return cmd_report(report_paths, args.output)
     if args.cmd == "run":
-        return cmd_run(args.eval_path, args.model, args.trials, args.fmt)
+        return cmd_run(args.eval_path, args.model, args.trials, args.fmt,
+                       tags=args.tags or None)
     if args.cmd == "grade":
         return cmd_grade(args.eval_path, args.results_path, args.model, args.fmt)
     if args.cmd == "quality":

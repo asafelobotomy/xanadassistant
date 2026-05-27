@@ -29,7 +29,8 @@ from _common import (
     _QUALITY_DIMENSIONS, _GITHUB_MODELS_URL, _yaml, _TK_ENC,
     _get_token, _call_model, _load_spec, _load_tasks, _extract_first_json_object,
     _read, _parse_frontmatter, _count_tokens, _yaml_str, _max_nesting_depth,
-    _grade_text, _grade_behavior, _grade_prompt_judge, _run_graders, _aggregate_trials,
+    _grade_text, _grade_behavior, _grade_json_schema, _grade_program,
+    _grade_prompt_judge, _run_graders, _aggregate_trials,
 )
 _token_estimate = _count_tokens  # backwards-compatibility alias (renamed in refactor)
 
