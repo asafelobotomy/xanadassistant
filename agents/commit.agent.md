@@ -5,7 +5,7 @@ argument-hint: "Describe the git task: commit, push, preflight, PR, branch, tag,
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_stash, git_stash_pop, git_stash_apply, git_stash_drop, git_tag, git_push_tag, git_push, memory_dump, memory_set, elapsed]
+tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_show, git_branch_list, git_stash, git_stash_list, git_stash_pop, git_stash_apply, git_stash_drop, git_tag, git_tag_list, git_push_tag, git_push, create_pull_request, list_pull_requests, get_pull_request, list_releases, memory_dump, memory_set, elapsed]
 agents: [Explore, Review, Debugger]
 user-invocable: true
 ---
@@ -88,6 +88,7 @@ user explicitly accepts any residual risk surfaced.
    - Do not commit without acknowledgement.
 8. Prefer `git_commit` for the final non-interactive commit step so the result comes back as a structured envelope instead of raw terminal text.
 9. Report the short hash and subject after a successful commit, using `git_log` with `max_count=1` to confirm the new commit.
+10. When the user wants to inspect the full content of a specific commit (e.g., before incorporating, reverting, or referencing it), use `git_show` with the commit revision instead of shelling out for `git show`.
 
 ## Push workflow
 
@@ -105,7 +106,7 @@ user explicitly accepts any residual risk surfaced.
 3. Confirm the strategy with the user if the branch has diverged significantly.
 4. Prefer `git_pull` for straightforward non-interactive pull actions so the result comes back as a structured envelope.
 5. If a failed `git_pull` returns `status` = `failed`, surface its `summary` and `stderr` immediately before asking the user how to resolve the pull strategy or conflicts.
-6. After conflict resolution verify with `git status` before finalising (`git rebase --continue` or `git merge --continue`).
+6. After conflict resolution verify with the `git_status` tool before finalising (`git_rebase` action `continue` for rebase conflicts, or `git merge --continue` via `runCommands` for merge conflicts).
 
 ## Rebase workflow
 
@@ -123,27 +124,30 @@ user explicitly accepts any residual risk surfaced.
 1. Confirm source branch, target branch, title, and body.
 2. Check for `.github/pull_request_template.md`; use it as the body skeleton if present.
 3. Ask whether to create as draft or ready for review.
-4. Prefer the structured GitHub PR creation surface — use `githubRepo`, or the repo-local `github` MCP `create_pull_request` tool when connected.
-5. Fall back to `gh pr create` only when no structured GitHub tool is available.
+4. Prefer `create_pull_request` (GitHub MCP) to open the PR with the confirmed title, body, and draft flag. Use `list_pull_requests` to check for an existing PR on the same branch before creating. Use `get_pull_request` to retrieve PR details or check CI status after creation. Keep `githubRepo` for repository context only — it is not a PR creation surface.
+5. Fall back to `gh pr create` via `runCommands` only when the `create_pull_request` MCP tool is unavailable.
 
 ## Branch workflow
 
-1. **Create**: Prefer `git_create_branch`. Offer to stash if any unstaged or staged-but-uncommitted changes exist before creating the branch.
-2. **Delete**: Prefer `git_delete_branch` with safe delete by default; only use force delete with explicit approval.
-3. **Switch**: Prefer `git_checkout` for switching to an existing branch.
+1. **List**: Use `git_branch_list` when the user needs to see existing branches (specify `branch_type` as `local`, `remote`, or `all`) before creating, switching, or deleting.
+2. **Create**: Prefer `git_create_branch`. Offer to stash if any unstaged or staged-but-uncommitted changes exist before creating the branch.
+3. **Delete**: Prefer `git_delete_branch` with safe delete by default; only use force delete with explicit approval.
+4. **Switch**: Prefer `git_checkout` for switching to an existing branch.
 
 ## Stash workflow
 
-1. Prefer `git_stash` to create a stash entry.
-2. Prefer `git_stash_apply` for non-destructive stash restore when the user wants to keep the stash entry; it returns a structured envelope instead of raw terminal text.
-3. Prefer `git_stash_drop` only after explicit confirmation, because dropping a stash is destructive; it also returns a structured envelope.
-4. Prefer `git_stash_pop` as the combined apply-and-drop path when the user explicitly wants the apply-and-drop behavior.
+1. Use `git_stash_list` to enumerate stash entries and confirm the target stash index before applying, popping, or dropping.
+2. Prefer `git_stash` to create a stash entry.
+3. Prefer `git_stash_apply` for non-destructive stash restore when the user wants to keep the stash entry; it returns a structured envelope instead of raw terminal text.
+4. Prefer `git_stash_drop` only after explicit confirmation, because dropping a stash is destructive; it also returns a structured envelope.
+5. Prefer `git_stash_pop` as the combined apply-and-drop path when the user explicitly wants the apply-and-drop behavior.
 
 ## Tag / release workflow
 
 1. Confirm the exact version string (semver preferred).
-2. Tag: Prefer `git_tag` to create the tag first, using an annotated message when the user wants a release-style tag. Then Prefer `git_push_tag` to publish exactly `v<version>` to the confirmed remote instead of pushing tags broadly.
-3. Release: show full release notes draft and wait for approval before `gh release create`.
+2. Before creating: use `git_tag_list` to list existing local tags and confirm no collision. Use `list_releases` to inspect existing GitHub releases.
+3. Tag: Prefer `git_tag` to create the tag first, using an annotated message when the user wants a release-style tag. Then Prefer `git_push_tag` to publish exactly `v<version>` to the confirmed remote instead of pushing tags broadly.
+4. Release: show full release notes draft and wait for approval before `gh release create` via `runCommands` (no MCP release creation tool is available).
 
 ## Handoffs
 

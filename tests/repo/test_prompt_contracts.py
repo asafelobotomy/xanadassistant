@@ -89,9 +89,9 @@ class PromptContractTests(unittest.TestCase):
 
     def test_commit_agent_prefers_structured_pr_creation_over_gh(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("structured GitHub PR creation surface", content)
+        self.assertIn("`create_pull_request` (GitHub MCP)", content)
         self.assertIn("`githubRepo`", content)
-        self.assertIn("`gh pr create` only when no structured GitHub tool is available", content)
+        self.assertIn("`gh pr create` via `runCommands` only when the `create_pull_request` MCP tool is unavailable", content)
 
     def test_commit_agent_prefers_git_mcp_for_fetch_branch_and_stash_workflows(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
