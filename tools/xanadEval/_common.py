@@ -411,9 +411,20 @@ def _grade_program(response: str, config: dict) -> tuple[bool, float, str]:
 
 
 def _run_graders(
-    response: str, graders_spec: list[dict], model: str, token: str
+    response: str,
+    graders_spec: list[dict],
+    model: str,
+    token: str,
+    ctx: dict | None = None,
 ) -> list[dict]:
-    """Apply a list of grader specs to *response*; return result records."""
+    """Apply a list of grader specs to *response*; return result records.
+
+    *ctx* may carry:
+      - ``eval_dir``    — eval file directory (used for trigger's skill_path resolution)
+      - ``prompt``      — original task prompt (used by the trigger grader)
+      - ``workspace``   — base directory for file/diff graders
+      - ``context_dir`` — snapshot base directory for the diff grader
+    """
     results: list[dict] = []
     for g in graders_spec:
         gtype = g.get("type", "")
@@ -448,6 +459,39 @@ def _run_graders(
             else:
                 results.append({"type": gtype, "name": gname, "pass": None,
                                 "score": None, "skipped": "no GITHUB_TOKEN"})
+        elif gtype in ("trigger", "file", "diff"):
+            # Extended graders — lazy import to avoid circular dependency.
+            try:
+                from _graders_ext import _grade_trigger, _grade_file, _grade_diff  # noqa: PLC0415
+            except ImportError as e:
+                results.append({"type": gtype, "name": gname, "pass": None,
+                                "score": None, "error": f"_graders_ext unavailable: {e}"})
+                continue
+            if gtype == "trigger":
+                eval_dir = Path(ctx["eval_dir"]) if ctx and "eval_dir" in ctx else None
+                prompt = str(ctx.get("prompt", "")) if ctx else ""
+                passed, score, details = _grade_trigger(prompt, config, eval_dir)
+                rec: dict = {"type": gtype, "name": gname}
+                if "error" in details:
+                    rec.update({"pass": None, "score": None, "error": details["error"]})
+                else:
+                    rec.update({"pass": passed, "score": score, "details": details})
+                results.append(rec)
+            elif gtype == "file":
+                workspace = Path(ctx["workspace"]) if ctx and "workspace" in ctx else None
+                passed, score, feedback = _grade_file(config, workspace)
+                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
+                if feedback:
+                    rec["feedback"] = feedback
+                results.append(rec)
+            else:  # diff
+                workspace = Path(ctx["workspace"]) if ctx and "workspace" in ctx else None
+                context_dir = Path(ctx["context_dir"]) if ctx and "context_dir" in ctx else None
+                passed, score, feedback = _grade_diff(config, workspace, context_dir)
+                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
+                if feedback:
+                    rec["feedback"] = feedback
+                results.append(rec)
         else:
             results.append({"type": gtype, "name": gname, "pass": None,
                             "score": None, "skipped": f"grader '{gtype}' not supported"})

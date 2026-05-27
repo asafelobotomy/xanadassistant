@@ -34,6 +34,12 @@ from _common import (
 )
 _token_estimate = _count_tokens  # backwards-compatibility alias (renamed in refactor)
 
+import _graders_ext
+from _graders_ext import (
+    _grade_trigger, _grade_file, _grade_diff,
+    _tokenize, _parse_use_for_phrases,
+)
+
 # Bind this module so mock.patch("xanadEval._call_model") is intercepted by _common.
 _common.bind_api(sys.modules[__name__])
 

@@ -108,9 +108,10 @@ def cmd_run(
         response = responses[0] if responses else ""
         absent_patterns = [str(p) for p in task.get("expected_absent", [])]
         expected_patterns = [str(p) for p in task.get("expected", [])]
+        _run_ctx = {"eval_dir": str(eval_dir), "prompt": prompt}
         all_trial_graders: list[list[dict]] = []
         for resp in responses:
-            trial_gr = _run_graders(resp, graders_spec, model, token)
+            trial_gr = _run_graders(resp, graders_spec, model, token, ctx=_run_ctx)
             for pattern in absent_patterns:
                 hit = bool(re.search(pattern, resp, re.IGNORECASE))
                 trial_gr.append({"type": "expected_absent", "name": pattern,
@@ -206,9 +207,11 @@ def cmd_grade(eval_path: str, results_path: str, model: str | None, fmt: str) ->
     run_model = model or prev.get("model", _DEFAULT_MODEL)
 
     updated: list[dict] = []
+    _grade_ctx = {"eval_dir": str(Path(eval_path).parent)}
     for task in prev.get("tasks", []):
         response = task.get("response", "")
-        grader_results = _run_graders(response, graders_spec, run_model, token or "")
+        grader_results = _run_graders(response, graders_spec, run_model, token or "",
+                                      ctx=_grade_ctx)
         # Re-apply expected_absent checks persisted from the original run
         for saved_g in task.get("graders", []):
             if saved_g.get("type") == "expected_absent":

@@ -89,12 +89,14 @@ WARN_LIMIT_OVERRIDES = {
     "tests/repo/test_prompt_contracts.py": 400,
 
     # ── xanadEval tool and test modules ───────────────────────────────────────────
-    # _common.py: grew with retry logic and two new grader types.
-    "tools/xanadEval/_common.py": 450,
+    # _common.py: grew with retry logic, new grader types, and extended _run_graders dispatch.
+    "tools/xanadEval/_common.py": 520,
     # graders test: grew with new json_schema and program grader test classes.
     "tests/tools/test_xanadEval_graders.py": 380,
     # runtime test: grew with RetryTests, ExpectedFieldTests, TagsFilterTests.
     "tests/tools/test_xanadEval_runtime.py": 510,
+    # graders_ext test: trigger, file, diff grader unit tests.
+    "tests/tools/test_xanadEval_graders_ext.py": 350,
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.
@@ -113,11 +115,14 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     ".github/mcp/scripts/gitMcp.py": 600,
     # xanadEval _common.py: grew with retry logic in _call_model, text/behavior grader
     # overhauls (AND semantics, not_contains, regex_match/not_match, partial scoring,
-    # min_tokens), and two new grader types (_grade_json_schema, _grade_program).
-    "tools/xanadEval/_common.py": 480,
+    # min_tokens), new grader types (_grade_json_schema, _grade_program), and extended
+    # _run_graders dispatch for trigger/file/diff via _graders_ext.
+    "tools/xanadEval/_common.py": 560,
     # xanadEval runtime tests: grew with RetryTests, ExpectedFieldTests, TagsFilterTests
     # covering the new _call_model retry, expected task field, and --tags filter features.
     "tests/tools/test_xanadEval_runtime.py": 540,
+    # graders_ext tests: TriggerGraderTests, FileGraderTests, DiffGraderTests.
+    "tests/tools/test_xanadEval_graders_ext.py": 400,
 }
 
 
