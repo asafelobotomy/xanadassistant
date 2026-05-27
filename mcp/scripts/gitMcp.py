@@ -5,7 +5,7 @@ Covers all local and remote operations in a single self-owned server:
 
 Local:  status, diff (unstaged/staged/between refs), add, reset, commit,
         log, show, branch (list/create/delete), checkout, stash, stash-pop,
-        tag, rebase
+        tag, rebase, merge
 Remote: fetch, pull, push (including --force-with-lease and --set-upstream)
 
 Security model
@@ -432,6 +432,53 @@ def git_rebase(
         action=action,
         onto=onto,
         summary=f"git rebase {action} {'succeeded' if result.returncode == 0 else 'failed'}",
+    )
+
+
+@mcp.tool()
+def git_merge(
+    repo_path: str,
+    branch: str = "",
+    action: Literal["start", "continue", "abort"] = "start",
+    no_ff: bool = False,
+    message: str = "",
+) -> dict[str, object]:
+    """Merge a branch into the current branch, or continue/abort an in-progress merge.
+
+    Args:
+        repo_path: Absolute path to the git repository.
+        branch: Branch to merge (required when action='start').
+        action: 'start' (default), 'continue', or 'abort'.
+        no_ff: When True, always creates a merge commit even on fast-forward.
+        message: Optional merge commit message override. When omitted for
+            'continue', passes --no-edit to avoid opening an editor.
+    """
+    resolved_branch = ""
+    if action == "start":
+        if not branch:
+            raise ValueError("'branch' is required when action='start'.")
+        resolved_branch = _validate_user_arg(branch)
+        flags: list[str] = []
+        if no_ff:
+            flags.append("--no-ff")
+        if message:
+            flags.extend(["-m", message])
+        command = ["git", "merge", *flags, resolved_branch]
+        result = _run_flags_completed(repo_path, ["merge"], flags, [resolved_branch])
+    elif action == "continue":
+        flags = ["-m", message] if message else ["--no-edit"]
+        command = ["git", "merge", "--continue", *flags]
+        result = _run_flags_completed(repo_path, ["merge", "--continue"], flags, [])
+    else:  # abort
+        command = ["git", "merge", "--abort"]
+        result = _run_flags_completed(repo_path, ["merge", "--abort"], [], [])
+    return _mutation_result(
+        "git_merge",
+        result,
+        command,
+        action=action,
+        branch=resolved_branch,
+        summary=f"git merge {action} {'succeeded' if result.returncode == 0 else 'failed'}",
     )
 
 

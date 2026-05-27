@@ -81,6 +81,22 @@ class GitMcpTests(unittest.TestCase):
                     rebase_continue_result = module.git_rebase(self._repo_dir, action="continue")
                     self.assertEqual(rebase_continue_result["action"], "continue")
                     self.assertEqual(rebase_continue_result["onto"], "")
+                    merge_start_result = module.git_merge(self._repo_dir, branch="feature")
+                    self.assertEqual(merge_start_result["status"], "ok")
+                    self.assertEqual(merge_start_result["operation"], "git_merge")
+                    self.assertEqual(merge_start_result["exitCode"], 0)
+                    self.assertEqual(merge_start_result["action"], "start")
+                    self.assertEqual(merge_start_result["branch"], "feature")
+                    merge_noff_result = module.git_merge(self._repo_dir, branch="feature", no_ff=True, message="merge!")
+                    self.assertEqual(merge_noff_result["action"], "start")
+                    merge_continue_result = module.git_merge(self._repo_dir, action="continue")
+                    self.assertEqual(merge_continue_result["action"], "continue")
+                    self.assertEqual(merge_continue_result["branch"], "")
+                    merge_continue_msg_result = module.git_merge(self._repo_dir, action="continue", message="resolved")
+                    self.assertEqual(merge_continue_msg_result["action"], "continue")
+                    merge_abort_result = module.git_merge(self._repo_dir, action="abort")
+                    self.assertEqual(merge_abort_result["action"], "abort")
+                    self.assertEqual(merge_abort_result["branch"], "")
                     self.assertEqual(module.git_fetch(self._repo_dir, remote="origin", prune=True), "ok")
                     # no-branch pull: should omit remote and use configured upstream
                     pull_no_branch = module.git_pull(self._repo_dir, remote="origin")
@@ -136,6 +152,11 @@ class GitMcpTests(unittest.TestCase):
                 self.assertIn(["git", "push", "origin", "refs/tags/v1.2.4:refs/tags/v1.2.4"], commands)
                 self.assertIn(["git", "push", "upstream", "refs/tags/v1.2.4:refs/tags/v1.2.4"], commands)
                 self.assertIn(["git", "push", "-u", "--force-with-lease", "--tags", "origin", "main"], commands)
+                self.assertIn(["git", "merge", "feature"], commands)
+                self.assertIn(["git", "merge", "--no-ff", "-m", "merge!", "feature"], commands)
+                self.assertIn(["git", "merge", "--continue", "--no-edit"], commands)
+                self.assertIn(["git", "merge", "--continue", "-m", "resolved"], commands)
+                self.assertIn(["git", "merge", "--abort"], commands)
 
     def test_validation_and_error_paths(self) -> None:
         for module in (SOURCE_GIT_MODULE, MANAGED_GIT_MODULE):
@@ -144,6 +165,8 @@ class GitMcpTests(unittest.TestCase):
                     module.git_commit("/repo", "   ")
                 with self.assertRaisesRegex(ValueError, "required when action='start'"):
                     module.git_rebase("/repo")
+                with self.assertRaisesRegex(ValueError, "required when action='start'"):
+                    module.git_merge(self._repo_dir)
                 with mock.patch.object(
                     module.subprocess,
                     "run",
@@ -162,6 +185,7 @@ class GitMcpTests(unittest.TestCase):
                 ):
                     commit_result = module.git_commit(self._repo_dir, "subject")
                     rebase_result = module.git_rebase(self._repo_dir, onto="main")
+                    merge_result = module.git_merge(self._repo_dir, branch="feature")
                     stash_apply_result = module.git_stash_apply(self._repo_dir, stash_ref="stash@{2}")
                     stash_drop_result = module.git_stash_drop(self._repo_dir, stash_ref="stash@{1}")
 
@@ -174,6 +198,11 @@ class GitMcpTests(unittest.TestCase):
                 self.assertEqual(rebase_result["operation"], "git_rebase")
                 self.assertEqual(rebase_result["action"], "start")
                 self.assertEqual(rebase_result["onto"], "main")
+
+                self.assertEqual(merge_result["status"], "failed")
+                self.assertEqual(merge_result["operation"], "git_merge")
+                self.assertEqual(merge_result["action"], "start")
+                self.assertEqual(merge_result["branch"], "feature")
 
                 pull_result = module.git_pull(self._repo_dir, remote="origin", branch="main", rebase=True)
                 self.assertEqual(pull_result["status"], "failed")
@@ -209,6 +238,7 @@ class GitMcpTests(unittest.TestCase):
                     results = [
                         module.git_commit(self._repo_dir, "subject"),
                         module.git_rebase(self._repo_dir, onto="main"),
+                        module.git_merge(self._repo_dir, branch="feature"),
                         module.git_stash_apply(self._repo_dir),
                         module.git_stash_drop(self._repo_dir),
                         module.git_pull(self._repo_dir, remote="origin", branch="main", rebase=True),

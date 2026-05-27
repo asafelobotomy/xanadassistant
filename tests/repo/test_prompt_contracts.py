@@ -125,6 +125,16 @@ class PromptContractTests(unittest.TestCase):
             "commit.agent.md must require acknowledgement before committing",
         )
 
+    def test_commit_agent_prefers_git_merge_for_merge_continue(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+        self.assertIn("`git_merge`", content)
+        self.assertIn("git_merge` action `continue`", content)
+
+    def test_commit_agent_prefers_create_release_for_github_releases(self) -> None:
+        content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
+        self.assertIn("`create_release` (GitHub MCP)", content)
+        self.assertIn("`gh release create` via `runCommands` only when the `create_release` MCP tool is unavailable", content)
+
     def test_repo_copilot_instructions_use_canonical_preflight_before_commit(self) -> None:
         instruction_paths = [
             REPO_ROOT / "template" / "copilot-instructions.md",

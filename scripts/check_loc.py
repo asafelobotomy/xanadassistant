@@ -42,7 +42,7 @@ WARN_LIMIT_OVERRIDES = {
     "mcp/scripts/memoryMcp.py": 600,
     "mcp/scripts/webMcp.py": 450,
     "mcp/scripts/xanadWorkspaceMcp.py": 380,
-    "mcp/scripts/gitMcp.py": 380,
+    "mcp/scripts/gitMcp.py": 450,
     "mcp/scripts/githubMcp.py": 450,
     "mcp/scripts/_memory_mcp_shared.py": 310,
     # ── Managed copies (.github/) — mirrors of the above; same ceilings apply ─────
@@ -50,7 +50,7 @@ WARN_LIMIT_OVERRIDES = {
     ".github/mcp/scripts/memoryMcp.py": 600,
     ".github/mcp/scripts/webMcp.py": 450,
     ".github/mcp/scripts/xanadWorkspaceMcp.py": 380,
-    ".github/mcp/scripts/gitMcp.py": 380,
+    ".github/mcp/scripts/gitMcp.py": 450,
     ".github/mcp/scripts/githubMcp.py": 450,
     ".github/mcp/scripts/_memory_mcp_shared.py": 310,
 
@@ -95,9 +95,10 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     ".github/mcp/scripts/xanadWorkspaceMcp.py": 425,
     # Git MCP server: grew with structured mutation envelopes, _run_flags_completed,
     # _mutation_result helper, git_diff_staged_stat / git_diff_unstaged_stat tools,
-    # and extended stash/rebase/push tool surface for the Commit-agent migration.
-    "mcp/scripts/gitMcp.py": 550,
-    ".github/mcp/scripts/gitMcp.py": 550,
+    # extended stash/rebase/push tool surface for the Commit-agent migration,
+    # and git_merge (start/continue/abort) to replace runCommands for merge workflows.
+    "mcp/scripts/gitMcp.py": 600,
+    ".github/mcp/scripts/gitMcp.py": 600,
 }
 
 

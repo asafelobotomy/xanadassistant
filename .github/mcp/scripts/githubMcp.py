@@ -281,6 +281,54 @@ def list_releases(owner: str, repo: str, per_page: int = 10) -> str:
 
 
 @mcp.tool()
+def create_release(
+    owner: str,
+    repo: str,
+    tag_name: str,
+    name: str = "",
+    body: str = "",
+    draft: bool = False,
+    prerelease: bool = False,
+    target_commitish: str = "",
+    generate_release_notes: bool = False,
+) -> str:
+    """Create a GitHub release via the GitHub REST API.
+
+    Args:
+        owner: Repository owner.
+        repo: Repository name.
+        tag_name: Tag to create the release from (e.g. 'v1.2.3').
+        name: Release title; defaults to the tag name when omitted.
+        body: Release notes (Markdown). Appended to auto-generated notes when
+            generate_release_notes is also True.
+        draft: When True, creates as an unpublished draft.
+        prerelease: When True, marks as a pre-release.
+        target_commitish: Branch or commit SHA the tag is created from;
+            defaults to the repository's default branch.
+        generate_release_notes: When True, auto-generates release notes from
+            merged PRs since the previous tag.
+    """
+    _validate_owner_repo(owner, repo)
+    if not tag_name.strip():
+        raise ValueError("tag_name cannot be empty.")
+    payload: dict[str, object] = {
+        "tag_name": tag_name,
+        "draft": draft,
+        "prerelease": prerelease,
+        "generate_release_notes": generate_release_notes,
+    }
+    if name:
+        payload["name"] = name
+    if body:
+        payload["body"] = body
+    if target_commitish:
+        payload["target_commitish"] = target_commitish
+    r = _post(f"/repos/{owner}/{repo}/releases", payload)
+    kind = "draft" if r.get("draft") else "pre-release" if r.get("prerelease") else "release"
+    return f"{kind.capitalize()} created: {r['tag_name']} \u2014 {r.get('name', r['tag_name'])} {r['html_url']}"
+
+
+@mcp.tool()
 def list_workflow_runs(owner: str, repo: str, workflow_id: str = "",
                        status: str = "", per_page: int = 10) -> str:
     """List recent workflow runs for a repository.

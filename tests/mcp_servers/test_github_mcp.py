@@ -106,7 +106,7 @@ class GitHubMcpTests(unittest.TestCase):
                         [{"tag_name": "v1.0.0", "name": "First", "draft": False, "prerelease": False, "published_at": "2026-01-01"}],
                         {"workflow_runs": [{"id": 9, "name": "CI", "status": "completed", "conclusion": "success", "head_branch": "main", "created_at": "2026-01-01", "html_url": "https://run"}]},
                     ],
-                ), mock.patch.object(module, "_post", side_effect=[{"html_url": "https://comment"}, {"number": 7, "html_url": "https://pull"}]):
+                ), mock.patch.object(module, "_post", side_effect=[{"html_url": "https://comment"}, {"number": 7, "html_url": "https://pull"}, {"tag_name": "v1.0.0", "name": "First release", "html_url": "https://release", "draft": False, "prerelease": False}, {"tag_name": "v1.1.0", "name": "v1.1.0", "html_url": "https://draft", "draft": True, "prerelease": False}]):
                     issues = module.list_issues("owner", "repo")
                     issue = module.get_issue("owner", "repo", 2)
                     comment = module.create_issue_comment("owner", "repo", 2, "hello")
@@ -115,6 +115,8 @@ class GitHubMcpTests(unittest.TestCase):
                     created = module.create_pull_request("owner", "repo", "Title", "feature", "main", draft=True)
                     releases = module.list_releases("owner", "repo")
                     runs = module.list_workflow_runs("owner", "repo", ".github/workflows/ci.yml", status="completed")
+                    stable_release = module.create_release("owner", "repo", "v1.0.0", name="First release", body="Notes", generate_release_notes=True)
+                    draft_release = module.create_release("owner", "repo", "v1.1.0", draft=True)
 
                 self.assertIn("#2 [open] Bug", issues)
                 self.assertEqual(json.loads(issue)["number"], 2)
@@ -124,6 +126,9 @@ class GitHubMcpTests(unittest.TestCase):
                 self.assertIn("Pull request created: #7", created)
                 self.assertIn("v1.0.0", releases)
                 self.assertIn("#9 CI [completed/success]", runs)
+                self.assertIn("Release created: v1.0.0", stable_release)
+                self.assertIn("First release", stable_release)
+                self.assertIn("Draft created: v1.1.0", draft_release)
 
     def test_validation_and_empty_formatter_branches(self) -> None:
         for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):
@@ -152,6 +157,14 @@ class GitHubMcpTests(unittest.TestCase):
                 self.assertIn("No all pull requests", pulls)
                 self.assertIn("No releases found", releases)
                 self.assertEqual(runs, "No workflow runs found.")
+
+    def test_create_release_validates_empty_tag_name(self) -> None:
+        for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):
+            with self.subTest(module=module.__name__):
+                with self.assertRaisesRegex(ValueError, "tag_name cannot be empty"):
+                    module.create_release("owner", "repo", "   ")
+                with self.assertRaisesRegex(ValueError, "Invalid owner name"):
+                    module.create_release("bad owner", "repo", "v1.0.0")
 
     def test_get_repo_and_get_file_contents_fallback_paths(self) -> None:
         for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):

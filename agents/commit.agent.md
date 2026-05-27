@@ -5,7 +5,7 @@ argument-hint: "Describe the git task: commit, push, preflight, PR, branch, tag,
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_show, git_branch_list, git_stash, git_stash_list, git_stash_pop, git_stash_apply, git_stash_drop, git_tag, git_tag_list, git_push_tag, git_push, create_pull_request, list_pull_requests, get_pull_request, list_releases, memory_dump, memory_set, elapsed]
+tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_merge, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_show, git_branch_list, git_stash, git_stash_list, git_stash_pop, git_stash_apply, git_stash_drop, git_tag, git_tag_list, git_push_tag, git_push, create_pull_request, create_release, list_pull_requests, get_pull_request, list_releases, memory_dump, memory_set, elapsed]
 agents: [Explore, Review, Debugger]
 user-invocable: true
 ---
@@ -106,7 +106,7 @@ user explicitly accepts any residual risk surfaced.
 3. Confirm the strategy with the user if the branch has diverged significantly.
 4. Prefer `git_pull` for straightforward non-interactive pull actions so the result comes back as a structured envelope.
 5. If a failed `git_pull` returns `status` = `failed`, surface its `summary` and `stderr` immediately before asking the user how to resolve the pull strategy or conflicts.
-6. After conflict resolution verify with the `git_status` tool before finalising (`git_rebase` action `continue` for rebase conflicts, or `git merge --continue` via `runCommands` for merge conflicts).
+6. After conflict resolution verify with the `git_status` tool before finalising (`git_rebase` action `continue` for rebase conflicts, or `git_merge` action `continue` for merge conflicts — passes `--no-edit` by default to avoid opening an editor).
 
 ## Rebase workflow
 
@@ -147,7 +147,7 @@ user explicitly accepts any residual risk surfaced.
 1. Confirm the exact version string (semver preferred).
 2. Before creating: use `git_tag_list` to list existing local tags and confirm no collision. Use `list_releases` to inspect existing GitHub releases.
 3. Tag: Prefer `git_tag` to create the tag first, using an annotated message when the user wants a release-style tag. Then Prefer `git_push_tag` to publish exactly `v<version>` to the confirmed remote instead of pushing tags broadly.
-4. Release: show full release notes draft and wait for approval before `gh release create` via `runCommands` (no MCP release creation tool is available).
+4. Release: show full release notes draft and wait for approval. Prefer `create_release` (GitHub MCP) to create the release via the GitHub REST API — supports draft, pre-release, and auto-generated release notes flags. Fall back to `gh release create` via `runCommands` only when the `create_release` MCP tool is unavailable.
 
 ## Handoffs
 
