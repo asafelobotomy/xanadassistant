@@ -459,10 +459,13 @@ def _run_graders(
             else:
                 results.append({"type": gtype, "name": gname, "pass": None,
                                 "score": None, "skipped": "no GITHUB_TOKEN"})
-        elif gtype in ("trigger", "file", "diff"):
+        elif gtype in ("trigger", "file", "diff", "code", "action_sequence", "tool_constraint"):
             # Extended graders — lazy import to avoid circular dependency.
             try:
-                from _graders_ext import _grade_trigger, _grade_file, _grade_diff  # noqa: PLC0415
+                from _graders_ext import (  # noqa: PLC0415
+                    _grade_trigger, _grade_file, _grade_diff,
+                    _grade_code, _grade_action_sequence, _grade_tool_constraint,
+                )
             except ImportError as e:
                 results.append({"type": gtype, "name": gname, "pass": None,
                                 "score": None, "error": f"_graders_ext unavailable: {e}"})
@@ -484,10 +487,28 @@ def _run_graders(
                 if feedback:
                     rec["feedback"] = feedback
                 results.append(rec)
-            else:  # diff
+            elif gtype == "diff":
                 workspace = Path(ctx["workspace"]) if ctx and "workspace" in ctx else None
                 context_dir = Path(ctx["context_dir"]) if ctx and "context_dir" in ctx else None
                 passed, score, feedback = _grade_diff(config, workspace, context_dir)
+                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
+                if feedback:
+                    rec["feedback"] = feedback
+                results.append(rec)
+            elif gtype == "code":
+                passed, score, feedback = _grade_code(response, config, ctx)
+                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
+                if feedback:
+                    rec["feedback"] = feedback
+                results.append(rec)
+            elif gtype == "action_sequence":
+                passed, score, feedback = _grade_action_sequence(config, ctx)
+                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
+                if feedback:
+                    rec["feedback"] = feedback
+                results.append(rec)
+            else:  # tool_constraint
+                passed, score, feedback = _grade_tool_constraint(config, ctx)
                 rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
                 if feedback:
                     rec["feedback"] = feedback

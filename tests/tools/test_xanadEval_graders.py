@@ -125,7 +125,7 @@ class GraderUnitTests(DynamicTestBase, unittest.TestCase):
         self.assertTrue(results[1]["pass"])
 
     def test_run_graders_skips_unknown_type(self) -> None:
-        graders = [{"type": "code", "name": "complex", "config": {}}]
+        graders = [{"type": "unsupported_custom_type", "name": "complex", "config": {}}]
         results = xe._run_graders("any", graders, "gpt-4o-mini", "")
         self.assertIsNone(results[0]["pass"])
         self.assertIn("skipped", results[0])

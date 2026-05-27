@@ -37,6 +37,7 @@ _token_estimate = _count_tokens  # backwards-compatibility alias (renamed in ref
 import _graders_ext
 from _graders_ext import (
     _grade_trigger, _grade_file, _grade_diff,
+    _grade_code, _grade_action_sequence, _grade_tool_constraint,
     _tokenize, _parse_use_for_phrases,
 )
 

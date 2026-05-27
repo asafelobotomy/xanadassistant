@@ -1,10 +1,11 @@
-"""Extended grader types for xanadEval: trigger, file, diff.
+"""Extended grader types for xanadEval: trigger, file, diff, code, action_sequence, tool_constraint.
 
 Internal implementation detail — import ``xanadEval`` directly, not this module.
 """
 from __future__ import annotations
 
 import re
+from collections import Counter
 from pathlib import Path
 
 from _common import _parse_frontmatter
@@ -344,3 +345,198 @@ def _grade_diff(
     summary = f"{sum(checks)}/{len(checks)} diff checks passed"
     feedback = ("; ".join(errors) + " — " if errors else "") + summary
     return passed, score, feedback
+
+
+# ── _grade_code ───────────────────────────────────────────────────────────────
+
+# Restricted builtins available inside code grader assertions.
+_CODE_SAFE_GLOBALS: dict = {
+    "__builtins__": {},
+    "len": len, "any": any, "all": all,
+    "str": str, "int": int, "float": float, "bool": bool,
+    "list": list, "dict": dict, "set": set,
+    "min": min, "max": max, "abs": abs, "round": round,
+    "re": re,
+}
+
+
+def _grade_code(
+    response: str,
+    config: dict,
+    ctx: dict | None = None,
+) -> tuple[bool, float, str]:
+    """Assertion-based grader: evaluate Python expressions against response context.
+
+    Config keys:
+      - ``assertions`` — list of Python expression strings (required)
+
+    Available context variables: ``output`` (str), ``outcome`` (dict),
+    ``transcript`` (list), ``tool_calls`` (list), ``errors`` (list),
+    ``duration_ms`` (int).
+
+    Scoring: ``passed_assertions / total_assertions``.
+
+    Generator expressions are not supported (restriction of eval in a restricted
+    scope). Use explicit list comprehensions or ``any``/``all`` with a list literal.
+    """
+    assertions = list(config.get("assertions", []))
+    if not assertions:
+        return False, 0.0, "code grader: 'assertions' must be a non-empty list"
+
+    _ctx = ctx or {}
+    ns = dict(_CODE_SAFE_GLOBALS)
+    ns.update({
+        "output": response,
+        "outcome": _ctx.get("outcome", {}),
+        "transcript": _ctx.get("transcript", []),
+        "tool_calls": _ctx.get("tool_calls", []),
+        "errors": _ctx.get("errors", []),
+        "duration_ms": _ctx.get("duration_ms", 0),
+    })
+
+    passed_count = 0
+    failures: list[str] = []
+    for expr in assertions:
+        try:
+            result = eval(compile(str(expr), "<assertion>", "eval"), ns)  # noqa: S307
+            if result:
+                passed_count += 1
+            else:
+                failures.append(f"FAIL: {expr!r}")
+        except Exception as e:  # noqa: BLE001
+            failures.append(f"ERROR in {expr!r}: {e}")
+
+    total = len(assertions)
+    passed = passed_count == total
+    score = round(passed_count / total, 3)
+    feedback = "All assertions passed" if passed else "; ".join(failures)
+    return passed, score, feedback
+
+
+# ── _grade_action_sequence ─────────────────────────────────────────────────────
+
+
+def _grade_action_sequence(
+    config: dict,
+    ctx: dict | None = None,
+) -> tuple[bool, float, str]:
+    """Validate tool call sequences against expected actions.
+
+    Config keys:
+      - ``expected_actions`` — list of tool name strings (required)
+      - ``matching_mode``    — ``exact_match``, ``in_order_match``, or
+                               ``any_order_match`` (required)
+
+    Actual actions are read from ``ctx["tool_calls"]``, which should be a list of
+    strings or dicts with a ``"tool"`` key.
+
+    Scoring: F1 score (harmonic mean of precision and recall).
+    """
+    expected = [str(a) for a in config.get("expected_actions", [])]
+    if not expected:
+        return False, 0.0, "action_sequence grader: 'expected_actions' must be non-empty"
+
+    mode = str(config.get("matching_mode", "in_order_match")).lower()
+    if mode not in ("exact_match", "in_order_match", "any_order_match"):
+        return False, 0.0, f"action_sequence grader: unknown matching_mode {mode!r}"
+
+    raw = list((ctx or {}).get("tool_calls", []))
+    if not raw:
+        return False, 0.0, "action_sequence grader: no tool_calls in context"
+
+    actual = [str(a.get("tool", a)) if isinstance(a, dict) else str(a) for a in raw]
+
+    if mode == "exact_match":
+        pairs = list(zip(actual, expected))
+        tp = sum(1 for a, e in pairs if a == e)
+        matched = actual == expected
+    elif mode == "in_order_match":
+        tp = 0
+        ai = 0
+        for e in expected:
+            while ai < len(actual):
+                if actual[ai] == e:
+                    tp += 1
+                    ai += 1
+                    break
+                ai += 1
+        matched = tp == len(expected)
+    else:  # any_order_match
+        exp_c = Counter(expected)
+        act_c = Counter(actual)
+        tp = sum(min(v, act_c[k]) for k, v in exp_c.items())
+        matched = all(act_c[k] >= v for k, v in exp_c.items())
+
+    precision = tp / len(actual) if actual else 0.0
+    recall = tp / len(expected) if expected else 0.0
+    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+
+    return matched, round(f1, 3), (
+        f"precision={precision:.3f} recall={recall:.3f} f1={f1:.3f}"
+        f" tp={tp} expected={len(expected)} actual={len(actual)}"
+    )
+
+
+# ── _grade_tool_constraint ─────────────────────────────────────────────────────
+
+
+def _grade_tool_constraint(
+    config: dict,
+    ctx: dict | None = None,
+) -> tuple[bool, float, str]:
+    """Validate which tools were used or avoided.
+
+    Config keys:
+      - ``expect_tools`` — list of tool specs that MUST have been called
+      - ``reject_tools`` — list of tool specs that MUST NOT have been called
+
+    At least one of ``expect_tools`` / ``reject_tools`` must be non-empty.
+
+    Each tool spec is a dict with:
+      - ``tool``            — regex matched against tool name (required)
+      - ``command_pattern`` — regex on the ``command`` argument (optional)
+      - ``skill_pattern``   — regex on the ``skill`` argument (optional)
+      - ``path_pattern``    — regex on the ``path`` argument (optional)
+
+    Actual tool calls come from ``ctx["tool_calls"]`` — a list of strings or dicts
+    with a ``"tool"`` key plus optional argument keys.
+
+    Scoring: ``passed_checks / total_checks``.
+    """
+    expect = list(config.get("expect_tools", []))
+    reject = list(config.get("reject_tools", []))
+    if not expect and not reject:
+        return (
+            False, 0.0,
+            "tool_constraint grader: at least one of expect_tools/reject_tools is required",
+        )
+
+    raw = list((ctx or {}).get("tool_calls", []))
+
+    def _match(spec: dict, call: dict | str) -> bool:
+        if isinstance(call, str):
+            call = {"tool": call}
+        if not re.search(str(spec.get("tool", "")), str(call.get("tool", "")), re.IGNORECASE):
+            return False
+        for cfg_key, call_key in (
+            ("command_pattern", "command"),
+            ("skill_pattern", "skill"),
+            ("path_pattern", "path"),
+        ):
+            pattern = spec.get(cfg_key)
+            if pattern and not re.search(str(pattern), str(call.get(call_key, ""))):
+                return False
+        return True
+
+    checks: list[bool] = []
+    for spec in expect:
+        checks.append(any(_match(spec, c) for c in raw))
+    for spec in reject:
+        checks.append(not any(_match(spec, c) for c in raw))
+
+    if not checks:
+        return False, 0.0, "tool_constraint grader: no checks derived from config"
+
+    passed = all(checks)
+    score = round(sum(1 for c in checks if c) / len(checks), 3)
+    return passed, score, f"{sum(checks)}/{len(checks)} constraint checks passed"

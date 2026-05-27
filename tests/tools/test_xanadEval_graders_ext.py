@@ -1,7 +1,7 @@
-"""Unit tests for the extended grader types: trigger, file, diff.
+"""Unit tests for the extended grader types: trigger, file, diff, code, action_sequence, tool_constraint.
 
-Tests _grade_trigger, _grade_file, _grade_diff, _tokenize, _parse_use_for_phrases,
-and their dispatch through _run_graders.  Imported via the xanadEval facade.
+Tests all six _graders_ext functions and their dispatch through _run_graders.
+Imported via the xanadEval facade.
 """
 from __future__ import annotations
 
@@ -15,6 +15,9 @@ from xanadEval_test_support import xe
 _grade_trigger = xe._grade_trigger
 _grade_file = xe._grade_file
 _grade_diff = xe._grade_diff
+_grade_code = xe._grade_code
+_grade_action_sequence = xe._grade_action_sequence
+_grade_tool_constraint = xe._grade_tool_constraint
 _tokenize = xe._tokenize
 _parse_use_for_phrases = xe._parse_use_for_phrases
 _run_graders = xe._run_graders
@@ -408,6 +411,283 @@ class DiffGraderTests(unittest.TestCase):
         results = _run_graders("llm response", spec, "gpt-4o-mini", "")
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["type"], "diff")
+        self.assertTrue(results[0]["pass"])
+
+
+# ── _grade_code ────────────────────────────────────────────────────────────────
+
+
+class CodeGraderTests(unittest.TestCase):
+
+    def test_passing_assertion(self) -> None:
+        passed, score, feedback = _grade_code(
+            "Hello world",
+            {"assertions": ["'hello' in output.lower()"]},
+        )
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
+        self.assertIn("passed", feedback.lower())
+
+    def test_failing_assertion(self) -> None:
+        passed, score, feedback = _grade_code(
+            "Goodbye",
+            {"assertions": ["'hello' in output.lower()"]},
+        )
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+
+    def test_partial_scoring(self) -> None:
+        passed, score, _ = _grade_code(
+            "success message",
+            {"assertions": ["'success' in output", "'missing' in output"]},
+        )
+        self.assertFalse(passed)
+        self.assertAlmostEqual(score, 0.5, places=2)
+
+    def test_multiple_passing_assertions(self) -> None:
+        passed, score, _ = _grade_code(
+            "done: 42 items processed",
+            {"assertions": ["'done' in output", "len(output) > 5", "'42' in output"]},
+        )
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
+
+    def test_empty_assertions_fails(self) -> None:
+        passed, score, feedback = _grade_code("anything", {"assertions": []})
+        self.assertFalse(passed)
+        self.assertIn("non-empty", feedback)
+
+    def test_missing_assertions_key_fails(self) -> None:
+        passed, score, feedback = _grade_code("anything", {})
+        self.assertFalse(passed)
+        self.assertIn("non-empty", feedback)
+
+    def test_assertion_error_counts_as_failure(self) -> None:
+        # division by zero raises at eval time → should count as failed, not crash
+        passed, score, feedback = _grade_code(
+            "output",
+            {"assertions": ["1 / 0 > 0"]},
+        )
+        self.assertFalse(passed)
+        self.assertIn("ERROR", feedback)
+
+    def test_context_variables_available(self) -> None:
+        ctx = {"tool_calls": ["bash", "edit"], "duration_ms": 500}
+        passed, score, _ = _grade_code(
+            "done",
+            {"assertions": ["len(tool_calls) == 2", "duration_ms > 0"]},
+            ctx=ctx,
+        )
+        self.assertTrue(passed)
+
+    def test_re_module_available(self) -> None:
+        passed, score, _ = _grade_code(
+            "version: 1.2.3",
+            {"assertions": ["bool(re.search(r'version: \\d+\\.\\d+', output))"]},
+        )
+        self.assertTrue(passed)
+
+    def test_run_graders_dispatches_code_type(self) -> None:
+        spec = [{"type": "code", "name": "has-content",
+                 "config": {"assertions": ["len(output) > 0"]}}]
+        results = _run_graders("non-empty response", spec, "gpt-4o-mini", "")
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["type"], "code")
+        self.assertTrue(results[0]["pass"])
+
+
+# ── _grade_action_sequence ─────────────────────────────────────────────────────
+
+
+class ActionSequenceGraderTests(unittest.TestCase):
+
+    def _ctx(self, tool_calls: list) -> dict:
+        return {"tool_calls": tool_calls}
+
+    def test_exact_match_passes(self) -> None:
+        ctx = self._ctx(["bash", "edit", "bash"])
+        passed, score, _ = _grade_action_sequence(
+            {"expected_actions": ["bash", "edit", "bash"], "matching_mode": "exact_match"},
+            ctx,
+        )
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
+
+    def test_exact_match_different_sequence_fails(self) -> None:
+        ctx = self._ctx(["edit", "bash"])
+        passed, score, _ = _grade_action_sequence(
+            {"expected_actions": ["bash", "edit"], "matching_mode": "exact_match"},
+            ctx,
+        )
+        self.assertFalse(passed)
+
+    def test_in_order_match_allows_extras(self) -> None:
+        ctx = self._ctx(["bash", "view", "edit", "report"])
+        passed, score, _ = _grade_action_sequence(
+            {"expected_actions": ["bash", "edit"], "matching_mode": "in_order_match"},
+            ctx,
+        )
+        self.assertTrue(passed)
+
+    def test_in_order_match_wrong_order_fails(self) -> None:
+        ctx = self._ctx(["edit", "bash"])
+        passed, score, _ = _grade_action_sequence(
+            {"expected_actions": ["bash", "edit"], "matching_mode": "in_order_match"},
+            ctx,
+        )
+        self.assertFalse(passed)
+
+    def test_any_order_match_passes(self) -> None:
+        ctx = self._ctx(["edit", "bash", "view"])
+        passed, score, _ = _grade_action_sequence(
+            {"expected_actions": ["bash", "edit"], "matching_mode": "any_order_match"},
+            ctx,
+        )
+        self.assertTrue(passed)
+
+    def test_any_order_frequency_requirement(self) -> None:
+        # Expected has 2x bash; actual has only 1x bash → should fail
+        ctx = self._ctx(["bash", "edit"])
+        passed, score, _ = _grade_action_sequence(
+            {"expected_actions": ["bash", "bash", "edit"], "matching_mode": "any_order_match"},
+            ctx,
+        )
+        self.assertFalse(passed)
+
+    def test_no_tool_calls_in_context_fails_gracefully(self) -> None:
+        passed, score, feedback = _grade_action_sequence(
+            {"expected_actions": ["bash"], "matching_mode": "in_order_match"},
+        )
+        self.assertFalse(passed)
+        self.assertIn("no tool_calls", feedback)
+
+    def test_unknown_mode_returns_error(self) -> None:
+        ctx = self._ctx(["bash"])
+        passed, score, feedback = _grade_action_sequence(
+            {"expected_actions": ["bash"], "matching_mode": "fuzzy"},
+            ctx,
+        )
+        self.assertFalse(passed)
+        self.assertIn("unknown matching_mode", feedback)
+
+    def test_dict_tool_calls_normalised(self) -> None:
+        ctx = self._ctx([{"tool": "bash"}, {"tool": "edit"}])
+        passed, score, _ = _grade_action_sequence(
+            {"expected_actions": ["bash", "edit"], "matching_mode": "exact_match"},
+            ctx,
+        )
+        self.assertTrue(passed)
+
+    def test_run_graders_dispatches_action_sequence_type(self) -> None:
+        spec = [{
+            "type": "action_sequence",
+            "name": "used-bash",
+            "config": {"expected_actions": ["bash"], "matching_mode": "in_order_match"},
+        }]
+        results = _run_graders(
+            "ignored",
+            spec,
+            "gpt-4o-mini",
+            "",
+            ctx={"tool_calls": ["bash", "edit"]},
+        )
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["type"], "action_sequence")
+        self.assertTrue(results[0]["pass"])
+
+
+# ── _grade_tool_constraint ─────────────────────────────────────────────────────
+
+
+class ToolConstraintGraderTests(unittest.TestCase):
+
+    def _ctx(self, calls: list) -> dict:
+        return {"tool_calls": calls}
+
+    def test_expect_tool_present_passes(self) -> None:
+        ctx = self._ctx([{"tool": "bash", "command": "azd up"}])
+        passed, score, _ = _grade_tool_constraint(
+            {"expect_tools": [{"tool": "bash"}]},
+            ctx,
+        )
+        self.assertTrue(passed)
+
+    def test_expect_tool_absent_fails(self) -> None:
+        ctx = self._ctx([{"tool": "view"}])
+        passed, score, _ = _grade_tool_constraint(
+            {"expect_tools": [{"tool": "bash"}]},
+            ctx,
+        )
+        self.assertFalse(passed)
+
+    def test_reject_tool_absent_passes(self) -> None:
+        ctx = self._ctx([{"tool": "view"}])
+        passed, score, _ = _grade_tool_constraint(
+            {"reject_tools": [{"tool": "bash", "command_pattern": "rm\\s+-rf"}]},
+            ctx,
+        )
+        self.assertTrue(passed)
+
+    def test_reject_tool_present_fails(self) -> None:
+        ctx = self._ctx([{"tool": "bash", "command": "rm -rf /tmp"}])
+        passed, score, _ = _grade_tool_constraint(
+            {"reject_tools": [{"tool": "bash", "command_pattern": "rm\\s+-rf"}]},
+            ctx,
+        )
+        self.assertFalse(passed)
+
+    def test_command_pattern_filters_correctly(self) -> None:
+        ctx = self._ctx([{"tool": "bash", "command": "echo hello"}])
+        # command_pattern doesn't match "azd up"
+        passed, score, _ = _grade_tool_constraint(
+            {"expect_tools": [{"tool": "bash", "command_pattern": "azd\\s+up"}]},
+            ctx,
+        )
+        self.assertFalse(passed)
+
+    def test_partial_scoring(self) -> None:
+        ctx = self._ctx([{"tool": "bash"}])
+        # Expect both bash and edit; only bash present → 1/2
+        passed, score, _ = _grade_tool_constraint(
+            {"expect_tools": [{"tool": "bash"}, {"tool": "edit"}]},
+            ctx,
+        )
+        self.assertFalse(passed)
+        self.assertAlmostEqual(score, 0.5, places=2)
+
+    def test_empty_config_fails(self) -> None:
+        passed, score, feedback = _grade_tool_constraint({})
+        self.assertFalse(passed)
+        self.assertIn("required", feedback)
+
+    def test_no_tool_calls_expect_fails(self) -> None:
+        passed, score, _ = _grade_tool_constraint(
+            {"expect_tools": [{"tool": "bash"}]},
+        )
+        self.assertFalse(passed)
+
+    def test_no_tool_calls_reject_passes(self) -> None:
+        # No tool calls means no forbidden tools were used
+        passed, score, _ = _grade_tool_constraint(
+            {"reject_tools": [{"tool": "bash"}]},
+        )
+        self.assertTrue(passed)
+
+    def test_run_graders_dispatches_tool_constraint_type(self) -> None:
+        spec = [{
+            "type": "tool_constraint",
+            "name": "used-bash",
+            "config": {"expect_tools": [{"tool": "bash"}]},
+        }]
+        results = _run_graders(
+            "ignored",
+            spec,
+            "gpt-4o-mini",
+            "",
+            ctx={"tool_calls": [{"tool": "bash"}]},
+        )
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["type"], "tool_constraint")
         self.assertTrue(results[0]["pass"])
 
 

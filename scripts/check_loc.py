@@ -90,13 +90,15 @@ WARN_LIMIT_OVERRIDES = {
 
     # ── xanadEval tool and test modules ───────────────────────────────────────────
     # _common.py: grew with retry logic, new grader types, and extended _run_graders dispatch.
-    "tools/xanadEval/_common.py": 520,
+    "tools/xanadEval/_common.py": 560,
+    # graders_ext module: trigger/file/diff/code/action_sequence/tool_constraint graders.
+    "tools/xanadEval/_graders_ext.py": 480,
     # graders test: grew with new json_schema and program grader test classes.
     "tests/tools/test_xanadEval_graders.py": 380,
     # runtime test: grew with RetryTests, ExpectedFieldTests, TagsFilterTests.
     "tests/tools/test_xanadEval_runtime.py": 510,
-    # graders_ext test: trigger, file, diff grader unit tests.
-    "tests/tools/test_xanadEval_graders_ext.py": 350,
+    # graders_ext test: trigger, file, diff, code, action_sequence, tool_constraint tests.
+    "tests/tools/test_xanadEval_graders_ext.py": 560,
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.
@@ -116,13 +118,15 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # xanadEval _common.py: grew with retry logic in _call_model, text/behavior grader
     # overhauls (AND semantics, not_contains, regex_match/not_match, partial scoring,
     # min_tokens), new grader types (_grade_json_schema, _grade_program), and extended
-    # _run_graders dispatch for trigger/file/diff via _graders_ext.
-    "tools/xanadEval/_common.py": 560,
+    # _run_graders dispatch for trigger/file/diff/code/action_sequence/tool_constraint.
+    "tools/xanadEval/_common.py": 600,
+    # xanadEval _graders_ext.py: all six extended grader types.
+    "tools/xanadEval/_graders_ext.py": 550,
     # xanadEval runtime tests: grew with RetryTests, ExpectedFieldTests, TagsFilterTests
     # covering the new _call_model retry, expected task field, and --tags filter features.
     "tests/tools/test_xanadEval_runtime.py": 540,
-    # graders_ext tests: TriggerGraderTests, FileGraderTests, DiffGraderTests.
-    "tests/tools/test_xanadEval_graders_ext.py": 400,
+    # graders_ext tests: all six extended grader unit test classes.
+    "tests/tools/test_xanadEval_graders_ext.py": 700,
 }
 
 
