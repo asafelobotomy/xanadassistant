@@ -5,6 +5,7 @@ prompt: |
 expected:
   - "Debugger"
   - "filesystem"
+  - "read_file"
   - "runCommands"
 tags:
   - basic

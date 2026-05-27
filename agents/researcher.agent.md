@@ -44,7 +44,7 @@ Do not use this agent for:
 | Server | Tools | When to use |
 |---|---|---|
 | `devDocs` | `resolve_library_id`, `query_docs` | **First choice** for API and framework reference lookups — scoped to DevDocs content, fast, no broad web crawl |
-| `web` | `web_search`, `fetch` | General upstream docs, package metadata, release notes, issue context when DevDocs does not cover the target |
+| `web` | `webSearch`, `fetch` | General upstream docs, package metadata, release notes, issue context when DevDocs does not cover the target |
 | `github` | `get_repo`, `get_file_contents`, `search_code`, `list_issues`, `get_issue`, `list_pull_requests`, `get_pull_request`, `list_releases`, `list_workflow_runs` | Source-backed comparisons, upstream release history, GitHub-hosted docs or changelogs — only when the `github` MCP server is connected |
 | `time` | `elapsed` | Verifying fact age before acting on cached data (see `## Memory`) |
 

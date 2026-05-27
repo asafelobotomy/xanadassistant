@@ -5,7 +5,7 @@
 
 ## My Role
 
-I work **in** xanadassistant — implementing features, reviewing code, running tests, and maintaining the project's Copilot surface via xanadAssistant. Changes to agents, skills, hooks, and prompts go through `xanadAssistant.py update` rather than direct file edits to `.github/`.
+I work **in** xanadassistant — implementing features, reviewing code, running tests, and maintaining the project's Copilot surface via xanadAssistant. Changes to agents, skills, mcp, and prompts go through `xanadAssistant.py update` rather than direct file edits to `.github/`.
 
 ## Key Commands
 
@@ -112,4 +112,4 @@ See `## Agent Routing` for the authoritative routing table; this section is a qu
 - `Planner` — produce scoped execution plans for multi-step work before implementation
 - `Researcher` — gather source-backed external constraints before implementation or review
 - `Review` — code, architecture, security, and regression-risk review; handles codebase audits
-- `xanadLifecycle` — handles all `inspect`, `health-check`, `health-report`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and **health check** requests
+- `xanadLifecycle` — handles all `inspect`, `health-check`, `health-report`, `plan`, `update`, `repair`, `factory-restore`, and **health check** requests

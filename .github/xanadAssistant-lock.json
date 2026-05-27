@@ -2,17 +2,17 @@
   "schemaVersion": "0.1.0",
   "package": {
     "name": "xanadAssistant",
-    "packageRoot": "/mnt/SteamLibrary/git/xanadassistant",
+    "packageRoot": "/home/solon/Documents/git/repos/xanadassistant",
     "source": "github:asafelobotomy/xanadassistant",
     "ref": "main"
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:5054fa5edfd9472e405379ffe99b2c453ecbc85abc702799746601db7afc801b"
+    "hash": "sha256:04ad40cb08df84b77c39183a8ce3e5812ce1c1d5a4ce09161b08a757325dd72a"
   },
   "timestamps": {
-    "appliedAt": "2026-05-25T22:23:38Z",
-    "updatedAt": "2026-05-25T22:23:38Z"
+    "appliedAt": "2026-05-27T10:44:22Z",
+    "updatedAt": "2026-05-27T10:44:22Z"
   },
   "selectedPacks": [],
   "profile": "balanced",

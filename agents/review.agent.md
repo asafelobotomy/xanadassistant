@@ -23,6 +23,7 @@ Do not use this agent for:
 
 ## On every invocation
 
+0. Call `memory_dump(agent="review")` before using any tools (see `## Memory`).
 1. **Read first** — open every file in scope before writing any finding. Do not review from memory or partial reads.
 2. **Stay read-only** — do not edit files during review. Produce findings; let the user or the main agent decide what to apply. When using `runCommands`, limit to read-only operations (test runs to confirm findings, `grep`, `cat`, narrow diffs); do not run commands that write to the filesystem, install packages, or mutate repository state.
 3. **Scope clearly** — if the request is broad ("review the codebase"), ask for a specific focus area before proceeding.
@@ -56,6 +57,8 @@ For each finding, report:
 
 By default, report all findings at Advisory and above. Prioritise Critical and High. For broad-scope requests, ask the user to narrow the focus before proceeding.
 
+When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for read-only inspection over `runCommands`.
+
 ## Architectural review
 
 When the scope includes design or architecture:
@@ -64,8 +67,6 @@ When the scope includes design or architecture:
 2. Check whether the implementation honours them.
 3. Flag anywhere the abstraction boundary is leaking.
 4. Note any surface that will be hard to change later without breaking callers.
-
-When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for read-only inspection over `runCommands`.
 
 ## Summary
 
