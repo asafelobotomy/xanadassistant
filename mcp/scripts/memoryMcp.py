@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import sys
+import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -25,6 +26,7 @@ mcp = FastMCP("xanadMemory")
 _VALID_SCOPES = {"workspace", "project", "branch", "session"}
 _VALID_RULE_TYPES = {"never", "always", "prefer", "avoid"}
 _AGENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9\-]*$")
+_SESSION_ID: str = str(uuid.uuid4())
 
 from _memory_mcp_shared import (
     active_fact_where as _active_fact_where,
@@ -102,6 +104,17 @@ def _chk_confidence(v: float) -> float:
     return _shared_chk_confidence(v)
 
 
+def _parse_iso8601(value: str, field: str) -> str:
+    """Parse and normalise an ISO-8601 timestamp to canonical ``YYYY-MM-DDTHH:MM:SSZ``."""
+    for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S"):
+        try:
+            dt = datetime.strptime(value, fmt).replace(tzinfo=timezone.utc)
+            return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            continue
+    raise ValueError(f"{field!r} must be ISO-8601 UTC (e.g. '2026-01-15T00:00:00Z'); got {value!r}")
+
+
 @mcp.tool()
 def memory_set(
     agent: str, key: str, value: str,
@@ -109,9 +122,9 @@ def memory_set(
     source: str = "agent-discovered",
     ttl_days: float | None = None,
     valid_from: str | None = None, valid_until: str | None = None,
+    source_description: str | None = None,
 ) -> str:
     """Upsert a fact into advisory memory.
-
     Args:
         agent: Agent identifier (alphanumeric + hyphens).
         key: Fact key (e.g. 'ci.commands', 'repo.language').
@@ -120,14 +133,17 @@ def memory_set(
         confidence: 0.0–1.0 (1.0 = fully confident).
         source: Origin tag (default 'agent-discovered').
         ttl_days: If set, fact expires after this many days.
-        valid_from: ISO-8601; fact not applicable before this date.
-        valid_until: ISO-8601; soft validity end.
+        valid_from: ISO-8601 UTC; fact not applicable before this date.
+        valid_until: ISO-8601 UTC; soft validity end.
     """
     _chk_agent(agent)
     _chk_scope(scope)
     root = _workspace_root()
     branch = _advisory_branch(scope, root)
     confidence = _chk_confidence(confidence)
+    if valid_from is not None: valid_from = _parse_iso8601(valid_from, "valid_from")
+    if valid_until is not None: valid_until = _parse_iso8601(valid_until, "valid_until")
+    session_id = _SESSION_ID if scope == "session" else ""
     expires_at: str | None = None
     if ttl_days is not None:
         expires_at = (
@@ -138,17 +154,19 @@ def memory_set(
             """
             INSERT INTO advisory_memory
                 (agent, scope, branch, key, value, confidence, source,
-                 expires_at, valid_from, valid_until, invalidated_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,NULL)
+                 expires_at, valid_from, valid_until, invalidated_at,
+                 session_id, source_description)
+            VALUES (?,?,?,?,?,?,?,?,?,?,NULL,?,?)
             ON CONFLICT(agent,scope,branch,key) DO UPDATE SET
                 value=excluded.value, confidence=excluded.confidence,
                 source=excluded.source,
                 updated_at=strftime('%Y-%m-%dT%H:%M:%SZ','now'),
                 expires_at=excluded.expires_at, valid_from=excluded.valid_from,
-                valid_until=excluded.valid_until, invalidated_at=NULL
+                valid_until=excluded.valid_until, invalidated_at=NULL,
+                session_id=excluded.session_id, source_description=excluded.source_description
             """,
             (agent, scope, branch, key, value, confidence, source,
-             expires_at, valid_from, valid_until),
+             expires_at, valid_from, valid_until, session_id, source_description),
         )
         conn.commit()
     return f"Stored {key!r} for {agent!r} (scope={scope!r}, branch={branch!r})."
@@ -180,13 +198,14 @@ def memory_get(
             agents.append(a)
     if "shared" not in agents:
         agents.append("shared")
+    session_id_val = _SESSION_ID if scope == "session" else ""
     with closing(_get_conn(root)) as conn:
         for a in agents:
             row = conn.execute(
                 "SELECT * FROM advisory_memory "
-                "WHERE agent=? AND scope=? AND branch=? AND key=? "
+                "WHERE agent=? AND scope=? AND branch=? AND key=? AND session_id=? "
                 + _active_fact_where(),
-                (a, scope, branch, key),
+                (a, scope, branch, key, session_id_val),
             ).fetchone()
             if row:
                 return json.dumps(_row(row))
@@ -220,13 +239,14 @@ def memory_list(
         if a not in agents:
             agents.append(a)
     ph = ",".join("?" * len(agents))
+    session_id_val = _SESSION_ID if scope == "session" else ""
     with closing(_get_conn(root)) as conn:
         rows = conn.execute(
             f"SELECT agent, key, confidence, updated_at FROM advisory_memory "
-            f"WHERE agent IN ({ph}) AND scope=? AND branch=? "
+            f"WHERE agent IN ({ph}) AND scope=? AND branch=? AND session_id=? "
             f"{_active_fact_where()} "
             f"ORDER BY agent, key",
-            (*agents, scope, branch),
+            (*agents, scope, branch, session_id_val),
         ).fetchall()
     return _render_rows(
         rows,
@@ -246,11 +266,13 @@ def memory_remove(agent: str, key: str, scope: str = "workspace") -> str:
     """
     _chk_agent(agent)
     _chk_scope(scope)
-    branch = _advisory_branch(scope, _workspace_root())
-    with closing(_get_conn(_workspace_root())) as conn:
+    root = _workspace_root()
+    branch = _advisory_branch(scope, root)
+    session_id_val = _SESSION_ID if scope == "session" else ""
+    with closing(_get_conn(root)) as conn:
         cur = conn.execute(
-            "DELETE FROM advisory_memory WHERE agent=? AND scope=? AND branch=? AND key=?",
-            (agent, scope, branch, key),
+            "DELETE FROM advisory_memory WHERE agent=? AND scope=? AND branch=? AND key=? AND session_id=?",
+            (agent, scope, branch, key, session_id_val),
         )
         conn.commit()
         deleted = cur.rowcount
@@ -268,13 +290,15 @@ def memory_invalidate(agent: str, key: str, scope: str = "workspace") -> str:
     """
     _chk_agent(agent)
     _chk_scope(scope)
-    branch = _advisory_branch(scope, _workspace_root())
-    with closing(_get_conn(_workspace_root())) as conn:
+    root = _workspace_root()
+    branch = _advisory_branch(scope, root)
+    session_id_val = _SESSION_ID if scope == "session" else ""
+    with closing(_get_conn(root)) as conn:
         cur = conn.execute(
             "UPDATE advisory_memory "
             "SET invalidated_at=strftime('%Y-%m-%dT%H:%M:%SZ','now') "
-            "WHERE agent=? AND scope=? AND branch=? AND key=? AND invalidated_at IS NULL",
-            (agent, scope, branch, key),
+            "WHERE agent=? AND scope=? AND branch=? AND key=? AND session_id=? AND invalidated_at IS NULL",
+            (agent, scope, branch, key, session_id_val),
         )
         conn.commit()
         updated = cur.rowcount
@@ -289,8 +313,8 @@ def memory_dump(agent: str) -> str:
     """Return currently applicable rules and facts as JSON for one agent."""
     _chk_agent(agent)
     root = _workspace_root()
-    branch = _current_branch(root)
-    return _shared_memory_dump(agent, root, branch)
+    branch = _current_branch(root) or ""
+    return _shared_memory_dump(agent, root, branch, _SESSION_ID)
 
 
 @mcp.tool()
@@ -352,7 +376,9 @@ def diary_get(
     """Retrieve recent diary entries, newest first."""
     _chk_agent(agent)
     _chk_scope(scope)
-    return _shared_diary_get(agent, scope, limit, tag, _workspace_root())
+    root = _workspace_root()
+    branch = _advisory_branch(scope, root)
+    return _shared_diary_get(agent, scope, limit, tag, branch, root)
 
 
 @mcp.tool()
@@ -365,7 +391,10 @@ def diary_search(
     _chk_scope(scope)
     for a in (include_agents or []):
         _chk_agent(a)
-    return _shared_diary_search(agent, query, scope, limit, include_agents, _workspace_root())
+    root = _workspace_root()
+    branch = _advisory_branch(scope, root)
+    return _shared_diary_search(agent, query, scope, limit, include_agents, branch, root)
+
 
 if __name__ == "__main__":  # pragma: no cover
     mcp.run()

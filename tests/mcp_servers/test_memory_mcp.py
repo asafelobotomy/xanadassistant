@@ -174,5 +174,105 @@ class MemoryMcpTests(unittest.TestCase):
                 self.assertIn("Pruned", pruned)
 
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_diary_search_fts_special_chars_do_not_raise(self) -> None:
+        """FTS-reserved characters (hyphens, colons, OR) in user queries must not raise."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.diary_add("tester", "branch-specific: NOT a bug OR feature")
+                        result = module.diary_search("tester", "branch-specific: NOT a bug OR feature")
+                # FTS-special query must not raise; result is either a match or the no-entries string
+                self.assertIsInstance(result, str)
+
+    def test_prune_fractional_days_preserves_fresh_fact(self) -> None:
+        """memory_prune(max_age_days=0.4) must not delete a fact written seconds ago."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "fresh.key", "keep-me")
+                        module.memory_prune(agent="tester", scope="workspace", max_age_days=0.4)
+                        result = module.memory_get("tester", "fresh.key")
+                self.assertNotIn("No active fact", result, "Fresh fact must survive a 0.4-day prune")
+
+    def test_valid_from_rejects_malformed_timestamp(self) -> None:
+        """memory_set must raise ValueError for a malformed valid_from timestamp."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with self.assertRaisesRegex(ValueError, "valid_from"):
+                            module.memory_set("tester", "key", "val", valid_from="not-a-date")
+
+    def test_valid_until_rejects_malformed_timestamp(self) -> None:
+        """memory_set must raise ValueError for a malformed valid_until timestamp."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with self.assertRaisesRegex(ValueError, "valid_until"):
+                            module.memory_set("tester", "key", "val", valid_until="2026/01/15")
+
+    def test_diary_branch_scope_isolation(self) -> None:
+        """Branch-scoped diary entries must not be visible from a different branch."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with mock.patch.object(module, "_current_branch", return_value="feature/a"):
+                            module.diary_add("tester", "entry on feature/a", scope="branch")
+                        with mock.patch.object(module, "_current_branch", return_value="feature/b"):
+                            get_result = module.diary_get("tester", scope="branch")
+                            search_result = module.diary_search("tester", "feature", scope="branch")
+                self.assertIn("No diary entries", get_result)
+                self.assertIn("No diary entries", search_result)
+
+    def test_memory_dump_collapses_same_key_across_scopes(self) -> None:
+        """memory_dump must return one fact per key; higher scope wins (branch > workspace)."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with mock.patch.object(module, "_current_branch", return_value="main"):
+                            module.memory_set("tester", "shared.key", "workspace-value", scope="workspace")
+                            module.memory_set("tester", "shared.key", "branch-value", scope="branch")
+                            dump = json.loads(module.memory_dump("tester"))
+                key_facts = [f for f in dump["facts"] if f["key"] == "shared.key"]
+                self.assertEqual(len(key_facts), 1, "Expected exactly one fact per key in dump")
+                self.assertEqual(key_facts[0]["value"], "branch-value",
+                                 "Branch scope must win over workspace")
+
+    def test_session_scope_isolated_across_session_ids(self) -> None:
+        """Session-scoped facts must be invisible to a different session."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with mock.patch.object(module, "_SESSION_ID", "session-a"):
+                            module.memory_set("tester", "task.progress", "50%", scope="session")
+                        with mock.patch.object(module, "_SESSION_ID", "session-b"):
+                            get_result = module.memory_get("tester", "task.progress", scope="session")
+                            dump = json.loads(module.memory_dump("tester"))
+                self.assertIn("No active fact", get_result)
+                session_facts = [f for f in dump["facts"] if f["scope"] == "session"]
+                self.assertEqual(session_facts, [], "Other session's facts must not appear in dump")
+
+    def test_source_description_stored_and_returned(self) -> None:
+        """source_description passed to memory_set must appear in memory_get and memory_dump."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set(
+                            "tester", "annotated.key", "value",
+                            source_description="Inferred from CI error in turn 3",
+                        )
+                        get_result = json.loads(module.memory_get("tester", "annotated.key"))
+                        dump = json.loads(module.memory_dump("tester"))
+                self.assertEqual(get_result.get("source_description"),
+                                 "Inferred from CI error in turn 3")
+                dump_fact = next(f for f in dump["facts"] if f["key"] == "annotated.key")
+                self.assertEqual(dump_fact.get("source_description"),
+                                 "Inferred from CI error in turn 3")
+

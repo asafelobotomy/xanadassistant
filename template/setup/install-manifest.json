@@ -364,7 +364,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:4ba65a01027b1582fc1e525f030fb476b8ea30882e77286c046d38d42fbb1860"
+      "hash": "sha256:d0ca2961ac8068685af4990daa721e13419cc84f89241766d126f6b6ca2eafe1"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -538,7 +538,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:3c95a520a946f7372ddf47602f9e63ea46b346eddf91f26dd8508898ab515935"
+      "hash": "sha256:330a5f982e93fc739a6c0d556688f5e520ee6be80049f395caae05a17467e0df"
     },
     {
       "id": "mlops-hooks.mlopsModelCheck.py",

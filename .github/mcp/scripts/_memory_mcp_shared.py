@@ -13,6 +13,8 @@ def get_conn(root: str) -> sqlite3.Connection:
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(path))
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=5000")
     init_db(conn)
     return conn
 
@@ -78,7 +80,24 @@ def init_db(conn: sqlite3.Connection) -> None:
         """
     )
     conn.commit()
+    _run_schema_migrations(conn)
     migrate_fts_if_needed(conn)
+
+
+def _run_schema_migrations(conn: sqlite3.Connection) -> None:
+    """Add columns introduced in later schema versions to existing databases."""
+    cols = {row_info[1] for row_info in conn.execute("PRAGMA table_info(advisory_memory)")}
+    new_cols: list[tuple[str, str]] = [
+        ("session_id", "TEXT NOT NULL DEFAULT ''"),
+        ("source_description", "TEXT"),
+    ]
+    changed = False
+    for col, typedef in new_cols:
+        if col not in cols:
+            conn.execute(f"ALTER TABLE advisory_memory ADD COLUMN {col} {typedef}")
+            changed = True
+    if changed:
+        conn.commit()
 
 
 def migrate_fts_if_needed(conn: sqlite3.Connection) -> None:
@@ -133,7 +152,37 @@ def active_fact_where() -> str:
     )
 
 
-def memory_dump(agent: str, root: str, branch: str) -> str:
+_SCOPE_RANK: dict[str, int] = {"session": 0, "branch": 1, "project": 2, "workspace": 3}
+
+
+def _collapse_facts_by_key(facts: list[dict], primary_agent: str) -> list[dict]:
+    """For each unique key, keep one fact: primary agent wins over shared; higher scope wins."""
+    best: dict[str, dict] = {}
+    for fact in facts:
+        key = fact["key"]
+        if key not in best:
+            best[key] = fact
+            continue
+        challenger, champion = fact, best[key]
+        c_primary = challenger["agent"] == primary_agent
+        ch_primary = champion["agent"] == primary_agent
+        if c_primary and not ch_primary:
+            best[key] = challenger
+        elif not c_primary and ch_primary:
+            pass  # champion wins
+        elif _SCOPE_RANK.get(challenger["scope"], 99) < _SCOPE_RANK.get(champion["scope"], 99):
+            best[key] = challenger
+    result: list[dict] = []
+    seen: set[str] = set()
+    for f in facts:
+        k = f["key"]
+        if k not in seen and best.get(k) is f:
+            result.append(f)
+            seen.add(k)
+    return result
+
+
+def memory_dump(agent: str, root: str, branch: str, session_id: str = "") -> str:
     with closing(get_conn(root)) as conn:
         rules = rows(
             conn.execute(
@@ -147,9 +196,10 @@ def memory_dump(agent: str, root: str, branch: str) -> str:
             conn.execute(
                 """
                 SELECT agent, scope, branch, key, value, confidence, source,
-                       updated_at, expires_at, valid_from, valid_until
+                       updated_at, expires_at, valid_from, valid_until, source_description
                 FROM advisory_memory
                 WHERE agent IN (?, ?) AND branch IN (?, ?)
+                                AND (scope != 'session' OR session_id = ?)
                                 AND invalidated_at IS NULL
                                 AND (expires_at IS NULL OR expires_at > strftime('%Y-%m-%dT%H:%M:%SZ','now'))
                                 AND (valid_from IS NULL OR valid_from <= strftime('%Y-%m-%dT%H:%M:%SZ','now'))
@@ -160,10 +210,10 @@ def memory_dump(agent: str, root: str, branch: str) -> str:
                          datetime('now', '-1 day')) THEN 0 ELSE 1 END,
                     confidence DESC
                 """,
-                (agent, "shared", "", branch, agent),
+                (agent, "shared", "", branch, session_id, agent),
             ).fetchall()
         )
-    return json.dumps({"rules": rules, "facts": facts})
+    return json.dumps({"rules": rules, "facts": _collapse_facts_by_key(facts, agent)})
 
 
 def memory_prune(agent: str | None, scope: str | None, max_age_days: float | None, root: str) -> str:
@@ -178,10 +228,10 @@ def memory_prune(agent: str | None, scope: str | None, max_age_days: float | Non
         age_deleted = 0
         diary_deleted = 0
         if max_age_days is not None:
-            cutoff = max(0, round(float(max_age_days)))
+            cutoff_secs = max(0, int(float(max_age_days) * 86400))
             stale = conn.execute(
                 f"DELETE FROM advisory_memory WHERE updated_at <= "
-                f"strftime('%Y-%m-%dT%H:%M:%SZ',datetime('now','-{cutoff} days'))"
+                f"strftime('%Y-%m-%dT%H:%M:%SZ',datetime('now','-{cutoff_secs} seconds'))"
                 f"{extra}",
                 extra_params,
             )
@@ -190,7 +240,7 @@ def memory_prune(agent: str | None, scope: str | None, max_age_days: float | Non
                 row_in[0]
                 for row_in in conn.execute(
                     f"SELECT id FROM agent_diary WHERE recorded_at <= "
-                    f"strftime('%Y-%m-%dT%H:%M:%SZ',datetime('now','-{cutoff} days'))"
+                    f"strftime('%Y-%m-%dT%H:%M:%SZ',datetime('now','-{cutoff_secs} seconds'))"
                     f"{extra}",
                     extra_params,
                 ).fetchall()
@@ -255,21 +305,26 @@ def diary_add(agent: str, entry: str, scope: str, tags: str, branch: str, root: 
     return f"Diary entry #{diary_id} recorded for {agent!r}."
 
 
-def diary_get(agent: str, scope: str, limit: int, tag: str | None, root: str) -> str:
+def diary_get(agent: str, scope: str, limit: int, tag: str | None, branch: str, root: str) -> str:
+    branch_clause = "AND branch=? " if scope == "branch" else ""
+    branch_params: list[str] = [branch] if scope == "branch" else []
     with closing(get_conn(root)) as conn:
         if tag:
             rows_in = conn.execute(
                 "SELECT id, entry, tags, recorded_at FROM agent_diary "
                 "WHERE agent=? AND scope=? "
-                "  AND (',' || tags || ',' LIKE '%,' || ? || ',%') "
+                + branch_clause
+                + "  AND (',' || tags || ',' LIKE '%,' || ? || ',%') "
                 "ORDER BY recorded_at DESC, id DESC LIMIT ?",
-                (agent, scope, tag, limit),
+                (agent, scope, *branch_params, tag, limit),
             ).fetchall()
         else:
             rows_in = conn.execute(
                 "SELECT id, entry, tags, recorded_at FROM agent_diary "
-                "WHERE agent=? AND scope=? ORDER BY recorded_at DESC, id DESC LIMIT ?",
-                (agent, scope, limit),
+                "WHERE agent=? AND scope=? "
+                + branch_clause
+                + "ORDER BY recorded_at DESC, id DESC LIMIT ?",
+                (agent, scope, *branch_params, limit),
             ).fetchall()
     return render_rows(
         rows_in,
@@ -278,12 +333,16 @@ def diary_get(agent: str, scope: str, limit: int, tag: str | None, root: str) ->
     )
 
 
-def diary_search(agent: str, query: str, scope: str, limit: int, include_agents: list[str] | None, root: str) -> str:
+def diary_search(agent: str, query: str, scope: str, limit: int, include_agents: list[str] | None, branch: str, root: str) -> str:
+    # Wrap in FTS5 double-quoted phrase to neutralise special characters (-, :, OR, NOT, etc.).
+    safe_query = '"' + query.replace('"', '""') + '"'
     agents = [agent]
     for extra_agent in include_agents or []:
         if extra_agent not in agents:
             agents.append(extra_agent)
     placeholders = ",".join("?" * len(agents))
+    branch_clause = "AND branch=? " if scope == "branch" else ""
+    branch_params: list[str] = [branch] if scope == "branch" else []
     with closing(get_conn(root)) as conn:
         try:
             rows_in = conn.execute(
@@ -291,10 +350,11 @@ def diary_search(agent: str, query: str, scope: str, limit: int, include_agents:
                 f"FROM agent_diary d "
                 f"WHERE d.id IN ("
                 f"  SELECT id FROM agent_diary_fts "
-                f"  WHERE agent_diary_fts MATCH ? AND agent IN ({placeholders}) AND scope=?"
-                f") "
+                f"  WHERE agent_diary_fts MATCH ? AND agent IN ({placeholders}) AND scope=? "
+                + branch_clause
+                + f") "
                 f"ORDER BY d.recorded_at DESC, d.id DESC LIMIT ?",
-                (query, *agents, scope, limit),
+                (safe_query, *agents, scope, *branch_params, limit),
             ).fetchall()
         except sqlite3.OperationalError as exc:
             raise RuntimeError(f"FTS5 search error: {exc}") from exc
