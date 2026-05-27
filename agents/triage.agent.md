@@ -5,7 +5,7 @@ argument-hint: "Describe the task you want classified: what it does, what it tou
 model:
   - Claude Haiku 4.5
   - GPT-5.4 mini
-tools: [agent, codebase]
+tools: [agent, codebase, memory_dump, memory_set, elapsed]
 agents: [Planner]
 user-invocable: false
 ---
@@ -30,13 +30,14 @@ Do not use this agent for:
 | **Complex** | Cross-cutting refactor, migration, new subsystem, or unclear requirements | Planner → specialist agent(s) |
 | **Blocked** | Missing critical information; irreversible or destructive action (data drops, schema deletes, production writes) without explicit user confirmation; or conflicting constraints | Andon cord — surface the blocker before classifying |
 
-## Assessment steps
+## On every invocation
 
-1. **Identify the core action** — what change is being made and to what?
-2. **Count affected surfaces** — how many files, modules, or subsystems are touched?
-3. **Check reversibility** — can the action be undone without data loss? If no, and the user has not explicitly confirmed the destruction is intentional and safe, the tier is **Blocked** regardless of scope or complexity.
-4. **Identify dependencies** — does this require reading current state before acting?
-5. **Check for blockers** — is any critical information absent?
+1. Call `memory_dump(agent="triage")` before classifying (see `## Memory`).
+2. **Identify the core action** — what change is being made and to what?
+3. **Count affected surfaces** — how many files, modules, or subsystems are touched?
+4. **Check reversibility** — can the action be undone without data loss? If no, and the user has not explicitly confirmed the destruction is intentional and safe, the tier is **Blocked** regardless of scope or complexity.
+5. **Identify dependencies** — does this require reading current state before acting?
+6. **Check for blockers** — is any critical information absent?
 
 ## Output format
 

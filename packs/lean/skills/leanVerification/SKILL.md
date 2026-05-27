@@ -5,6 +5,8 @@ description: "Test and validation reporting — pass/fail only, with minimal out
 
 # Lean Verification
 
+> Skill metadata: version "1.0"; tags [lean, verification, testing]; recommended tools [].
+
 Use this skill in workspaces with the lean pack selected.
 
 Apply when running or reporting on tests, linters, type checkers, or any validation step.

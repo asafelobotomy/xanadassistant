@@ -1,0 +1,11 @@
+id: positive-trigger-2
+description: "Verify Explore agent triggers on dependency tracing and symbol discovery"
+prompt: |
+  Which agent should trace where a Python function is called across the codebase
+  and map which modules depend on it?
+expected:
+  - "Explore"
+  - "symbol"
+tags:
+  - smoke
+  - positive

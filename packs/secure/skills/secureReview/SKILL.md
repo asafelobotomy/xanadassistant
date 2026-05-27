@@ -5,6 +5,8 @@ description: "Security-focused code review against OWASP Top 10:2025 — finding
 
 # Secure Review
 
+> Skill metadata: version "1.0"; tags [security, owasp, review]; recommended tools [].
+
 Use this skill in workspaces with the secure pack selected.
 
 Perform security-focused code review against the OWASP Top 10:2025. For each finding, map it to a specific OWASP category.

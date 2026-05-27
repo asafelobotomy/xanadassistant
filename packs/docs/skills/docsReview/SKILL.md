@@ -5,6 +5,8 @@ description: "Documentation review checklist — accuracy, completeness, clarity
 
 # docsReview
 
+> Skill metadata: version "1.0"; tags [docs, review, accuracy, completeness]; recommended tools [].
+
 Use this skill when reviewing documentation before it is merged or published. Run through all tiers; report findings with the tier and a brief description.
 
 ## When to use

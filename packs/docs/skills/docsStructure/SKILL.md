@@ -5,6 +5,8 @@ description: "Documentation structure — Diátaxis framework, README anatomy, A
 
 # docsStructure
 
+> Skill metadata: version "1.0"; tags [docs, structure, diataxis]; recommended tools [].
+
 Use this skill when planning, scaffolding, or reorganising documentation. Apply it before drafting to choose the right document type and section order.
 
 ## When to use

@@ -5,6 +5,8 @@ description: "Context window hygiene — keep working context tight, current, an
 
 # Lean Context
 
+> Skill metadata: version "1.0"; tags [lean, context-management]; recommended tools [].
+
 Use this skill in workspaces with the lean pack selected.
 
 Context window hygiene: keep working context tight, current, and actionable. Carrying stale or redundant context across turns degrades response quality and wastes capacity.

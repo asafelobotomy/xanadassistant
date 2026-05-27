@@ -5,7 +5,7 @@ argument-hint: "Describe what to reorganise — e.g. move scripts into logical d
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, editFiles, runCommands, codebase, search, read_file, list_directory, search_files, file_info, write_file, create_directory, move_file, delete_file]
+tools: [agent, editFiles, runCommands, codebase, search, read_file, list_directory, search_files, file_info, write_file, create_directory, move_file, delete_file, memory_dump, memory_set, elapsed]
 agents: [Explore, Docs]
 user-invocable: false
 ---

@@ -7,5 +7,10 @@ graders:
     config:
       pattern: "(?i)(Correctness|Tests|API compat)"
 
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 800
+
 tasks:
   - "tasks/*.yaml"

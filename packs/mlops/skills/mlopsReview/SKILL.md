@@ -5,6 +5,8 @@ description: "ML code review checklist — data leakage, bias, reproducibility, 
 
 # mlopsReview
 
+> Skill metadata: version "1.0"; tags [mlops, review, safety]; recommended tools [].
+
 Use this skill when reviewing ML code, notebooks, pipeline definitions, or model deployment PRs.
 
 ## When to use

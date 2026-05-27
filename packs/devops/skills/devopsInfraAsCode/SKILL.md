@@ -5,6 +5,8 @@ description: "Infrastructure as Code conventions — naming, state management, m
 
 # devopsInfraAsCode
 
+> Skill metadata: version "1.0"; tags [devops, iac, terraform, pulumi]; recommended tools [].
+
 Use this skill when writing or reviewing Terraform, Pulumi, or similar IaC definitions.
 
 ## When to use
@@ -62,6 +64,8 @@ variable "environment" {
 - Always include `description` and `type`.
 - Use `validation` blocks for values with a bounded set.
 - Never use `default = ""` as a placeholder — omit `default` to make the variable required.
+
+## State and module discipline
 
 ### State management
 

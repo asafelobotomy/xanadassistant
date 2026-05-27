@@ -5,6 +5,8 @@ description: "Test double selection — stubs, mocks, fakes, and spies for test 
 
 # Test Doubles
 
+> Skill metadata: version "1.0"; tags [tdd, test-doubles, mocking]; recommended tools [].
+
 Use this skill in workspaces with the tdd pack selected.
 
 Choose the right test double for the job. The wrong double makes tests brittle; the right one makes them fast and deterministic.

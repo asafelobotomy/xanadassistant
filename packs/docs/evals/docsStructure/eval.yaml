@@ -7,5 +7,10 @@ graders:
     config:
       pattern: "(?i)(Tutorial|How-to|Reference|Explanation|Diátaxis)"
 
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 800
+
 tasks:
   - "tasks/*.yaml"

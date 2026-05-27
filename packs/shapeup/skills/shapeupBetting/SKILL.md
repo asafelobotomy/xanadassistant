@@ -1,11 +1,11 @@
 ---
 name: shapeupBetting
-description: >
-  Run or participate in a Shape Up betting table. Use when evaluating pitches for the next cycle,
-  setting appetite, sizing teams, or deciding which pitches to bet on.
+description: "Run or participate in a Shape Up betting table. Use when evaluating pitches for the next cycle, setting appetite, sizing teams, or deciding which pitches to bet on."
 ---
 
 # Shape Up — Betting Table
+
+> Skill metadata: version "1.0"; tags [shapeup, betting-table, product-management]; recommended tools [].
 
 The betting table is the decision point before each cycle. A small group (typically senior leaders
 or decision-makers) reviews the available pitches and decides which ones to bet cycle time on.

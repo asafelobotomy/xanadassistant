@@ -5,6 +5,8 @@ description: "OSS code review discipline — PR review standards, review comment
 
 # ossCodeReview
 
+> Skill metadata: version "1.0"; tags [oss, code-review, pr]; recommended tools [].
+
 Use this skill when reviewing OSS pull requests or when a maintainer needs structured guidance on what to check before merging.
 
 ## When to use

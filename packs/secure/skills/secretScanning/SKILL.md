@@ -5,6 +5,8 @@ description: "Secret scanning — detect credential leakage before version contr
 
 # Secret Scanning
 
+> Skill metadata: version "1.0"; tags [security, secrets, scanning]; recommended tools [].
+
 Use this skill in workspaces with the secure pack selected.
 
 Detect credential leakage before it reaches version control. Secrets committed to a repository are effectively public, even in private repos.

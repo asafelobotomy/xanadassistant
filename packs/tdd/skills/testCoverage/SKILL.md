@@ -5,6 +5,8 @@ description: "Test coverage analysis — coverage as diagnostic tool, gap identi
 
 # Test Coverage
 
+> Skill metadata: version "1.0"; tags [tdd, coverage, testing]; recommended tools [].
+
 Use this skill in workspaces with the tdd pack selected.
 
 Coverage is a diagnostic tool, not a goal. High line coverage with weak assertions is worse than targeted coverage with strong assertions.

@@ -5,6 +5,8 @@ description: "Red-Green-Refactor cycle discipline — one failing test at a time
 
 # TDD Cycle
 
+> Skill metadata: version "1.0"; tags [tdd, red-green-refactor]; recommended tools [].
+
 Use this skill in workspaces with the tdd pack selected.
 
 Apply the Red-Green-Refactor cycle as the fundamental unit of work. Each cycle is complete and verifiable before the next begins.

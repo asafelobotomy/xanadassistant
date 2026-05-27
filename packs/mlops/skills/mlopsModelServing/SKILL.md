@@ -5,6 +5,8 @@ description: "Model serving — registry, versioning, A/B testing, canary deploy
 
 # mlopsModelServing
 
+> Skill metadata: version "1.0"; tags [mlops, model-serving, deployment, drift]; recommended tools [].
+
 Use this skill when deploying, versioning, or monitoring ML models in production.
 
 ## When to use

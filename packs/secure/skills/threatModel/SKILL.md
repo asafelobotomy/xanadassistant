@@ -5,6 +5,8 @@ description: "STRIDE threat modeling — trust boundaries, asset identification,
 
 # Threat Model
 
+> Skill metadata: version "1.0"; tags [security, threat-modeling, stride]; recommended tools [].
+
 Use this skill in workspaces with the secure pack selected.
 
 Produce lightweight STRIDE threat models for features and modules. A threat model identifies what can go wrong before writing code, not after.

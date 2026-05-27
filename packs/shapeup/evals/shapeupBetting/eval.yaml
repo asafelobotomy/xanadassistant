@@ -7,5 +7,10 @@ graders:
     config:
       pattern: "(?i)(betting table|appetite|pitch)"
 
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 800
+
 tasks:
   - "tasks/*.yaml"

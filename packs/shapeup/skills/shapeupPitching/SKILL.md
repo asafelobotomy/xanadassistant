@@ -1,11 +1,11 @@
 ---
 name: shapeupPitching
-description: >
-  Write, review, and refine Shape Up pitches. Use when drafting a new pitch, critiquing an
-  existing pitch for completeness, or preparing a pitch for the betting table.
+description: "Write, review, and refine Shape Up pitches. Use when drafting a new pitch, critiquing an existing pitch for completeness, or preparing a pitch for the betting table."
 ---
 
 # Shape Up — Pitching
+
+> Skill metadata: version "1.0"; tags [shapeup, pitching, product-management]; recommended tools [].
 
 Shape Up pitches are the unit of work proposed for a betting table. A pitch answers five questions
 before any cycle time is committed.

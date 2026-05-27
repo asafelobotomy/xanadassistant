@@ -5,7 +5,7 @@ argument-hint: "Describe the git task: commit, push, preflight, PR, branch, tag,
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_stash, git_stash_pop, git_stash_apply, git_stash_drop, git_tag, git_push_tag, git_push]
+tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_stash, git_stash_pop, git_stash_apply, git_stash_drop, git_tag, git_push_tag, git_push, memory_dump, memory_set, elapsed]
 agents: [Explore, Review, Debugger]
 user-invocable: true
 ---
@@ -19,12 +19,14 @@ Do not use this agent for:
 - running tests or interpreting test failures unrelated to git
 - dependency management or package installation
 - code review or architecture analysis
+
 ## On every invocation
 
-1. **Determine scope** from the user's request before doing anything.
-2. **Never push silently** as a side-effect of committing — push only when the user requests it.
-3. **Confirm before destructive operations** — force-push, tag creation, release creation, and hard resets all require explicit user confirmation.
-4. **Use `askQuestions`** for staging choices, branch confirmations, version strings, and residual-risk acceptance.
+1. Call `memory_dump(agent="commit")` before using any tools (see `## Memory`).
+2. **Determine scope** from the user's request before doing anything.
+3. **Never push silently** as a side-effect of committing — push only when the user requests it.
+4. **Confirm before destructive operations** — force-push, tag creation, release creation, and hard resets all require explicit user confirmation.
+5. **Use `askQuestions`** for staging choices, branch confirmations, version strings, and residual-risk acceptance.
 
 ## Risk tiers
 

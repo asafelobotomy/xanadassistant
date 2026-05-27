@@ -19,9 +19,17 @@ description: "Conventions for SKILL.md files in this workspace — frontmatter, 
 - `## Verify` must be a Markdown checklist (`- [ ]` items); each item must reference an observable outcome, not merely a completed step (e.g., "`inspect` output has been read this session", not "Step 3 was completed").
 - The skill body must open with a metadata comment block: `> Skill metadata: version "X.Y"; tags [...]; recommended tools [...]`. Start new skills at `version "1.0"` and increment the minor version with each behavioural change. List only tools the skill's steps explicitly call in `recommended tools`.
 
+## Skill types
+
+Skills are either **procedural** or **reference**. Declare the type with the body's opening sentence or context:
+
+- **Procedural skills** describe a step-by-step workflow. Use `## Steps` or `## Module N` headings. Steps must be numbered; each step must have a clear action and either a success criterion or an explicit fallback path. xanadEval's `workflow structure present` check applies to procedural skills.
+- **Reference skills** provide domain conventions, decision tables, and checklists — not a linear procedure. Use domain-specific section headings (e.g. `## Pipeline stage model`, `## STRIDE categories`). xanadEval's `workflow structure present` check does not apply to reference skills; `module-count` warnings are advisory only.
+
+Pack skills under `packs/*/skills/` are typically reference skills unless they contain a `## Steps` section.
+
 ## Authoring rules
 
-- Steps must be numbered; each step must have a clear action and either a success criterion or an explicit fallback path.
 - Multi-module skills must contain 2–6 modules or top-level sections (xanadEval `module-count` threshold).
 - External dependencies (MCP servers, other agents, APIs) must each have a documented failure path or fallback.
 - Do not embed agent routing decisions inside a skill — a skill describes a procedure, not a routing table.

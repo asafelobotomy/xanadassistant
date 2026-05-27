@@ -1,12 +1,11 @@
 ---
 name: testArchitecture
-description: >
-  Test isolation, modular test design, and test boundary conventions. Use when structuring a
-  test suite, separating unit from integration tests, or deciding what a test should and should
-  not cross as a boundary.
+description: "Test isolation, modular test design, and test boundary conventions. Use when structuring a test suite, separating unit from integration tests, or deciding what a test should and should not cross as a boundary."
 ---
 
 # Test Architecture
+
+> Skill metadata: version "1.0"; tags [tdd, test-architecture, test-isolation]; recommended tools [].
 
 A well-structured test suite is maintainable, fast to run, and clearly signals what broke and
 why. Poor test architecture creates slow, brittle, or duplicated suites that developers learn

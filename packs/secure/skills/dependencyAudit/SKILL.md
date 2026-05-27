@@ -5,6 +5,8 @@ description: "Dependency vulnerability audit — OSV.dev queries for lockfile pa
 
 # Dependency Audit
 
+> Skill metadata: version "1.0"; tags [security, dependencies, audit, osv]; recommended tools [].
+
 Use this skill in workspaces with the secure pack selected.
 
 Query known CVEs for project dependencies using the `secureOsv` hook, which wraps the OSV.dev API (public, no auth required).

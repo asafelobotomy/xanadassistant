@@ -1,11 +1,11 @@
 ---
 name: shapeupCycleWork
-description: >
-  Execute and track work during a Shape Up cycle. Use when managing in-cycle scope, using hill
-  charts, applying scope hammering, or deciding whether to invoke the circuit breaker.
+description: "Execute and track work during a Shape Up cycle. Use when managing in-cycle scope, using hill charts, applying scope hammering, or deciding whether to invoke the circuit breaker."
 ---
 
 # Shape Up — Cycle Execution
+
+> Skill metadata: version "1.0"; tags [shapeup, cycle-work, hill-charts]; recommended tools [].
 
 A Shape Up cycle is a fixed time box (typically 6 weeks) in which a team builds the pitched
 solution. The team owns how they get there; the key disciplines are scope management and progress

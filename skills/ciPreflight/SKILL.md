@@ -43,23 +43,22 @@ cannot be reproduced locally.
 For each kept workflow file, collect every `jobs.<id>.steps[]` entry that has
 a `run:` key.
 
-**Exclude** a step if its `run:` block:
+**Include** a step only when its `run:` block is a self-contained interpreter or
+tool invocation that operates on local files (e.g. `python3 ...`, `npm test`,
+`make check`, `go test ./...`, `cargo test`, `./gradlew test`).
+
+**Omit** a step when its `run:` block meets any of these conditions:
 - References `${{ secrets.* }}` — requires external credentials
-- References environment variables that are only available on GitHub Actions
-  runners (e.g. `GITHUB_RUN_ID`, `RUNNER_TOOL_CACHE`)
-- Invokes `actions/deploy`, upload-artifact, download-artifact, or any step
-  that publishes or transfers artefacts
+- References environment variables only available on GitHub Actions runners
+  (e.g. `GITHUB_RUN_ID`, `RUNNER_TOOL_CACHE`)
+- Invokes upload-artifact, download-artifact, or any step that publishes or
+  transfers artefacts
 - Calls a deployment or release tool (`gh release`, `npm publish`,
   `docker push`, etc.)
 
-**Include** a step if its `run:` is a self-contained interpreter or tool
-invocation that operates on local files (e.g. `python3 ...`, `npm test`,
-`make check`, `go test ./...`, `cargo test`, `./gradlew test`).
-
 ### 2. Scope to staged changes
 
-If Step 1 found no usable run steps, skip this step and proceed directly to
-Step 3.
+If Step 1 found no usable run steps, proceed directly to Step 3.
 
 Run `git diff --cached --name-only` with a terminal tool to get the staged file
 list.
@@ -86,7 +85,7 @@ search and file-reading tools:
 | `Cargo.toml` | `cargo test` |
 | `Gemfile` with rspec | `bundle exec rspec` |
 
-If fallback detection still finds nothing credible, stop and report that no
+If fallback detection finds nothing credible, stop and report that no
 locally-executable CI-equivalent command could be derived from the workspace.
 
 ### 4. Order checks cheapest-first
@@ -114,7 +113,7 @@ Run each command with a terminal tool. For each result:
 | Stale generated artifact (exit nonzero and the output includes an explicit invocation of the form `python3 …generate`, `npm run generate`, or a similar regen tool) | Re-run the generator, explicitly `git add` regenerated outputs, then re-run the check |
 | Unit or lint failure | Delegate to `Debugger` with the exact failure output and staged file list; apply the minimal fix returned; re-run the failing check. If `Debugger` cannot isolate a fix, surface the raw failure output to the user and ask whether to block the commit or accept residual risk. |
 | Budget / LOC / format violation | Surface the exact violation output to the user; ask whether to fix now or accept residual risk before proceeding |
-| Template-safety violation (unresolved `{{}}` tokens in a template file) | Block — do not commit until resolved |
+| Template-safety violation (unresolved `{{}}` tokens in a template file) | Block the commit until resolved |
 | Step requires secrets or infra (detected mid-run) | Skip; note in summary — not a blocker |
 | Any other nonzero exit | Surface exact stdout + stderr; use `vscode_askQuestions` if user input is required |
 

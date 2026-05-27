@@ -7,5 +7,10 @@ graders:
     config:
       pattern: "(?i)(OWASP|A0[0-9]|Critical|High|Medium)"
 
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 800
+
 tasks:
   - "tasks/*.yaml"

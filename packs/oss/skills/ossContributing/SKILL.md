@@ -5,6 +5,8 @@ description: "OSS contributing workflow — CONTRIBUTING.md structure, DCO/CLA g
 
 # ossContributing
 
+> Skill metadata: version "1.0"; tags [oss, contributing, dco]; recommended tools [].
+
 Use this skill when a user asks about contribution workflows, CONTRIBUTING.md structure, or how to prepare a first contribution to an open-source project.
 
 ## When to use

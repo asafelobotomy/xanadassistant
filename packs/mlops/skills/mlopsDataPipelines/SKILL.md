@@ -5,6 +5,8 @@ description: "Data pipeline conventions — versioning, feature engineering disc
 
 # mlopsDataPipelines
 
+> Skill metadata: version "1.0"; tags [mlops, data-pipelines, dvc, leakage]; recommended tools [].
+
 Use this skill when designing, reviewing, or debugging ML data pipelines.
 
 ## When to use

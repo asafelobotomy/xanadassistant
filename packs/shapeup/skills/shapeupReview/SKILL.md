@@ -1,12 +1,11 @@
 ---
 name: shapeupReview
-description: >
-  Review pitches, cycle work, and betting table decisions for Shape Up compliance. Use when
-  auditing a pitch for completeness, reviewing in-cycle scope discipline, or validating that
-  a betting table decision meets Shape Up principles.
+description: "Review pitches, cycle work, and betting table decisions for Shape Up compliance. Use when auditing a pitch for completeness, reviewing in-cycle scope discipline, or validating that a betting table decision meets Shape Up principles."
 ---
 
 # Shape Up — Review
+
+> Skill metadata: version "1.0"; tags [shapeup, review, pitch-review]; recommended tools [].
 
 Shape Up review checks whether work follows the core Shape Up disciplines: bounded appetite,
 identified rabbit holes, explicit no-gos, and scope hammering during cycles.

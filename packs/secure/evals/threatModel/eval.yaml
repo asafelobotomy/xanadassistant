@@ -7,5 +7,10 @@ graders:
     config:
       pattern: "(?i)(STRIDE|trust boundary|mitigation|threat)"
 
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 800
+
 tasks:
   - "tasks/*.yaml"

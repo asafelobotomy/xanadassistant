@@ -5,6 +5,8 @@ description: "ML experiment tracking — reproducibility, hyperparameter discipl
 
 # mlopsExperiments
 
+> Skill metadata: version "1.0"; tags [mlops, experiments, reproducibility]; recommended tools [].
+
 Use this skill when designing, running, or reviewing machine learning experiments.
 
 ## When to use

@@ -5,6 +5,8 @@ description: "Andon cord protocol — defines when to stop and ask versus when t
 
 # Lean Andon
 
+> Skill metadata: version "1.0"; tags [lean, andon, blocker-protocol]; recommended tools [].
+
 Use this skill in workspaces with the lean pack selected.
 
 The **Andon cord** defines exactly when to stop and surface a question versus when to proceed. Pulling the cord too often wastes more time than proceeding and allowing correction.

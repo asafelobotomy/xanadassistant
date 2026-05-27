@@ -147,7 +147,9 @@ Identify gaps in the file's stated intent: scenarios that should be handled but 
 
 After completing the checklist, rate overall coverage Completeness (LLM-as-judge): **Complete / Gaps-present / Incomplete**. Gaps-present or Incomplete confirms coverage-gap findings. Also rate Scope coverage: is the file's scope well-defined, or does it bleed into adjacent agent territory? Output: `scope-coverage: [well-defined | bleeding] — <description>`. Bleeding scope is a Medium-severity coverage-gap finding.
 
-**Checklist — run for every file type:**
+### Universal coverage checklist
+
+Run for every file type:
 
 - [ ] At least one clear "happy path" is described from trigger to completion
 - [ ] At least one explicit failure or error path is described (what to do when a step cannot complete)
@@ -156,7 +158,7 @@ After completing the checklist, rate overall coverage Completeness (LLM-as-judge
 - [ ] Every external dependency (another agent, MCP server, external API) has a documented failure path
 - [ ] If the file declares a multi-step workflow, the last step has a defined termination condition
 
-**File-type-specific checks:**
+### File-type-specific checks
 
 *Agent files (`.agent.md`):*
 - [ ] Handoffs are defined for at least: scope-unclear, unexpected-failure, and out-of-domain cases

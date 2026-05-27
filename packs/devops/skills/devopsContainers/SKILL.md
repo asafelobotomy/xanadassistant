@@ -5,6 +5,8 @@ description: "Container and image discipline — Dockerfile best practices, mult
 
 # devopsContainers
 
+> Skill metadata: version "1.0"; tags [devops, containers, docker]; recommended tools [].
+
 Use this skill when writing or reviewing Dockerfiles, container compose files, or image-build pipelines.
 
 ## When to use

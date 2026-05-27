@@ -5,6 +5,8 @@ description: "OSS license guidance — choosing a license, LICENSE file format, 
 
 # ossLicensing
 
+> Skill metadata: version "1.0"; tags [oss, licensing, spdx]; recommended tools [].
+
 Use this skill when a user asks about OSS licensing: what license to choose, how to add a LICENSE file, how to check license compatibility, or how to use SPDX identifiers correctly.
 
 ## When to use

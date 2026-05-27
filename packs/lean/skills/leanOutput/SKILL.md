@@ -5,6 +5,8 @@ description: "Output discipline — lean factual responses with no filler, summa
 
 # Lean Output
 
+> Skill metadata: version "1.0"; tags [lean, output-format]; recommended tools [].
+
 ## When to use
 
 - Workspaces with the lean pack selected, when generating responses, summaries, receipts, or reports

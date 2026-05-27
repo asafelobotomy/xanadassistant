@@ -5,6 +5,8 @@ description: "DevOps review checklist — pipeline safety, secret hygiene, permi
 
 # devopsReview
 
+> Skill metadata: version "1.0"; tags [devops, review, deployment, safety]; recommended tools [].
+
 Use this skill when reviewing CI/CD pipelines, Dockerfiles, IaC definitions, deployment scripts, or infrastructure PRs.
 
 ## When to use

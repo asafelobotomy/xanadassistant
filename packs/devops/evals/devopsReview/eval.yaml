@@ -7,5 +7,10 @@ graders:
     config:
       pattern: "(?i)(secret:|rollback:|privilege:)"
 
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 800
+
 tasks:
   - "tasks/*.yaml"

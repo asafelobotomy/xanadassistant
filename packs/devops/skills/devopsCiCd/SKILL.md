@@ -5,6 +5,8 @@ description: "CI/CD pipeline patterns — GitHub Actions, stage design, environm
 
 # devopsCiCd
 
+> Skill metadata: version "1.0"; tags [devops, ci-cd, github-actions, pipelines]; recommended tools [].
+
 Use this skill when designing, reviewing, or debugging CI/CD pipelines.
 
 ## When to use

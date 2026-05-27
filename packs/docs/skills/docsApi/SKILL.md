@@ -5,6 +5,8 @@ description: "API and code documentation — docstring conventions, OpenAPI patt
 
 # docsApi
 
+> Skill metadata: version "1.0"; tags [docs, api-reference, docstrings]; recommended tools [].
+
 Use this skill when documenting code: functions, classes, REST endpoints, CLI commands, or configuration schemas.
 
 ## When to use

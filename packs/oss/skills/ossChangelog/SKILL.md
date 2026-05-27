@@ -5,6 +5,8 @@ description: "OSS changelog workflow — Keep a Changelog format, versioning dis
 
 # ossChangelog
 
+> Skill metadata: version "1.0"; tags [oss, changelog, conventional-commits]; recommended tools [].
+
 Use this skill when a user asks about maintaining a CHANGELOG, generating release notes, or formatting version entries.
 
 ## When to use

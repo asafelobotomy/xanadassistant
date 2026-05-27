@@ -5,6 +5,8 @@ description: "Documentation writing style — prose register, active voice, impe
 
 # docsStyle
 
+> Skill metadata: version "1.0"; tags [docs, style, prose]; recommended tools [].
+
 Use this skill when drafting or reviewing any user-facing documentation: READMEs, guides, API references, changelogs, or inline code comments.
 
 ## When to use
