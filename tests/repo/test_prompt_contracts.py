@@ -135,6 +135,41 @@ class PromptContractTests(unittest.TestCase):
         self.assertIn("`create_release` (GitHub MCP)", content)
         self.assertIn("`gh release create` via `runCommands` only when the `create_release` MCP tool is unavailable", content)
 
+    def test_cleaner_agent_declares_full_filesystem_mcp_toolkit(self) -> None:
+        tools = self._declared_tools("cleaner.agent.md")
+        for tool in ("read_file", "list_directory", "search_files", "file_info", "delete_file"):
+            self.assertIn(tool, tools, f"Cleaner must declare '{tool}' for filesystem MCP use")
+
+    def test_cleaner_agent_body_prefers_filesystem_mcp_over_runcommands(self) -> None:
+        content = (REPO_ROOT / "agents" / "cleaner.agent.md").read_text(encoding="utf-8")
+        self.assertIn("`read_file`", content)
+        self.assertIn("`search_files`", content)
+        self.assertIn("`list_directory`", content)
+        self.assertIn("`file_info`", content)
+        self.assertIn("`delete_file`", content)
+
+    def test_deps_agent_declares_filesystem_mcp_tools(self) -> None:
+        tools = self._declared_tools("deps.agent.md")
+        for tool in ("read_file", "list_directory", "search_files", "file_info"):
+            self.assertIn(tool, tools, f"Deps must declare '{tool}' for filesystem MCP use")
+
+    def test_deps_agent_body_prefers_filesystem_mcp_for_manifest_reads(self) -> None:
+        content = (REPO_ROOT / "agents" / "deps.agent.md").read_text(encoding="utf-8")
+        self.assertIn("`read_file`", content)
+        self.assertIn("`search_files`", content)
+        self.assertIn("filesystem` server is connected", content)
+
+    def test_xanadlifecycle_agent_declares_memory_and_elapsed_tools(self) -> None:
+        tools = self._declared_tools("xanadLifecycle.agent.md")
+        for tool in ("memory_dump", "memory_set", "elapsed"):
+            self.assertIn(tool, tools, f"xanadLifecycle must declare '{tool}'")
+
+    def test_xanadlifecycle_agent_declares_create_issue_for_health_check(self) -> None:
+        tools = self._declared_tools("xanadLifecycle.agent.md")
+        self.assertIn("create_issue", tools)
+        content = (REPO_ROOT / "agents" / "xanadLifecycle.agent.md").read_text(encoding="utf-8")
+        self.assertIn("`create_issue` via the `github` MCP server", content)
+
     def test_repo_copilot_instructions_use_canonical_preflight_before_commit(self) -> None:
         instruction_paths = [
             REPO_ROOT / "template" / "copilot-instructions.md",

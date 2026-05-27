@@ -83,6 +83,10 @@ WARN_LIMIT_OVERRIDES = {
     # ── MCP test modules ───────────────────────────────────────────────────────────
     "tests/mcp_servers/test_web_mcp.py": 420,
     "tests/mcp_servers/test_xanad_workspace_mcp_lifecycle.py": 280,
+
+    # ── Prompt contract test module ────────────────────────────────────────────────
+    # Grows with each new per-agent contract assertion; one test per invariant.
+    "tests/repo/test_prompt_contracts.py": 400,
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.

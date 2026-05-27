@@ -5,7 +5,7 @@ argument-hint: "Describe the dep task: scan, audit, update, search, install, uni
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, codebase, search, runCommands, askQuestions, query_osv, query_deps, memory_dump, memory_set, elapsed]
+tools: [agent, codebase, search, runCommands, askQuestions, read_file, list_directory, search_files, file_info, query_osv, query_deps, memory_dump, memory_set, elapsed]
 agents: [Explore, Researcher, Review]
 user-invocable: true
 ---
@@ -190,6 +190,7 @@ Proposed changes: <N> — awaiting your confirmation.
 - Do not upgrade across a breaking major version without flagging the changelog risk.
 - Do not remove a package without confirming it is not imported anywhere in the workspace.
 - When in doubt about a replacement, use `Researcher` to find source-backed evidence before recommending.
+- When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for reading manifests, discovering package files, and confirming import usage over `runCommands`. Reserve `runCommands` for package manager CLI operations (install, update, list, audit) that have no MCP equivalent.
 
 ---
 

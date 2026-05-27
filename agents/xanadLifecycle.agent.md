@@ -5,7 +5,7 @@ argument-hint: "Describe the lifecycle task: inspect, check, interview, plan set
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, codebase, search, runCommands, askQuestions, lifecycle_inspect, lifecycle_check, lifecycle_interview, lifecycle_plan_setup, lifecycle_setup, lifecycle_update, lifecycle_repair, lifecycle_factory_restore]
+tools: [agent, codebase, search, runCommands, askQuestions, lifecycle_inspect, lifecycle_check, lifecycle_interview, lifecycle_plan_setup, lifecycle_setup, lifecycle_update, lifecycle_repair, lifecycle_factory_restore, create_issue, memory_dump, memory_set, elapsed]
 agents: [Explore, Debugger, Planner]
 user-invocable: true
 ---
