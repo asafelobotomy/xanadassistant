@@ -4,6 +4,7 @@ Internal implementation detail — import ``xanadEval`` directly, not this modul
 """
 from __future__ import annotations
 
+import ast as _ast
 import json
 import re
 import subprocess
@@ -361,6 +362,46 @@ _CODE_SAFE_GLOBALS: dict = {
     "re": re,
 }
 
+# AST node types permitted in code grader assertion expressions.
+_ALLOWED_EXPR_NODES: frozenset[type] = frozenset({
+    _ast.Expression, _ast.BoolOp, _ast.BinOp, _ast.UnaryOp,
+    _ast.And, _ast.Or,
+    _ast.Add, _ast.Sub, _ast.Mult, _ast.Div, _ast.Mod, _ast.Pow,
+    _ast.FloorDiv, _ast.LShift, _ast.RShift, _ast.BitOr, _ast.BitXor, _ast.BitAnd,
+    _ast.UAdd, _ast.USub, _ast.Not, _ast.Invert,
+    _ast.Compare,
+    _ast.Eq, _ast.NotEq, _ast.Lt, _ast.LtE, _ast.Gt, _ast.GtE,
+    _ast.Is, _ast.IsNot, _ast.In, _ast.NotIn,
+    _ast.Call, _ast.Constant, _ast.Name,
+    _ast.List, _ast.Tuple, _ast.Set, _ast.Dict,
+    _ast.IfExp, _ast.Subscript, _ast.Slice,
+    _ast.ListComp, _ast.SetComp, _ast.DictComp, _ast.GeneratorExp,
+    _ast.comprehension, _ast.Attribute,
+    _ast.JoinedStr, _ast.FormattedValue,
+    _ast.Starred, _ast.Load, _ast.Store, _ast.Del,
+})
+
+
+def _validate_expr_ast(source: str) -> tuple[_ast.Expression | None, str | None]:
+    """Parse *source* as a single expression and validate it against the allowlist.
+
+    Returns ``(tree, None)`` on success or ``(None, error_message)`` on failure.
+    Dunder/private attribute access (names starting with ``_``) is blocked to
+    prevent object-graph escape from the restricted builtins sandbox.
+    """
+    try:
+        tree = _ast.parse(source, mode="eval")
+    except SyntaxError as exc:
+        return None, f"syntax error: {exc}"
+    for node in _ast.walk(tree):
+        if type(node) not in _ALLOWED_EXPR_NODES:
+            return None, f"disallowed AST node type: {type(node).__name__}"
+        if isinstance(node, _ast.Attribute) and node.attr.startswith("_"):
+            return None, f"private/dunder attribute access not allowed: {node.attr!r}"
+        if isinstance(node, _ast.Name) and node.id.startswith("_"):
+            return None, f"private name reference not allowed: {node.id!r}"
+    return tree, None
+
 
 def _grade_code(
     response: str,
@@ -399,8 +440,12 @@ def _grade_code(
     passed_count = 0
     failures: list[str] = []
     for expr in assertions:
+        tree, ast_err = _validate_expr_ast(str(expr))
+        if ast_err is not None:
+            failures.append(f"UNSAFE in {expr!r}: {ast_err}")
+            continue
         try:
-            result = eval(compile(str(expr), "<assertion>", "eval"), ns)  # noqa: S307
+            result = eval(compile(tree, "<assertion>", "eval"), ns)  # noqa: S307
             if result:
                 passed_count += 1
             else:

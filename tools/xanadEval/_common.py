@@ -454,7 +454,11 @@ def _grade_json_schema(response: str, config: dict) -> tuple[bool, float, str]:
             except _js.ValidationError as ve:
                 return False, 0.0, f"Schema validation failed: {ve.message}"
         except ImportError:
-            pass  # jsonschema not installed — fall through to format-only pass
+            return (
+                False, 0.0,
+                "json_schema grader: 'jsonschema' package is required for schema validation;"
+                " install it with: pip install jsonschema",
+            )
 
     return True, 1.0, "Valid JSON"
 

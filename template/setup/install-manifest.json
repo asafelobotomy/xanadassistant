@@ -48,7 +48,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:07cc596a75d6cc8c63d7aa3a070e9fcb03af830711a1fd65aca131721c9a2938"
+      "hash": "sha256:7416535a02ca2994e9870c08451ea81cec675b7e7687c2a1f73833e34e977e20"
     },
     {
       "id": "agents.commit.agent.md",
@@ -64,7 +64,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:cd1add529fd98c72dd3c56c558c91e70275a4677be9d16dc16b87590a84325fe"
+      "hash": "sha256:f642046e714e538adf7258dc6e3a2c12dd9d1213fd95ea116b82ec975aa58383"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -96,7 +96,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:a33064d523d84cba6433cbc3dc144faaef40d5baa5512875b2084af50623362b"
+      "hash": "sha256:eb27721ac00442f77004cb0e32d2be7aa3027e55c5ef71cdfa066a197ab192bf"
     },
     {
       "id": "agents.docs.agent.md",
@@ -224,7 +224,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:36efc70835fe4b29cf33b901478c8188d0ddbc03ae72045bf4f03584bcaeb98a"
+      "hash": "sha256:6e74e9247a98ce32464369c6f7846d4e77f26c130ea947a01cac9e3a9398e809"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -468,7 +468,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:1e44d939678eb2d48090c11e27dcd0f83f92239b503018c535f7711747bb59a7"
+      "hash": "sha256:2e7081f5e18ddbc6444df6605cbeaefefb74d5552ad672aef89a8ab8361bc532"
     },
     {
       "id": "hook-scripts.githubMcp.py",
@@ -485,7 +485,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:3b2ed50ebd04bf4640518c1c513469c9c1579578195cb47232762b3aba3873b3"
+      "hash": "sha256:39a6a4c727d072e9e78972afe82f4278b699191191f930909519ca80ac0eb219"
     },
     {
       "id": "lean-hooks.leanContextBudget.py",
@@ -538,7 +538,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:0a2c9743523af81841d5db7a0fb92c4fb9bb789654287899210addb232cfce94"
+      "hash": "sha256:3c95a520a946f7372ddf47602f9e63ea46b346eddf91f26dd8508898ab515935"
     },
     {
       "id": "mlops-hooks.mlopsModelCheck.py",
@@ -748,7 +748,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:268eedd37bac9043788bf12446638587489db386b7fdd0c968eaca5795144025"
+      "hash": "sha256:7faaae152c95a426aa5f71602679824df09b285d9f093afb7eafa156a3777d0a"
     },
     {
       "id": "prompts.bootstrap.md",

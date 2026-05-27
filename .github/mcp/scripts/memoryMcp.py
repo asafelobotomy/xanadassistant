@@ -53,25 +53,38 @@ def _workspace_root() -> str:
     return str(Path(v).resolve())
 
 
-def _current_branch(root: str) -> str:
+def _current_branch(root: str) -> str | None:
     try:
         r = subprocess.run(
             ["git", "-C", root, "rev-parse", "--abbrev-ref", "HEAD"],
             capture_output=True, text=True, timeout=5,
         )
         if r.returncode == 0:
-            return r.stdout.strip()
+            b = r.stdout.strip()
+            if b:
+                return b
     except Exception:
         pass
-    return ""
+    return None
 
 
-def _chk_scope(v: str) -> None:
-    _shared_chk_scope(v, _VALID_SCOPES)
+def _advisory_branch(scope: str, root: str) -> str:
+    if scope != "branch":
+        return ""
+    branch = _current_branch(root)
+    if branch is None:
+        raise ValueError(
+            "Cannot resolve current git branch; branch-scoped memory operations are unavailable."
+        )
+    return branch
 
 
 def _chk_rule_type(v: str) -> None:
     _shared_chk_rule_type(v, _VALID_RULE_TYPES)
+
+
+def _chk_scope(v: str) -> None:
+    _shared_chk_scope(v, _VALID_SCOPES)
 
 
 def _chk_agent(v: str | None) -> None:
@@ -87,10 +100,6 @@ def _chk_branch(v: str | None) -> None:
 
 def _chk_confidence(v: float) -> float:
     return _shared_chk_confidence(v)
-
-
-def _advisory_branch(scope: str, root: str) -> str:
-    return _current_branch(root) if scope == "branch" else ""
 
 
 @mcp.tool()
@@ -332,7 +341,7 @@ def diary_add(
     """Append a decision or action entry to the agent diary."""
     _chk_agent(agent)
     _chk_scope(scope)
-    branch = _current_branch(_workspace_root())
+    branch = _current_branch(_workspace_root()) or ""
     return _shared_diary_add(agent, entry, scope, tags, branch, _workspace_root())
 
 

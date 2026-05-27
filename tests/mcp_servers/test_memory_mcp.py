@@ -41,6 +41,36 @@ class MemoryMcpTests(unittest.TestCase):
 
                 self.assertIn("No active fact", result)
 
+    def test_branch_scope_raises_when_git_fails(self) -> None:
+        """branch-scope operations must fail closed, not collapse to the empty-string branch."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with mock.patch.object(module, "_current_branch", return_value=None):
+                            with self.assertRaisesRegex(ValueError, "Cannot resolve current git branch"):
+                                module.memory_set("tester", "repo.status", "active", scope="branch")
+
+    def test_branch_scope_git_failure_does_not_pollute_empty_branch(self) -> None:
+        """A fact must NOT be stored under the empty-string branch when git resolution fails."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        # First write a workspace-scoped fact (stored under branch="")
+                        with mock.patch.object(module, "_current_branch", return_value="main"):
+                            module.memory_set("tester", "ws.key", "value", scope="workspace")
+                        # Now attempt a branch-scoped write with git unavailable — must raise
+                        with mock.patch.object(module, "_current_branch", return_value=None):
+                            with self.assertRaisesRegex(ValueError, "Cannot resolve"):
+                                module.memory_set("tester", "br.key", "leaked", scope="branch")
+                        # workspace-scoped fact under branch="" must still be there, branch-scoped must not
+                        with mock.patch.object(module, "_current_branch", return_value="main"):
+                            ws_result = module.memory_get("tester", "ws.key", scope="workspace")
+                            br_result = module.memory_get("tester", "br.key", scope="branch")
+                self.assertIn("value", ws_result)
+                self.assertIn("No active fact", br_result)
+
     def test_rejects_out_of_range_confidence(self) -> None:
         for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
             with self.subTest(module=module.__name__):

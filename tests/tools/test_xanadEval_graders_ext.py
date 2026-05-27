@@ -495,6 +495,48 @@ class CodeGraderTests(unittest.TestCase):
         self.assertEqual(results[0]["type"], "code")
         self.assertTrue(results[0]["pass"])
 
+    def test_dunder_attribute_access_blocked(self) -> None:
+        """Expressions accessing dunder attributes must be rejected as unsafe."""
+        passed, score, feedback = _grade_code(
+            "x",
+            {"assertions": ["output.__class__.__name__ == 'str'"]},
+        )
+        self.assertFalse(passed)
+        self.assertIn("UNSAFE", feedback)
+
+    def test_private_name_access_blocked(self) -> None:
+        passed, score, feedback = _grade_code(
+            "x",
+            {"assertions": ["_CODE_SAFE_GLOBALS is not None"]},
+        )
+        self.assertFalse(passed)
+        self.assertIn("UNSAFE", feedback)
+
+    def test_object_graph_escape_blocked(self) -> None:
+        """Subclass traversal via dunder attributes must be blocked."""
+        passed, score, feedback = _grade_code(
+            "x",
+            {"assertions": ["().__class__.__bases__[0].__subclasses__()"]},
+        )
+        self.assertFalse(passed)
+        self.assertIn("UNSAFE", feedback)
+
+    def test_disallowed_ast_node_blocked(self) -> None:
+        """Import statements inside assertions must be rejected."""
+        passed, score, feedback = _grade_code(
+            "x",
+            {"assertions": ["__import__('os').getcwd()"]},
+        )
+        self.assertFalse(passed)
+
+    def test_syntax_error_counts_as_failure(self) -> None:
+        passed, score, feedback = _grade_code(
+            "x",
+            {"assertions": ["output =="]},
+        )
+        self.assertFalse(passed)
+        self.assertIn("UNSAFE", feedback)
+
 
 # ── _grade_action_sequence ─────────────────────────────────────────────────────
 

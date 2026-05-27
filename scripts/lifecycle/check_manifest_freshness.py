@@ -5,6 +5,11 @@ import json
 import sys
 from pathlib import Path
 
+# Allow running as a direct script (`python3 scripts/lifecycle/check_manifest_freshness.py`)
+# in addition to the standard module entrypoint (`python3 -m scripts.lifecycle.check_manifest_freshness`).
+if __name__ == "__main__" and __package__ is None:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from scripts.lifecycle.generate_manifest import (
     generate_catalog,
     generate_manifest,
