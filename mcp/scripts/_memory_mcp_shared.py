@@ -8,6 +8,9 @@ import sqlite3
 from typing import Any
 
 
+_SCHEMA_VERSION = 2
+
+
 def get_conn(root: str) -> sqlite3.Connection:
     path = Path(root) / ".github" / "xanadAssistant" / "memory" / "memory.db"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -50,16 +53,19 @@ def chk_confidence(value: float) -> float:
 
 
 def init_db(conn: sqlite3.Connection) -> None:
-    conn.executescript(
-        """
+    is_fresh = not conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='advisory_memory'"
+    ).fetchone()
+    conn.executescript("""
         CREATE TABLE IF NOT EXISTS advisory_memory (
             agent TEXT NOT NULL, scope TEXT NOT NULL, branch TEXT NOT NULL DEFAULT '',
-            key TEXT NOT NULL, value TEXT NOT NULL,
+            session_id TEXT NOT NULL DEFAULT '', key TEXT NOT NULL, value TEXT NOT NULL,
             confidence REAL NOT NULL DEFAULT 1.0,
             source TEXT NOT NULL DEFAULT 'agent-discovered',
             updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
             expires_at TEXT, valid_from TEXT, valid_until TEXT, invalidated_at TEXT,
-            PRIMARY KEY (agent, scope, branch, key)
+            source_description TEXT,
+            UNIQUE (agent, scope, branch, session_id, key)
         );
         CREATE TABLE IF NOT EXISTS rules (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,50 +77,82 @@ def init_db(conn: sqlite3.Connection) -> None:
         CREATE TABLE IF NOT EXISTS agent_diary (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             agent TEXT NOT NULL, scope TEXT NOT NULL DEFAULT 'workspace',
-            branch TEXT NOT NULL DEFAULT '', entry TEXT NOT NULL,
-            tags TEXT NOT NULL DEFAULT '',
+            branch TEXT NOT NULL DEFAULT '', session_id TEXT NOT NULL DEFAULT '',
+            entry TEXT NOT NULL, tags TEXT NOT NULL DEFAULT '',
             recorded_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
         );
         CREATE VIRTUAL TABLE IF NOT EXISTS agent_diary_fts
-            USING fts5(id UNINDEXED, agent UNINDEXED, scope UNINDEXED, branch UNINDEXED, entry, tags);
-        """
-    )
+            USING fts5(id UNINDEXED, agent UNINDEXED, scope UNINDEXED,
+                       branch UNINDEXED, session_id UNINDEXED, entry, tags);
+    """)
+    if is_fresh:
+        conn.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
     conn.commit()
     _run_schema_migrations(conn)
     migrate_fts_if_needed(conn)
 
 
+def _add_column_safe(conn: sqlite3.Connection, table: str, col: str, typedef: str) -> None:
+    """Add a column if it does not already exist (idempotent)."""
+    if col not in {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}:
+        try:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typedef}")
+        except sqlite3.OperationalError:
+            pass  # concurrent startup: another process added the column first
+
+
+def _rebuild_advisory_memory(conn: sqlite3.Connection) -> None:
+    """Rebuild advisory_memory with the correct 5-column UNIQUE constraint."""
+    conn.execute("""CREATE TABLE advisory_memory_v2 (
+        agent TEXT NOT NULL, scope TEXT NOT NULL, branch TEXT NOT NULL DEFAULT '',
+        session_id TEXT NOT NULL DEFAULT '', key TEXT NOT NULL, value TEXT NOT NULL,
+        confidence REAL NOT NULL DEFAULT 1.0, source TEXT NOT NULL DEFAULT 'agent-discovered',
+        updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+        expires_at TEXT, valid_from TEXT, valid_until TEXT, invalidated_at TEXT,
+        source_description TEXT, UNIQUE (agent, scope, branch, session_id, key))""")
+    conn.execute("""INSERT OR IGNORE INTO advisory_memory_v2
+        (agent, scope, branch, session_id, key, value, confidence, source,
+         updated_at, expires_at, valid_from, valid_until, invalidated_at, source_description)
+        SELECT agent, scope, branch, COALESCE(session_id, ''), key, value, confidence, source,
+               updated_at, expires_at, valid_from, valid_until, invalidated_at, source_description
+        FROM advisory_memory""")
+    conn.execute("DROP TABLE advisory_memory")
+    conn.execute("ALTER TABLE advisory_memory_v2 RENAME TO advisory_memory")
+
+
 def _run_schema_migrations(conn: sqlite3.Connection) -> None:
-    """Add columns introduced in later schema versions to existing databases."""
-    cols = {row_info[1] for row_info in conn.execute("PRAGMA table_info(advisory_memory)")}
-    new_cols: list[tuple[str, str]] = [
-        ("session_id", "TEXT NOT NULL DEFAULT ''"),
-        ("source_description", "TEXT"),
-    ]
-    changed = False
-    for col, typedef in new_cols:
-        if col not in cols:
-            conn.execute(f"ALTER TABLE advisory_memory ADD COLUMN {col} {typedef}")
-            changed = True
-    if changed:
-        conn.commit()
+    """Upgrade the schema to _SCHEMA_VERSION using PRAGMA user_version for safe versioning."""
+    version = conn.execute("PRAGMA user_version").fetchone()[0]
+    if version >= _SCHEMA_VERSION:
+        return
+    # v0 → v1: add session_id and source_description to advisory_memory.
+    if version < 1:
+        _add_column_safe(conn, "advisory_memory", "session_id", "TEXT NOT NULL DEFAULT ''")
+        _add_column_safe(conn, "advisory_memory", "source_description", "TEXT")
+    # v1 → v2: rebuild advisory_memory with new UNIQUE key; add session_id to agent_diary.
+    _rebuild_advisory_memory(conn)
+    _add_column_safe(conn, "agent_diary", "session_id", "TEXT NOT NULL DEFAULT ''")
+    conn.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
+    conn.commit()
 
 
 def migrate_fts_if_needed(conn: sqlite3.Connection) -> None:
     row = conn.execute(
         "SELECT sql FROM sqlite_master WHERE type='table' AND name='agent_diary_fts'"
     ).fetchone()
-    if row and row[0] and "agent UNINDEXED" not in row[0]:
-        conn.execute("DROP TABLE agent_diary_fts")
-        conn.execute(
-            "CREATE VIRTUAL TABLE agent_diary_fts "
-            "USING fts5(id UNINDEXED, agent UNINDEXED, scope UNINDEXED, branch UNINDEXED, entry, tags)"
-        )
-        conn.execute(
-            "INSERT INTO agent_diary_fts (id,agent,scope,branch,entry,tags) "
-            "SELECT id,agent,scope,branch,entry,tags FROM agent_diary"
-        )
-        conn.commit()
+    if row and row[0] and "agent UNINDEXED" in row[0] and "session_id UNINDEXED" in row[0]:
+        return
+    conn.execute("DROP TABLE IF EXISTS agent_diary_fts")
+    conn.execute(
+        "CREATE VIRTUAL TABLE agent_diary_fts "
+        "USING fts5(id UNINDEXED, agent UNINDEXED, scope UNINDEXED, "
+        "branch UNINDEXED, session_id UNINDEXED, entry, tags)"
+    )
+    conn.execute(
+        "INSERT INTO agent_diary_fts (id,agent,scope,branch,session_id,entry,tags) "
+        "SELECT id,agent,scope,branch,COALESCE(session_id,''),entry,tags FROM agent_diary"
+    )
+    conn.commit()
 
 
 def rows(rows_in: list[sqlite3.Row]) -> list[dict[str, Any]]:
@@ -258,6 +296,11 @@ def memory_prune(agent: str | None, scope: str | None, max_age_days: float | Non
 
 
 def rule_add(description: str, rule_type: str, agent: str | None, scope: str, branch: str | None, root: str) -> str:
+    if branch and scope != "branch":
+        raise ValueError(
+            f"branch must be None or empty for scope={scope!r}; "
+            "use scope='branch' for branch-scoped rules."
+        )
     with closing(get_conn(root)) as conn:
         cur = conn.execute(
             "INSERT INTO rules (agent,scope,branch,rule_type,description) VALUES (?,?,?,?,?)",
@@ -268,12 +311,16 @@ def rule_add(description: str, rule_type: str, agent: str | None, scope: str, br
     return f"Rule #{rule_id} added [{rule_type}]: {description}"
 
 
-def rule_list(agent: str | None, scope: str, root: str) -> str:
+def rule_list(agent: str | None, scope: str, branch: str, root: str) -> str:
+    branch_clause = "AND (branch IS NULL OR branch=?) " if scope == "branch" else ""
+    branch_params: list = [branch] if scope == "branch" else []
     with closing(get_conn(root)) as conn:
         rows_in = conn.execute(
             "SELECT id, rule_type, agent, description, created_at FROM rules "
-            "WHERE scope=? AND (agent IS NULL OR agent=?) ORDER BY created_at",
-            (scope, agent),
+            "WHERE scope=? AND (agent IS NULL OR agent=?) "
+            + branch_clause
+            + "ORDER BY created_at",
+            (scope, agent, *branch_params),
         ).fetchall()
     return render_rows(
         rows_in,
@@ -290,41 +337,43 @@ def rule_remove(rule_id: int, root: str) -> str:
     return f"Rule #{rule_id} deleted." if deleted else f"No rule with id {rule_id}."
 
 
-def diary_add(agent: str, entry: str, scope: str, tags: str, branch: str, root: str) -> str:
+def diary_add(agent: str, entry: str, scope: str, tags: str, branch: str, session_id: str, root: str) -> str:
     with closing(get_conn(root)) as conn:
         with conn:
             cur = conn.execute(
-                "INSERT INTO agent_diary (agent,scope,branch,entry,tags) VALUES (?,?,?,?,?)",
-                (agent, scope, branch, entry, tags),
+                "INSERT INTO agent_diary (agent,scope,branch,session_id,entry,tags) VALUES (?,?,?,?,?,?)",
+                (agent, scope, branch, session_id, entry, tags),
             )
             diary_id = cur.lastrowid
             conn.execute(
-                "INSERT INTO agent_diary_fts (id,agent,scope,branch,entry,tags) VALUES (?,?,?,?,?,?)",
-                (diary_id, agent, scope, branch, entry, tags),
+                "INSERT INTO agent_diary_fts (id,agent,scope,branch,session_id,entry,tags) VALUES (?,?,?,?,?,?,?)",
+                (diary_id, agent, scope, branch, session_id, entry, tags),
             )
     return f"Diary entry #{diary_id} recorded for {agent!r}."
 
 
-def diary_get(agent: str, scope: str, limit: int, tag: str | None, branch: str, root: str) -> str:
+def diary_get(agent: str, scope: str, limit: int, tag: str | None, branch: str, session_id: str, root: str) -> str:
     branch_clause = "AND branch=? " if scope == "branch" else ""
     branch_params: list[str] = [branch] if scope == "branch" else []
+    session_clause = "AND session_id=? " if scope == "session" else ""
+    session_params: list[str] = [session_id] if scope == "session" else []
     with closing(get_conn(root)) as conn:
         if tag:
             rows_in = conn.execute(
                 "SELECT id, entry, tags, recorded_at FROM agent_diary "
                 "WHERE agent=? AND scope=? "
-                + branch_clause
+                + branch_clause + session_clause
                 + "  AND (',' || tags || ',' LIKE '%,' || ? || ',%') "
                 "ORDER BY recorded_at DESC, id DESC LIMIT ?",
-                (agent, scope, *branch_params, tag, limit),
+                (agent, scope, *branch_params, *session_params, tag, limit),
             ).fetchall()
         else:
             rows_in = conn.execute(
                 "SELECT id, entry, tags, recorded_at FROM agent_diary "
                 "WHERE agent=? AND scope=? "
-                + branch_clause
+                + branch_clause + session_clause
                 + "ORDER BY recorded_at DESC, id DESC LIMIT ?",
-                (agent, scope, *branch_params, limit),
+                (agent, scope, *branch_params, *session_params, limit),
             ).fetchall()
     return render_rows(
         rows_in,
@@ -333,7 +382,7 @@ def diary_get(agent: str, scope: str, limit: int, tag: str | None, branch: str, 
     )
 
 
-def diary_search(agent: str, query: str, scope: str, limit: int, include_agents: list[str] | None, branch: str, root: str) -> str:
+def diary_search(agent: str, query: str, scope: str, limit: int, include_agents: list[str] | None, branch: str, session_id: str, root: str) -> str:
     # Wrap in FTS5 double-quoted phrase to neutralise special characters (-, :, OR, NOT, etc.).
     safe_query = '"' + query.replace('"', '""') + '"'
     agents = [agent]
@@ -343,6 +392,8 @@ def diary_search(agent: str, query: str, scope: str, limit: int, include_agents:
     placeholders = ",".join("?" * len(agents))
     branch_clause = "AND branch=? " if scope == "branch" else ""
     branch_params: list[str] = [branch] if scope == "branch" else []
+    session_clause = "AND session_id=? " if scope == "session" else ""
+    session_params: list[str] = [session_id] if scope == "session" else []
     with closing(get_conn(root)) as conn:
         try:
             rows_in = conn.execute(
@@ -351,10 +402,10 @@ def diary_search(agent: str, query: str, scope: str, limit: int, include_agents:
                 f"WHERE d.id IN ("
                 f"  SELECT id FROM agent_diary_fts "
                 f"  WHERE agent_diary_fts MATCH ? AND agent IN ({placeholders}) AND scope=? "
-                + branch_clause
+                + branch_clause + session_clause
                 + f") "
                 f"ORDER BY d.recorded_at DESC, d.id DESC LIMIT ?",
-                (safe_query, *agents, scope, *branch_params, limit),
+                (safe_query, *agents, scope, *branch_params, *session_params, limit),
             ).fetchall()
         except sqlite3.OperationalError as exc:
             raise RuntimeError(f"FTS5 search error: {exc}") from exc

@@ -80,7 +80,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:fc07441834b9589b4024f988147da861d35172055f50dea3c54101ef1106eebe"
+      "hash": "sha256:4f0d7756ecbfdd40b8aad06a8fc6e14b163f4bcc9a9f756529c213b41fa162d0"
     },
     {
       "id": "agents.deps.agent.md",
@@ -160,7 +160,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:4f4e1a62ef5d59512e749150168b9f495e3234eac6ade244b1f3993637ae8c18"
+      "hash": "sha256:f88af3c684583771f0a5a886f1e8fb4d09a224491b63222e1a9cc6f0bca0276a"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -176,7 +176,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:d146487dab74dbafb7387aa67d3ba595a6b7e51544a96883a844d8ac65939b3c"
+      "hash": "sha256:1eaf484884f2567cb25b662b87ab764f7c739604b9ae63d1465ef3e1da4cbc8b"
     },
     {
       "id": "agents.review.agent.md",
@@ -192,7 +192,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:1106e6eff0a5eed4fd3507a61b828b7cadcbe378a9ab065fc7d7ee6e31cfb8e0"
+      "hash": "sha256:a1ac24be4289214d2d7eed8fee7bd787de11425338acaaa5dab4fe0be32c871c"
     },
     {
       "id": "agents.triage.agent.md",
@@ -224,7 +224,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:6e74e9247a98ce32464369c6f7846d4e77f26c130ea947a01cac9e3a9398e809"
+      "hash": "sha256:ee40a31820738ade3840bd339b2c700a4e19bd76f792ebf71be2c2f37047fb4b"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -364,7 +364,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:d0ca2961ac8068685af4990daa721e13419cc84f89241766d126f6b6ca2eafe1"
+      "hash": "sha256:2605a4edc2ea449d0bed2af76ac23d7985ce4a2477a91599f1346da3d1931dbd"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -538,7 +538,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:330a5f982e93fc739a6c0d556688f5e520ee6be80049f395caae05a17467e0df"
+      "hash": "sha256:d8c0b74782bf4fc4bdfe82aeb729a216a67fd09ad4f0cad4f3cc035fc0a7f572"
     },
     {
       "id": "mlops-hooks.mlopsModelCheck.py",

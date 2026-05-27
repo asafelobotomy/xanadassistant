@@ -5,7 +5,7 @@ argument-hint: "Describe the research target: remote source behavior, MCP patter
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, codebase, search, runCommands, githubRepo, fetch, webSearch, resolve_library_id, query_docs, get_repo, get_file_contents, search_code, list_issues, get_issue, list_pull_requests, get_pull_request, list_releases, list_workflow_runs, memory_dump, memory_set, elapsed]
+tools: [agent, codebase, search, runCommands, githubRepo, fetch, webSearch, resolve_library_id, query_docs, get_repo, get_file_contents, search_code, list_issues, get_issue, list_pull_requests, get_pull_request, list_releases, list_workflow_runs, memory_dump, memory_get, memory_list, memory_invalidate, memory_set, diary_add, diary_search, elapsed]
 agents: [Explore, Planner, Review, Docs]
 user-invocable: false
 ---
@@ -62,3 +62,8 @@ At the start of every task, call `memory_dump(agent="researcher")`.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="researcher", key=..., value=...)` before finishing.
+
+Use `diary_add` to record each source-backed finding for cross-turn research continuity.
+Use `diary_search` to check whether a prior task already answered the question before fetching externally.
+Use `memory_get` / `memory_list` for targeted retrieval without a full dump.
+Use `memory_invalidate` when research proves a stored fact outdated or incorrect.

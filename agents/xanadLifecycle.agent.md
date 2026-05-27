@@ -5,7 +5,7 @@ argument-hint: "Describe the lifecycle task: inspect, check, interview, plan set
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
-tools: [agent, codebase, search, runCommands, askQuestions, lifecycle_inspect, lifecycle_check, lifecycle_interview, lifecycle_plan_setup, lifecycle_setup, lifecycle_update, lifecycle_repair, lifecycle_factory_restore, create_issue, memory_dump, memory_set, elapsed]
+tools: [agent, codebase, search, runCommands, askQuestions, lifecycle_inspect, lifecycle_check, lifecycle_interview, lifecycle_plan_setup, lifecycle_setup, lifecycle_update, lifecycle_repair, lifecycle_factory_restore, create_issue, memory_dump, memory_get, memory_list, memory_invalidate, memory_set, diary_add, diary_get, diary_search, elapsed]
 agents: [Explore, Debugger, Planner]
 user-invocable: true
 ---
@@ -367,3 +367,8 @@ At the start of every lifecycle task, call `memory_dump(agent="xanadLifecycle")`
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
 
 When you learn something durable about a workspace (install state, known repair paths, workspace-specific conventions), call `memory_set(agent="xanadLifecycle", key=..., value=...)` before finishing.
+
+Use `memory_get` / `memory_list` to retrieve specific install-state facts (package root, version) before running lifecycle commands.
+Use `memory_invalidate` to mark cached install state stale after a repair or factory restore.
+Use `diary_add` to record each lifecycle operation result for operational continuity across sessions.
+Use `diary_get` / `diary_search` to review prior operations before planning a repair or update.

@@ -157,7 +157,7 @@ def memory_set(
                  expires_at, valid_from, valid_until, invalidated_at,
                  session_id, source_description)
             VALUES (?,?,?,?,?,?,?,?,?,?,NULL,?,?)
-            ON CONFLICT(agent,scope,branch,key) DO UPDATE SET
+            ON CONFLICT(agent,scope,branch,session_id,key) DO UPDATE SET
                 value=excluded.value, confidence=excluded.confidence,
                 source=excluded.source,
                 updated_at=strftime('%Y-%m-%dT%H:%M:%SZ','now'),
@@ -341,7 +341,10 @@ def rule_add(
     _chk_agent(agent)
     _chk_branch(branch)
     _chk_scope(scope)
-    return _shared_rule_add(description, rule_type, agent, scope, branch, _workspace_root())
+    root = _workspace_root()
+    if scope == "branch" and branch is None:
+        branch = _advisory_branch(scope, root)
+    return _shared_rule_add(description, rule_type, agent, scope, branch, root)
 
 
 @mcp.tool()
@@ -349,7 +352,9 @@ def rule_list(agent: str | None = None, scope: str = "workspace") -> str:
     """List authoritative rules for an agent and scope."""
     _chk_agent(agent)
     _chk_scope(scope)
-    return _shared_rule_list(agent, scope, _workspace_root())
+    root = _workspace_root()
+    branch = _advisory_branch(scope, root)
+    return _shared_rule_list(agent, scope, branch, root)
 
 
 @mcp.tool()
@@ -365,8 +370,10 @@ def diary_add(
     """Append a decision or action entry to the agent diary."""
     _chk_agent(agent)
     _chk_scope(scope)
-    branch = _current_branch(_workspace_root()) or ""
-    return _shared_diary_add(agent, entry, scope, tags, branch, _workspace_root())
+    root = _workspace_root()
+    branch = _advisory_branch(scope, root)
+    session_id = _SESSION_ID if scope == "session" else ""
+    return _shared_diary_add(agent, entry, scope, tags, branch, session_id, root)
 
 
 @mcp.tool()
@@ -378,7 +385,8 @@ def diary_get(
     _chk_scope(scope)
     root = _workspace_root()
     branch = _advisory_branch(scope, root)
-    return _shared_diary_get(agent, scope, limit, tag, branch, root)
+    session_id = _SESSION_ID if scope == "session" else ""
+    return _shared_diary_get(agent, scope, limit, tag, branch, session_id, root)
 
 
 @mcp.tool()
@@ -393,7 +401,8 @@ def diary_search(
         _chk_agent(a)
     root = _workspace_root()
     branch = _advisory_branch(scope, root)
-    return _shared_diary_search(agent, query, scope, limit, include_agents, branch, root)
+    session_id = _SESSION_ID if scope == "session" else ""
+    return _shared_diary_search(agent, query, scope, limit, include_agents, branch, session_id, root)
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -5,7 +5,7 @@ argument-hint: "Describe the review scope: file path, PR, diff, audit focus, or 
 model:
   - GPT-5.4
   - Claude Sonnet 4.6
-tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
+tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_get, memory_list, memory_invalidate, memory_set, diary_add, diary_search, elapsed]
 agents: [Explore, Debugger, Planner, Researcher]
 user-invocable: true
 ---
@@ -85,3 +85,8 @@ At the start of every task, call `memory_dump(agent="review")`.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="review", key=..., value=...)` before finishing.
+
+Use `diary_add` to record each major finding or pattern during long reviews.
+Use `diary_search` to check whether a similar finding was raised and resolved in a prior session.
+Use `memory_get` / `memory_list` to look up cached project conventions before opening a file.
+Use `memory_invalidate` when a review finding contradicts a stored fact.

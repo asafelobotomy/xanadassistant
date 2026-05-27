@@ -5,7 +5,7 @@ argument-hint: "Describe the debugging target: failing test, broken command, une
 model:
   - GPT-5.4
   - Claude Sonnet 4.6
-tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
+tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_get, memory_list, memory_invalidate, memory_set, diary_add, diary_get, diary_search, elapsed]
 agents: [Explore, Review, Planner, Researcher]
 user-invocable: false
 ---
@@ -56,3 +56,8 @@ At the start of every task, call `memory_dump(agent="debugger")`.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="debugger", key=..., value=...)` before finishing.
+
+Use `diary_add` to record each disproved hypothesis and repro step for cross-turn recall.
+Use `diary_get` / `diary_search` to retrieve prior repro trails before starting a new investigation.
+Use `memory_get` / `memory_list` for targeted recall without re-processing the full dump.
+Use `memory_invalidate` when evidence contradicts a stored fact mid-task.

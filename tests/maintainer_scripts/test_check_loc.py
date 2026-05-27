@@ -55,7 +55,7 @@ class CheckLocTests(unittest.TestCase):
             with mock.patch("scripts.check_loc.REPO_ROOT", root):
                 self.assertEqual(check_loc.count_lines(target), 2)
                 self.assertEqual(check_loc.warning_limit_for(target), 600)
-                self.assertEqual(check_loc.hard_limit_for(target), check_loc.HARD_LIMIT)
+                self.assertEqual(check_loc.hard_limit_for(target), 450)
 
     def test_main_reports_warnings_and_violations(self) -> None:
         stderr = io.StringIO()

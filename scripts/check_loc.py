@@ -44,7 +44,7 @@ WARN_LIMIT_OVERRIDES = {
     "mcp/scripts/xanadWorkspaceMcp.py": 500,
     "mcp/scripts/gitMcp.py": 450,
     "mcp/scripts/githubMcp.py": 450,
-    "mcp/scripts/_memory_mcp_shared.py": 310,
+    "mcp/scripts/_memory_mcp_shared.py": 420,
     # ── Managed copies (.github/) — mirrors of the above; same ceilings apply ─────
     ".github/mcp/scripts/sequentialThinkingMcp.py": 260,
     ".github/mcp/scripts/memoryMcp.py": 600,
@@ -52,7 +52,7 @@ WARN_LIMIT_OVERRIDES = {
     ".github/mcp/scripts/xanadWorkspaceMcp.py": 500,
     ".github/mcp/scripts/gitMcp.py": 450,
     ".github/mcp/scripts/githubMcp.py": 450,
-    ".github/mcp/scripts/_memory_mcp_shared.py": 310,
+    ".github/mcp/scripts/_memory_mcp_shared.py": 420,
 
     # ── Pack MCP scripts (consumer-facing single-file scripts) ────────────────────
     "packs/secure/mcp/secureOsv.py": 300,
@@ -83,6 +83,7 @@ WARN_LIMIT_OVERRIDES = {
     # ── MCP test modules ───────────────────────────────────────────────────────────
     "tests/mcp_servers/test_web_mcp.py": 420,
     "tests/mcp_servers/test_xanad_workspace_mcp_lifecycle.py": 280,
+    "tests/mcp_servers/test_memory_mcp.py": 380,
 
     # ── Prompt contract test module ────────────────────────────────────────────────
     # Grows with each new per-agent contract assertion; one test per invariant.
@@ -137,6 +138,14 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     "tests/tools/test_xanadEval_graders_ext.py": 700,
     # workspace_grade_human MCP tests.
     "tests/mcp_servers/test_xanad_workspace_mcp_grade_human.py": 220,
+    # xanadEval graders extension test suite: comprehensive grader coverage requires extended length.
+    "tests/tools/test_xanadEval_graders_ext.py": 760,
+    # Memory MCP shared module: grew with versioned migration helpers and session isolation.
+    "mcp/scripts/_memory_mcp_shared.py": 460,
+    ".github/mcp/scripts/_memory_mcp_shared.py": 460,
+    # Memory MCP entrypoint: grew with session_id threading and branch-scoped rule fixes.
+    "mcp/scripts/memoryMcp.py": 450,
+    ".github/mcp/scripts/memoryMcp.py": 450,
 }
 
 

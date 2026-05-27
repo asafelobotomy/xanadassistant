@@ -5,7 +5,7 @@ argument-hint: "Describe the planning target: rollout, refactor, migration, reme
 model:
   - GPT-5.4
   - Claude Sonnet 4.6
-tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
+tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_get, memory_set, diary_add, diary_get, diary_search, elapsed]
 agents: [Explore, Debugger, Review, Researcher, Docs]
 user-invocable: false
 ---
@@ -67,3 +67,7 @@ At the start of every task, call `memory_dump(agent="planner")`.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="planner", key=..., value=...)` before finishing.
+
+Use `diary_add` to record plan decisions and assumptions at the start and end of each phase.
+Use `diary_get` / `diary_search` to recall prior plans for the same scope before drafting a new one.
+Use `memory_get` to look up a specific cached fact (command, path, version) without re-processing the full dump.

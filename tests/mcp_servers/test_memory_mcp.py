@@ -276,3 +276,68 @@ class MemoryMcpTests(unittest.TestCase):
                 self.assertEqual(dump_fact.get("source_description"),
                                  "Inferred from CI error in turn 3")
 
+    def test_session_same_key_both_readable(self) -> None:
+        """Two different sessions writing the same key must each retain their own value."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with mock.patch.object(module, "_SESSION_ID", "session-a"):
+                            module.memory_set("tester", "task.key", "value-a", scope="session")
+                        with mock.patch.object(module, "_SESSION_ID", "session-b"):
+                            module.memory_set("tester", "task.key", "value-b", scope="session")
+                        with mock.patch.object(module, "_SESSION_ID", "session-a"):
+                            result_a = json.loads(module.memory_get("tester", "task.key", scope="session"))
+                        with mock.patch.object(module, "_SESSION_ID", "session-b"):
+                            result_b = json.loads(module.memory_get("tester", "task.key", scope="session"))
+                self.assertEqual(result_a["value"], "value-a")
+                self.assertEqual(result_b["value"], "value-b")
+
+    def test_diary_session_scope_isolated(self) -> None:
+        """Session-scoped diary entries must not be visible to a different session."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with mock.patch.object(module, "_SESSION_ID", "session-a"):
+                            module.diary_add("tester", "session-a entry", scope="session")
+                        with mock.patch.object(module, "_SESSION_ID", "session-b"):
+                            get_result = module.diary_get("tester", scope="session")
+                            search_result = module.diary_search("tester", "session-a", scope="session")
+                self.assertIn("No diary entries", get_result)
+                self.assertIn("No diary entries", search_result)
+
+    def test_diary_add_branch_fails_closed(self) -> None:
+        """diary_add with scope='branch' must raise when git branch cannot be resolved."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with mock.patch.object(module, "_current_branch", return_value=None):
+                            with self.assertRaisesRegex(ValueError, "Cannot resolve current git branch"):
+                                module.diary_add("tester", "orphan entry", scope="branch")
+
+    def test_rule_add_rejects_branch_on_non_branch_scope(self) -> None:
+        """rule_add must reject a non-empty branch for non-branch scopes."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with self.assertRaisesRegex(ValueError, "branch must be None or empty"):
+                            module.rule_add("Stay within scope", "always", agent="tester",
+                                            scope="workspace", branch="feature/x")
+
+    def test_rule_list_branch_filtered(self) -> None:
+        """rule_list for scope='branch' must return only rules for the current branch."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with mock.patch.object(module, "_current_branch", return_value="feature/a"):
+                            module.rule_add("Rule on feature/a", "always", scope="branch")
+                        with mock.patch.object(module, "_current_branch", return_value="feature/b"):
+                            module.rule_add("Rule on feature/b", "always", scope="branch")
+                            result = module.rule_list(scope="branch")
+                    self.assertIn("Rule on feature/b", result)
+                    self.assertNotIn("Rule on feature/a", result)
+
