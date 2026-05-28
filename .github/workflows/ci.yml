@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Check maintainer doc attention budgets
         run: python3 scripts/drift_preflight.py --check attention-budget
 
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Check version mirrors match VERSION
         run: python3 scripts/drift_preflight.py --check version-bump
 
@@ -39,7 +39,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Check line-count limits
         run: python3 scripts/drift_preflight.py --check loc
 
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install test dependencies
         run: pip install -r requirements-dev.txt
       - name: Run unit tests
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Check manifest and catalog freshness
         run: python3 scripts/drift_preflight.py --check freshness
 
@@ -74,7 +74,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Check managed .github/ files are in sync with package source
         run: python3 scripts/drift_preflight.py --check workspace-drift
 
@@ -85,7 +85,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Check installed .github/ copies match source (bypasses ownership skip model)
         run: python3 scripts/drift_preflight.py --check parity
 

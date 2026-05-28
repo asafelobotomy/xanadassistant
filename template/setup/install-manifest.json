@@ -714,7 +714,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:583d5eb957c3497bfdebbef4ac45dcc6a1d57b6e698a11eb00241f6c335d3258"
+      "hash": "sha256:97af4cdd9760c533c67db1b0ae45e595d066fa8e3569a73d18a519c5677ddae8"
     },
     {
       "id": "hook-scripts.webMcp.py",
