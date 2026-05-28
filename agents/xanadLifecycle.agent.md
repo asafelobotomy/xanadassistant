@@ -39,6 +39,7 @@ is unavailable or package source resolution is missing.
 
 - Install or set up xanadAssistant → cold-start path (see below) if not installed; `apply` otherwise
 - Update to the latest version → run `update`
+- Re-interview or reconfigure an existing install → run `interview --mode update` then `update --answers` (see `## Re-interview workflow`)
 - Repair a broken or incomplete install → run `repair`
 - Restore to factory defaults → run `factory-restore`
 - Check current workspace state → run `inspect` or `health-check`
@@ -338,6 +339,16 @@ python3 xanadAssistant.py apply \
   --version v1.0.0 \
   --non-interactive --ui agent --json-lines
 ```
+
+## Re-interview workflow
+
+Use this to change configuration (packs, response style, `maxRequests`, etc.) on an existing install without a factory restore. Requires a clean `installed` state — run `repair` first if `health-check` reports `needs-repair`.
+
+1. **Fetch questions** — run `interview --mode update --json`. Each question carries a `currentValue` field (the last installed answer) and a `recommended` field (package suggestion). Present both to the user.
+2. **Collect answers** — write the resolved `{questionId: value}` mapping to a JSON file.
+3. **Apply** — run `update --answers <file> --non-interactive --ui agent --json-lines`. This re-renders all managed files with new token values and records `setupAnswers` in the lockfile.
+
+If `update` returns `inspection_failure` with a `reason` field, surface the message and instruct the user to run `repair` before retrying.
 
 ## Health check workflow
 

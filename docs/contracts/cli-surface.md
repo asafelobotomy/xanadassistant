@@ -65,6 +65,8 @@ The lifecycle engine must expose these commands:
 `update`
 
 - Performs inspect plus update planning plus approved write execution through one top-level command.
+- When invoked with `--answers`, performs a re-interview: answer values replace the previously recorded `setupAnswers` in the lockfile and all managed files are re-rendered with the new token values.
+- Re-interview via `--answers` requires a clean, fully-migrated installed state (`installState == "installed"`, valid lockfile, no schema migration, no package identity migration, no successor cleanup pending). A failing precondition returns error code `inspection_failure` and instructs the caller to run `repair` first.
 
 `repair`
 

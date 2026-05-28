@@ -180,6 +180,28 @@ def prepare_questions(
     return questions, resolved, unresolved, unknown
 
 
+def _annotate_questions_with_current_values(
+    questions: list[dict],
+    lockfile_state: dict,
+) -> list[dict]:
+    """Add currentValue to questions that have an installed answer in the lockfile.
+
+    Only applied for update-mode interviews.  The original default and recommended
+    values are preserved so callers can distinguish the package guidance from the
+    user's currently-installed choice.
+    """
+    installed_answers = lockfile_state.get("setupAnswers") or {}
+    if not installed_answers:
+        return questions
+    annotated = []
+    for q in questions:
+        q_id = q.get("id")
+        if q_id and q_id in installed_answers:
+            q = {**q, "currentValue": installed_answers[q_id]}
+        annotated.append(q)
+    return annotated
+
+
 def build_interview_result(workspace: Path, package_root: Path, mode: str) -> dict:
     context = collect_context(workspace, package_root)
     profile_reg = context["metadata"].get("profileRegistry") or {}
@@ -189,6 +211,9 @@ def build_interview_result(workspace: Path, package_root: Path, mode: str) -> di
         context["policy"], context["metadata"], context["manifest"],
         mode, seeded_answers, context["lockfileState"],
     )
+
+    if mode == "update":
+        questions = _annotate_questions_with_current_values(questions, context["lockfileState"])
 
     if mode == "setup":
         existing_files = scan_existing_copilot_files(workspace, context["manifest"])

@@ -19,6 +19,7 @@ from scripts.lifecycle._xanad._plan_a import (
 from scripts.lifecycle._xanad._plan_c import (
     determine_repair_reasons,
 )
+from scripts.lifecycle._xanad._state import CURRENT_PACKAGE_NAME, get_lockfile_package_name
 from scripts.lifecycle._xanad._pack_conflicts import (
     build_conflict_questions,
     collect_conflict_resolutions,
@@ -88,6 +89,52 @@ def _conflict_blocked_plan(
             "agentCustomization": agent_customization,
         },
     }
+
+
+def _validate_reinterview_preconditions(context: dict) -> None:
+    """Raise if the workspace cannot safely execute a re-interview via update.
+
+    A re-interview is triggered when update is invoked with an explicit answers
+    file.  It requires a clean, fully-migrated installed state so that lockfile
+    seeding and token replay are reliable.
+    """
+    lockfile = context["lockfileState"]
+    if context["installState"] != "installed":
+        raise LifecycleCommandError(
+            "inspection_failure",
+            "Re-interview via update requires a clean installed state. Run repair first.",
+            5,
+            {"installState": context["installState"]},
+        )
+    if lockfile.get("malformed"):
+        raise LifecycleCommandError(
+            "inspection_failure",
+            "Re-interview via update requires a valid lockfile. Run repair first.",
+            5,
+            {"reason": "malformed-lockfile"},
+        )
+    if lockfile.get("needsMigration"):
+        raise LifecycleCommandError(
+            "inspection_failure",
+            "Re-interview via update requires an up-to-date lockfile schema. Run repair first.",
+            5,
+            {"reason": "schema-migration-required"},
+        )
+    installed_package_name = lockfile.get("originalPackageName") or get_lockfile_package_name(lockfile)
+    if installed_package_name is not None and installed_package_name != CURRENT_PACKAGE_NAME:
+        raise LifecycleCommandError(
+            "inspection_failure",
+            "Re-interview via update requires the current package identity. Run repair first.",
+            5,
+            {"reason": "package-identity-mismatch", "installedPackage": installed_package_name},
+        )
+    if context.get("successorMigrationTargets"):
+        raise LifecycleCommandError(
+            "inspection_failure",
+            "Re-interview via update requires successor cleanup to be complete. Run repair first.",
+            5,
+            {"reason": "successor-cleanup-required"},
+        )
 
 
 def _validate_plan_mode(mode: str, context: dict) -> list:
@@ -197,6 +244,8 @@ def build_plan_result(
 
     context = collect_context(workspace, package_root)
     repair_reasons = _validate_plan_mode(mode, context)
+    if mode == "update" and answers_path is not None:
+        _validate_reinterview_preconditions(context)
 
     raw_answers = load_answers(answers_path)
     questions, resolved_answers, unresolved, unknown_answer_ids = prepare_questions(
