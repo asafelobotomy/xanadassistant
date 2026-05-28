@@ -159,6 +159,172 @@ def _validation_allows_factory_restore(validation: dict, factory_restore: bool) 
     return True
 
 
+def _run_backup_phase(
+    workspace: Path,
+    workspace_resolved: Path,
+    backup_plan: dict,
+    backup_root: str | None,
+    path_timestamp: str,
+) -> None:
+    """Create backup copies of files that will be overwritten or archived."""
+    if backup_root is not None:
+        (workspace / backup_root).mkdir(parents=True, exist_ok=True)
+
+    for backup_target in backup_plan.get("targets", []):
+        source_path = workspace / backup_target["target"]
+        _assert_within_workspace(source_path, workspace_resolved)
+        if not source_path.exists():
+            continue
+        backup_path = materialize_apply_timestamp(backup_target["backupPath"], path_timestamp)
+        if backup_path is None:
+            continue
+        _copy_backup_file(source_path, workspace / backup_path, workspace_resolved)
+
+
+def _run_actions_phase(
+    workspace: Path,
+    workspace_resolved: Path,
+    package_root: Path,
+    actions: list[dict],
+    manifest_entries: dict[str, dict],
+    archive_targets_map: dict[str, str],
+    backup_root: str | None,
+    writes: dict,
+    created_paths: set[str],
+    archive_paths: set[str],
+    retired_records: list[dict],
+) -> None:
+    """Apply each plan action: archive-retired, delete, merge, or write."""
+    for action in actions:
+        if action["action"] == "archive-retired":
+            target_path = workspace / action["target"]
+            _assert_within_workspace(target_path, workspace_resolved)
+            if action.get("strategy", "archive-retired") == "report-retired":
+                retired_records.append({"target": action["target"], "action": "reported"})
+                writes["retiredReported"] += 1
+                continue
+
+            archive_path_str = archive_targets_map.get(action["target"])
+            if target_path.exists() and backup_root is not None:
+                _copy_backup_file(target_path, workspace / backup_root / action["target"], workspace_resolved)
+            if archive_path_str is not None:
+                archive_dest = workspace / archive_path_str
+                _assert_within_workspace(archive_dest, workspace_resolved)
+                archive_dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(target_path), archive_dest)
+                archive_paths.add(archive_path_str)
+            elif target_path.exists():
+                target_path.unlink()
+            retired_records.append({
+                "target": action["target"],
+                "action": "archived",
+                "archivePath": archive_path_str,
+            })
+            writes["retiredArchived"] += 1
+            continue
+
+        if action["action"] == "delete":
+            target_path = workspace / action["target"]
+            _assert_within_workspace(target_path, workspace_resolved)
+            if not target_path.exists():
+                continue
+            if backup_root is not None:
+                _copy_backup_file(target_path, workspace / backup_root / action["target"], workspace_resolved)
+            target_path.unlink()
+            writes["deleted"] += 1
+            continue
+
+        if action["action"] == "merge" and action["strategy"] not in {"merge-json-object", "preserve-marked-markdown-blocks"}:
+            raise LifecycleCommandError(
+                "apply_failure",
+                "Merge actions are not implemented in the current apply slice.",
+                9,
+                {"target": action["target"], "strategy": action["strategy"]},
+            )
+
+        manifest_entry = manifest_entries.get(action["id"])
+        if manifest_entry is None:
+            raise LifecycleCommandError(
+                "apply_failure",
+                "Plan references a managed entry missing from the manifest.",
+                9,
+                {"id": action["id"]},
+            )
+
+        target_path = workspace / action["target"]
+        _assert_within_workspace(target_path, workspace_resolved)
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        if action["action"] == "merge":
+            if action["strategy"] == "merge-json-object":
+                merge_json_object_file(target_path, package_root, manifest_entry)
+            else:
+                merge_markdown_file(target_path, package_root, manifest_entry, action.get("tokenValues", {}))
+            writes["merged"] += 1
+            continue
+
+        target_path.write_bytes(render_entry_bytes(package_root, manifest_entry, action.get("tokenValues", {})))
+        apply_chmod_rule(target_path, manifest_entry.get("chmod", "none"))
+        if action["action"] == "add":
+            writes["added"] += 1
+            created_paths.add(action["target"])
+        elif action["action"] == "replace":
+            writes["replaced"] += 1
+
+
+def _run_post_apply_phase(
+    workspace: Path,
+    package_root: Path,
+    planned_lockfile: dict,
+    apply_timestamp: str,
+    path_timestamp: str,
+    plan_payload: dict,
+    manifest: dict,
+    factory_restore: bool,
+    backup_root: str | None,
+    created_paths: set[str],
+    archive_paths: set[str],
+    snapshots: dict,
+    remember_snapshot,
+) -> dict:
+    """Write lockfile, summary, gitignore; run health check validation."""
+    planned_lockfile["contents"]["timestamps"] = {
+        "appliedAt": apply_timestamp,
+        "updatedAt": apply_timestamp,
+    }
+    if "lastBackup" in planned_lockfile["contents"]:
+        planned_lockfile["contents"]["lastBackup"]["path"] = materialize_apply_timestamp(
+            planned_lockfile["contents"]["lastBackup"]["path"],
+            path_timestamp,
+        )
+
+    remember_snapshot(planned_lockfile["path"])
+    _write_lockfile(workspace / planned_lockfile["path"], planned_lockfile["contents"])
+    if snapshots[planned_lockfile["path"]] is None:
+        created_paths.add(planned_lockfile["path"])
+
+    remember_snapshot(".github/copilot-version.md")
+    _write_summary(workspace / ".github" / "copilot-version.md", planned_lockfile["contents"], manifest)
+    if snapshots[".github/copilot-version.md"] is None:
+        created_paths.add(".github/copilot-version.md")
+
+    remember_snapshot(".gitignore")
+    _apply_memory_gitignore(workspace, planned_lockfile["contents"].get("setupAnswers", {}))
+    if snapshots[".gitignore"] is None and (workspace / ".gitignore").exists():
+        created_paths.add(".gitignore")
+
+    validation = _check.build_check_result(workspace, package_root)
+    if not _validation_allows_factory_restore(validation, factory_restore):
+        details = _rollback_metadata(workspace, backup_root, created_paths, archive_paths, snapshots)
+        details["summary"] = validation["result"]["summary"]
+        raise LifecycleCommandError(
+            "apply_failure",
+            "Applied workspace did not validate cleanly.",
+            9,
+            details,
+        )
+    return validation
+
+
 def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, dry_run: bool = False) -> dict:
     manifest = load_manifest(package_root, load_json(package_root / DEFAULT_POLICY_PATH)) or {"managedFiles": []}
     manifest_entries = {entry["id"]: entry for entry in manifest.get("managedFiles", [])}
@@ -195,129 +361,16 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
         snapshots.setdefault(relative_path, _snapshot_file(workspace / relative_path))
 
     try:
-        if backup_root is not None:
-            (workspace / backup_root).mkdir(parents=True, exist_ok=True)
-
-        for backup_target in backup_plan.get("targets", []):
-            source_path = workspace / backup_target["target"]
-            _assert_within_workspace(source_path, workspace_resolved)
-            if not source_path.exists():
-                continue
-            backup_path = materialize_apply_timestamp(backup_target["backupPath"], path_timestamp)
-            if backup_path is None:
-                continue
-            _copy_backup_file(source_path, workspace / backup_path, workspace_resolved)
-
-        for action in actions:
-            if action["action"] == "archive-retired":
-                target_path = workspace / action["target"]
-                _assert_within_workspace(target_path, workspace_resolved)
-                if action.get("strategy", "archive-retired") == "report-retired":
-                    retired_records.append({"target": action["target"], "action": "reported"})
-                    writes["retiredReported"] += 1
-                    continue
-
-                archive_path_str = archive_targets_map.get(action["target"])
-                if target_path.exists() and backup_root is not None:
-                    _copy_backup_file(target_path, workspace / backup_root / action["target"], workspace_resolved)
-                if archive_path_str is not None:
-                    archive_dest = workspace / archive_path_str
-                    _assert_within_workspace(archive_dest, workspace_resolved)
-                    archive_dest.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.move(str(target_path), archive_dest)
-                    archive_paths.add(archive_path_str)
-                elif target_path.exists():
-                    target_path.unlink()
-                retired_records.append({
-                    "target": action["target"],
-                    "action": "archived",
-                    "archivePath": archive_path_str,
-                })
-                writes["retiredArchived"] += 1
-                continue
-
-            if action["action"] == "delete":
-                target_path = workspace / action["target"]
-                _assert_within_workspace(target_path, workspace_resolved)
-                if not target_path.exists():
-                    continue
-                if backup_root is not None:
-                    _copy_backup_file(target_path, workspace / backup_root / action["target"], workspace_resolved)
-                target_path.unlink()
-                writes["deleted"] += 1
-                continue
-
-            if action["action"] == "merge" and action["strategy"] not in {"merge-json-object", "preserve-marked-markdown-blocks"}:
-                raise LifecycleCommandError(
-                    "apply_failure",
-                    "Merge actions are not implemented in the current apply slice.",
-                    9,
-                    {"target": action["target"], "strategy": action["strategy"]},
-                )
-
-            manifest_entry = manifest_entries.get(action["id"])
-            if manifest_entry is None:
-                raise LifecycleCommandError(
-                    "apply_failure",
-                    "Plan references a managed entry missing from the manifest.",
-                    9,
-                    {"id": action["id"]},
-                )
-
-            target_path = workspace / action["target"]
-            _assert_within_workspace(target_path, workspace_resolved)
-            target_path.parent.mkdir(parents=True, exist_ok=True)
-            if action["action"] == "merge":
-                if action["strategy"] == "merge-json-object":
-                    merge_json_object_file(target_path, package_root, manifest_entry)
-                else:
-                    merge_markdown_file(target_path, package_root, manifest_entry, action.get("tokenValues", {}))
-                writes["merged"] += 1
-                continue
-
-            target_path.write_bytes(render_entry_bytes(package_root, manifest_entry, action.get("tokenValues", {})))
-            apply_chmod_rule(target_path, manifest_entry.get("chmod", "none"))
-            if action["action"] == "add":
-                writes["added"] += 1
-                created_paths.add(action["target"])
-            elif action["action"] == "replace":
-                writes["replaced"] += 1
-
-        planned_lockfile["contents"]["timestamps"] = {
-            "appliedAt": apply_timestamp,
-            "updatedAt": apply_timestamp,
-        }
-        if "lastBackup" in planned_lockfile["contents"]:
-            planned_lockfile["contents"]["lastBackup"]["path"] = materialize_apply_timestamp(
-                planned_lockfile["contents"]["lastBackup"]["path"],
-                path_timestamp,
-            )
-
-        remember_snapshot(planned_lockfile["path"])
-        _write_lockfile(workspace / planned_lockfile["path"], planned_lockfile["contents"])
-        if snapshots[planned_lockfile["path"]] is None:
-            created_paths.add(planned_lockfile["path"])
-
-        remember_snapshot(".github/copilot-version.md")
-        _write_summary(workspace / ".github" / "copilot-version.md", planned_lockfile["contents"], manifest)
-        if snapshots[".github/copilot-version.md"] is None:
-            created_paths.add(".github/copilot-version.md")
-
-        remember_snapshot(".gitignore")
-        _apply_memory_gitignore(workspace, planned_lockfile["contents"].get("setupAnswers", {}))
-        if snapshots[".gitignore"] is None and (workspace / ".gitignore").exists():
-            created_paths.add(".gitignore")
-
-        validation = _check.build_check_result(workspace, package_root)
-        if not _validation_allows_factory_restore(validation, factory_restore):
-            details = _rollback_metadata(workspace, backup_root, created_paths, archive_paths, snapshots)
-            details["summary"] = validation["result"]["summary"]
-            raise LifecycleCommandError(
-                "apply_failure",
-                "Applied workspace did not validate cleanly.",
-                9,
-                details,
-            )
+        _run_backup_phase(workspace, workspace_resolved, backup_plan, backup_root, path_timestamp)
+        _run_actions_phase(
+            workspace, workspace_resolved, package_root, actions, manifest_entries,
+            archive_targets_map, backup_root, writes, created_paths, archive_paths, retired_records,
+        )
+        _run_post_apply_phase(
+            workspace, package_root, planned_lockfile, apply_timestamp, path_timestamp,
+            plan_payload, manifest, factory_restore, backup_root,
+            created_paths, archive_paths, snapshots, remember_snapshot,
+        )
     except LifecycleCommandError as error:
         if isinstance(error.details, dict) and "rolledBack" in error.details:
             raise

@@ -538,6 +538,84 @@ def _h_prompt(response: str, config: dict, _ctx, model: str, token: str) -> dict
         return {"pass": None, "score": None, "error": str(e)}
 
 
+def _load_graders_ext():
+    try:
+        from _graders_ext import (  # noqa: PLC0415
+            _grade_trigger, _grade_file, _grade_diff,
+            _grade_code, _grade_action_sequence, _grade_tool_constraint,
+            _grade_script, _grade_human, _grade_skill_invocation,
+        )
+        return (_grade_trigger, _grade_file, _grade_diff, _grade_code,
+                _grade_action_sequence, _grade_tool_constraint,
+                _grade_script, _grade_human, _grade_skill_invocation)
+    except ImportError as e:
+        return e
+
+
+def _h_ext(gtype: str, response: str, config: dict, ctx, _model, _token) -> dict:
+    fns = _load_graders_ext()
+    if isinstance(fns, ImportError):
+        return {"pass": None, "score": None, "error": f"_graders_ext unavailable: {fns}"}
+    (gr_trigger, gr_file, gr_diff, gr_code, gr_action_seq,
+     gr_tool_constraint, gr_script, gr_human, gr_skill_inv) = fns
+    if gtype == "trigger":
+        eval_dir = Path(ctx["eval_dir"]) if ctx and "eval_dir" in ctx else None
+        prompt = str(ctx.get("prompt", "")) if ctx else ""
+        passed, score, details = gr_trigger(prompt, config, eval_dir)
+        if "error" in details:
+            return {"pass": None, "score": None, "error": details["error"]}
+        return {"pass": passed, "score": score, "details": details}
+    if gtype == "file":
+        workspace = Path(ctx["workspace"]) if ctx and "workspace" in ctx else None
+        passed, score, feedback = gr_file(config, workspace)
+        rec = {"pass": passed, "score": score}
+        if feedback: rec["feedback"] = feedback
+        return rec
+    if gtype == "diff":
+        workspace = Path(ctx["workspace"]) if ctx and "workspace" in ctx else None
+        context_dir = Path(ctx["context_dir"]) if ctx and "context_dir" in ctx else None
+        passed, score, feedback = gr_diff(config, workspace, context_dir)
+        rec = {"pass": passed, "score": score}
+        if feedback: rec["feedback"] = feedback
+        return rec
+    if gtype == "code":
+        passed, score, feedback = gr_code(response, config, ctx)
+        rec = {"pass": passed, "score": score}
+        if feedback: rec["feedback"] = feedback
+        return rec
+    if gtype == "action_sequence":
+        passed, score, feedback = gr_action_seq(config, ctx)
+        rec = {"pass": passed, "score": score}
+        if feedback: rec["feedback"] = feedback
+        return rec
+    if gtype == "tool_constraint":
+        passed, score, feedback = gr_tool_constraint(config, ctx)
+        rec = {"pass": passed, "score": score}
+        if feedback: rec["feedback"] = feedback
+        return rec
+    if gtype == "script":
+        passed, score, feedback = gr_script(config, response=response, ctx=ctx)
+        rec = {"pass": passed, "score": score}
+        if feedback: rec["feedback"] = feedback
+        return rec
+    if gtype == "human":
+        _, _, details = gr_human(config, ctx=ctx)
+        rec: dict = {"pass": None, "score": None, "pending": True}
+        if details.get("criteria"): rec["criteria"] = details["criteria"]
+        if details.get("instructions"): rec["instructions"] = details["instructions"]
+        return rec
+    # skill_invocation
+    passed, score, feedback = gr_skill_inv(config, ctx=ctx)
+    rec = {"pass": passed, "score": score}
+    if feedback: rec["feedback"] = feedback
+    return rec
+
+
+_EXT_GRADER_TYPES = frozenset({
+    "trigger", "file", "diff", "code", "action_sequence",
+    "tool_constraint", "script", "human", "skill_invocation",
+})
+
 _GRADER_REGISTRY: dict = {
     "text":           lambda r, c, ctx, m, t: _h_2(_grade_text, r, c),
     "behavior":       lambda r, c, ctx, m, t: _h_2(_grade_behavior, r, c),
@@ -546,7 +624,9 @@ _GRADER_REGISTRY: dict = {
     "prompt":         _h_prompt,
     "llm":            lambda r, c, ctx, m, t: _h_llm_like(_grade_llm, r, c, m, t),
     "llm_comparison": lambda r, c, ctx, m, t: _h_llm_like(_grade_llm_comparison, r, c, m, t),
+    **{gt: (lambda r, c, ctx, m, t, _gt=gt: _h_ext(_gt, r, c, ctx, m, t)) for gt in _EXT_GRADER_TYPES},
 }
+
 
 
 def _run_graders(
@@ -576,84 +656,6 @@ def _run_graders(
             rec["type"] = gtype
             rec["name"] = gname
             results.append(rec)
-        elif gtype in (
-            "trigger", "file", "diff", "code", "action_sequence", "tool_constraint",
-            "script", "human", "skill_invocation",
-        ):
-            # Extended graders — lazy import to avoid circular dependency.
-            try:
-                from _graders_ext import (  # noqa: PLC0415
-                    _grade_trigger, _grade_file, _grade_diff,
-                    _grade_code, _grade_action_sequence, _grade_tool_constraint,
-                    _grade_script, _grade_human, _grade_skill_invocation,
-                )
-            except ImportError as e:
-                results.append({"type": gtype, "name": gname, "pass": None,
-                                "score": None, "error": f"_graders_ext unavailable: {e}"})
-                continue
-            if gtype == "trigger":
-                eval_dir = Path(ctx["eval_dir"]) if ctx and "eval_dir" in ctx else None
-                prompt = str(ctx.get("prompt", "")) if ctx else ""
-                passed, score, details = _grade_trigger(prompt, config, eval_dir)
-                rec: dict = {"type": gtype, "name": gname}
-                if "error" in details:
-                    rec.update({"pass": None, "score": None, "error": details["error"]})
-                else:
-                    rec.update({"pass": passed, "score": score, "details": details})
-                results.append(rec)
-            elif gtype == "file":
-                workspace = Path(ctx["workspace"]) if ctx and "workspace" in ctx else None
-                passed, score, feedback = _grade_file(config, workspace)
-                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
-                if feedback:
-                    rec["feedback"] = feedback
-                results.append(rec)
-            elif gtype == "diff":
-                workspace = Path(ctx["workspace"]) if ctx and "workspace" in ctx else None
-                context_dir = Path(ctx["context_dir"]) if ctx and "context_dir" in ctx else None
-                passed, score, feedback = _grade_diff(config, workspace, context_dir)
-                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
-                if feedback:
-                    rec["feedback"] = feedback
-                results.append(rec)
-            elif gtype == "code":
-                passed, score, feedback = _grade_code(response, config, ctx)
-                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
-                if feedback:
-                    rec["feedback"] = feedback
-                results.append(rec)
-            elif gtype == "action_sequence":
-                passed, score, feedback = _grade_action_sequence(config, ctx)
-                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
-                if feedback:
-                    rec["feedback"] = feedback
-                results.append(rec)
-            elif gtype == "tool_constraint":
-                passed, score, feedback = _grade_tool_constraint(config, ctx)
-                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
-                if feedback:
-                    rec["feedback"] = feedback
-                results.append(rec)
-            elif gtype == "script":
-                passed, score, feedback = _grade_script(config, response=response, ctx=ctx)
-                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
-                if feedback:
-                    rec["feedback"] = feedback
-                results.append(rec)
-            elif gtype == "human":
-                _, _, details = _grade_human(config, ctx=ctx)
-                rec = {"type": gtype, "name": gname, "pass": None, "score": None, "pending": True}
-                if details.get("criteria"):
-                    rec["criteria"] = details["criteria"]
-                if details.get("instructions"):
-                    rec["instructions"] = details["instructions"]
-                results.append(rec)
-            else:  # skill_invocation
-                passed, score, feedback = _grade_skill_invocation(config, ctx=ctx)
-                rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
-                if feedback:
-                    rec["feedback"] = feedback
-                results.append(rec)
         else:
             results.append({"type": gtype, "name": gname, "pass": None,
                             "score": None, "skipped": f"grader '{gtype}' not supported"})

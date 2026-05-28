@@ -53,7 +53,7 @@ WARN_LIMIT_OVERRIDES = {
     # ── Lifecycle engine submodules ───────────────────────────────────────────────
     # Each submodule is intentionally scoped; these grew slightly beyond 250 while
     # remaining well under the hard limit.
-    "scripts/lifecycle/_xanad/_apply_executor.py": 350,
+    "scripts/lifecycle/_xanad/_apply_executor.py": 410,
     "scripts/lifecycle/_xanad/_execute_apply_compat.py": 320,
     "scripts/lifecycle/_xanad/_interview.py": 300,
     "scripts/lifecycle/_xanad/_main.py": 310,
@@ -98,6 +98,8 @@ WARN_LIMIT_OVERRIDES = {
     "tests/mcp_servers/test_xanad_workspace_mcp_grade_human.py": 200,
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
+    # Lifecycle apply executor: grew with _run_backup_phase, _run_actions_phase, _run_post_apply_phase helpers.
+    "scripts/lifecycle/_xanad/_apply_executor.py": 430,
     # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.
     "mcp/scripts/webMcp.py": 510,
     # Web MCP test suite: expanded to cover new fetch, retry, and search paths.
