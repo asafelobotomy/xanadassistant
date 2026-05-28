@@ -248,7 +248,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:19d63771b494a85dbf85154f901a5d3cd2a47d000983a93e25429d360e26bb35"
+      "hash": "sha256:e710415477b18f8c6e7801c8cfaf964af4bddb01aea6df8acc2b150633704644"
     },
     {
       "id": "instructions.agents.instructions.md",

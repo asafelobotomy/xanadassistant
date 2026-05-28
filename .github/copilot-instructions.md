@@ -24,11 +24,13 @@ Use the **xanadLifecycle** agent for all xanadAssistant operations. Trigger phra
 | Trigger phrase | Operation |
 | --- | --- |
 | `"set up xanadAssistant"` | First-time install |
+| `"inspect workspace"` | Inspect current install state |
 | `"update xanadAssistant"` | Pull latest agents, skills, hooks, prompts |
 | `"run lifecycle check"` | Inspect + check; surface repair reasons |
 | `"repair install"` | Fix stale or broken managed files |
 | `"factory restore"` | Reset to clean managed state |
 | `"health check"` | Run xanadAssistant install-state health check |
+| `"run health check"` | Run xanadAssistant install-state health check |
 
 Available prompts: `/setup` (install or refresh), `/bootstrap` (cold-start from bare workspace), `/update` (pull latest package files).
 
@@ -46,14 +48,16 @@ Route specialist work to the matching agent before acting directly. If a task in
 | --- | --- |
 | Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `Cleaner` |
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
-| Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, or installing/updating/removing packages | `Deps` |
+| Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, suggesting updates or alternatives, or installing/updating/repairing/removing packages | `Deps` |
 | Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
 | Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |
 | Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
-| Code review, architecture review, security review, maintainability review, regression-risk review, review of a PR/diff, or a codebase **audit** | `Review` |
-| xanadAssistant inspect, check, plan, apply, update, repair, factory-restore, or **health check** | `xanadLifecycle` |
+| Code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, test coverage review, or a bare codebase **audit** | `Review` |
+| xanadAssistant setup, inspect, interview, health-check, health-report, plan, apply, update, repair, factory-restore, or **health check** | `xanadLifecycle` |
+| Moving files, regrouping folders, fixing broken paths, or building logical repository layouts | `Organise` |
+| First-pass complexity assessment before choosing an execution path — simple prompt vs. agent invocation | `Triage` |
 
 ## Coding Conventions
 
@@ -106,10 +110,12 @@ See `## Agent Routing` for the authoritative routing table; this section is a qu
 - `Cleaner` — prune stale artefacts, caches, archives, and dead files
 - `Commit` — git operations, commit messages, staging, push, pull, PR work
 - `Debugger` — diagnose failures and isolate root causes before implementation
-- `Deps` — scan dependencies, audit packages, check for vulnerabilities, install/update/remove
+- `Deps` — scan dependencies, audit packages, check for vulnerabilities, install/update/repair/remove
 - `Docs` — write and update documentation, migration guides, and technical walkthroughs
 - `Explore` — broad read-only codebase exploration and architecture lookup
+- `Organise` — move files, regroup folders, fix broken paths (subagent-only)
 - `Planner` — produce scoped execution plans for multi-step work before implementation
 - `Researcher` — gather source-backed external constraints before implementation or review
-- `Review` — code, architecture, security, and regression-risk review; handles codebase audits
-- `xanadLifecycle` — handles all `inspect`, `health-check`, `health-report`, `plan`, `update`, `repair`, `factory-restore`, and **health check** requests
+- `Review` — code, architecture, security, correctness, and regression-risk review; handles codebase audits
+- `Triage` — first-pass complexity assessment; classify and route before acting (subagent-only)
+- `xanadLifecycle` — handles all `setup`, `inspect`, `interview`, `health-check`, `health-report`, `plan`, `update`, `repair`, `factory-restore`, and **health check** requests

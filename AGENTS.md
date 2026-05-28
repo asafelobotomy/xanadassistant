@@ -12,7 +12,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `Deps` | yes | Scanning workspace dependencies, auditing installed packages, checking for vulnerabilities, suggesting updates or alternatives, and installing/updating/repairing/removing packages |
 | `Explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, architecture lookup, dependency tracing, example search, and repository structure questions |
 | `Review` | yes | Code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, and test coverage review |
-| `xanadLifecycle` | yes | `inspect`, `health-check`, `health-report`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and health-check workflows for xanadAssistant-managed surfaces |
+| `xanadLifecycle` | yes | `setup`, `inspect`, `interview`, `health-check`, `health-report`, `plan`, `apply`, `update`, `repair`, `factory-restore`, and health-check workflows for xanadAssistant-managed surfaces |
 | `Triage` | no | First-pass complexity classification — determines whether a task needs a direct answer, targeted edit, single agent, or multi-agent plan |
 | `Debugger` | no | Root-cause diagnosis, failing tests, regression triage, broken commands, unclear behavior reproduction, and minimal fix-path isolation |
 | `Organise` | no | Subagent-only structural worker — moving files, regrouping folders, fixing caller paths after a file move |
@@ -26,21 +26,23 @@ Use it to decide which specialist agent should own a task before widening scope.
 | --- | --- |
 | Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `Cleaner` |
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
-| Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, suggesting updates or alternatives, or installing/updating/removing packages | `Deps` |
+| Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, suggesting updates or alternatives, or installing/updating/repairing/removing packages | `Deps` |
 | Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or "find where this lives" | `Explore` |
 | Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |
 | Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
 | Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
-| Code review, architecture review, security review, maintainability review, regression-risk review, or review of a PR/diff | `Review` |
-| xanadAssistant inspect, health-check, health-report, plan, apply, update, repair, factory-restore, or a health-check workflow | `xanadLifecycle` |
+| Code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, test coverage review, or a bare codebase audit | `Review` |
+| xanadAssistant setup, inspect, interview, health-check, health-report, plan, apply, update, repair, factory-restore, or a health-check workflow | `xanadLifecycle` |
+| Moving files, regrouping folders, fixing broken paths, or building logical repository layouts | `Organise` |
+| First-pass complexity assessment before choosing an execution path — simple prompt vs. agent invocation | `Triage` |
 
 ## Handoff Rules
 
 - `xanadLifecycle` may delegate to `Explore` for repo inventory, `Debugger` for failing lifecycle behavior, and `Planner` for phased remediation.
 - `Cleaner` may delegate to `Review` for security-sensitive or policy-owned files, `Organise` when cleanup turns into file moves or reshaping, `Docs` when cleanup changes maintenance guidance or user-facing references, and `Commit` when the approved scope is ready to stage.
 - `Review` may delegate to `Explore` for inventory, `Debugger` for concrete reproduction, `Planner` for remediation planning, and `Researcher` for current external constraints.
-- `Debugger` stays read-only and returns diagnosis, evidence, and the minimal next fix step. It may delegate to `Explore` when the failure spans unfamiliar files and a read-only inventory is needed first, and to `Review` when the likely cause involves a contract boundary, security posture, or architecture assumption.
+- `Debugger` stays read-only and returns diagnosis, evidence, and the minimal next fix step. It may delegate to `Explore` when the failure spans unfamiliar files and a read-only inventory is needed first, `Review` when the likely cause involves a contract boundary, security posture, or architecture assumption, `Planner` when root cause is known but the fix spans multiple files or needs staged verification, and `Researcher` when the failure appears to depend on current upstream behavior or source-specific constraints.
 - `Planner` stays read-only and returns an executable plan with file list, risks, and verification. It may delegate to `Explore` for a broader inventory before the plan is credible, `Debugger` when broken state must be diagnosed first, `Review` for contract or architecture analysis the plan depends on, `Researcher` for external doc constraints, and `Docs` to persist the plan as a project document.
 - `Researcher` stays read-only and returns source-backed findings, constraints, and recommended next steps. It may delegate to `Explore` for a broader local inventory, `Planner` when findings imply a multi-step remediation path, `Docs` to convert findings into maintained documentation, and `Review` when findings need to become correctness or regression-risk findings.
 - `Organise` stays structural-only — no semantic implementation unless explicitly widened by the caller. It may delegate to `Explore` for a read-only inventory of callers before moving files, and `Docs` when moves require updating user-facing references or migration guides.
