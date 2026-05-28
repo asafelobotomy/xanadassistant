@@ -133,7 +133,8 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # workspace_grade_human MCP tests.
     "tests/mcp_servers/test_xanad_workspace_mcp_grade_human.py": 220,
     # xanadEval graders extension test suite: comprehensive grader coverage requires extended length.
-    "tests/tools/test_xanadEval_graders_ext.py": 760,
+    # GE-T1: added three regression tests for _grade_trigger skill_path traversal prevention.
+    "tests/tools/test_xanadEval_graders_ext.py": 820,
     # Memory MCP shared module: grew with versioned migration helpers and session isolation.
     "mcp/scripts/_memory_mcp_shared.py": 460,
     # Memory MCP entrypoint: grew with session_id threading and branch-scoped rule fixes.

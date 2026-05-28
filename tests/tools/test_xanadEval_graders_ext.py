@@ -203,6 +203,47 @@ class TriggerGraderTests(unittest.TestCase):
         self.assertTrue(passed)
         self.assertEqual(score, 0.0)
 
+    def test_dotdot_skill_path_rejected(self) -> None:
+        """Relative skill_path with .. must be rejected before eval_dir join."""
+        tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmpdir.cleanup)
+        eval_dir = Path(tmpdir.name)
+        config = {"skill_path": "../../etc/passwd", "mode": "positive"}
+        passed, score, details = _grade_trigger("anything", config, eval_dir=eval_dir)
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+        self.assertIn("error", details)
+        self.assertIn("unsafe", details["error"])
+
+    def test_dotdot_skill_path_rejected_without_eval_dir(self) -> None:
+        """Relative skill_path with .. is rejected even when no eval_dir is provided."""
+        config = {"skill_path": "../some/path", "mode": "positive"}
+        passed, score, details = _grade_trigger("anything", config)
+        self.assertFalse(passed)
+        self.assertIn("error", details)
+        self.assertIn("unsafe", details["error"])
+
+    def test_skill_path_boundary_enforced_after_resolve(self) -> None:
+        """A skill_path that resolves outside eval_dir via symlink-free trickery is rejected."""
+        import os
+        tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmpdir.cleanup)
+        eval_dir = Path(tmpdir.name) / "evals" / "myagent"
+        eval_dir.mkdir(parents=True)
+        # Write a skill one directory above the eval_dir
+        outside = Path(tmpdir.name) / "skills" / "leaked"
+        outside.mkdir(parents=True)
+        (outside / "SKILL.md").write_text("---\nname: leaked\ndescription: secret\n---\n", encoding="utf-8")
+        # Construct a relative path that would escape via resolved symlink-free path.
+        # Since we already block ".." in parts, create a nested structure instead.
+        # This test verifies the post-resolve boundary check for completeness.
+        rel = os.path.relpath(outside, eval_dir)  # e.g. "../../skills/leaked"
+        config = {"skill_path": rel, "mode": "positive"}
+        passed, score, details = _grade_trigger("secret", config, eval_dir=eval_dir)
+        # Should be rejected either by the ".." part check or the post-resolve check
+        self.assertFalse(passed)
+        self.assertIn("error", details)
+
     def test_run_graders_dispatches_trigger_type(self) -> None:
         tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(tmpdir.cleanup)

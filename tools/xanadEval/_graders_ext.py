@@ -96,10 +96,22 @@ def _grade_trigger(
     if not 0.0 <= threshold <= 1.0:
         return False, 0.0, {"error": "trigger grader: threshold must be between 0.0 and 1.0"}
 
-    # Resolve skill_path: try as-is (absolute), then relative to eval_dir
+    # Resolve skill_path: try as-is (absolute), then relative to eval_dir.
+    # Reject relative paths that contain ".." before resolving to prevent traversal.
     skill_path = Path(skill_path_cfg)
-    if not skill_path.is_absolute() and eval_dir is not None:
-        skill_path = (eval_dir / skill_path).resolve()
+    if not skill_path.is_absolute():
+        if ".." in skill_path.parts:
+            return False, 0.0, {
+                "error": f"trigger grader: unsafe skill_path {skill_path_cfg!r}"
+            }
+        if eval_dir is not None:
+            skill_path = (eval_dir / skill_path).resolve()
+            try:
+                skill_path.relative_to(eval_dir.resolve())
+            except ValueError:
+                return False, 0.0, {
+                    "error": f"trigger grader: skill_path escapes eval directory: {skill_path_cfg!r}"
+                }
     if skill_path.is_dir():
         skill_path = skill_path / "SKILL.md"
 
