@@ -44,20 +44,7 @@ Do not edit files under `.github/agents/`, `.github/skills/`, `.github/mcp/`, or
 
 Route specialist work to the matching agent before acting directly. If a task involves work that maps to a specialist agent's domain, delegate that work to the specialist agent first and continue from the returned result. If a delegated agent cannot complete its task, handle the failure inline or surface it to the user before continuing.
 
-| Work type | Required agent |
-| --- | --- |
-| Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `Cleaner` |
-| Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `Commit` |
-| Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, suggesting updates or alternatives, or installing/updating/repairing/removing packages | `Deps` |
-| Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or “find where this lives” | `Explore` |
-| Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |
-| Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
-| External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
-| Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
-| Code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, test coverage review, or a bare codebase **audit** | `Review` |
-| xanadAssistant setup, inspect, interview, health-check, health-report, plan, apply, update, repair, factory-restore, or **health check** | `xanadLifecycle` |
-| Moving files, regrouping folders, fixing broken paths, or building logical repository layouts | `Organise` |
-| First-pass complexity assessment before choosing an execution path — simple prompt vs. agent invocation | `Triage` |
+See [AGENTS.md](../AGENTS.md) for the full routing table, roster, handoff rules, and trigger phrases. That file is loaded automatically as an instruction source, so routing guidance is always in context.
 
 ## Coding Conventions
 

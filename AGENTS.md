@@ -51,6 +51,8 @@ Use it to decide which specialist agent should own a task before widening scope.
 - `Docs` may delegate to `Researcher` for external references, `Explore` for local accuracy checks, `Review` for doc quality, and `Planner` when the documentation scope is broad.
 - `Triage` classifies task complexity and recommends the minimal execution path. It may delegate to `Planner` for Compound or Complex tasks that need a scoped plan before implementation.
 - Do not introduce a separate routing manifest. Agent frontmatter plus this file is the routing authority.
+- Multi-level delegation chains (A invokes subagent B, which invokes subagent C) require `chat.subagents.allowInvocationsFromSubagents: true` in VS Code workspace settings. This workspace has that setting enabled; consumer workspaces should add it after installation (see [INSTALL.md](INSTALL.md)).
+- `Researcher` and `Planner` each list the other in their `agents:` arrays. Circular delegation at one level is intentional, but recursion is not. When a `Researcher → Planner → Researcher` or `Planner → Researcher → Planner` chain reaches the second iteration, the inner agent must return its output rather than delegating again.
 
 ## Recommended Handoff Patterns
 

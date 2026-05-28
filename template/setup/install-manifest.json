@@ -48,7 +48,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:7416535a02ca2994e9870c08451ea81cec675b7e7687c2a1f73833e34e977e20"
+      "hash": "sha256:6e7c82d17f7b6052b63f7a0cd43adceb336d4562868d34ab46ad845cc3a8207a"
     },
     {
       "id": "agents.commit.agent.md",
@@ -64,7 +64,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:f642046e714e538adf7258dc6e3a2c12dd9d1213fd95ea116b82ec975aa58383"
+      "hash": "sha256:92a569bc55c6317ed944d60ee5a57d0d0f443feec002775b10cfdf34c1a81db2"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -80,7 +80,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:4f0d7756ecbfdd40b8aad06a8fc6e14b163f4bcc9a9f756529c213b41fa162d0"
+      "hash": "sha256:83ed39b9ee0378ce5a0f6137dabb4c27504d5366ff433cccafd722d2ea37fc78"
     },
     {
       "id": "agents.deps.agent.md",
@@ -96,7 +96,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:eb27721ac00442f77004cb0e32d2be7aa3027e55c5ef71cdfa066a197ab192bf"
+      "hash": "sha256:22b81326b3334203a6a2fddbcdc35f24bf1a4d60ae15cc501683c85a3c4007f4"
     },
     {
       "id": "agents.docs.agent.md",
@@ -112,7 +112,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:423ff28934fe2d34b942a8d6ee76613414751502e7d3658538b3e016dc6e26c3"
+      "hash": "sha256:25431ad2abcc77260edee79828343b12c110343d98f85ac5467447d1c174c0a8"
     },
     {
       "id": "agents.explore.agent.md",
@@ -128,7 +128,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:3b65dfa13d5a25c75628a4733acace2932e9dbdda4082071167b894776d8d4e2"
+      "hash": "sha256:f6871c484eb65d4f40863965d021f230457347e0857194a33c85e4920c3d8164"
     },
     {
       "id": "agents.organise.agent.md",
@@ -144,7 +144,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:6a94da11c8d3de812dae6874d246ba74913f13d5fcc9cfb5f8de59e23b9781ef"
+      "hash": "sha256:76cc93a8e52a51978fbadf6234722280216a73c81a5664c12e6c40325f7ea919"
     },
     {
       "id": "agents.planner.agent.md",
@@ -160,7 +160,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:f88af3c684583771f0a5a886f1e8fb4d09a224491b63222e1a9cc6f0bca0276a"
+      "hash": "sha256:84ded16f6f28fd01847acb03e678cd73601fcc99b3d0b0d96752a41f6e444399"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -176,7 +176,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:1eaf484884f2567cb25b662b87ab764f7c739604b9ae63d1465ef3e1da4cbc8b"
+      "hash": "sha256:2a2af63c93681d2b25cf2b06037d3992128689446461fef8170c14e8bed9f99a"
     },
     {
       "id": "agents.review.agent.md",
@@ -192,7 +192,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:a1ac24be4289214d2d7eed8fee7bd787de11425338acaaa5dab4fe0be32c871c"
+      "hash": "sha256:95b3ac4a555e0c82471d2dd85d6ea170bad43bb9df9c24e9bb16989125a432c2"
     },
     {
       "id": "agents.triage.agent.md",
@@ -208,7 +208,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:2478dabb32a4b9fd037958bf4cecc9ed2325bffcb1c80a42188884bfcc34f928"
+      "hash": "sha256:e1949e3471da64046b6b147fcba456209a668af183daabbba81ee5e766e56753"
     },
     {
       "id": "agents.xanadLifecycle.agent.md",
@@ -224,7 +224,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:ee40a31820738ade3840bd339b2c700a4e19bd76f792ebf71be2c2f37047fb4b"
+      "hash": "sha256:c1a9eed15b130b1b6e479af7abe2eee12ef5891f5ac9ecb6c1ea1d7ede709c02"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -248,7 +248,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:e710415477b18f8c6e7801c8cfaf964af4bddb01aea6df8acc2b150633704644"
+      "hash": "sha256:a9e19462186ef9af5b05ba34f09d093b829c299fa7cd5284f76c87d368fe0aae"
     },
     {
       "id": "instructions.agents.instructions.md",
