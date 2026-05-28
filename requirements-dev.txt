@@ -15,3 +15,4 @@ httpx>=0.28.1
 markdownify>=1.2.2
 beautifulsoup4>=4.14.3
 jsonschema>=4.0.0
+tzdata>=2024.1
