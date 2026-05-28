@@ -100,3 +100,15 @@ class ReleaseDecisionTests(unittest.TestCase):
             exit_code = release_decision.main(["--repo-root", tmpdir], stdout=io.StringIO(), stderr=io.StringIO())
 
         self.assertEqual(exit_code, 2)
+
+    def test_release_exists_raises_for_ambiguous_not_found_stderr(self) -> None:
+        """A non-release 'not found' error (e.g. repo resolution failure) must raise, not return False."""
+        completed = subprocess.CompletedProcess(
+            args=["gh", "release", "view", "v1.2.3"],
+            returncode=1,
+            stdout="",
+            stderr="GraphQL: Could not resolve to a Repository.",
+        )
+        with mock.patch("scripts.release_decision.subprocess.run", return_value=completed):
+            with self.assertRaises(RuntimeError):
+                release_decision.release_exists("v1.2.3", "owner/repo")

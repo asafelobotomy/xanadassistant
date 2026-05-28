@@ -75,7 +75,11 @@ def run(package_root: Path, workspace: Path | None = None) -> int:
         return 2
 
     workspace_root = (workspace or package_root).resolve()
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        print(f"Manifest is not valid JSON: {manifest_path} ({exc})", file=sys.stderr)
+        return 2
     managed_files = manifest.get("managedFiles", [])
     token_values: dict[str, str] | None = None
     mismatches: list[str] = []
@@ -93,15 +97,18 @@ def run(package_root: Path, workspace: Path | None = None) -> int:
         if not target_path.exists():
             continue
 
-        # Merge/patch strategies produce installed content that legitimately
-        # differs from source — skip them.
+        # Merge/patch strategies produce installed content that diverges from source by design
+        # (user-owned blocks, JSON merging, token substitution). Skip them — raw source hash
+        # cannot be compared to the post-merge installed file.
         if strategy not in {"replace-verbatim", "token-replace"}:
             skipped_merge += 1
             continue
 
         source_path = package_root / source_rel
         if not source_path.exists():
-            print(f"WARNING: source missing for {entry_id}: {source_rel}", file=sys.stderr)
+            mismatches.append(
+                f"  {entry_id}\n    source: {source_rel}\n    target: {target_rel}\n    reason: source file missing"
+            )
             continue
 
         if strategy == "token-replace":

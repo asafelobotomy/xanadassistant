@@ -16,6 +16,7 @@ import argparse
 import shlex
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TextIO
@@ -109,7 +110,10 @@ def run(
     selected_checks = _selected_checks(selected_names)
     for check in selected_checks:
         print(f"==> {check.name}: {_command_text(check.command)}", file=stderr)
+        start = time.monotonic()
         result = subprocess.run(check.command, cwd=repo_root)
+        elapsed = time.monotonic() - start
+        print(f"    [{elapsed:.1f}s]", file=stderr)
         if result.returncode != 0:
             print(f"\nDrift preflight FAILED at '{check.name}'.", file=stderr)
             return result.returncode

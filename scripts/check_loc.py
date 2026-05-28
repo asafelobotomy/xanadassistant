@@ -140,22 +140,6 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
 }
 
 
-def _add_mcp_managed_mirrors(overrides: dict[str, int]) -> None:
-    """Populate .github/mcp/scripts/ entries by mirroring mcp/scripts/ entries.
-
-    Any entry already explicitly present in *overrides* is left untouched, which
-    allows callers to override individual managed-copy limits when needed.
-    """
-    for key in list(overrides):
-        if key.startswith("mcp/scripts/"):
-            mirror = ".github/" + key
-            overrides.setdefault(mirror, overrides[key])
-
-
-_add_mcp_managed_mirrors(WARN_LIMIT_OVERRIDES)
-_add_mcp_managed_mirrors(HARD_LIMIT_OVERRIDES)
-
-
 def collect_files(roots: list[str]) -> list[Path]:
     if roots:
         return [Path(p) for p in roots if Path(p).is_file()]
@@ -170,23 +154,22 @@ def collect_files(roots: list[str]) -> list[Path]:
             Path(p)
             for p in result.stdout.splitlines()
             if p and Path(p).suffix in EXTENSIONS
+            and not p.startswith(".github/")
         ]
-    except subprocess.CalledProcessError:
-        # Fallback: walk the repo root
+    except (subprocess.CalledProcessError, OSError):
+        # Fallback: walk the repo root (git unavailable or not a git repo)
         repo_root = Path(__file__).resolve().parents[1]
         return [
             path
             for path in repo_root.rglob("*")
             if path.is_file() and path.suffix in EXTENSIONS
             and ".git" not in path.parts
+            and ".github" not in path.parts
         ]
 
 
 def count_lines(path: Path) -> int:
-    try:
-        return len(path.read_text(encoding="utf-8", errors="replace").splitlines())
-    except OSError:
-        return 0
+    return len(path.read_text(encoding="utf-8", errors="replace").splitlines())
 
 
 def _path_key(path: Path) -> str:
@@ -213,9 +196,14 @@ def main(argv: list[str] | None = None) -> int:
     files = collect_files(args.files)
     warnings: list[tuple[Path, int, int]] = []
     violations: list[tuple[Path, int, int]] = []
+    read_errors: list[tuple[Path, str]] = []
 
     for path in sorted(files):
-        n = count_lines(path)
+        try:
+            n = count_lines(path)
+        except OSError as exc:
+            read_errors.append((path, str(exc)))
+            continue
         warn_limit = warning_limit_for(path)
         hard_limit = hard_limit_for(path)
         if n > hard_limit:
@@ -227,12 +215,16 @@ def main(argv: list[str] | None = None) -> int:
         suffix = "" if warn_limit == WARN_LIMIT else f"  (warn limit: {warn_limit})"
         print(f"WARN  {n:>5} lines  {path}{suffix}", file=sys.stderr)
 
+    for path, err in read_errors:
+        print(f"ERROR  unreadable  {path}: {err}", file=sys.stderr)
+
     for path, n, hard_limit in violations:
         print(f"ERROR {n:>5} lines  {path}  (hard limit: {hard_limit})", file=sys.stderr)
 
-    if violations:
+    if violations or read_errors:
         print(
-            f"\nLOC gate FAILED: {len(violations)} file(s) exceed the hard limit.",
+            f"\nLOC gate FAILED: {len(violations)} file(s) exceed the hard limit, "
+            f"{len(read_errors)} unreadable.",
             file=sys.stderr,
         )
         return 1

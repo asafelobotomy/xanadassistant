@@ -88,6 +88,47 @@ class CheckLocTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(stderr.getvalue(), "")
 
+    def test_collect_files_excludes_github_paths(self) -> None:
+        """Managed mirrors under .github/ must not be counted by the LOC gate."""
+        with mock.patch(
+            "scripts.check_loc.subprocess.run",
+            return_value=mock.Mock(stdout=".github/agents/foo.agent.md\nagents/foo.agent.md\n", returncode=0),
+        ):
+            result = check_loc.collect_files([])
+        paths_str = [str(p) for p in result]
+        self.assertNotIn(".github/agents/foo.agent.md", paths_str)
+        self.assertIn("agents/foo.agent.md", paths_str)
+
+    def test_collect_files_catches_oserror_from_git_binary_missing(self) -> None:
+        """OSError from subprocess (git binary missing) must trigger the rglob fallback."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            fallback_py = root / "example.py"
+            github_py = root / ".github" / "agents" / "foo.agent.md"
+            fallback_py.write_text("pass\n", encoding="utf-8")
+            github_py.parent.mkdir(parents=True)
+            github_py.write_text("# agent\n", encoding="utf-8")
+
+            with mock.patch("scripts.check_loc.subprocess.run", side_effect=OSError("no such file")), mock.patch(
+                "scripts.check_loc.Path.rglob",
+                return_value=[fallback_py, github_py],
+            ):
+                result = check_loc.collect_files([])
+
+        self.assertIn(fallback_py, result)
+        self.assertNotIn(github_py, result)
+
+    def test_unreadable_file_reported_as_error_and_fails(self) -> None:
+        """An unreadable file must be reported and cause a non-zero exit."""
+        stderr = io.StringIO()
+        with mock.patch("scripts.check_loc.collect_files", return_value=[Path("locked.py")]), \
+             mock.patch("scripts.check_loc.count_lines", side_effect=OSError("permission denied")), \
+             redirect_stderr(stderr):
+            exit_code = check_loc.main([])
+        self.assertEqual(exit_code, 1)
+        self.assertIn("unreadable", stderr.getvalue())
+        self.assertIn("LOC gate FAILED", stderr.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

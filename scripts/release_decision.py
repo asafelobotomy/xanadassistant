@@ -49,7 +49,7 @@ def release_exists(tag: str, repository: str | None = None) -> bool:
         return True
 
     stderr = (result.stderr or "").lower()
-    if "release not found" in stderr or "http 404" in stderr or "not found" in stderr:
+    if "release not found" in stderr or "http 404" in stderr:
         return False
 
     raise RuntimeError(

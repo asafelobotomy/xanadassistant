@@ -225,11 +225,44 @@ class ParityFailTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 1)
 
+    def test_fails_when_source_file_is_missing(self) -> None:
+        """A manifest entry whose source file does not exist must fail, not warn."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            # Target exists but source does not
+            github_mcp = root / ".github" / "mcp"
+            github_mcp.mkdir(parents=True)
+            (github_mcp / "server.py").write_bytes(b"installed content\n")
+            _write_manifest(root, [
+                {
+                    "id": "mcp.server.py",
+                    "source": "mcp/server.py",
+                    "target": ".github/mcp/server.py",
+                    "strategy": "replace-verbatim",
+                    "tokens": [],
+                }
+            ])
+
+            exit_code = check_managed_parity.run(root)
+
+        self.assertEqual(exit_code, 1)
+
 
 class ParityErrorTests(unittest.TestCase):
     def test_returns_exit_2_when_manifest_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
+
+            exit_code = check_managed_parity.run(root)
+
+        self.assertEqual(exit_code, 2)
+
+    def test_returns_exit_2_for_malformed_manifest_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            manifest_dir = root / "template" / "setup"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "install-manifest.json").write_text("{not valid json", encoding="utf-8")
 
             exit_code = check_managed_parity.run(root)
 
