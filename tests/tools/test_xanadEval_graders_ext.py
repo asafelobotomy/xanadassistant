@@ -537,6 +537,24 @@ class CodeGraderTests(unittest.TestCase):
         self.assertFalse(passed)
         self.assertIn("UNSAFE", feedback)
 
+    def test_disallowed_bare_function_call_blocked_at_ast(self) -> None:
+        """open() is not in _ALLOWED_CALL_NAMES — rejected before eval."""
+        passed, score, feedback = _grade_code(
+            "x",
+            {"assertions": ["open('x') is not None"]},
+        )
+        self.assertFalse(passed)
+        self.assertIn("UNSAFE", feedback)
+        self.assertIn("open", feedback)
+
+    def test_allowed_function_calls_still_work(self) -> None:
+        """len, any, all, str — all in _ALLOWED_CALL_NAMES — must pass."""
+        passed, score, _ = _grade_code(
+            "hello world",
+            {"assertions": ["len(output) > 0", "any(c.isalpha() for c in output)"]},
+        )
+        self.assertTrue(passed)
+
 
 # ── _grade_action_sequence ─────────────────────────────────────────────────────
 

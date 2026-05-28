@@ -88,8 +88,8 @@ WARN_LIMIT_OVERRIDES = {
     "tools/xanadEval/_graders_ext.py": 740,
     # graders test: grew with LlmGraderTests and LlmComparisonGraderTests.
     "tests/tools/test_xanadEval_graders.py": 480,
-    # runtime test: grew with RetryTests, ExpectedFieldTests, TagsFilterTests.
-    "tests/tools/test_xanadEval_runtime.py": 510,
+    # runtime test: grew with RetryTests, ExpectedFieldTests, TagsFilterTests, AgentSurfaceResolutionTests.
+    "tests/tools/test_xanadEval_runtime.py": 540,
     # graders_ext test: trigger, file, diff, code, action_sequence, tool_constraint tests.
     "tests/tools/test_xanadEval_graders_ext.py": 560,
     # graders_ext2 test: script, human, skill_invocation, max_calls tests.
@@ -98,7 +98,8 @@ WARN_LIMIT_OVERRIDES = {
     "tests/mcp_servers/test_xanad_workspace_mcp_grade_human.py": 200,
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
-    # Lifecycle apply executor: grew with _run_backup_phase, _run_actions_phase, _run_post_apply_phase helpers.
+    # Lifecycle apply executor: grew with _run_backup_phase, _run_actions_phase, _run_post_apply_phase
+    # helpers, then _ActionCtx NamedTuple and per-action handler extraction (H3 refactor).
     "scripts/lifecycle/_xanad/_apply_executor.py": 430,
     # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.
     "mcp/scripts/webMcp.py": 510,
@@ -123,8 +124,9 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # graders_ext2 test: new test module for script/human/skill_invocation/max_calls.
     "tests/tools/test_xanadEval_graders_ext2.py": 340,
     # xanadEval runtime tests: grew with RetryTests, ExpectedFieldTests, TagsFilterTests
-    # covering the new _call_model retry, expected task field, and --tags filter features.
-    "tests/tools/test_xanadEval_runtime.py": 540,
+    # covering the new _call_model retry, expected task field, and --tags filter features;
+    # and AgentSurfaceResolutionTests + H2 zero-filter guard covering eval surface resolution.
+    "tests/tools/test_xanadEval_runtime.py": 620,
     # graders_ext tests: all nine extended grader unit test classes.
     "tests/tools/test_xanadEval_graders_ext.py": 700,
     # workspace_grade_human MCP tests.

@@ -15,34 +15,27 @@ from _feedback import cmd_dev, cmd_quality
 from _results import cmd_compare_results, cmd_results_list, cmd_results_view
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        prog="xanadEval",
-        description=(
-            "Skill analyser and eval runner for Copilot surface files (xanadAssistant). "
-            "Static commands require no API key. Dynamic commands (run, grade, quality, dev, "
-            "results) require GITHUB_TOKEN or GH_TOKEN."
-        ),
-    )
-    parser.add_argument(
+def _add_format(p: argparse.ArgumentParser) -> None:
+    p.add_argument(
         "--format",
         choices=["text", "json"],
-        default="text",
+        default=argparse.SUPPRESS,
         dest="fmt",
-        help="Output format (default: text)",
+        help="Output format (default: text); overrides the global --format flag",
     )
 
-    sub = parser.add_subparsers(dest="cmd", required=True)
 
-    def _add_format(p: argparse.ArgumentParser) -> None:
-        p.add_argument(
-            "--format",
-            choices=["text", "json"],
-            default=argparse.SUPPRESS,
-            dest="fmt",
-            help="Output format (default: text); overrides the global --format flag",
-        )
+def _add_model(p: argparse.ArgumentParser) -> None:
+    p.add_argument(
+        "--model",
+        default=_DEFAULT_MODEL,
+        metavar="MODEL",
+        help=f"GitHub Models model name (default: {_DEFAULT_MODEL})",
+    )
 
+
+def _build_static_subcommands(sub: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
+    """Register static (no-API-key) subcommands onto *sub*."""
     p_tok = sub.add_parser(
         "tokens",
         help="Structural metrics: token estimate, sections, code blocks, workflow steps",
@@ -134,16 +127,9 @@ def main(argv: list[str] | None = None) -> int:
         help="Output HTML file (default: xanadEval-report.html)",
     )
 
-    # ── Dynamic commands ─────────────────────────────────────────────────────
 
-    def _add_model(p: argparse.ArgumentParser) -> None:
-        p.add_argument(
-            "--model",
-            default=_DEFAULT_MODEL,
-            metavar="MODEL",
-            help=f"GitHub Models model name (default: {_DEFAULT_MODEL})",
-        )
-
+def _build_dynamic_subcommands(sub: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
+    """Register dynamic (GITHUB_TOKEN required) subcommands onto *sub*."""
     p_run = sub.add_parser(
         "run",
         help="Execute eval tasks against GitHub Models (requires GITHUB_TOKEN)",
@@ -215,6 +201,27 @@ def main(argv: list[str] | None = None) -> int:
                             help="Path to the result file")
     _add_format(p_res_view)
 
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="xanadEval",
+        description=(
+            "Skill analyser and eval runner for Copilot surface files (xanadAssistant). "
+            "Static commands require no API key. Dynamic commands (run, grade, quality, dev, "
+            "results) require GITHUB_TOKEN or GH_TOKEN."
+        ),
+    )
+    parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        dest="fmt",
+        help="Output format (default: text)",
+    )
+
+    sub = parser.add_subparsers(dest="cmd", required=True)
+    _build_static_subcommands(sub)
+    _build_dynamic_subcommands(sub)
     args = parser.parse_args(argv)
 
     if args.cmd == "tokens":

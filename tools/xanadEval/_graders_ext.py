@@ -362,6 +362,14 @@ _CODE_SAFE_GLOBALS: dict = {
     "re": re,
 }
 
+# Bare function names permitted in code grader assertion expressions.
+# Attribute-style calls (e.g. ``output.lower()``, ``re.search()``) are allowed
+# by the existing private-name guard and are not listed here.
+_ALLOWED_CALL_NAMES: frozenset[str] = frozenset({
+    "len", "any", "all", "str", "int", "float", "bool",
+    "list", "dict", "set", "min", "max", "abs", "round",
+})
+
 # AST node types permitted in code grader assertion expressions.
 _ALLOWED_EXPR_NODES: frozenset[type] = frozenset({
     _ast.Expression, _ast.BoolOp, _ast.BinOp, _ast.UnaryOp,
@@ -400,6 +408,12 @@ def _validate_expr_ast(source: str) -> tuple[_ast.Expression | None, str | None]
             return None, f"private/dunder attribute access not allowed: {node.attr!r}"
         if isinstance(node, _ast.Name) and node.id.startswith("_"):
             return None, f"private name reference not allowed: {node.id!r}"
+        if (
+            isinstance(node, _ast.Call)
+            and isinstance(node.func, _ast.Name)
+            and node.func.id not in _ALLOWED_CALL_NAMES
+        ):
+            return None, f"call to disallowed function: {node.func.id!r}"
     return tree, None
 
 

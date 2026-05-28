@@ -531,6 +531,83 @@ class TagsFilterTests(DynamicTestBase, unittest.TestCase):
         self.assertIn("smoke-1", task_ids)
         self.assertIn("extended-1", task_ids)
 
+    def test_tags_filter_all_filtered_returns_exit_2(self) -> None:
+        """When --tags matches no tasks, cmd_run exits 2 with an error message."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                eval_path = self._write_two_task_eval(dp)
+                err = io.StringIO()
+                with redirect_stderr(err):
+                    code = xe.cmd_run(str(eval_path), "gpt-4o-mini", 1, "json",
+                                      tags=["nonexistent"])
+        self.assertEqual(code, 2)
+        self.assertIn("no tasks matched", err.getvalue())
+
+
+class AgentSurfaceResolutionTests(DynamicTestBase, unittest.TestCase):
+    """Tests for H1: eval surface resolution (agents/*.agent.md vs skills/*/SKILL.md)."""
+
+    def _write_agent_eval(self, d: Path, agent_name: str, agent_content: str) -> Path:
+        agents_dir = d / "agents"
+        agents_dir.mkdir(parents=True)
+        (agents_dir / f"{agent_name}.agent.md").write_text(agent_content, encoding="utf-8")
+        eval_dir = d / "evals" / agent_name
+        (eval_dir / "tasks").mkdir(parents=True)
+        spec = {"name": f"{agent_name}-eval", "graders": [], "tasks": ["tasks/*.yaml"]}
+        eval_yaml = eval_dir / "eval.yaml"
+        eval_yaml.write_text(json.dumps(spec), encoding="utf-8")
+        (eval_dir / "tasks" / "t1.yaml").write_text(
+            json.dumps({"id": "t1", "prompt": "test"}), encoding="utf-8"
+        )
+        return eval_yaml
+
+    @mock.patch("xanadEval._call_model", return_value="agent response")
+    def test_agent_file_used_as_system_prompt_when_present(self, mock_call) -> None:
+        """When agents/<Name>.agent.md exists, cmd_run sends it as the system message."""
+        agent_content = "---\nname: Cleaner\n---\nYou are a cleaner agent."
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                eval_yaml = self._write_agent_eval(dp, "Cleaner", agent_content)
+                xe.cmd_run(str(eval_yaml), "gpt-4o-mini", 1, "text")
+        messages = mock_call.call_args[0][0]
+        system_msgs = [m for m in messages if m.get("role") == "system"]
+        self.assertTrue(system_msgs, "Expected a system message from the agent file")
+        self.assertIn("cleaner agent", system_msgs[0]["content"])
+
+    @mock.patch("xanadEval._call_model", return_value="skill response")
+    def test_skill_file_used_when_no_agent_file(self, mock_call) -> None:
+        """When no agents/<Name>.agent.md exists, cmd_run falls back to skills/<Name>/SKILL.md."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                self._write_skill(dp, name="test-skill")
+                eval_path = self._write_eval(dp, name="test-skill")
+                xe.cmd_run(str(eval_path), "gpt-4o-mini", 1, "text")
+        messages = mock_call.call_args[0][0]
+        system_msgs = [m for m in messages if m.get("role") == "system"]
+        self.assertTrue(system_msgs, "Expected a system message from the skill file")
+
+    @mock.patch("xanadEval._call_model", return_value="no-surface response")
+    def test_no_surface_sends_no_system_message(self, mock_call) -> None:
+        """When neither agent nor skill file exists, no system message is sent."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                eval_dir = dp / "evals" / "NoSurface"
+                (eval_dir / "tasks").mkdir(parents=True)
+                spec = {"name": "NoSurface-eval", "graders": [], "tasks": ["tasks/*.yaml"]}
+                eval_yaml = eval_dir / "eval.yaml"
+                eval_yaml.write_text(json.dumps(spec), encoding="utf-8")
+                (eval_dir / "tasks" / "t1.yaml").write_text(
+                    json.dumps({"id": "t1", "prompt": "test"}), encoding="utf-8"
+                )
+                xe.cmd_run(str(eval_yaml), "gpt-4o-mini", 1, "text")
+        messages = mock_call.call_args[0][0]
+        system_msgs = [m for m in messages if m.get("role") == "system"]
+        self.assertFalse(system_msgs, "Expected no system message when no surface file exists")
+
 
 if __name__ == "__main__":
     unittest.main()

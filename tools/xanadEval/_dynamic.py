@@ -77,8 +77,12 @@ def cmd_run(
         print(f"xanadEval run: no tasks found in {eval_path}", file=sys.stderr)
         return 2
 
-    skill_path = eval_dir.parent.parent / "skills" / eval_dir.name / "SKILL.md"
-    skill_content = skill_path.read_text(encoding="utf-8") if skill_path.exists() else ""
+    _eval_name = eval_dir.name
+    _repo_root = eval_dir.parent.parent
+    _agent_path = _repo_root / "agents" / f"{_eval_name}.agent.md"
+    _skill_path = _repo_root / "skills" / _eval_name / "SKILL.md"
+    _surface_path = _agent_path if _agent_path.exists() else _skill_path
+    skill_content = _surface_path.read_text(encoding="utf-8") if _surface_path.exists() else ""
 
     task_results: list[dict] = []
     for task in tasks:
@@ -138,6 +142,10 @@ def cmd_run(
             "passed": passed,
             "score": round(score, 3),
         })
+
+    if not task_results:
+        print(f"xanadEval run: no tasks matched (tags filter: {tags!r})", file=sys.stderr)
+        return 2
 
     total = len(task_results)
     passed_count = sum(1 for t in task_results if t["passed"])

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from scripts.lifecycle._xanad._agent_customization import summarize_agent_customization
 from scripts.lifecycle._xanad._conditions import normalize_plan_answers, resolve_token_values
-from scripts.lifecycle._xanad._errors import LifecycleCommandError, _State
+from scripts.lifecycle._xanad._errors import LifecycleCommandError
 from scripts.lifecycle._xanad._inspect import collect_context
 from scripts.lifecycle._xanad._interview import (
     load_answers,
@@ -119,6 +119,71 @@ def _validate_plan_mode(mode: str, context: dict) -> list:
     return []
 
 
+
+def _compute_prescan_resolutions(
+    context: dict,
+    mode: str,
+    workspace: Path,
+    resolutions_path: str | None,
+) -> tuple[list, dict, list]:
+    """Return (existing_files, resolutions, res_warnings) for the given planning mode."""
+    if mode == "setup":
+        existing_files = scan_existing_copilot_files(workspace, context["manifest"])
+        resolutions, res_warnings = validate_resolutions(
+            load_resolutions(resolutions_path), existing_files
+        )
+    elif mode == "update":
+        _prior = context["lockfileState"].get("consumerResolutions", {})
+        existing_files = scan_consumer_kept_updates(
+            workspace, context["manifest"], context["lockfileState"]
+        )
+        _new, res_warnings = validate_resolutions(
+            load_resolutions(resolutions_path), existing_files
+        )
+        resolutions = {**_prior, **_new}
+    else:
+        existing_files = []
+        resolutions = {}
+        res_warnings = []
+    return existing_files, resolutions, res_warnings
+
+
+def _build_plan_action_set(
+    context: dict,
+    mode: str,
+    workspace: Path,
+    package_root: Path,
+    ownership_by_surface: dict,
+    resolved_answers: dict,
+    token_values: dict,
+    resolutions: dict,
+    existing_files: list,
+) -> tuple[dict, list, list, list]:
+    """Build writes, actions, skipped_actions, retired_targets from plan inputs."""
+    writes, actions, skipped_actions, retired_targets = build_setup_plan_actions(
+        workspace, package_root, context["manifest"], ownership_by_surface,
+        resolved_answers, token_values, force_reinstall=(mode == "factory-restore"),
+    )
+    actions, skipped_actions = apply_resolutions_to_plan_actions(actions, skipped_actions, resolutions)
+    delete_actions = build_delete_actions(workspace, resolutions, existing_files)
+    actions.extend(delete_actions)
+    writes["deleted"] = len(delete_actions)
+
+    for target in context.get("successorMigrationTargets", []):
+        if target in retired_targets:  # pragma: no cover
+            continue
+        writes["archiveRetired"] += 1
+        retired_targets.append(target)
+        actions.append({
+            "id": f"migration.cleanup.{target}",
+            "target": target,
+            "action": "archive-retired",
+            "ownershipMode": None,
+            "strategy": "archive-retired",
+        })
+    return writes, actions, skipped_actions, retired_targets
+
+
 def build_plan_result(
     workspace: Path,
     package_root: Path,
@@ -148,24 +213,9 @@ def build_plan_result(
     )
 
     # Prescan: detect pre-existing files and load consumer per-file resolutions.
-    _res_warnings: list[dict] = []
-    if mode == "setup":
-        existing_files = scan_existing_copilot_files(workspace, context["manifest"])
-        resolutions, _res_warnings = validate_resolutions(
-            load_resolutions(resolutions_path), existing_files
-        )
-    elif mode == "update":
-        _prior = context["lockfileState"].get("consumerResolutions", {})
-        existing_files = scan_consumer_kept_updates(
-            workspace, context["manifest"], context["lockfileState"]
-        )
-        _new, _res_warnings = validate_resolutions(
-            load_resolutions(resolutions_path), existing_files
-        )
-        resolutions = {**_prior, **_new}
-    else:
-        existing_files = []
-        resolutions = {}
+    existing_files, resolutions, _res_warnings = _compute_prescan_resolutions(
+        context, mode, workspace, resolutions_path
+    )
 
     if non_interactive and unresolved:  # pragma: no cover
         raise LifecycleCommandError(
@@ -209,28 +259,11 @@ def build_plan_result(
         metadata=context["metadata"],
     )
 
-    writes, actions, skipped_actions, retired_targets = build_setup_plan_actions(
-        workspace, package_root, context["manifest"], ownership_by_surface,
-        resolved_answers, token_values, force_reinstall=(mode == "factory-restore"),
+    writes, actions, skipped_actions, retired_targets = _build_plan_action_set(
+        context, mode, workspace, package_root,
+        ownership_by_surface, resolved_answers, token_values,
+        resolutions, existing_files,
     )
-    # Apply consumer per-file resolutions (keep / replace / merge / update).
-    actions, skipped_actions = apply_resolutions_to_plan_actions(actions, skipped_actions, resolutions)
-    delete_actions = build_delete_actions(workspace, resolutions, existing_files)
-    actions.extend(delete_actions)
-    writes["deleted"] = len(delete_actions)
-
-    for target in context.get("successorMigrationTargets", []):
-        if target in retired_targets:  # pragma: no cover
-            continue
-        writes["archiveRetired"] += 1
-        retired_targets.append(target)
-        actions.append({
-            "id": f"migration.cleanup.{target}",
-            "target": target,
-            "action": "archive-retired",
-            "ownershipMode": None,
-            "strategy": "archive-retired",
-        })
     conflicts, warnings = classify_plan_conflicts(workspace, context, actions, retired_targets)
     warnings.extend(_res_warnings)
     if unknown_answer_ids:

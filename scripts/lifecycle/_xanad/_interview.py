@@ -137,6 +137,19 @@ def expand_interview_questions(
     )
 
 
+def _seed_answers(
+    mode: str,
+    questions: list[dict],
+    profile_registry: dict,
+    lockfile_state: dict,
+    raw: dict,
+) -> dict:
+    """Seed answers from install state then profile registry for *questions*."""
+    ids = {q["id"] for q in questions}
+    answers = seed_answers_from_install_state(mode, questions, lockfile_state, raw)
+    return seed_answers_from_profile(profile_registry, answers, ids)
+
+
 def prepare_questions(
     policy: dict,
     metadata: dict,
@@ -157,35 +170,23 @@ def prepare_questions(
     """
     actual_seed_mode = seed_mode if seed_mode is not None else mode
     raw = raw_answers or {}
+    profile_reg = metadata.get("profileRegistry") or {}
     base_questions = build_interview_questions(policy, metadata, mode)
-    base_ids = {q["id"] for q in base_questions}
-    answers = seed_answers_from_install_state(actual_seed_mode, base_questions, lockfile_state, raw)
-    answers = seed_answers_from_profile(metadata.get("profileRegistry") or {}, answers, base_ids)
+    answers = _seed_answers(actual_seed_mode, base_questions, profile_reg, lockfile_state, raw)
     questions = expand_interview_questions(policy, metadata, manifest, mode, answers, lockfile_state)
-    question_ids = {q["id"] for q in questions}
-    answers = seed_answers_from_install_state(actual_seed_mode, questions, lockfile_state, raw)
-    answers = seed_answers_from_profile(metadata.get("profileRegistry") or {}, answers, question_ids)
+    answers = _seed_answers(actual_seed_mode, questions, profile_reg, lockfile_state, raw)
     resolved, unresolved, unknown = resolve_question_answers(questions, answers)
     return questions, resolved, unresolved, unknown
 
 
 def build_interview_result(workspace: Path, package_root: Path, mode: str) -> dict:
     context = collect_context(workspace, package_root)
+    profile_reg = context["metadata"].get("profileRegistry") or {}
     base_questions = build_interview_questions(context["policy"], context["metadata"], mode)
-    question_ids = {question["id"] for question in base_questions}
-    seeded_answers = seed_answers_from_install_state(mode, base_questions, context["lockfileState"], {})
-    seeded_answers = seed_answers_from_profile(
-        context["metadata"].get("profileRegistry") or {},
-        seeded_answers,
-        question_ids,
-    )
+    seeded_answers = _seed_answers(mode, base_questions, profile_reg, context["lockfileState"], {})
     questions = expand_interview_questions(
-        context["policy"],
-        context["metadata"],
-        context["manifest"],
-        mode,
-        seeded_answers,
-        context["lockfileState"],
+        context["policy"], context["metadata"], context["manifest"],
+        mode, seeded_answers, context["lockfileState"],
     )
 
     if mode == "setup":

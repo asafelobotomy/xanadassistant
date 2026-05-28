@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 from pathlib import Path
+from typing import NamedTuple
 
 import scripts.lifecycle._xanad._check as _check
 
@@ -159,6 +160,102 @@ def _validation_allows_factory_restore(validation: dict, factory_restore: bool) 
     return True
 
 
+class _ActionCtx(NamedTuple):
+    workspace: Path
+    workspace_resolved: Path
+    package_root: Path
+    backup_root: str | None
+    manifest_entries: dict[str, dict]
+    archive_targets_map: dict[str, str]
+
+
+def _action_archive_retired(
+    action: dict,
+    ctx: _ActionCtx,
+    writes: dict,
+    archive_paths: set[str],
+    retired_records: list[dict],
+) -> None:
+    target_path = ctx.workspace / action["target"]
+    _assert_within_workspace(target_path, ctx.workspace_resolved)
+    if action.get("strategy", "archive-retired") == "report-retired":
+        retired_records.append({"target": action["target"], "action": "reported"})
+        writes["retiredReported"] += 1
+        return
+
+    archive_path_str = ctx.archive_targets_map.get(action["target"])
+    if target_path.exists() and ctx.backup_root is not None:
+        _copy_backup_file(target_path, ctx.workspace / ctx.backup_root / action["target"],
+                          ctx.workspace_resolved)
+    if archive_path_str is not None:
+        archive_dest = ctx.workspace / archive_path_str
+        _assert_within_workspace(archive_dest, ctx.workspace_resolved)
+        archive_dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(target_path), archive_dest)
+        archive_paths.add(archive_path_str)
+    elif target_path.exists():
+        target_path.unlink()
+    retired_records.append(
+        {"target": action["target"], "action": "archived", "archivePath": archive_path_str})
+    writes["retiredArchived"] += 1
+
+
+def _action_delete(action: dict, ctx: _ActionCtx, writes: dict) -> None:
+    target_path = ctx.workspace / action["target"]
+    _assert_within_workspace(target_path, ctx.workspace_resolved)
+    if not target_path.exists():
+        return
+    if ctx.backup_root is not None:
+        _copy_backup_file(target_path, ctx.workspace / ctx.backup_root / action["target"],
+                          ctx.workspace_resolved)
+    target_path.unlink()
+    writes["deleted"] += 1
+
+
+def _action_write_or_merge(
+    action: dict,
+    ctx: _ActionCtx,
+    writes: dict,
+    created_paths: set[str],
+) -> None:
+    if action["action"] == "merge" and action["strategy"] not in {
+        "merge-json-object", "preserve-marked-markdown-blocks"
+    }:
+        raise LifecycleCommandError(
+            "apply_failure", "Merge actions are not implemented in the current apply slice.",
+            9, {"target": action["target"], "strategy": action["strategy"]},
+        )
+
+    manifest_entry = ctx.manifest_entries.get(action["id"])
+    if manifest_entry is None:
+        raise LifecycleCommandError(
+            "apply_failure",
+            "Plan references a managed entry missing from the manifest.",
+            9,
+            {"id": action["id"]},
+        )
+
+    target_path = ctx.workspace / action["target"]
+    _assert_within_workspace(target_path, ctx.workspace_resolved)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    if action["action"] == "merge":
+        if action["strategy"] == "merge-json-object":
+            merge_json_object_file(target_path, ctx.package_root, manifest_entry)
+        else:
+            merge_markdown_file(target_path, ctx.package_root, manifest_entry,
+                                action.get("tokenValues", {}))
+        writes["merged"] += 1
+        return
+
+    target_path.write_bytes(render_entry_bytes(ctx.package_root, manifest_entry, action.get("tokenValues", {})))
+    apply_chmod_rule(target_path, manifest_entry.get("chmod", "none"))
+    if action["action"] == "add":
+        writes["added"] += 1
+        created_paths.add(action["target"])
+    elif action["action"] == "replace":
+        writes["replaced"] += 1
+
+
 def _run_backup_phase(
     workspace: Path,
     workspace_resolved: Path,
@@ -182,93 +279,17 @@ def _run_backup_phase(
 
 
 def _run_actions_phase(
-    workspace: Path,
-    workspace_resolved: Path,
-    package_root: Path,
-    actions: list[dict],
-    manifest_entries: dict[str, dict],
-    archive_targets_map: dict[str, str],
-    backup_root: str | None,
-    writes: dict,
-    created_paths: set[str],
-    archive_paths: set[str],
-    retired_records: list[dict],
+    ctx: _ActionCtx, actions: list[dict], writes: dict,
+    created_paths: set[str], archive_paths: set[str], retired_records: list[dict],
 ) -> None:
-    """Apply each plan action: archive-retired, delete, merge, or write."""
+    """Apply each plan action by dispatching to the appropriate per-action handler."""
     for action in actions:
         if action["action"] == "archive-retired":
-            target_path = workspace / action["target"]
-            _assert_within_workspace(target_path, workspace_resolved)
-            if action.get("strategy", "archive-retired") == "report-retired":
-                retired_records.append({"target": action["target"], "action": "reported"})
-                writes["retiredReported"] += 1
-                continue
-
-            archive_path_str = archive_targets_map.get(action["target"])
-            if target_path.exists() and backup_root is not None:
-                _copy_backup_file(target_path, workspace / backup_root / action["target"], workspace_resolved)
-            if archive_path_str is not None:
-                archive_dest = workspace / archive_path_str
-                _assert_within_workspace(archive_dest, workspace_resolved)
-                archive_dest.parent.mkdir(parents=True, exist_ok=True)
-                shutil.move(str(target_path), archive_dest)
-                archive_paths.add(archive_path_str)
-            elif target_path.exists():
-                target_path.unlink()
-            retired_records.append({
-                "target": action["target"],
-                "action": "archived",
-                "archivePath": archive_path_str,
-            })
-            writes["retiredArchived"] += 1
-            continue
-
-        if action["action"] == "delete":
-            target_path = workspace / action["target"]
-            _assert_within_workspace(target_path, workspace_resolved)
-            if not target_path.exists():
-                continue
-            if backup_root is not None:
-                _copy_backup_file(target_path, workspace / backup_root / action["target"], workspace_resolved)
-            target_path.unlink()
-            writes["deleted"] += 1
-            continue
-
-        if action["action"] == "merge" and action["strategy"] not in {"merge-json-object", "preserve-marked-markdown-blocks"}:
-            raise LifecycleCommandError(
-                "apply_failure",
-                "Merge actions are not implemented in the current apply slice.",
-                9,
-                {"target": action["target"], "strategy": action["strategy"]},
-            )
-
-        manifest_entry = manifest_entries.get(action["id"])
-        if manifest_entry is None:
-            raise LifecycleCommandError(
-                "apply_failure",
-                "Plan references a managed entry missing from the manifest.",
-                9,
-                {"id": action["id"]},
-            )
-
-        target_path = workspace / action["target"]
-        _assert_within_workspace(target_path, workspace_resolved)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        if action["action"] == "merge":
-            if action["strategy"] == "merge-json-object":
-                merge_json_object_file(target_path, package_root, manifest_entry)
-            else:
-                merge_markdown_file(target_path, package_root, manifest_entry, action.get("tokenValues", {}))
-            writes["merged"] += 1
-            continue
-
-        target_path.write_bytes(render_entry_bytes(package_root, manifest_entry, action.get("tokenValues", {})))
-        apply_chmod_rule(target_path, manifest_entry.get("chmod", "none"))
-        if action["action"] == "add":
-            writes["added"] += 1
-            created_paths.add(action["target"])
-        elif action["action"] == "replace":
-            writes["replaced"] += 1
+            _action_archive_retired(action, ctx, writes, archive_paths, retired_records)
+        elif action["action"] == "delete":
+            _action_delete(action, ctx, writes)
+        else:
+            _action_write_or_merge(action, ctx, writes, created_paths)
 
 
 def _run_post_apply_phase(
@@ -362,10 +383,15 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
 
     try:
         _run_backup_phase(workspace, workspace_resolved, backup_plan, backup_root, path_timestamp)
-        _run_actions_phase(
-            workspace, workspace_resolved, package_root, actions, manifest_entries,
-            archive_targets_map, backup_root, writes, created_paths, archive_paths, retired_records,
+        ctx = _ActionCtx(
+            workspace=workspace,
+            workspace_resolved=workspace_resolved,
+            package_root=package_root,
+            backup_root=backup_root,
+            manifest_entries=manifest_entries,
+            archive_targets_map=archive_targets_map,
         )
+        _run_actions_phase(ctx, actions, writes, created_paths, archive_paths, retired_records)
         _run_post_apply_phase(
             workspace, package_root, planned_lockfile, apply_timestamp, path_timestamp,
             plan_payload, manifest, factory_restore, backup_root,
