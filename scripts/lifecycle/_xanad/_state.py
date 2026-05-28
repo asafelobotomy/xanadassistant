@@ -5,7 +5,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from scripts.lifecycle._xanad._loader import load_json, load_optional_json
+from scripts.lifecycle._xanad._loader import load_json
 from scripts.lifecycle._xanad._migration import (
     CURRENT_PACKAGE_NAME,
     PREDECESSOR_PACKAGE_NAMES,

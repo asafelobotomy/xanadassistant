@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.lifecycle._xanad._conditions import entry_required_for_plan, normalize_plan_answers
+from scripts.lifecycle._xanad._conditions import entry_required_for_plan
 from scripts.lifecycle._xanad._errors import DEFAULT_POLICY_PATH, LifecycleCommandError
 from scripts.lifecycle._xanad._inspect_helpers import collect_unmanaged_files
 from scripts.lifecycle._xanad._loader import load_manifest, load_optional_json

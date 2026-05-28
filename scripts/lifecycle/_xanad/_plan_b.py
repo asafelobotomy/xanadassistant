@@ -10,13 +10,11 @@ from scripts.lifecycle._xanad._interview import (
     load_answers,
     prepare_questions,
 )
-from scripts.lifecycle._xanad._merge import sha256_json
 from scripts.lifecycle._xanad._plan_a import (
     build_conflict_summary,
     build_setup_plan_actions,
     classify_plan_conflicts,
     resolve_ownership_by_surface,
-    write_plan_output,
 )
 from scripts.lifecycle._xanad._plan_c import (
     determine_repair_reasons,

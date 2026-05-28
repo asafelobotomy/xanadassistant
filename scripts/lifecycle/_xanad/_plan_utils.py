@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from scripts.lifecycle._xanad._conditions import entry_required_for_plan, render_tokenized_text
+from scripts.lifecycle._xanad._conditions import render_tokenized_text
 from scripts.lifecycle._xanad._errors import _State
 from scripts.lifecycle._xanad._loader import load_json
 from scripts.lifecycle._xanad._merge import (

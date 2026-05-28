@@ -34,97 +34,73 @@ def validate_relative_plan_path(path_value: object, field: str) -> str:
     return path.as_posix()
 
 
-def validate_apply_plan_paths(
-    plan_payload: dict,
-    package_root: Path,
-    *,
-    load_manifest,
-    load_json,
-    default_policy_path: str,
+def _validate_action_entry(
+    action: dict,
+    index: int,
+    ensure_manifest_targets,  # callable () -> (managed_targets, retired_targets)
 ) -> None:
-    result = plan_payload["result"]
-    planned_lockfile = result["plannedLockfile"]
-    lockfile_path = validate_relative_plan_path(planned_lockfile.get("path"), "result.plannedLockfile.path")
-    if lockfile_path != ".github/xanadAssistant-lock.json":
+    """Validate a single action dict from the plan's actions list."""
+    if not isinstance(action, dict):
         raise LifecycleCommandError(
             "contract_input_failure",
-            "Plan lockfile path does not match the lifecycle contract.",
+            "Plan file contains an invalid action record.",
             4,
-            {"planned": lockfile_path, "current": ".github/xanadAssistant-lock.json"},
+            {"index": index},
         )
 
-    managed_targets: dict[str, str] | None = None
-    retired_targets: dict[str, str] | None = None
-    action_targets: set[str] = set()
+    action_type = action.get("action")
+    target = validate_relative_plan_path(action.get("target"), f"result.actions[{index}].target")
+    action_id = action.get("id")
 
-    def ensure_manifest_targets() -> tuple[dict[str, str], dict[str, str]]:
-        nonlocal managed_targets, retired_targets
-        if managed_targets is None or retired_targets is None:
-            manifest = load_manifest(package_root, load_json(package_root / default_policy_path)) or {
-                "managedFiles": [],
-                "retiredFiles": [],
-            }
-            managed_targets = {entry["id"]: entry["target"] for entry in manifest.get("managedFiles", [])}
-            retired_targets = {entry["id"]: entry["target"] for entry in manifest.get("retiredFiles", [])}
-        return managed_targets, retired_targets
-
-    for index, action in enumerate(result.get("actions", [])):
-        if not isinstance(action, dict):
+    if action_type in {"add", "replace", "merge"}:
+        current_managed_targets, _ = ensure_manifest_targets()
+        if current_managed_targets.get(action_id) != target:
             raise LifecycleCommandError(
                 "contract_input_failure",
-                "Plan file contains an invalid action record.",
+                "Plan action target does not match the current manifest entry.",
                 4,
-                {"index": index},
+                {"id": action_id, "planned": target, "current": current_managed_targets.get(action_id)},
             )
-
-        action_type = action.get("action")
-        target = validate_relative_plan_path(action.get("target"), f"result.actions[{index}].target")
-        action_targets.add(target)
-        action_id = action.get("id")
-
-        if action_type in {"add", "replace", "merge"}:
-            current_managed_targets, _ = ensure_manifest_targets()
-            if current_managed_targets.get(action_id) != target:
-                raise LifecycleCommandError(
-                    "contract_input_failure",
-                    "Plan action target does not match the current manifest entry.",
-                    4,
-                    {"id": action_id, "planned": target, "current": current_managed_targets.get(action_id)},
-                )
-        elif action_type == "delete":
-            if action_id != f"delete:{target}":
-                raise LifecycleCommandError(
-                    "contract_input_failure",
-                    "Plan delete action does not match its target path.",
-                    4,
-                    {"id": action_id, "target": target},
-                )
-        elif action_type == "archive-retired":
-            _, current_retired_targets = ensure_manifest_targets()
-            retired_target = current_retired_targets.get(action_id)
-            if retired_target is not None and retired_target != target:
-                raise LifecycleCommandError(
-                    "contract_input_failure",
-                    "Plan retired-file target does not match the current manifest entry.",
-                    4,
-                    {"id": action_id, "planned": target, "current": retired_target},
-                )
-            if retired_target is None and action_id != f"migration.cleanup.{target}":
-                raise LifecycleCommandError(
-                    "contract_input_failure",
-                    "Plan archive-retired action is not recognized for the current workspace.",
-                    4,
-                    {"id": action_id, "target": target},
-                )
-        else:
+    elif action_type == "delete":
+        if action_id != f"delete:{target}":
             raise LifecycleCommandError(
                 "contract_input_failure",
-                "Plan file contains an unsupported action type.",
+                "Plan delete action does not match its target path.",
                 4,
-                {"id": action_id, "action": action_type},
+                {"id": action_id, "target": target},
             )
+    elif action_type == "archive-retired":
+        _, current_retired_targets = ensure_manifest_targets()
+        retired_target = current_retired_targets.get(action_id)
+        if retired_target is not None and retired_target != target:
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan retired-file target does not match the current manifest entry.",
+                4,
+                {"id": action_id, "planned": target, "current": retired_target},
+            )
+        if retired_target is None and action_id != f"migration.cleanup.{target}":
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan archive-retired action is not recognized for the current workspace.",
+                4,
+                {"id": action_id, "target": target},
+            )
+    else:
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan file contains an unsupported action type.",
+            4,
+            {"id": action_id, "action": action_type},
+        )
+    return target
 
-    backup_plan = result.get("backupPlan", {})
+
+def _validate_backup_plan_entries(
+    backup_plan: dict,
+    action_targets: set,
+) -> None:
+    """Validate backup and archive entries in the plan's backupPlan block."""
     backup_root = backup_plan.get("root")
     if backup_root is not None:
         backup_root = validate_relative_plan_path(backup_root, "result.backupPlan.root")
@@ -175,6 +151,47 @@ def validate_apply_plan_paths(
                 4,
                 {"target": target, "archivePath": archive_path, "archiveRoot": archive_root},
             )
+
+
+def validate_apply_plan_paths(
+    plan_payload: dict,
+    package_root: Path,
+    *,
+    load_manifest,
+    load_json,
+    default_policy_path: str,
+) -> None:
+    result = plan_payload["result"]
+    planned_lockfile = result["plannedLockfile"]
+    lockfile_path = validate_relative_plan_path(planned_lockfile.get("path"), "result.plannedLockfile.path")
+    if lockfile_path != ".github/xanadAssistant-lock.json":
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan lockfile path does not match the lifecycle contract.",
+            4,
+            {"planned": lockfile_path, "current": ".github/xanadAssistant-lock.json"},
+        )
+
+    managed_targets: dict[str, str] | None = None
+    retired_targets: dict[str, str] | None = None
+    action_targets: set[str] = set()
+
+    def ensure_manifest_targets() -> tuple[dict[str, str], dict[str, str]]:
+        nonlocal managed_targets, retired_targets
+        if managed_targets is None or retired_targets is None:
+            manifest = load_manifest(package_root, load_json(package_root / default_policy_path)) or {
+                "managedFiles": [],
+                "retiredFiles": [],
+            }
+            managed_targets = {entry["id"]: entry["target"] for entry in manifest.get("managedFiles", [])}
+            retired_targets = {entry["id"]: entry["target"] for entry in manifest.get("retiredFiles", [])}
+        return managed_targets, retired_targets
+
+    for index, action in enumerate(result.get("actions", [])):
+        target = _validate_action_entry(action, index, ensure_manifest_targets)
+        action_targets.add(target)
+
+    _validate_backup_plan_entries(result.get("backupPlan", {}), action_targets)
 
 
 def load_apply_plan(plan_path: str | None, workspace: Path) -> dict:
