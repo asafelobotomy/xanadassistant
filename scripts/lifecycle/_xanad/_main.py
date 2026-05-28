@@ -21,6 +21,31 @@ def _attach_output_path(path_value: str | None, payload: dict, result_key: str) 
         payload.setdefault("result", {})[result_key] = output_path
 
 
+def _dispatch_simple_command(
+    command: str,
+    builder,
+    args: argparse.Namespace,
+    workspace: Path,
+    package_root: Path,
+    use_json_lines: bool,
+    *,
+    success_exit_fn=lambda payload: 0,
+) -> int:
+    """Run a single lifecycle command builder, emit the payload, and return the exit code."""
+    try:
+        payload = builder()
+    except LifecycleCommandError as error:
+        payload, exit_code = build_error_payload(
+            command, workspace, package_root,
+            error.code, error.message, error.exit_code,
+            mode=getattr(args, "mode", None), details=error.details,
+        )
+        emit_payload(payload, args.ui, use_json_lines)
+        return exit_code
+    emit_payload(payload, args.ui, use_json_lines)
+    return success_exit_fn(payload)
+
+
 def _run_execution_command(
     args: argparse.Namespace,
     workspace: Path,
@@ -209,44 +234,23 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
         return exit_code
 
     if args.command == "inspect":
-        try:
-            payload = build_inspect_result(workspace, package_root)
-        except LifecycleCommandError as error:
-            payload, exit_code = build_error_payload(
-                "inspect", workspace, package_root,
-                error.code, error.message, error.exit_code, details=error.details,
-            )
-            emit_payload(payload, args.ui, use_json_lines)
-            return exit_code
-        emit_payload(payload, args.ui, use_json_lines)
-        return 0
+        return _dispatch_simple_command(
+            "inspect", lambda: build_inspect_result(workspace, package_root),
+            args, workspace, package_root, use_json_lines,
+        )
 
     if args.command == "health-check":
-        try:
-            payload = build_check_result(workspace, package_root)
-        except LifecycleCommandError as error:
-            payload, exit_code = build_error_payload(
-                "health-check", workspace, package_root,
-                error.code, error.message, error.exit_code, details=error.details,
-            )
-            emit_payload(payload, args.ui, use_json_lines)
-            return exit_code
-        emit_payload(payload, args.ui, use_json_lines)
-        return 0 if payload["status"] == "clean" else 7
+        return _dispatch_simple_command(
+            "health-check", lambda: build_check_result(workspace, package_root),
+            args, workspace, package_root, use_json_lines,
+            success_exit_fn=lambda p: 0 if p["status"] == "clean" else 7,
+        )
 
     if args.command == "interview":
-        try:
-            payload = build_interview_result(workspace, package_root, args.mode)
-        except LifecycleCommandError as error:
-            payload, exit_code = build_error_payload(
-                "interview", workspace, package_root,
-                error.code, error.message, error.exit_code,
-                mode=args.mode, details=error.details,
-            )
-            emit_payload(payload, args.ui, use_json_lines)
-            return exit_code
-        emit_payload(payload, args.ui, use_json_lines)
-        return 0
+        return _dispatch_simple_command(
+            "interview", lambda: build_interview_result(workspace, package_root, args.mode),
+            args, workspace, package_root, use_json_lines,
+        )
 
     if args.command == "plan":
         try:

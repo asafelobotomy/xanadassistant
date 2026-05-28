@@ -28,7 +28,7 @@ def _infer_surface(rel_str: str) -> str:
     parts = rel_str.split("/")
     if len(parts) >= 2 and parts[0] == ".github":
         if parts[1] == "mcp":
-            return "hooks"
+            return "mcp"
         return parts[1]
     if parts[0] == ".vscode":
         return "mcp"

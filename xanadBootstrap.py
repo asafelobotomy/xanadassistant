@@ -51,7 +51,7 @@ def _cache_key(raw: str) -> str:
     substitution, e.g. 'feature/x' and 'feature-x'.
     """
     digest = hashlib.sha256(raw.encode()).hexdigest()[:12]
-    safe_prefix = re.sub(r"[^A-Za-z0-9._-]", "-", raw)[:40]
+    safe_prefix = _safe_slug(raw)[:40]
     return f"{safe_prefix}-{digest}"
 
 

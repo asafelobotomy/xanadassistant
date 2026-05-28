@@ -8,7 +8,6 @@ Run with: `uvx --from "mcp[cli]" mcp run <this-file>`.
 from __future__ import annotations
 
 import base64
-import os
 import sys
 import urllib.parse
 
@@ -41,37 +40,11 @@ from _github_mcp_shared import (
 )
 
 
-def _gh_cli_token() -> str:
-    return _shared.gh_cli_token()
-
-
-def _token() -> str:
-    tok = os.environ.get("GITHUB_TOKEN", "").strip() or os.environ.get("GH_TOKEN", "").strip()
-    if not tok:
-        tok = _gh_cli_token()
-    if not tok:
-        raise RuntimeError(
-            "No GitHub token found. Authenticate with one of:\n"
-            "  1. gh auth login  (GitHub CLI)\n"
-            "  2. export GITHUB_TOKEN=<pat> in your shell profile\n"
-            "Then restart VS Code."
-        )
-    return tok
-
-
-def _get(path: str, params: dict | None = None):
-    return _shared.get(path, params=params, token_provider=_token)
-
-
-def _post(path: str, body: dict):
-    return _shared.post(path, body=body, token_provider=_token)
-
-
 @mcp.tool()
 def get_repo(owner: str, repo: str) -> str:
     """Return key metadata for a GitHub repository."""
     _validate_owner_repo(owner, repo)
-    return _dump_fields(_get(f"/repos/{owner}/{repo}"), _REPO_FIELDS)
+    return _dump_fields(_shared.get(f"/repos/{owner}/{repo}"), _REPO_FIELDS)
 
 
 @mcp.tool()
@@ -90,7 +63,7 @@ def get_file_contents(owner: str, repo: str, path: str, ref: str = "") -> str:
         raise ValueError(f"Path must not contain '..' components: {path!r}")
     safe_path = urllib.parse.quote(path, safe="/")
     params = {"ref": ref} if ref else None
-    d = _get(f"/repos/{owner}/{repo}/contents/{safe_path}", params=params)
+    d = _shared.get(f"/repos/{owner}/{repo}/contents/{safe_path}", params=params)
     if d.get("encoding") == "base64":
         encoded_content = d.get("content")
         if not encoded_content:
@@ -107,7 +80,7 @@ def search_code(query: str, per_page: int = 10) -> str:
         query: GitHub code search query (e.g. 'repo:owner/repo someFunction').
         per_page: Number of results, 1–30 (default 10).
     """
-    d = _get("/search/code", {"q": query, "per_page": _normalize_per_page(per_page, 30)})
+    d = _shared.get("/search/code", {"q": query, "per_page": _normalize_per_page(per_page, 30)})
     items = d.get("items", [])
     if not items:
         return f"No code results for: {query!r}"
@@ -130,7 +103,7 @@ def list_issues(owner: str, repo: str, state: str = "open",
     """
     _validate_owner_repo(owner, repo)
     _validate_state(state)
-    items = _get(f"/repos/{owner}/{repo}/issues",
+    items = _shared.get(f"/repos/{owner}/{repo}/issues",
                  {"state": state, "per_page": _normalize_per_page(per_page, 50)})
     issues = [i for i in items if "pull_request" not in i]
     return _render_lines(
@@ -152,7 +125,7 @@ def get_issue(owner: str, repo: str, issue_number: int) -> str:
         issue_number: Issue number.
     """
     _validate_owner_repo(owner, repo)
-    return _dump_fields(_get(f"/repos/{owner}/{repo}/issues/{issue_number}"), _ISSUE_FIELDS)
+    return _dump_fields(_shared.get(f"/repos/{owner}/{repo}/issues/{issue_number}"), _ISSUE_FIELDS)
 
 
 @mcp.tool()
@@ -173,7 +146,7 @@ def create_issue(owner: str, repo: str, title: str, body: str,
     issue_body: dict[str, object] = {"title": title, "body": body}
     if labels:
         issue_body["labels"] = labels
-    r = _post(f"/repos/{owner}/{repo}/issues", issue_body)
+    r = _shared.post(f"/repos/{owner}/{repo}/issues", issue_body)
     return f"Issue #{r['number']} created: {r['html_url']}"
 
 
@@ -189,7 +162,7 @@ def create_issue_comment(owner: str, repo: str,
         body: Comment text (Markdown supported).
     """
     _validate_owner_repo(owner, repo)
-    r = _post(f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body})
+    r = _shared.post(f"/repos/{owner}/{repo}/issues/{issue_number}/comments", {"body": body})
     return f"Comment created: {r.get('html_url')}"
 
 
@@ -206,7 +179,7 @@ def list_pull_requests(owner: str, repo: str, state: str = "open",
     """
     _validate_owner_repo(owner, repo)
     _validate_state(state)
-    items = _get(f"/repos/{owner}/{repo}/pulls",
+    items = _shared.get(f"/repos/{owner}/{repo}/pulls",
                  {"state": state, "per_page": _normalize_per_page(per_page, 50)})
     return _render_lines(
         items,
@@ -230,7 +203,7 @@ def get_pull_request(owner: str, repo: str, pull_number: int) -> str:
                      returns 404 for issue numbers that are not pull requests.
     """
     _validate_owner_repo(owner, repo)
-    return _dump_fields(_get(f"/repos/{owner}/{repo}/pulls/{pull_number}"), _PULL_FIELDS)
+    return _dump_fields(_shared.get(f"/repos/{owner}/{repo}/pulls/{pull_number}"), _PULL_FIELDS)
 
 
 @mcp.tool()
@@ -249,7 +222,7 @@ def create_pull_request(owner: str, repo: str, title: str, head: str,
         draft: When True, creates as a draft PR.
     """
     _validate_owner_repo(owner, repo)
-    r = _post(f"/repos/{owner}/{repo}/pulls",
+    r = _shared.post(f"/repos/{owner}/{repo}/pulls",
               {"title": title, "head": head, "base": base,
                "body": body, "draft": draft})
     return f"Pull request created: #{r['number']} {r['html_url']}"
@@ -265,7 +238,7 @@ def list_releases(owner: str, repo: str, per_page: int = 10) -> str:
         per_page: Results per page, 1–30 (default 10).
     """
     _validate_owner_repo(owner, repo)
-    items = _get(
+    items = _shared.get(
         f"/repos/{owner}/{repo}/releases",
         {"per_page": _normalize_per_page(per_page, 30)},
     )
@@ -323,7 +296,7 @@ def create_release(
         payload["body"] = body
     if target_commitish:
         payload["target_commitish"] = target_commitish
-    r = _post(f"/repos/{owner}/{repo}/releases", payload)
+    r = _shared.post(f"/repos/{owner}/{repo}/releases", payload)
     kind = "draft" if r.get("draft") else "pre-release" if r.get("prerelease") else "release"
     return f"{kind.capitalize()} created: {r['tag_name']} \u2014 {r.get('name', r['tag_name'])} {r['html_url']}"
 
@@ -350,7 +323,7 @@ def list_workflow_runs(owner: str, repo: str, workflow_id: str = "",
     params: dict = {"per_page": _normalize_per_page(per_page, 50)}
     if status:
         params["status"] = status
-    d = _get(path, params)
+    d = _shared.get(path, params)
     runs = d.get("workflow_runs", [])
     return _render_lines(
         runs,

@@ -38,7 +38,6 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     import tarfile as _tarfile
     import tempfile as _tempfile
     import urllib.request as _urllib_request
-    safe_version = re.sub(r"[^A-Za-z0-9._-]", "-", version)
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"release-{_cache_key(version)}"
     sentinel = cache_dir / ".complete"
     if sentinel.exists():
@@ -82,7 +81,6 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
 def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:  # pragma: no cover
     if not re.match(r"^[A-Za-z0-9._/-]+$", ref):
         raise ValueError(f"ref contains invalid characters: {ref!r}")
-    safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
     clone_url = f"https://github.com/{owner}/{repo}.git"
     clone_required = not (cache_dir / ".git").exists()

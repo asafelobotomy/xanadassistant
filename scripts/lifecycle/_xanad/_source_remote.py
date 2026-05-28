@@ -40,12 +40,11 @@ def _validate_ref(ref: str) -> None:
 
 
 def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:  # pragma: no cover
-    """Download a GitHub release tarball to the cache and return the extracted path."""
+    """Download a GitHub release tarball to the extract path."""
     import tarfile as _tarfile
     import tempfile as _tempfile
     import urllib.request as _urllib_request
 
-    safe_version = re.sub(r"[^A-Za-z0-9._-]", "-", version)
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"release-{_cache_key(version)}"
     sentinel = cache_dir / ".complete"
     if sentinel.exists():
@@ -99,7 +98,6 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
 def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:  # pragma: no cover
     """Clone or update a GitHub repo at a specific ref to the cache and return the path."""
     _validate_ref(ref)
-    safe_ref = re.sub(r"[^A-Za-z0-9._-]", "-", ref)
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
     clone_url = f"https://github.com/{owner}/{repo}.git"
     clone_required = not (cache_dir / ".git").exists()

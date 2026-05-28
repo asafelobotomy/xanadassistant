@@ -45,14 +45,6 @@ WARN_LIMIT_OVERRIDES = {
     "mcp/scripts/gitMcp.py": 450,
     "mcp/scripts/githubMcp.py": 450,
     "mcp/scripts/_memory_mcp_shared.py": 420,
-    # ── Managed copies (.github/) — mirrors of the above; same ceilings apply ─────
-    ".github/mcp/scripts/sequentialThinkingMcp.py": 310,
-    ".github/mcp/scripts/memoryMcp.py": 600,
-    ".github/mcp/scripts/webMcp.py": 450,
-    ".github/mcp/scripts/xanadWorkspaceMcp.py": 500,
-    ".github/mcp/scripts/gitMcp.py": 450,
-    ".github/mcp/scripts/githubMcp.py": 450,
-    ".github/mcp/scripts/_memory_mcp_shared.py": 420,
 
     # ── Pack MCP scripts (consumer-facing single-file scripts) ────────────────────
     "packs/secure/mcp/secureOsv.py": 300,
@@ -108,18 +100,15 @@ WARN_LIMIT_OVERRIDES = {
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.
     "mcp/scripts/webMcp.py": 510,
-    ".github/mcp/scripts/webMcp.py": 510,
     # Web MCP test suite: expanded to cover new fetch, retry, and search paths.
     "tests/mcp_servers/test_web_mcp.py": 470,
     # Workspace MCP (pre-existing): grew with command hardening and workspace_grade_human.
     "mcp/scripts/xanadWorkspaceMcp.py": 540,
-    ".github/mcp/scripts/xanadWorkspaceMcp.py": 540,
     # Git MCP server: grew with structured mutation envelopes, _run_flags_completed,
     # _mutation_result helper, git_diff_staged_stat / git_diff_unstaged_stat tools,
     # extended stash/rebase/push tool surface for the Commit-agent migration,
     # and git_merge (start/continue/abort) to replace runCommands for merge workflows.
     "mcp/scripts/gitMcp.py": 600,
-    ".github/mcp/scripts/gitMcp.py": 600,
     # xanadEval _common.py: grew with retry logic in _call_model, text/behavior grader
     # overhauls (AND semantics, not_contains, regex_match/not_match, partial scoring,
     # min_tokens), new grader types (_grade_json_schema, _grade_program, _grade_llm,
@@ -142,11 +131,25 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     "tests/tools/test_xanadEval_graders_ext.py": 760,
     # Memory MCP shared module: grew with versioned migration helpers and session isolation.
     "mcp/scripts/_memory_mcp_shared.py": 460,
-    ".github/mcp/scripts/_memory_mcp_shared.py": 460,
     # Memory MCP entrypoint: grew with session_id threading and branch-scoped rule fixes.
     "mcp/scripts/memoryMcp.py": 450,
-    ".github/mcp/scripts/memoryMcp.py": 450,
 }
+
+
+def _add_mcp_managed_mirrors(overrides: dict[str, int]) -> None:
+    """Populate .github/mcp/scripts/ entries by mirroring mcp/scripts/ entries.
+
+    Any entry already explicitly present in *overrides* is left untouched, which
+    allows callers to override individual managed-copy limits when needed.
+    """
+    for key in list(overrides):
+        if key.startswith("mcp/scripts/"):
+            mirror = ".github/" + key
+            overrides.setdefault(mirror, overrides[key])
+
+
+_add_mcp_managed_mirrors(WARN_LIMIT_OVERRIDES)
+_add_mcp_managed_mirrors(HARD_LIMIT_OVERRIDES)
 
 
 def collect_files(roots: list[str]) -> list[Path]:

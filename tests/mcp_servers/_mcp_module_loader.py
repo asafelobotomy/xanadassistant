@@ -284,3 +284,24 @@ def load_mcp_script_module(relative_path: str, module_name: str, failure_label: 
             return module
     finally:
         sys.path.pop(0)
+
+
+def load_mcp_script_pair(script_name: str, module_prefix: str, failure_label: str | None = None):
+    """Load both source and managed copies of an MCP script.
+
+    Returns ``(source_module, managed_module)``.  *module_prefix* is used as the
+    base for the per-copy module names (e.g. ``"test_myMcp"`` yields
+    ``"test_myMcp_source"`` and ``"test_myMcp_managed"``).
+    """
+    label = failure_label or script_name
+    source = load_mcp_script_module(
+        f"mcp/scripts/{script_name}",
+        f"{module_prefix}_source",
+        label,
+    )
+    managed = load_mcp_script_module(
+        f".github/mcp/scripts/{script_name}",
+        f"{module_prefix}_managed",
+        label,
+    )
+    return source, managed

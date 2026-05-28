@@ -3,17 +3,11 @@ from __future__ import annotations
 import asyncio
 import unittest
 
-from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_pair
 
-SOURCE_DEV_DOCS_MODULE = load_mcp_script_module(
-    "mcp/scripts/devDocsMcp.py",
-    "test_devDocsMcp_source",
+SOURCE_DEV_DOCS_MODULE, MANAGED_DEV_DOCS_MODULE = load_mcp_script_pair(
     "devDocsMcp.py",
-)
-MANAGED_DEV_DOCS_MODULE = load_mcp_script_module(
-    ".github/mcp/scripts/devDocsMcp.py",
-    "test_devDocsMcp_managed",
-    "devDocsMcp.py",
+    "test_devDocsMcp",
 )
 
 

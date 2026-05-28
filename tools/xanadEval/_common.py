@@ -500,6 +500,55 @@ def _grade_program(response: str, config: dict) -> tuple[bool, float, str]:
         return False, 0.0, f"program grader: {e}"
 
 
+# ── Built-in grader registry ──────────────────────────────────────────────────
+
+def _h_2(grade_fn, response: str, config: dict) -> dict:
+    passed, score = grade_fn(response, config)
+    return {"pass": passed, "score": score}
+
+
+def _h_3(grade_fn, response: str, config: dict) -> dict:
+    passed, score, feedback = grade_fn(response, config)
+    rec: dict = {"pass": passed, "score": score}
+    if feedback:
+        rec["feedback"] = feedback
+    return rec
+
+
+def _h_llm_like(grade_fn, response: str, config: dict, model: str, token: str) -> dict:
+    if not token:
+        return {"pass": None, "score": None, "skipped": "no GITHUB_TOKEN"}
+    try:
+        passed, score, reasoning = grade_fn(response, config, model, token)
+        rec: dict = {"pass": passed, "score": score}
+        if reasoning:
+            rec["reasoning"] = reasoning
+        return rec
+    except RuntimeError as e:
+        return {"pass": None, "score": None, "error": str(e)}
+
+
+def _h_prompt(response: str, config: dict, _ctx, model: str, token: str) -> dict:
+    if not token:
+        return {"pass": None, "score": None, "skipped": "no GITHUB_TOKEN"}
+    try:
+        passed, score = _grade_prompt_judge(response, config, model, token)
+        return {"pass": passed, "score": score}
+    except RuntimeError as e:
+        return {"pass": None, "score": None, "error": str(e)}
+
+
+_GRADER_REGISTRY: dict = {
+    "text":           lambda r, c, ctx, m, t: _h_2(_grade_text, r, c),
+    "behavior":       lambda r, c, ctx, m, t: _h_2(_grade_behavior, r, c),
+    "json_schema":    lambda r, c, ctx, m, t: _h_3(_grade_json_schema, r, c),
+    "program":        lambda r, c, ctx, m, t: _h_3(_grade_program, r, c),
+    "prompt":         _h_prompt,
+    "llm":            lambda r, c, ctx, m, t: _h_llm_like(_grade_llm, r, c, m, t),
+    "llm_comparison": lambda r, c, ctx, m, t: _h_llm_like(_grade_llm_comparison, r, c, m, t),
+}
+
+
 def _run_graders(
     response: str,
     graders_spec: list[dict],
@@ -522,52 +571,11 @@ def _run_graders(
         gtype = g.get("type", "")
         gname = g.get("name", gtype)
         config = g.get("config", {})
-        if gtype == "text":
-            passed, score = _grade_text(response, config)
-            results.append({"type": gtype, "name": gname, "pass": passed, "score": score})
-        elif gtype == "behavior":
-            passed, score = _grade_behavior(response, config)
-            results.append({"type": gtype, "name": gname, "pass": passed, "score": score})
-        elif gtype == "json_schema":
-            passed, score, feedback = _grade_json_schema(response, config)
-            rec: dict = {"type": gtype, "name": gname, "pass": passed, "score": score}
-            if feedback:
-                rec["feedback"] = feedback
+        if gtype in _GRADER_REGISTRY:
+            rec = _GRADER_REGISTRY[gtype](response, config, ctx, model, token)
+            rec["type"] = gtype
+            rec["name"] = gname
             results.append(rec)
-        elif gtype == "program":
-            passed, score, feedback = _grade_program(response, config)
-            rec = {"type": gtype, "name": gname, "pass": passed, "score": score}
-            if feedback:
-                rec["feedback"] = feedback
-            results.append(rec)
-        elif gtype == "prompt":
-            if token:
-                try:
-                    passed, score = _grade_prompt_judge(response, config, model, token)
-                    results.append({"type": gtype, "name": gname, "pass": passed, "score": score})
-                except RuntimeError as e:
-                    results.append({"type": gtype, "name": gname, "pass": None,
-                                    "score": None, "error": str(e)})
-            else:
-                results.append({"type": gtype, "name": gname, "pass": None,
-                                "score": None, "skipped": "no GITHUB_TOKEN"})
-        elif gtype in ("llm", "llm_comparison"):
-            if token:
-                try:
-                    if gtype == "llm":
-                        passed, score, reasoning = _grade_llm(response, config, model, token)
-                    else:
-                        passed, score, reasoning = _grade_llm_comparison(response, config, model, token)
-                    rec: dict = {"type": gtype, "name": gname, "pass": passed, "score": score}
-                    if reasoning:
-                        rec["reasoning"] = reasoning
-                    results.append(rec)
-                except RuntimeError as e:
-                    results.append({"type": gtype, "name": gname, "pass": None,
-                                    "score": None, "error": str(e)})
-            else:
-                results.append({"type": gtype, "name": gname, "pass": None,
-                                "score": None, "skipped": "no GITHUB_TOKEN"})
         elif gtype in (
             "trigger", "file", "diff", "code", "action_sequence", "tool_constraint",
             "script", "human", "skill_invocation",

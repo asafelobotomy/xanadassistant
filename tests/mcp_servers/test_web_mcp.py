@@ -5,10 +5,9 @@ import unittest
 from ipaddress import ip_address
 from unittest import mock
 
-from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_pair
 
-SOURCE_WEB_MODULE = load_mcp_script_module("mcp/scripts/webMcp.py", "test_webMcp_source", "webMcp.py")
-MANAGED_WEB_MODULE = load_mcp_script_module(".github/mcp/scripts/webMcp.py", "test_webMcp_managed", "webMcp.py")
+SOURCE_WEB_MODULE, MANAGED_WEB_MODULE = load_mcp_script_pair("webMcp.py", "test_webMcp")
 
 
 class _FakeResponse:

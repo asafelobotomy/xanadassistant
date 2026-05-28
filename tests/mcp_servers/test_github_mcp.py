@@ -5,10 +5,9 @@ import os
 import unittest
 from unittest import mock
 
-from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_pair
 
-SOURCE_GITHUB_MODULE = load_mcp_script_module("mcp/scripts/githubMcp.py", "test_githubMcp_source", "githubMcp.py")
-MANAGED_GITHUB_MODULE = load_mcp_script_module(".github/mcp/scripts/githubMcp.py", "test_githubMcp_managed", "githubMcp.py")
+SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE = load_mcp_script_pair("githubMcp.py", "test_githubMcp")
 
 
 class GitHubMcpTests(unittest.TestCase):
@@ -32,10 +31,10 @@ class GitHubMcpTests(unittest.TestCase):
         for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):
             with self.subTest(module=module.__name__):
                 with mock.patch.dict(os.environ, {"GITHUB_TOKEN": "", "GH_TOKEN": ""}, clear=False), mock.patch.object(
-                    module, "_gh_cli_token", return_value=""
+                    module._shared, "gh_cli_token", return_value=""
                 ):
                     with self.assertRaisesRegex(RuntimeError, "No GitHub token found"):
-                        module._token()
+                        module._shared.token()
 
     def test_format_http_error_adds_pull_request_404_hint(self) -> None:
         for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):
@@ -51,7 +50,7 @@ class GitHubMcpTests(unittest.TestCase):
                     module.get_file_contents("owner", "repo", "../secret.txt")
 
                 encoded = {"encoding": "base64", "content": "aGVsbG8K"}
-                with mock.patch.object(module, "_get", return_value=encoded):
+                with mock.patch.object(module._shared, "get", return_value=encoded):
                     content = module.get_file_contents("owner", "repo", "docs/readme.md", ref="main")
 
                 self.assertEqual(content, "hello\n")
@@ -59,11 +58,11 @@ class GitHubMcpTests(unittest.TestCase):
     def test_search_code_formats_empty_and_non_empty_results(self) -> None:
         for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):
             with self.subTest(module=module.__name__):
-                with mock.patch.object(module, "_get", return_value={"items": [], "total_count": 0}):
+                with mock.patch.object(module._shared, "get", return_value={"items": [], "total_count": 0}):
                     empty = module.search_code("repo:owner/repo needle")
                 with mock.patch.object(
-                    module,
-                    "_get",
+                    module._shared,
+                    "get",
                     return_value={
                         "total_count": 1,
                         "items": [
@@ -84,8 +83,8 @@ class GitHubMcpTests(unittest.TestCase):
         for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):
             with self.subTest(module=module.__name__):
                 with mock.patch.object(
-                    module,
-                    "_get",
+                    module._shared,
+                    "get",
                     side_effect=[
                         [
                             {"number": 1, "state": "open", "title": "Issue", "html_url": "https://x", "pull_request": {}},
@@ -106,7 +105,7 @@ class GitHubMcpTests(unittest.TestCase):
                         [{"tag_name": "v1.0.0", "name": "First", "draft": False, "prerelease": False, "published_at": "2026-01-01"}],
                         {"workflow_runs": [{"id": 9, "name": "CI", "status": "completed", "conclusion": "success", "head_branch": "main", "created_at": "2026-01-01", "html_url": "https://run"}]},
                     ],
-                ), mock.patch.object(module, "_post", side_effect=[{"html_url": "https://comment"}, {"number": 7, "html_url": "https://pull"}, {"tag_name": "v1.0.0", "name": "First release", "html_url": "https://release", "draft": False, "prerelease": False}, {"tag_name": "v1.1.0", "name": "v1.1.0", "html_url": "https://draft", "draft": True, "prerelease": False}]):
+                ), mock.patch.object(module._shared, "post", side_effect=[{"html_url": "https://comment"}, {"number": 7, "html_url": "https://pull"}, {"tag_name": "v1.0.0", "name": "First release", "html_url": "https://release", "draft": False, "prerelease": False}, {"tag_name": "v1.1.0", "name": "v1.1.0", "html_url": "https://draft", "draft": True, "prerelease": False}]):
                     issues = module.list_issues("owner", "repo")
                     issue = module.get_issue("owner", "repo", 2)
                     comment = module.create_issue_comment("owner", "repo", 2, "hello")
@@ -140,14 +139,14 @@ class GitHubMcpTests(unittest.TestCase):
 
                 self.assertIn("request failed", module._format_http_error("/other", 500, ""))
 
-                with mock.patch.object(module, "_gh_cli_token", return_value="cli-token"), mock.patch.dict(
+                with mock.patch.object(module._shared, "gh_cli_token", return_value="cli-token"), mock.patch.dict(
                     os.environ,
                     {"GITHUB_TOKEN": "", "GH_TOKEN": ""},
                     clear=False,
                 ):
-                    self.assertEqual(module._token(), "cli-token")
+                    self.assertEqual(module._shared.token(), "cli-token")
 
-                with mock.patch.object(module, "_get", side_effect=[[], [], [], {"workflow_runs": []}]):
+                with mock.patch.object(module._shared, "get", side_effect=[[], [], [], {"workflow_runs": []}]):
                     issues = module.list_issues("owner", "repo", state="closed")
                     pulls = module.list_pull_requests("owner", "repo", state="all")
                     releases = module.list_releases("owner", "repo")
@@ -170,8 +169,8 @@ class GitHubMcpTests(unittest.TestCase):
         for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):
             with self.subTest(module=module.__name__):
                 with mock.patch.object(
-                    module,
-                    "_get",
+                    module._shared,
+                    "get",
                     side_effect=[
                         {
                             "full_name": "owner/repo",

@@ -7,10 +7,8 @@ from scripts.lifecycle._xanad._conditions import normalize_plan_answers, resolve
 from scripts.lifecycle._xanad._errors import LifecycleCommandError, _State
 from scripts.lifecycle._xanad._inspect import collect_context
 from scripts.lifecycle._xanad._interview import (
-    build_interview_questions,
-    expand_interview_questions,
     load_answers,
-    resolve_question_answers,
+    prepare_questions,
 )
 from scripts.lifecycle._xanad._merge import sha256_json
 from scripts.lifecycle._xanad._plan_a import (
@@ -22,8 +20,6 @@ from scripts.lifecycle._xanad._plan_a import (
 )
 from scripts.lifecycle._xanad._plan_c import (
     determine_repair_reasons,
-    seed_answers_from_install_state,
-    seed_answers_from_profile,
 )
 from scripts.lifecycle._xanad._pack_conflicts import (
     build_conflict_questions,
@@ -134,23 +130,11 @@ def build_plan_result(
             {"installState": context["installState"]},
         )
 
-    base_questions = build_interview_questions(context["policy"], context["metadata"], mode)
     raw_answers = load_answers(answers_path)
-    base_question_ids = {q["id"] for q in base_questions}
-    answers = seed_answers_from_install_state(mode, base_questions, context["lockfileState"], raw_answers)
-    answers = seed_answers_from_profile(context["metadata"].get("profileRegistry") or {}, answers, base_question_ids)
-    questions = expand_interview_questions(
-        context["policy"],
-        context["metadata"],
-        context["manifest"],
-        mode,
-        answers,
-        context["lockfileState"],
+    questions, resolved_answers, unresolved, unknown_answer_ids = prepare_questions(
+        context["policy"], context["metadata"], context["manifest"], mode,
+        context["lockfileState"], raw_answers,
     )
-    question_ids = {q["id"] for q in questions}
-    answers = seed_answers_from_install_state(mode, questions, context["lockfileState"], raw_answers)
-    answers = seed_answers_from_profile(context["metadata"].get("profileRegistry") or {}, answers, question_ids)
-    resolved_answers, unresolved, unknown_answer_ids = resolve_question_answers(questions, answers)
     resolved_answers = normalize_plan_answers(context["policy"], resolved_answers)
     agent_customization = summarize_agent_customization(
         context["policy"],

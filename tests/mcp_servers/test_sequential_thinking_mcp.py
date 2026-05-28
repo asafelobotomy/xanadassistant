@@ -2,13 +2,10 @@ from __future__ import annotations
 
 import unittest
 
-from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_pair
 
-SOURCE_SEQ_MODULE = load_mcp_script_module(
-    "mcp/scripts/sequentialThinkingMcp.py", "test_seqThinkingMcp_source", "sequentialThinkingMcp.py"
-)
-MANAGED_SEQ_MODULE = load_mcp_script_module(
-    ".github/mcp/scripts/sequentialThinkingMcp.py", "test_seqThinkingMcp_managed", "sequentialThinkingMcp.py"
+SOURCE_SEQ_MODULE, MANAGED_SEQ_MODULE = load_mcp_script_pair(
+    "sequentialThinkingMcp.py", "test_seqThinkingMcp"
 )
 
 

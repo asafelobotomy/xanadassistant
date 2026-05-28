@@ -40,12 +40,9 @@ class PlanOrchestrationTests(unittest.TestCase):
         context = self._base_context()
 
         with mock.patch("scripts.lifecycle._xanad._plan_b.collect_context", return_value=context), mock.patch(
-            "scripts.lifecycle._xanad._plan_b.build_interview_questions",
-            return_value=[{"id": "packs.selected", "kind": "multi-choice", "default": ["docs"]}],
+            "scripts.lifecycle._xanad._interview.prepare_questions",
+            return_value=([{"id": "packs.selected", "kind": "multi-choice", "default": ["docs"]}], {"packs.selected": ["docs", "secure"]}, [], []),
         ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}), mock.patch(
-            "scripts.lifecycle._xanad._plan_b.resolve_question_answers",
-            return_value=({"packs.selected": ["docs", "secure"]}, [], []),
-        ), mock.patch(
             "scripts.lifecycle._xanad._plan_b.detect_pack_token_conflicts",
             return_value=[{"token": "voice", "questionId": "resolvedTokenConflicts.voice", "packs": ["docs", "secure"], "candidates": {"docs": "docs", "secure": "secure"}}],
         ), mock.patch(
@@ -155,12 +152,10 @@ class PlanOrchestrationTests(unittest.TestCase):
         }
 
         with mock.patch("scripts.lifecycle._xanad._plan_b.collect_context", return_value=context), mock.patch(
-            "scripts.lifecycle._xanad._plan_b.build_interview_questions",
-            return_value=[],
+            "scripts.lifecycle._xanad._interview.prepare_questions",
+            return_value=([], {}, [], []),
         ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}), mock.patch(
-            "scripts.lifecycle._xanad._plan_b.resolve_question_answers",
-            return_value=({}, [], []),
-        ), mock.patch("scripts.lifecycle._xanad._plan_b.detect_pack_token_conflicts", return_value=[]), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.detect_pack_token_conflicts", return_value=[]), mock.patch(
             "scripts.lifecycle._xanad._plan_b.resolve_ownership_by_surface",
             return_value={},
         ), mock.patch("scripts.lifecycle._xanad._plan_b.resolve_token_values", return_value={}), mock.patch(
@@ -187,12 +182,10 @@ class PlanOrchestrationTests(unittest.TestCase):
         context["policy"] = {"canonicalSurfaces": [], "tokenRules": [], "retiredFilePolicy": {"archiveRoot": ".xanad/archive"}, "ownershipDefaults": {"agents": "plugin-backed-copilot-format"}}
         context["lockfileState"]["ownershipBySurface"] = {"agents": "plugin-backed-copilot-format"}
         with mock.patch("scripts.lifecycle._xanad._plan_b.collect_context", return_value=context), mock.patch(
-            "scripts.lifecycle._xanad._plan_b.build_interview_questions",
-            return_value=[],
+            "scripts.lifecycle._xanad._interview.prepare_questions",
+            return_value=([], {}, [], []),
         ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}), mock.patch(
-            "scripts.lifecycle._xanad._plan_b.resolve_question_answers",
-            return_value=({}, [], []),
-        ), mock.patch("scripts.lifecycle._xanad._plan_b.detect_pack_token_conflicts", return_value=[]), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.detect_pack_token_conflicts", return_value=[]), mock.patch(
             "scripts.lifecycle._xanad._plan_b.resolve_token_values", return_value={}), mock.patch(
             "scripts.lifecycle._xanad._plan_b.build_setup_plan_actions",
             return_value=({"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0, "deleted": 0}, [], [], []),
@@ -216,12 +209,9 @@ class PlanOrchestrationTests(unittest.TestCase):
 
         context["metadata"]["agentRegistry"]["agents"][0]["manifestEntryId"] = "agents.missing.agent.md"
         with mock.patch("scripts.lifecycle._xanad._plan_b.collect_context", return_value=context), mock.patch(
-            "scripts.lifecycle._xanad._plan_b.build_interview_questions",
-            return_value=[],
-        ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}), mock.patch(
-            "scripts.lifecycle._xanad._plan_b.resolve_question_answers",
-            return_value=({}, [], []),
-        ):
+            "scripts.lifecycle._xanad._interview.prepare_questions",
+            return_value=([], {}, [], []),
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}):
             with self.assertRaises(LifecycleCommandError) as excinfo:
                 build_plan_result(Path("."), Path("."), "setup", None, False)
 

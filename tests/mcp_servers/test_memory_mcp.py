@@ -6,10 +6,9 @@ import tempfile
 import unittest
 from unittest import mock
 
-from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_pair
 
-SOURCE_MEMORY_MODULE = load_mcp_script_module("mcp/scripts/memoryMcp.py", "test_memoryMcp_source", "memoryMcp.py")
-MANAGED_MEMORY_MODULE = load_mcp_script_module(".github/mcp/scripts/memoryMcp.py", "test_memoryMcp_managed", "memoryMcp.py")
+SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE = load_mcp_script_pair("memoryMcp.py", "test_memoryMcp")
 
 
 class MemoryMcpTests(unittest.TestCase):

@@ -381,7 +381,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:f7114c23196895e7833d52a652bd62a3e1bcc92d9da72850e96a2dc8a369111d"
+      "hash": "sha256:64cf9a156d1f7d31fe2dc994f210a95eb7cdcc290796b0ec1fbea4748e284b91"
     },
     {
       "id": "hook-scripts.devDocsMcp.py",
@@ -485,7 +485,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:39a6a4c727d072e9e78972afe82f4278b699191191f930909519ca80ac0eb219"
+      "hash": "sha256:186c0972db78f730d752c9a11b68456e3424500f7ece2ad38f0e327d53bae572"
     },
     {
       "id": "lean-hooks.leanContextBudget.py",

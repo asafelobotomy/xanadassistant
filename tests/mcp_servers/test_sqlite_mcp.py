@@ -5,11 +5,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_pair
 
-SOURCE_SQLITE_MODULE = load_mcp_script_module("mcp/scripts/sqliteMcp.py", "test_sqliteMcp_source", "sqliteMcp.py")
-MANAGED_SQLITE_MODULE = load_mcp_script_module(
-    ".github/mcp/scripts/sqliteMcp.py", "test_sqliteMcp_managed", "sqliteMcp.py"
+SOURCE_SQLITE_MODULE, MANAGED_SQLITE_MODULE = load_mcp_script_pair(
+    "sqliteMcp.py", "test_sqliteMcp"
 )
 
 

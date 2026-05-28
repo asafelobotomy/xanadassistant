@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import unittest
 
-from tests.mcp_servers._mcp_module_loader import load_mcp_script_module
+from tests.mcp_servers._mcp_module_loader import load_mcp_script_pair
 
-SOURCE_TIME_MODULE = load_mcp_script_module("mcp/scripts/timeMcp.py", "test_timeMcp_source", "timeMcp.py")
-MANAGED_TIME_MODULE = load_mcp_script_module(".github/mcp/scripts/timeMcp.py", "test_timeMcp_managed", "timeMcp.py")
+SOURCE_TIME_MODULE, MANAGED_TIME_MODULE = load_mcp_script_pair("timeMcp.py", "test_timeMcp")
 
 
 class TimeMcpTests(unittest.TestCase):
