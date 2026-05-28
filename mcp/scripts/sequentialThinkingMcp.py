@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sequential-thinking MCP server — per-session stateful thought chains.
+"""Sequential-thinking MCP server — per-process stateful thought chains.
 
 Provides:
 - `sequentialthinking`: accepts numbered thought steps, maintains a validated
@@ -18,13 +18,23 @@ Improvements over the upstream @modelcontextprotocol/server-sequential-thinking:
   dict is never modified (fixes upstream implicit mutation of total_thoughts).
 - Explicit reset tool: call reset_thinking_session to start a new reasoning
   chain without restarting the process.
-- Per-lifecycle state: FastMCP lifespan initialises a fresh ThinkingSession on
-  each MCP process start so no stale state survives process restarts.
+- Per-process state: stdio transport means each VS Code connection spawns a
+  separate process; state is therefore isolated per client without extra locking,
+  and the lifespan hook guarantees a fresh ThinkingSession on each process start.
+- Field-pairing validation: is_revision ↔ revises_thought and
+  branch_from_thought ↔ branch_id must both be provided or both omitted.
+- Thought-number uniqueness: duplicate thought_number values are rejected so
+  the history is an unambiguous ordered record.
+- needs_more_thoughts validated: the advisory flag is type-checked as boolean
+  when provided and stored in the history entry for downstream consumers.
+- Diagnostic logging: formatted thought summaries written to stderr unless
+  DISABLE_THOUGHT_LOGGING=true (matches upstream env-var contract).
 
 Transport: stdio  |  Run: uvx --from "mcp[cli]" mcp run <this-file>
 """
 from __future__ import annotations
 
+import os
 import re
 import sys
 from contextlib import asynccontextmanager
@@ -48,6 +58,7 @@ MAX_THOUGHT_CHARS: int = 32_768  # 32 KB per thought
 MAX_HISTORY: int = 500           # entries before the session must be reset
 MAX_BRANCH_ID_LEN: int = 64
 _BRANCH_ID_RE: re.Pattern[str] = re.compile(r"[a-zA-Z0-9_\-]+")
+_LOGGING_DISABLED: bool = os.environ.get("DISABLE_THOUGHT_LOGGING", "").lower() == "true"
 
 # ---------------------------------------------------------------------------
 # Per-session state
@@ -63,6 +74,23 @@ class ThinkingSession:
 
 
 _session: ThinkingSession = ThinkingSession()
+
+
+def _format_thought(entry: dict) -> str:
+    """Format a thought entry as a bordered block for stderr diagnostic output."""
+    num = entry["thought_number"]
+    total = entry["total_thoughts"]
+    thought = entry["thought"]
+    if entry.get("is_revision"):
+        label = f"↩ Revision {num}/{total} (revising #{entry.get('revises_thought')})"
+    elif entry.get("branch_from_thought"):
+        label = f"⑂ Branch {num}/{total} (from #{entry['branch_from_thought']}, id={entry['branch_id']!r})"
+    else:
+        label = f"· Thought {num}/{total}"
+    width = max(len(label), min(len(thought), 120)) + 2
+    bar = "─" * (width + 2)
+    display = thought[:width] + ("…" if len(thought) > width else "")
+    return f"┌{bar}┐\n│ {label:<{width}} │\n├{bar}┤\n│ {display:<{width}} │\n└{bar}┘"
 
 
 @asynccontextmanager
@@ -143,7 +171,8 @@ def sequentialthinking(
     - branch_from_thought: 1-based index of the branching-point thought.
     - branch_id: safe identifier for this branch (alphanumeric, hyphens,
       underscores only; max 64 characters).
-    - needs_more_thoughts: advisory flag only; has no functional effect.
+    - needs_more_thoughts: optional advisory boolean; when provided it is
+      type-checked, stored in the history entry, and returned to callers.
     """
     errors: list[str] = []
     history_numbers = {e["thought_number"] for e in _session.thought_history}
@@ -161,6 +190,13 @@ def sequentialthinking(
     if total_thoughts < 1:
         errors.append("total_thoughts must be >= 1")
 
+    # Advisory flag must be boolean when provided
+    if needs_more_thoughts is not None and not isinstance(needs_more_thoughts, bool):
+        errors.append(
+            f"needs_more_thoughts must be a boolean; "
+            f"got {type(needs_more_thoughts).__name__!r}"
+        )
+
     # revises_thought must reference a recorded thought with a lower index
     if revises_thought is not None:
         if revises_thought < 1 or revises_thought >= thought_number:
@@ -173,6 +209,12 @@ def sequentialthinking(
                 f"revises_thought ({revises_thought}) does not match any "
                 "recorded thought number in the current session"
             )
+
+    # Revision field-pairing: is_revision ↔ revises_thought must be consistent
+    if revises_thought is not None and not is_revision:
+        errors.append("is_revision must be True when revises_thought is provided")
+    if is_revision and revises_thought is None:
+        errors.append("revises_thought is required when is_revision is True")
 
     # branch_from_thought must reference a recorded thought with a lower index
     if branch_from_thought is not None:
@@ -199,6 +241,19 @@ def sequentialthinking(
                 "branch_id must contain only alphanumeric characters, "
                 "hyphens, and underscores"
             )
+
+    # Branch field-pairing: branch_from_thought ↔ branch_id must be consistent
+    if (branch_from_thought is None) != (branch_id is None):
+        errors.append(
+            "branch_from_thought and branch_id must both be provided or both omitted"
+        )
+
+    # Thought-number uniqueness: each step must carry a new number
+    if thought_number >= 1 and thought_number in history_numbers:
+        errors.append(
+            f"thought_number {thought_number} is already recorded in this session; "
+            "each thought — including revisions and branches — must use a new number"
+        )
 
     if errors:
         return {"error": "; ".join(errors), "status": "failed"}
@@ -230,8 +285,12 @@ def sequentialthinking(
         entry["branch_from_thought"] = branch_from_thought
     if branch_id is not None:
         entry["branch_id"] = branch_id
+    if needs_more_thoughts is not None and isinstance(needs_more_thoughts, bool):
+        entry["needs_more_thoughts"] = needs_more_thoughts
 
     _session.thought_history.append(entry)
+    if not _LOGGING_DISABLED:  # pragma: no cover
+        sys.stderr.write(_format_thought(entry) + "\n")
 
     if branch_from_thought is not None and branch_id is not None:
         if branch_id not in _session.branches:

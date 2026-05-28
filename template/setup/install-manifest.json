@@ -644,7 +644,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:c86580e46c4d0a2867c5870f8e67bac978949bb388a30107c3e5a9ad9f883748"
+      "hash": "sha256:7f39504e528349740e49a18d9cbdbf0ff443888a0108d5befed3fa5cf141a7b2"
     },
     {
       "id": "shapeup-hooks.shapeupScopeCheck.py",

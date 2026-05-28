@@ -38,7 +38,7 @@ WARN_LIMIT_OVERRIDES = {
     # ── Consumer MCP scripts (single-file delivery) ───────────────────────────────
     # Consumer workspaces receive these MCP servers as single files, so they need a little
     # more room than the default warning budget while still honoring the hard limit.
-    "mcp/scripts/sequentialThinkingMcp.py": 260,
+    "mcp/scripts/sequentialThinkingMcp.py": 310,
     "mcp/scripts/memoryMcp.py": 600,
     "mcp/scripts/webMcp.py": 450,
     "mcp/scripts/xanadWorkspaceMcp.py": 500,
@@ -46,7 +46,7 @@ WARN_LIMIT_OVERRIDES = {
     "mcp/scripts/githubMcp.py": 450,
     "mcp/scripts/_memory_mcp_shared.py": 420,
     # ── Managed copies (.github/) — mirrors of the above; same ceilings apply ─────
-    ".github/mcp/scripts/sequentialThinkingMcp.py": 260,
+    ".github/mcp/scripts/sequentialThinkingMcp.py": 310,
     ".github/mcp/scripts/memoryMcp.py": 600,
     ".github/mcp/scripts/webMcp.py": 450,
     ".github/mcp/scripts/xanadWorkspaceMcp.py": 500,
