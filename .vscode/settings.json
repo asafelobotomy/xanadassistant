@@ -15,6 +15,13 @@
   "chat.subagents.allowInvocationsFromSubagents": true,
   "chat.autopilot.enabled": true,
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "github.copilot.nextEditSuggestions.enabled": "enabled",
+  "editor.inlineSuggest.enabled": true,
+  "editor.inlineSuggest.showToolbar": "onHover",
+  "github.copilot.chat.codesearch.enabled": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
   "python.testing.unittestEnabled": true,
   "python.testing.unittestArgs": [
     "-v",

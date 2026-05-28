@@ -171,6 +171,27 @@ def resolve_token_values(
                 token_values[token] = requests
             else:
                 token_values[token] = "128"
+        elif token == "{{COPILOT_NEXT_EDIT_SUGGESTIONS}}":
+            val = resolved_answers.get("settings.copilot.nextEditSuggestions")
+            token_values[token] = val if isinstance(val, str) and val in {"enabled", "disabled"} else "enabled"
+        elif token == "{{EDITOR_INLINE_SUGGEST_ENABLED}}":
+            val = resolved_answers.get("settings.editor.inlineSuggest.enabled")
+            token_values[token] = "false" if val is False else "true"
+        elif token == "{{EDITOR_INLINE_SUGGEST_TOOLBAR}}":
+            val = resolved_answers.get("settings.editor.inlineSuggest.toolbar")
+            token_values[token] = val if isinstance(val, str) and val in {"onHover", "always", "never"} else "onHover"
+        elif token == "{{COPILOT_CODESEARCH_ENABLED}}":
+            val = resolved_answers.get("settings.copilot.codesearch")
+            token_values[token] = "false" if val is False else "true"
+        elif token == "{{FILES_TRIM_TRAILING_WHITESPACE}}":
+            val = resolved_answers.get("settings.files.trimTrailingWhitespace")
+            token_values[token] = "false" if val is False else "true"
+        elif token == "{{FILES_INSERT_FINAL_NEWLINE}}":
+            val = resolved_answers.get("settings.files.insertFinalNewline")
+            token_values[token] = "false" if val is False else "true"
+        elif token == "{{FILES_TRIM_FINAL_NEWLINES}}":
+            val = resolved_answers.get("settings.files.trimFinalNewlines")
+            token_values[token] = "false" if val is False else "true"
     if package_root is not None:
         resolved_token_conflicts = {
             key[len("resolvedTokenConflicts."):]: value

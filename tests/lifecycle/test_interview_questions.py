@@ -37,13 +37,48 @@ class InterviewQuestionsTests(unittest.TestCase):
     def test_settings_questions_returns_agent_max_requests_with_four_options(self) -> None:
         questions = interview_questions.settings_questions()
 
-        self.assertEqual(len(questions), 1)
+        self.assertEqual(len(questions), 8)
         q = questions[0]
         self.assertEqual(q["id"], "settings.agent.maxRequests")
         self.assertEqual(q["batch"], "advanced")
         self.assertEqual(q["default"], "128")
         option_ids = [o["id"] for o in q["options"]]
         self.assertEqual(option_ids, ["32", "64", "128", "256"])
+
+    def test_settings_questions_copilot_next_edit_suggestions_defaults_to_enabled(self) -> None:
+        questions = interview_questions.settings_questions()
+        q = next(q for q in questions if q["id"] == "settings.copilot.nextEditSuggestions")
+
+        self.assertEqual(q["kind"], "choice")
+        self.assertEqual(q["default"], "enabled")
+        option_ids = [o["id"] for o in q["options"]]
+        self.assertEqual(option_ids, ["enabled", "disabled"])
+
+    def test_settings_questions_inline_suggest_toolbar_has_three_options(self) -> None:
+        questions = interview_questions.settings_questions()
+        q = next(q for q in questions if q["id"] == "settings.editor.inlineSuggest.toolbar")
+
+        self.assertEqual(q["kind"], "choice")
+        self.assertEqual(q["default"], "onHover")
+        option_ids = [o["id"] for o in q["options"]]
+        self.assertEqual(option_ids, ["onHover", "always", "never"])
+
+    def test_settings_questions_file_cleanup_confirm_questions_default_to_true(self) -> None:
+        questions = interview_questions.settings_questions()
+        confirm_ids = {
+            "settings.editor.inlineSuggest.enabled",
+            "settings.copilot.codesearch",
+            "settings.files.trimTrailingWhitespace",
+            "settings.files.insertFinalNewline",
+            "settings.files.trimFinalNewlines",
+        }
+        confirm_questions = [q for q in questions if q["id"] in confirm_ids]
+
+        self.assertEqual(len(confirm_questions), 5)
+        for q in confirm_questions:
+            self.assertEqual(q["kind"], "confirm", f"{q['id']} should be kind=confirm")
+            self.assertTrue(q["default"], f"{q['id']} should default to True")
+            self.assertTrue(q["recommended"], f"{q['id']} should recommend True")
 
 if __name__ == "__main__":
     unittest.main()

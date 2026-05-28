@@ -178,6 +178,66 @@ class ConditionsTests(unittest.TestCase):
             result = _conditions.resolve_token_values(policy, workspace, {"settings.agent.maxRequests": "many"})
             self.assertEqual(result["{{AGENT_MAX_REQUESTS}}"], "128")
 
+    def test_resolve_token_values_copilot_next_edit_suggestions(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            policy = {"canonicalSurfaces": [], "tokenRules": [{"token": "{{COPILOT_NEXT_EDIT_SUGGESTIONS}}"}]}
+
+            result = _conditions.resolve_token_values(policy, workspace, {"settings.copilot.nextEditSuggestions": "disabled"})
+            self.assertEqual(result["{{COPILOT_NEXT_EDIT_SUGGESTIONS}}"], "disabled")
+
+            result = _conditions.resolve_token_values(policy, workspace, {})
+            self.assertEqual(result["{{COPILOT_NEXT_EDIT_SUGGESTIONS}}"], "enabled")
+
+            result = _conditions.resolve_token_values(policy, workspace, {"settings.copilot.nextEditSuggestions": "bogus"})
+            self.assertEqual(result["{{COPILOT_NEXT_EDIT_SUGGESTIONS}}"], "enabled")
+
+    def test_resolve_token_values_editor_inline_suggest_enabled(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            policy = {"canonicalSurfaces": [], "tokenRules": [{"token": "{{EDITOR_INLINE_SUGGEST_ENABLED}}"}]}
+
+            result = _conditions.resolve_token_values(policy, workspace, {"settings.editor.inlineSuggest.enabled": True})
+            self.assertEqual(result["{{EDITOR_INLINE_SUGGEST_ENABLED}}"], "true")
+
+            result = _conditions.resolve_token_values(policy, workspace, {"settings.editor.inlineSuggest.enabled": False})
+            self.assertEqual(result["{{EDITOR_INLINE_SUGGEST_ENABLED}}"], "false")
+
+            result = _conditions.resolve_token_values(policy, workspace, {})
+            self.assertEqual(result["{{EDITOR_INLINE_SUGGEST_ENABLED}}"], "true")
+
+    def test_resolve_token_values_editor_inline_suggest_toolbar(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            policy = {"canonicalSurfaces": [], "tokenRules": [{"token": "{{EDITOR_INLINE_SUGGEST_TOOLBAR}}"}]}
+
+            for valid in ("onHover", "always", "never"):
+                result = _conditions.resolve_token_values(policy, workspace, {"settings.editor.inlineSuggest.toolbar": valid})
+                self.assertEqual(result["{{EDITOR_INLINE_SUGGEST_TOOLBAR}}"], valid)
+
+            result = _conditions.resolve_token_values(policy, workspace, {})
+            self.assertEqual(result["{{EDITOR_INLINE_SUGGEST_TOOLBAR}}"], "onHover")
+
+    def test_resolve_token_values_boolean_settings_tokens(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            for token, answer_key in (
+                ("{{COPILOT_CODESEARCH_ENABLED}}", "settings.copilot.codesearch"),
+                ("{{FILES_TRIM_TRAILING_WHITESPACE}}", "settings.files.trimTrailingWhitespace"),
+                ("{{FILES_INSERT_FINAL_NEWLINE}}", "settings.files.insertFinalNewline"),
+                ("{{FILES_TRIM_FINAL_NEWLINES}}", "settings.files.trimFinalNewlines"),
+            ):
+                policy = {"canonicalSurfaces": [], "tokenRules": [{"token": token}]}
+
+                result = _conditions.resolve_token_values(policy, workspace, {answer_key: True})
+                self.assertEqual(result[token], "true", f"{token} True -> 'true'")
+
+                result = _conditions.resolve_token_values(policy, workspace, {answer_key: False})
+                self.assertEqual(result[token], "false", f"{token} False -> 'false'")
+
+                result = _conditions.resolve_token_values(policy, workspace, {})
+                self.assertEqual(result[token], "true", f"{token} missing -> 'true' (default)")
+
 
 if __name__ == "__main__":
     unittest.main()

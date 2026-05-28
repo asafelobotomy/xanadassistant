@@ -1743,10 +1743,17 @@
       "strategy": "merge-json-object",
       "requiredWhen": [],
       "tokens": [
-        "{{AGENT_MAX_REQUESTS}}"
+        "{{AGENT_MAX_REQUESTS}}",
+        "{{COPILOT_CODESEARCH_ENABLED}}",
+        "{{COPILOT_NEXT_EDIT_SUGGESTIONS}}",
+        "{{EDITOR_INLINE_SUGGEST_ENABLED}}",
+        "{{EDITOR_INLINE_SUGGEST_TOOLBAR}}",
+        "{{FILES_INSERT_FINAL_NEWLINE}}",
+        "{{FILES_TRIM_FINAL_NEWLINES}}",
+        "{{FILES_TRIM_TRAILING_WHITESPACE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:0e204beb6c6fb98f8d646f3174ba7d65f47fc657031bfbcb035e2e57da860b61"
+      "hash": "sha256:11387f32770eb4cdc5c4659e37215efd4042caed40fc79b5105ba3fd9a557093"
     }
   ],
   "retiredFiles": [

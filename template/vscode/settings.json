@@ -15,5 +15,12 @@
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "chat.useAgentsMdFile": true,
   "chat.useCustomAgentHooks": true,
-  "chat.agent.maxRequests": {{AGENT_MAX_REQUESTS}}
+  "chat.agent.maxRequests": {{AGENT_MAX_REQUESTS}},
+  "github.copilot.nextEditSuggestions.enabled": "{{COPILOT_NEXT_EDIT_SUGGESTIONS}}",
+  "editor.inlineSuggest.enabled": {{EDITOR_INLINE_SUGGEST_ENABLED}},
+  "editor.inlineSuggest.showToolbar": "{{EDITOR_INLINE_SUGGEST_TOOLBAR}}",
+  "github.copilot.chat.codesearch.enabled": {{COPILOT_CODESEARCH_ENABLED}},
+  "files.trimTrailingWhitespace": {{FILES_TRIM_TRAILING_WHITESPACE}},
+  "files.insertFinalNewline": {{FILES_INSERT_FINAL_NEWLINE}},
+  "files.trimFinalNewlines": {{FILES_TRIM_FINAL_NEWLINES}}
 }

@@ -677,6 +677,41 @@
       "token": "{{AGENT_MAX_REQUESTS}}",
       "description": "Maximum number of agentic requests per conversation.",
       "required": false
+    },
+    {
+      "token": "{{COPILOT_NEXT_EDIT_SUGGESTIONS}}",
+      "description": "Whether Copilot Next Edit Suggestions are enabled (enabled or disabled).",
+      "required": false
+    },
+    {
+      "token": "{{EDITOR_INLINE_SUGGEST_ENABLED}}",
+      "description": "Whether inline ghost-text suggestions are enabled in the editor (true or false).",
+      "required": false
+    },
+    {
+      "token": "{{EDITOR_INLINE_SUGGEST_TOOLBAR}}",
+      "description": "When the inline suggestion toolbar is shown (onHover, always, never).",
+      "required": false
+    },
+    {
+      "token": "{{COPILOT_CODESEARCH_ENABLED}}",
+      "description": "Whether Copilot semantic code search is enabled in chat (true or false).",
+      "required": false
+    },
+    {
+      "token": "{{FILES_TRIM_TRAILING_WHITESPACE}}",
+      "description": "Whether trailing whitespace is trimmed on save (true or false).",
+      "required": false
+    },
+    {
+      "token": "{{FILES_INSERT_FINAL_NEWLINE}}",
+      "description": "Whether a final newline is inserted at end of files on save (true or false).",
+      "required": false
+    },
+    {
+      "token": "{{FILES_TRIM_FINAL_NEWLINES}}",
+      "description": "Whether multiple trailing newlines are trimmed to one on save (true or false).",
+      "required": false
     }
   ],
   "chmodRules": {
