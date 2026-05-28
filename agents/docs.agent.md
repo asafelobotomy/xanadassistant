@@ -42,7 +42,7 @@ Do not use this agent for:
 
 ## Output style
 
-Write in clear, present-tense prose unless the target format is a reference doc or migration guide. Use Markdown headings, numbered steps, tables, and fenced code blocks appropriate to the target format. Keep explanations concise — expand only when context is genuinely needed. Match the existing style of the file being updated rather than imposing a new convention.
+{{agent:docs:output-style}}
 
 ## Memory
 

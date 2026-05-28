@@ -11,13 +11,16 @@ def seed_answers_from_install_state(mode: str, questions: list[dict], lockfile_s
 
     profile_question = question_map.get("profile.selected")
     installed_profile = lockfile_state.get("profile")
-    if profile_question and "profile.selected" not in seeded_answers and installed_profile in profile_question.get("options", []):
-        seeded_answers["profile.selected"] = installed_profile
+    if profile_question and "profile.selected" not in seeded_answers:
+        profile_option_ids = {opt["id"] if isinstance(opt, dict) else opt for opt in profile_question.get("options", [])}
+        if installed_profile in profile_option_ids:
+            seeded_answers["profile.selected"] = installed_profile
 
     packs_question = question_map.get("packs.selected")
     installed_packs = lockfile_state.get("selectedPacks", [])
     if packs_question and "packs.selected" not in seeded_answers and isinstance(installed_packs, list):
-        valid_packs = [pack_id for pack_id in installed_packs if pack_id in packs_question.get("options", [])]
+        pack_option_ids = {opt["id"] if isinstance(opt, dict) else opt for opt in packs_question.get("options", [])}
+        valid_packs = [pack_id for pack_id in installed_packs if pack_id in pack_option_ids]
         seeded_answers["packs.selected"] = valid_packs
 
     # Re-seed all personalisation answers that were recorded at apply time.

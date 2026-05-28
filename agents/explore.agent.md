@@ -44,7 +44,7 @@ Do not use this agent for:
 
 ## Output style
 
-Report files found with workspace-relative paths and line numbers. Use Markdown tables for lists of results. Lead with the most relevant match; group related findings. Keep excerpts short — quote only the lines that answer the question.
+{{agent:explore:output-style}}
 
 ## Memory
 

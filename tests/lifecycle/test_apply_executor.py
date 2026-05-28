@@ -319,6 +319,34 @@ class ApplyExecutorTests(unittest.TestCase):
             inside = workspace / ".github" / "agents" / "foo.md"
             _apply_executor._assert_within_workspace(inside, workspace)
 
+    def test_apply_memory_gitignore_removes_entry_when_opted_out(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            gitignore = workspace / ".gitignore"
+            gitignore.write_text("build/\n.github/xanadAssistant/memory/\n", encoding="utf-8")
+
+            _apply_executor._apply_memory_gitignore(workspace, {"memory.gitignore": False})
+
+            self.assertEqual(gitignore.read_text(encoding="utf-8"), "build/\n")
+
+    def test_apply_memory_gitignore_opted_out_is_noop_when_entry_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            gitignore = workspace / ".gitignore"
+            gitignore.write_text("build/\n", encoding="utf-8")
+
+            _apply_executor._apply_memory_gitignore(workspace, {"memory.gitignore": False})
+
+            self.assertEqual(gitignore.read_text(encoding="utf-8"), "build/\n")
+
+    def test_apply_memory_gitignore_opted_out_is_noop_when_gitignore_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+
+            _apply_executor._apply_memory_gitignore(workspace, {"memory.gitignore": False})
+
+            self.assertFalse((workspace / ".gitignore").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

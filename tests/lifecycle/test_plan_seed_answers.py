@@ -82,6 +82,35 @@ class SeedAnswersFromInstallStateTests(unittest.TestCase):
         self.assertEqual(result["packs.selected"], ["docs"])
         self.assertTrue(result["mcp.enabled"])
 
+    def test_update_mode_seeds_packs_correctly_with_dict_options(self) -> None:
+        questions = [
+            {
+                "id": "profile.selected",
+                "options": [{"id": "balanced", "label": "Balanced", "description": "Default"}],
+            },
+            {
+                "id": "packs.selected",
+                "options": [
+                    {"id": "tdd", "label": "TDD", "description": "Test-driven"},
+                    {"id": "docs", "label": "Docs", "description": "Documentation"},
+                ],
+            },
+        ]
+
+        result = _plan_c.seed_answers_from_install_state(
+            "update",
+            questions,
+            {
+                "profile": "balanced",
+                "selectedPacks": ["tdd", "removed-pack"],
+                "setupAnswers": {},
+            },
+            {},
+        )
+
+        self.assertEqual(result["profile.selected"], "balanced")
+        self.assertEqual(result["packs.selected"], ["tdd"])
+
 
 class SeedAnswersFromProfileTests(unittest.TestCase):
     def test_selected_profile_seeds_defaults_and_default_packs(self) -> None:
@@ -134,5 +163,3 @@ class SeedAnswersFromProfileTests(unittest.TestCase):
 
         self.assertEqual(filtered, {"profile.selected": "balanced", "packs.selected": ["docs"]})
         self.assertEqual(unknown, {"profile.selected": "missing"})
-
-

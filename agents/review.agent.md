@@ -56,7 +56,7 @@ For each finding, report:
 
 ## Reporting threshold
 
-By default, report all findings at Advisory and above. Prioritise Critical and High. For broad-scope requests, ask the user to narrow the focus before proceeding.
+{{agent:review:reporting-threshold}}
 
 When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for read-only inspection over `runCommands`.
 

@@ -26,8 +26,8 @@ _AGENT_PERSONA_LABELS: dict[str, str] = {
 
 _TESTING_PHILOSOPHY_LABELS: dict[str, str] = {
     "always": "Write tests alongside every code change.",
-    "suggest": "Suggest — propose tests but do not block on them.",
-    "skip": "Skip — do not write or suggest tests unless asked.",
+    "suggest": "Propose tests but do not block on them.",
+    "skip": "Do not write or suggest tests unless asked.",
 }
 
 _SCAN_TOKENS: frozenset[str] = frozenset({"{{PRIMARY_LANGUAGE}}", "{{PACKAGE_MANAGER}}", "{{TEST_COMMAND}}"})

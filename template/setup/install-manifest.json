@@ -62,9 +62,12 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{agent:commit:message-style}}",
+        "{{agent:commit:secret-guard}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:92a569bc55c6317ed944d60ee5a57d0d0f443feec002775b10cfdf34c1a81db2"
+      "hash": "sha256:f6c7aee8d25832714aea7c96cdc67a57d873f9ebb7965ba5bb5cc2927a269dbd"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -110,9 +113,11 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{agent:docs:output-style}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:25431ad2abcc77260edee79828343b12c110343d98f85ac5467447d1c174c0a8"
+      "hash": "sha256:409d865477570edcf7b7327b5d48863bfbc469a77312623bf47f40806e1a936d"
     },
     {
       "id": "agents.explore.agent.md",
@@ -126,9 +131,11 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{agent:explore:output-style}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:f6871c484eb65d4f40863965d021f230457347e0857194a33c85e4920c3d8164"
+      "hash": "sha256:8131835023bb72b05d237852b3032e2f6343a6f1e5f87609016abc130ea35544"
     },
     {
       "id": "agents.organise.agent.md",
@@ -158,9 +165,11 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{agent:planner:plan-format}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:84ded16f6f28fd01847acb03e678cd73601fcc99b3d0b0d96752a41f6e444399"
+      "hash": "sha256:e1221f3d4b1818f47b5022df1c8d98e3898b2ee5e235ef033cdee58371fe289c"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -190,9 +199,11 @@
       ],
       "strategy": "token-replace",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{agent:review:reporting-threshold}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:95b3ac4a555e0c82471d2dd85d6ea170bad43bb9df9c24e9bb16989125a432c2"
+      "hash": "sha256:1c970610a5c52208d00b99ac012af7fe4d5b70a1b4aa2310d7d350214c34dba5"
     },
     {
       "id": "agents.triage.agent.md",

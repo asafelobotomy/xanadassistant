@@ -90,8 +90,8 @@ def settings_questions() -> list[dict]:
             "default": "128",
             "recommended": "128",
             "options": [
-                {"id": "32", "label": "32", "description": "Conservative"},
-                {"id": "64", "label": "64", "description": "Moderate"},
+                {"id": "32", "label": "32", "description": "Conservative — reduced tool calls per session"},
+                {"id": "64", "label": "64", "description": "Moderate — balanced for typical sessions"},
                 {"id": "128", "label": "128", "description": "Default — suitable for most workspaces"},
                 {"id": "256", "label": "256", "description": "Extended — for complex long-running tasks"},
             ],
@@ -128,9 +128,9 @@ def settings_questions() -> list[dict]:
             "default": "onHover",
             "recommended": "onHover",
             "options": [
-                {"id": "onHover", "label": "On hover", "description": "Show controls when hovering over a suggestion"},
-                {"id": "always", "label": "Always", "description": "Always show the inline suggestion toolbar"},
-                {"id": "never", "label": "Never", "description": "Never show the inline suggestion toolbar"},
+                {"id": "onHover", "label": "On hover", "description": "Show accept/next controls when hovering over a suggestion"},
+                {"id": "always", "label": "Always", "description": "Permanently show accept/next controls alongside every suggestion"},
+                {"id": "never", "label": "Never", "description": "Hidden — use keyboard shortcuts to accept or dismiss suggestions"},
             ],
         },
         {
@@ -182,7 +182,7 @@ def mcp_servers_question() -> dict:
         "id": "mcp.servers",
         "kind": "multi-choice",
         "batch": "full",
-        "prompt": "Which optional MCP servers would you like to enable?",
+        "prompt": "Which optional MCP servers would you like to use?",
         "required": False,
         "options": [
             {
@@ -196,7 +196,7 @@ def mcp_servers_question() -> dict:
             {
                 "id": "sqlite",
                 "label": "SQLite",
-                "description": "Query and inspect workspace-local SQLite databases (read-only only).",
+                "description": "Query and inspect workspace-local SQLite databases (read-only).",
             },
         ],
         "recommended": [],
@@ -205,8 +205,8 @@ def mcp_servers_question() -> dict:
             "The xanadTools, git, web, devDocs, time, memory, security, filesystem, and sequential-thinking servers "
             "are always enabled when MCP is on. "
             "GitHub (requires GITHUB_TOKEN) and SQLite (workspace-specific) ship disabled "
-            "by default in .vscode/mcp.json. Select them here to enable, or toggle the "
-            '"disabled" flag directly in .vscode/mcp.json at any time.'
+            'by default in .vscode/mcp.json — toggle the "disabled" flag directly in '
+            ".vscode/mcp.json to enable them."
         ),
         "requiredFor": [],
     }

@@ -46,19 +46,11 @@ Do not use this agent for:
 
 ## Message conventions
 
-Follow the project's established commit convention. Default to **Conventional Commits 1.0**:
-
-- **Format**: `<type>(<scope>): <description>`
-- **Types**: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `perf`, `style`, `build`
-- Keep the subject line to ≤72 characters
-- Use imperative mood: `add`, not `added` or `adds`
-- Use the body to explain *why*, not *what* — omit the body when the subject is self-sufficient
-- Reference issues or PRs in the footer: `Closes #N` or `Refs #N`
-- Breaking changes: append `!` after type/scope or include a `BREAKING CHANGE:` footer
+{{agent:commit:message-style}}
 
 ## Secret guard
 
-Do not proceed with staging or committing until any flagged secrets are resolved.
+{{agent:commit:secret-guard}}
 
 ## CI preflight
 

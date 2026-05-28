@@ -21,10 +21,16 @@ from scripts.lifecycle._xanad._loader import load_json, load_manifest
 
 
 def _apply_memory_gitignore(workspace: Path, setup_answers: dict) -> None:
-    if not setup_answers.get("memory.gitignore"):
-        return
     entry = ".github/xanadAssistant/memory/"
     gitignore_path = workspace / ".gitignore"
+    if not setup_answers.get("memory.gitignore"):
+        if gitignore_path.exists():
+            lines = gitignore_path.read_text(encoding="utf-8").splitlines()
+            filtered = [l for l in lines if l.strip() not in {entry, entry.rstrip("/")}]
+            if len(filtered) != len(lines):
+                text = "\n".join(filtered)
+                gitignore_path.write_text(text + "\n" if text else text, encoding="utf-8")
+        return
     if gitignore_path.exists():
         content = gitignore_path.read_text(encoding="utf-8")
         lines = [line.strip() for line in content.splitlines()]

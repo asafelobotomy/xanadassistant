@@ -31,7 +31,7 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
         "recommended": "simple",
         "options": [
             {"id": "simple", "label": "Simple", "description": "Core install with sensible defaults — profile, packs, and MCP"},
-            {"id": "advanced", "label": "Advanced", "description": "Adds ownership model and assistant personalisation"},
+            {"id": "advanced", "label": "Advanced", "description": "Adds ownership model, personalisation, and editor settings"},
             {"id": "full", "label": "Full", "description": "All options including testing philosophy and optional MCP servers"},
         ],
     })
@@ -82,11 +82,12 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
     for surface in ("agents", "skills"):
         if surface not in ownership_defaults:
             continue
+        surface_singular = {"agents": "agent", "skills": "skill"}.get(surface, surface)
         questions.append({
             "id": f"ownership.{surface}",
             "kind": "choice",
             "batch": "advanced",
-            "prompt": f"How should {surface} files be managed in this workspace?",
+            "prompt": f"How should {surface_singular} files be managed in this workspace?",
             "required": True,
             "options": [
                 {

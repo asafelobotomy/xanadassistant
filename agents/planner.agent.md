@@ -44,19 +44,7 @@ Do not use this agent for:
 
 ## Plan format
 
-Return a structured plan with these sections:
-
-**Scope**: one paragraph describing what changes and why.
-
-**Affected files**: list of file paths expected to change.
-
-**Blast radius**: all files, callers, and downstream consumers the change could affect.
-
-**Stop conditions**: states that make the plan unsafe to continue — missing context, conflicting constraints, or unexpected findings mid-execution.
-
-**Phases**: numbered phases. For each phase, state the goal, ordered steps, and the narrowest command or test that confirms it succeeded.
-
-**Assumptions**: facts the plan depends on that have not been verified.
+{{agent:planner:plan-format}}
 
 Do not implement any phase. Return the plan and stop.
 

@@ -63,7 +63,7 @@ WARN_LIMIT_OVERRIDES = {
 
     # ── Lifecycle tests ────────────────────────────────────────────────────────────
     "tests/lifecycle/test_apply_contracts.py": 460,
-    "tests/lifecycle/test_apply_executor.py": 330,
+    "tests/lifecycle/test_apply_executor.py": 360,
     "tests/lifecycle/test_health_check.py": 260,
     "tests/lifecycle/test_main_dispatch.py": 300,
     "tests/lifecycle/test_plan_action_helpers.py": 380,
@@ -99,8 +99,9 @@ WARN_LIMIT_OVERRIDES = {
 }
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Lifecycle apply executor: grew with _run_backup_phase, _run_actions_phase, _run_post_apply_phase
-    # helpers, then _ActionCtx NamedTuple and per-action handler extraction (H3 refactor).
-    "scripts/lifecycle/_xanad/_apply_executor.py": 430,
+    # helpers, then _ActionCtx NamedTuple and per-action handler extraction (H3 refactor),
+    # and _apply_memory_gitignore opt-out removal logic.
+    "scripts/lifecycle/_xanad/_apply_executor.py": 440,
     # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.
     "mcp/scripts/webMcp.py": 510,
     # Web MCP test suite: expanded to cover new fetch, retry, and search paths.
