@@ -75,6 +75,32 @@ def _apply_agent_token_values(metadata: dict | None, resolved_answers: dict, tok
                     token_values[token] = rendered_value
 
 
+def _apply_pack_customization_token_values(
+    metadata: dict | None,
+    resolved_answers: dict,
+    token_values: dict[str, str],
+) -> None:
+    """Override base pack token values with user-chosen pack customization answers."""
+    pack_registry = (metadata or {}).get("packRegistry") or {}
+    selected_packs = resolved_answers.get("packs.selected") or []
+    if not isinstance(selected_packs, list):
+        selected_packs = []
+
+    for pack in pack_registry.get("packs", []):
+        if pack.get("status") != "active":
+            continue
+        if pack.get("id") not in selected_packs:
+            continue
+        customization = pack.get("customization") or {}
+        for question in customization.get("questions") or []:
+            rendered_value = _resolve_agent_rendered_value(question, resolved_answers, token_values)
+            if rendered_value is None:
+                continue
+            for token in question.get("tokens") or []:
+                if isinstance(token, str) and token:
+                    token_values[token] = rendered_value
+
+
 def parse_condition_literal(value: str) -> object:
     normalized = value.strip()
     lower = normalized.lower()
@@ -203,6 +229,7 @@ def resolve_token_values(
             resolved_answers.get("packs.selected") or [],
             resolved_token_conflicts or None,
         ))
+    _apply_pack_customization_token_values(metadata, resolved_answers, token_values)
     _apply_agent_token_values(metadata, resolved_answers, token_values)
     return token_values
 

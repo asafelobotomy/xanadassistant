@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from scripts.lifecycle._xanad._agent_customization import build_agent_customization_questions
+from scripts.lifecycle._xanad._pack_customization import build_pack_customization_questions
 from scripts.lifecycle._xanad._conditions import normalize_plan_answers
 from scripts.lifecycle._xanad._errors import LifecycleCommandError
 from scripts.lifecycle._xanad._inspect import collect_context
@@ -130,7 +131,11 @@ def expand_interview_questions(
 
     resolved_answers, _, _ = resolve_question_answers(questions, seeded_answers or {})
     resolved_answers = normalize_plan_answers(policy, resolved_answers)
-    return questions + build_agent_customization_questions(
+    pack_questions = build_pack_customization_questions(
+        metadata.get("packRegistry") or {},
+        resolved_answers,
+    )
+    return questions + pack_questions + build_agent_customization_questions(
         policy,
         metadata,
         manifest,

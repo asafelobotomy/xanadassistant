@@ -22,7 +22,35 @@
         "brevity",
         "output"
       ],
-      "surfaces": ["lean-skills", "lean-prompts", "lean-hooks"]
+      "surfaces": ["lean-skills", "lean-prompts", "lean-hooks"],
+      "customization": {
+        "questions": [
+          {
+            "id": "brevity-mode",
+            "answerKey": "pack.lean.brevityMode",
+            "kind": "choice",
+            "prompt": "How terse should the Lean pack make agent outputs?",
+            "required": false,
+            "options": [
+              {
+                "id": "compressed",
+                "label": "Compressed",
+                "description": "Compressed conclusions for routine tasks; explicit reasoning reserved for critical decisions."
+              },
+              {
+                "id": "silent",
+                "label": "Silent",
+                "description": "Results only — no reasoning narration, no state receipts, no filler."
+              }
+            ],
+            "tokens": ["{{pack:reasoning-mode}}"],
+            "render": {
+              "compressed": "Suppress visible reasoning narration for routine tasks. Emit compressed state receipts only: 'Checked: valid', 'Ran: pass', 'Wrote: 3 files'. Reserve explicit step-by-step reasoning for Critical or High severity security findings, irreversible decisions, and genuinely non-obvious approaches.",
+              "silent": "Emit results only. No reasoning narration, no state receipts, no filler. One line per action taken. Reserve any explanation for decisions with irreversible consequences or unrecoverable state changes."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "secure",
@@ -36,7 +64,35 @@
         "owasp",
         "vulnerabilities"
       ],
-      "surfaces": ["secure-skills", "secure-prompts", "secure-hooks"]
+      "surfaces": ["secure-skills", "secure-prompts", "secure-hooks"],
+      "customization": {
+        "questions": [
+          {
+            "id": "owasp-scope",
+            "answerKey": "pack.secure.owaspScope",
+            "kind": "choice",
+            "prompt": "Which OWASP findings should the Secure pack flag in code review?",
+            "required": false,
+            "options": [
+              {
+                "id": "full-top-10",
+                "label": "Full OWASP Top 10",
+                "description": "Flag all OWASP Top 10:2025 entries regardless of severity."
+              },
+              {
+                "id": "critical-and-high-only",
+                "label": "Critical and High only",
+                "description": "Flag OWASP Top 10:2025 entries only when Critical or High severity."
+              }
+            ],
+            "tokens": ["{{pack:review-depth}}"],
+            "render": {
+              "full-top-10": "Report Critical and High findings always. Also flag any OWASP Top 10:2025 entry present in the codebase, regardless of severity. Report Medium and lower only when directly actionable.",
+              "critical-and-high-only": "Report Critical and High findings always, including OWASP Top 10:2025 findings at those severities. Do not flag lower-severity OWASP findings unless they are directly actionable in the codebase being reviewed."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "tdd",
@@ -50,7 +106,35 @@
         "tdd",
         "coverage"
       ],
-      "surfaces": ["tdd-skills", "tdd-prompts", "tdd-hooks"]
+      "surfaces": ["tdd-skills", "tdd-prompts", "tdd-hooks"],
+      "customization": {
+        "questions": [
+          {
+            "id": "cycle-strictness",
+            "answerKey": "pack.tdd.cycleStrictness",
+            "kind": "choice",
+            "prompt": "How strictly should the TDD pack enforce Red\u2192Green\u2192Refactor discipline?",
+            "required": false,
+            "options": [
+              {
+                "id": "strict",
+                "label": "Strict",
+                "description": "One failing test at a time; no implementation before the test exists and fails for the correct reason."
+              },
+              {
+                "id": "guided",
+                "label": "Guided",
+                "description": "Prefer test-first and name the TDD phase; allow planning multiple behaviors upfront when explicitly stated."
+              }
+            ],
+            "tokens": ["{{pack:scope-discipline}}"],
+            "render": {
+              "strict": "Write the failing test before writing implementation code. One failing test at a time — do not begin implementation until the Red phase is complete and the test fails for the correct reason (assertion failure, not compile or import error). Do not implement beyond what is needed to make the current failing test pass.",
+              "guided": "Follow Red\u2192Green\u2192Refactor discipline. Write tests before implementation. Allow scoping multiple related behaviors up-front when stated explicitly, but implement one test at a time and name the current TDD phase at each step."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "oss",
@@ -64,7 +148,35 @@
         "license",
         "changelog"
       ],
-      "surfaces": ["oss-skills", "oss-prompts", "oss-hooks"]
+      "surfaces": ["oss-skills", "oss-prompts", "oss-hooks"],
+      "customization": {
+        "questions": [
+          {
+            "id": "breaking-change-policy",
+            "answerKey": "pack.oss.breakingChangePolicy",
+            "kind": "choice",
+            "prompt": "How should the OSS pack handle breaking changes in commits?",
+            "required": false,
+            "options": [
+              {
+                "id": "require-major-bump",
+                "label": "Require version bump confirmation",
+                "description": "Do not proceed with breaking changes until the major version bump is confirmed."
+              },
+              {
+                "id": "flag-and-proceed",
+                "label": "Flag and proceed",
+                "description": "Flag breaking changes with the correct Conventional Commits footer but allow proceeding without blocking."
+              }
+            ],
+            "tokens": ["{{pack:commit-style}}"],
+            "render": {
+              "require-major-bump": "Use Conventional Commits 1.0 format for all commit messages. Breaking changes require a '!' suffix on the summary line and a BREAKING CHANGE: footer. The summary line must be \u226472 characters, imperative mood, no period. Do not proceed with a breaking change until the version bump is confirmed.",
+              "flag-and-proceed": "Use Conventional Commits 1.0 format. Use a '!' suffix and BREAKING CHANGE: footer for breaking changes, but proceed without requiring a confirmed version bump. The summary line must be \u226472 characters, imperative mood, no period."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "docs",
@@ -78,7 +190,35 @@
         "writing",
         "readme"
       ],
-      "surfaces": ["docs-skills", "docs-prompts", "docs-hooks"]
+      "surfaces": ["docs-skills", "docs-prompts", "docs-hooks"],
+      "customization": {
+        "questions": [
+          {
+            "id": "structure-framework",
+            "answerKey": "pack.docs.structureFramework",
+            "kind": "choice",
+            "prompt": "What structure should the Docs pack use when drafting new documentation?",
+            "required": false,
+            "options": [
+              {
+                "id": "corpus-match",
+                "label": "Corpus match",
+                "description": "Match the style and structure of the surrounding documentation."
+              },
+              {
+                "id": "diataxis",
+                "label": "Di\u00e1taxis",
+                "description": "Organize new docs by type: tutorials, how-to guides, reference, and explanations."
+              }
+            ],
+            "tokens": ["{{pack:output-style}}"],
+            "render": {
+              "corpus-match": "Match the register of the surrounding doc corpus — heading depth, terminology, and code-example style. Prefer short sentences and active voice. Include one concrete example per concept unless the surrounding docs establish an expert audience.",
+              "diataxis": "Structure new documentation using Di\u00e1taxis. Tutorials are learning-oriented walk-throughs; how-to guides are task-oriented recipes; reference is information-oriented and precise; explanations are understanding-oriented background. Do not mix types within a single document."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "devops",
@@ -92,7 +232,35 @@
         "cicd",
         "infrastructure"
       ],
-      "surfaces": ["devops-skills", "devops-prompts", "devops-hooks"]
+      "surfaces": ["devops-skills", "devops-prompts", "devops-hooks"],
+      "customization": {
+        "questions": [
+          {
+            "id": "infra-focus",
+            "answerKey": "pack.devops.infraFocus",
+            "kind": "choice",
+            "prompt": "What infrastructure area should the DevOps pack prioritize?",
+            "required": false,
+            "options": [
+              {
+                "id": "pipeline-and-containers",
+                "label": "Pipeline and containers",
+                "description": "Prioritize CI/CD pipelines, Dockerfiles, and container orchestration safety."
+              },
+              {
+                "id": "iac-and-cloud",
+                "label": "IaC and cloud",
+                "description": "Prioritize infrastructure-as-code, cloud resource definitions, and deployment safety."
+              }
+            ],
+            "tokens": ["{{pack:scope-discipline}}"],
+            "render": {
+              "pipeline-and-containers": "Address the stated request fully. For any change that touches CI/CD pipelines, Dockerfiles, or container orchestration configurations: verify it does not introduce a new secret-exposure surface, privilege-escalation path, or an unrecoverable deployment state. Flag these proactively even when not asked.",
+              "iac-and-cloud": "Address the stated request fully. For any change that touches infrastructure-as-code, cloud resource definitions, or deployment configurations: verify it does not introduce a new secret-exposure surface, privilege-escalation path, or an unrecoverable provisioning state. Flag IaC drift, missing rollback procedures, and overly broad IAM permissions proactively."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "mlops",
@@ -106,7 +274,35 @@
         "mlops",
         "model-serving"
       ],
-      "surfaces": ["mlops-skills", "mlops-prompts", "mlops-hooks"]
+      "surfaces": ["mlops-skills", "mlops-prompts", "mlops-hooks"],
+      "customization": {
+        "questions": [
+          {
+            "id": "review-focus",
+            "answerKey": "pack.mlops.reviewFocus",
+            "kind": "choice",
+            "prompt": "What should the MLOps pack prioritize in ML code review?",
+            "required": false,
+            "options": [
+              {
+                "id": "comprehensive",
+                "label": "Comprehensive",
+                "description": "Flag data leakage, model bias, reproducibility, and serving drift as blocking issues."
+              },
+              {
+                "id": "reproducibility-first",
+                "label": "Reproducibility first",
+                "description": "Prioritize reproducibility and data lineage; flag other ML concerns as lower severity."
+              }
+            ],
+            "tokens": ["{{pack:review-depth}}"],
+            "render": {
+              "comprehensive": "Flag data leakage, model bias, reproducibility failures, and serving drift as blocking issues in any ML code review. Proactively flag changes to model versioning, data pipelines, and notebook outputs for leakage, drift, and reproducibility risks.",
+              "reproducibility-first": "Flag reproducibility failures and data lineage breaks as Critical. Flag data leakage and model bias as High. Report serving drift and other ML concerns only when directly raised. Proactively flag model versioning and data pipeline changes for lineage risks."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "shapeup",
@@ -120,7 +316,35 @@
         "product",
         "planning"
       ],
-      "surfaces": ["shapeup-skills", "shapeup-prompts", "shapeup-hooks"]
+      "surfaces": ["shapeup-skills", "shapeup-prompts", "shapeup-hooks"],
+      "customization": {
+        "questions": [
+          {
+            "id": "appetite-model",
+            "answerKey": "pack.shapeup.appetiteModel",
+            "kind": "choice",
+            "prompt": "How should the Shape Up pack model appetite and scope?",
+            "required": false,
+            "options": [
+              {
+                "id": "time-boxed",
+                "label": "Time-boxed",
+                "description": "Fixed time boundary — adjust scope to fit, never expand time."
+              },
+              {
+                "id": "scope-boxed",
+                "label": "Scope-boxed",
+                "description": "Fixed deliverable scope — flag time-based pressure as a blocker."
+              }
+            ],
+            "tokens": ["{{pack:scope-discipline}}"],
+            "render": {
+              "time-boxed": "Proactively flag work that lacks a fixed time boundary or explicit appetite before proceeding. If a solution cannot be delivered within appetite, return an adjusted scope rather than expanding time.",
+              "scope-boxed": "Proactively flag work that lacks a defined scope or clear deliverable before proceeding. Fixed scope, flexible timeline — flag time-based pressure that drives scope changes as a blocker rather than adjusting the scope."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "review",
