@@ -679,7 +679,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:e45aecae2a2f1ab5232a846f4b50a939baa36c1ee09d48ae542429ec9c7212d2"
+      "hash": "sha256:fca1c5cf2969b4e6507552bf75b8d62e0b8dfaad77ed0466d919c3ffc455b036"
     },
     {
       "id": "tdd-hooks.tddTestRunner.py",

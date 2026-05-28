@@ -136,6 +136,29 @@ class SqliteMcpTests(unittest.TestCase):
                 self.assertIn("output capped at 2 rows", capped)
                 self.assertIn("no such table", bad_query)
 
+    def test_execute_query_denies_attach_sandbox_escape(self) -> None:
+        """ATTACH DATABASE must be rejected so callers cannot read DBs outside the workspace."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace_root = Path(tmpdir)
+            db_path = workspace_root / "sample.db"
+            external_db = workspace_root / "external.db"
+            for path in (db_path, external_db):
+                conn = sqlite3.connect(path)
+                try:
+                    conn.execute("CREATE TABLE t (v TEXT)")
+                    conn.commit()
+                finally:
+                    conn.close()
+
+            for module in (SOURCE_SQLITE_MODULE, MANAGED_SQLITE_MODULE):
+                with self.subTest(module=module.__name__):
+                    module.WORKSPACE_ROOT = workspace_root
+                    with self.assertRaises(RuntimeError):
+                        module.execute_query(
+                            str(db_path),
+                            f"ATTACH DATABASE '{external_db}' AS ext",
+                        )
+
 
 if __name__ == "__main__":
     unittest.main()

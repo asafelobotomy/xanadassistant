@@ -75,7 +75,22 @@ def _resolve_db_path(db_path: str) -> Path:
 
 def _connect(db_path: str) -> sqlite3.Connection:
     path = _resolve_db_path(db_path)
-    return sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+
+    def _authorizer(
+        action: int,
+        arg1: str | None,
+        arg2: str | None,
+        db_name: str | None,
+        trigger: str | None,
+    ) -> int:
+        """Deny ATTACH/DETACH so callers cannot bypass the workspace sandbox."""
+        if action == sqlite3.SQLITE_ATTACH:
+            return sqlite3.SQLITE_DENY
+        return sqlite3.SQLITE_OK
+
+    conn.set_authorizer(_authorizer)
+    return conn
 
 
 def _fmt(cursor: sqlite3.Cursor, max_rows: int) -> str:

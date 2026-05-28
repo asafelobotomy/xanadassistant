@@ -169,6 +169,80 @@ class DownloadArchiveTests(unittest.TestCase):
         self.assertEqual(owner, "myorg")
         self.assertEqual(repo, "myrepo")
 
+    def test_mutable_ref_without_checksum_emits_warning(self) -> None:
+        """Downloading from a branch without --expected-sha256 must print a warning."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_root = Path(tmpdir)
+            import io
+            import tarfile as _tarfile
+            buf = io.BytesIO()
+            with _tarfile.open(fileobj=buf, mode="w:gz") as tar:
+                info = _tarfile.TarInfo(name="repo-main/placeholder.txt")
+                info.size = 2
+                info.type = _tarfile.REGTYPE
+                tar.addfile(info, io.BytesIO(b"ok"))
+            buf.seek(0)
+            archive_bytes = buf.read()
+            with mock.patch("urllib.request.urlopen") as mock_open, \
+                    mock.patch("sys.stderr") as mock_stderr:
+                mock_resp = mock.MagicMock()
+                mock_resp.read.return_value = archive_bytes
+                mock_open.return_value.__enter__ = lambda s: mock_resp
+                mock_open.return_value.__exit__ = mock.Mock(return_value=False)
+                _bootstrap._download_archive("owner", "repo", "main", cache_root)
+            # Warning about mutable ref must have been printed.
+            written = "".join(str(c) for c in mock_stderr.write.call_args_list)
+            self.assertIn("mutable", written.lower())
+
+    def test_correct_sha256_passes_verification(self) -> None:
+        """When --expected-sha256 matches the download, extraction proceeds normally."""
+        import hashlib as _hashlib
+        import io
+        import tarfile as _tarfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_root = Path(tmpdir)
+            buf = io.BytesIO()
+            with _tarfile.open(fileobj=buf, mode="w:gz") as tar:
+                info = _tarfile.TarInfo(name="repo-v1.0.0/file.txt")
+                info.size = 2
+                info.type = _tarfile.REGTYPE
+                tar.addfile(info, io.BytesIO(b"ok"))
+            buf.seek(0)
+            archive_bytes = buf.read()
+            sha = _hashlib.sha256(archive_bytes).hexdigest()
+            with mock.patch("urllib.request.urlopen") as mock_open:
+                mock_resp = mock.MagicMock()
+                mock_resp.read.return_value = archive_bytes
+                mock_open.return_value.__enter__ = lambda s: mock_resp
+                mock_open.return_value.__exit__ = mock.Mock(return_value=False)
+                # Must not raise — checksum matches.
+                _bootstrap._download_archive("owner", "repo", "v1.0.0", cache_root,
+                                             expected_sha256=sha)
+
+    def test_wrong_sha256_aborts_with_exit(self) -> None:
+        """When --expected-sha256 does not match the download, sys.exit must be called."""
+        import io
+        import tarfile as _tarfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_root = Path(tmpdir)
+            buf = io.BytesIO()
+            with _tarfile.open(fileobj=buf, mode="w:gz") as tar:
+                info = _tarfile.TarInfo(name="repo-v1.0.0/file.txt")
+                info.size = 2
+                info.type = _tarfile.REGTYPE
+                tar.addfile(info, io.BytesIO(b"ok"))
+            buf.seek(0)
+            archive_bytes = buf.read()
+            with mock.patch("urllib.request.urlopen") as mock_open, \
+                    self.assertRaises(SystemExit) as excinfo:
+                mock_resp = mock.MagicMock()
+                mock_resp.read.return_value = archive_bytes
+                mock_open.return_value.__enter__ = lambda s: mock_resp
+                mock_open.return_value.__exit__ = mock.Mock(return_value=False)
+                _bootstrap._download_archive("owner", "repo", "v1.0.0", cache_root,
+                                             expected_sha256="0" * 64)
+            self.assertIn("checksum mismatch", str(excinfo.exception.code).lower())
+
 
 if __name__ == "__main__":
     unittest.main()

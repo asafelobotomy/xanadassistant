@@ -127,7 +127,7 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # covering the new _call_model retry, expected task field, and --tags filter features;
     # AgentSurfaceResolutionTests + H2 zero-filter guard covering eval surface resolution;
     # and GradeCommandTests expanded with expected-grader re-grading coverage (C1).
-    "tests/tools/test_xanadEval_runtime.py": 680,
+    "tests/tools/test_xanadEval_runtime.py": 740,
     # graders_ext tests: all nine extended grader unit test classes.
     "tests/tools/test_xanadEval_graders_ext.py": 700,
     # workspace_grade_human MCP tests.
@@ -138,8 +138,9 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     "mcp/scripts/_memory_mcp_shared.py": 460,
     # Memory MCP entrypoint: grew with session_id threading and branch-scoped rule fixes.
     "mcp/scripts/memoryMcp.py": 450,
-    # apply_contracts test: grew with S1 backup/archive contract validation tests.
-    "tests/lifecycle/test_apply_contracts.py": 460,
+    # apply_contracts test: grew with S1 backup/archive contract validation tests and
+    # S2 delete-surface restriction tests.
+    "tests/lifecycle/test_apply_contracts.py": 520,
 }
 
 

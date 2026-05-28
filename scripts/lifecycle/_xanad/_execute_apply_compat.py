@@ -69,6 +69,13 @@ def _validate_action_entry(
                 4,
                 {"id": action_id, "target": target},
             )
+        if not target.startswith(".github/"):
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan delete actions are only permitted for files within the .github surface.",
+                4,
+                {"id": action_id, "target": target},
+            )
     elif action_type == "archive-retired":
         _, current_retired_targets = ensure_manifest_targets()
         retired_target = current_retired_targets.get(action_id)

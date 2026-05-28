@@ -213,34 +213,41 @@ def cmd_grade(eval_path: str, results_path: str, model: str | None, fmt: str) ->
         return 2
     run_model = model or prev.get("model", _DEFAULT_MODEL)
 
+    # Load canonical task specs to source expected/expected_absent patterns.
+    # This prevents score manipulation via editing the results file before regrading.
+    eval_dir = Path(eval_path).parent
+    try:
+        task_specs = _load_tasks(eval_dir, spec.get("tasks", []))
+    except Exception:
+        task_specs = []
+    task_spec_by_id: dict[str, dict] = {str(t.get("id", "")): t for t in task_specs}
+
     updated: list[dict] = []
     _grade_ctx = {"eval_dir": str(Path(eval_path).parent)}
     for task in prev.get("tasks", []):
         response = task.get("response", "")
+        task_id = str(task.get("id", ""))
+        spec_task = task_spec_by_id.get(task_id, {})
+        absent_patterns = [str(p) for p in spec_task.get("expected_absent", [])]
+        expected_patterns = [str(p) for p in spec_task.get("expected", [])]
         grader_results = _run_graders(response, graders_spec, run_model, token or "",
                                       ctx=_grade_ctx)
-        # Re-apply expected and expected_absent checks persisted from the original run
-        for saved_g in task.get("graders", []):
-            if saved_g.get("type") == "expected_absent":
-                pattern = saved_g.get("name", "")
-                if pattern:
-                    hit = bool(re.search(pattern, response, re.IGNORECASE))
-                    grader_results.append({
-                        "type": "expected_absent",
-                        "name": pattern,
-                        "pass": not hit,
-                        "score": 0.0 if hit else 1.0,
-                    })
-            elif saved_g.get("type") == "expected":
-                pattern = saved_g.get("name", "")
-                if pattern:
-                    hit = pattern.lower() in response.lower()
-                    grader_results.append({
-                        "type": "expected",
-                        "name": pattern,
-                        "pass": hit,
-                        "score": 1.0 if hit else 0.0,
-                    })
+        for pattern in absent_patterns:
+            hit = bool(re.search(pattern, response, re.IGNORECASE))
+            grader_results.append({
+                "type": "expected_absent",
+                "name": pattern,
+                "pass": not hit,
+                "score": 0.0 if hit else 1.0,
+            })
+        for pattern in expected_patterns:
+            hit = pattern.lower() in response.lower()
+            grader_results.append({
+                "type": "expected",
+                "name": pattern,
+                "pass": hit,
+                "score": 1.0 if hit else 0.0,
+            })
         graded = [g for g in grader_results if g.get("pass") is not None]
         passed = bool(graded) and all(g["pass"] for g in graded)
         score = (sum(g["score"] for g in graded) / len(graded)) if graded else 0.0

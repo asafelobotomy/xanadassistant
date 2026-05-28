@@ -449,4 +449,43 @@ class ApplyContractTests(unittest.TestCase):
                 self.assertEqual(exc.exception.code, "contract_input_failure")
                 self.assertIn("backslash", exc.exception.message.lower())
 
+    def test_delete_action_requires_github_surface_target(self) -> None:
+        """Delete actions that target files outside .github/ must be rejected."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_root = Path(tmpdir)
+            self._write_policy_and_manifest(package_root)
+            # Target outside .github/ — must be rejected
+            payload = {
+                "result": {
+                    **self._base_result(),
+                    "actions": [
+                        {"id": "delete:README.md", "target": "README.md", "action": "delete"},
+                    ],
+                }
+            }
+            with self.assertRaises(LifecycleCommandError) as exc:
+                _execute_apply.validate_apply_plan_paths(payload, package_root)
+            self.assertEqual(exc.exception.code, "contract_input_failure")
+            self.assertIn(".github", exc.exception.message)
+
+    def test_delete_action_accepts_github_surface_target(self) -> None:
+        """Delete actions that target files under .github/ must be accepted."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_root = Path(tmpdir)
+            self._write_policy_and_manifest(package_root)
+            payload = {
+                "result": {
+                    **self._base_result(),
+                    "actions": [
+                        {
+                            "id": "delete:.github/agents/stale.agent.md",
+                            "target": ".github/agents/stale.agent.md",
+                            "action": "delete",
+                        },
+                    ],
+                }
+            }
+            # Should not raise
+            _execute_apply.validate_apply_plan_paths(payload, package_root)
+
 

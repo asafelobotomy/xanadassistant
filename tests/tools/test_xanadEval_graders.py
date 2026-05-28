@@ -321,7 +321,68 @@ class JSONSchemaGraderTests(unittest.TestCase):
             '{"x": 1}', {"schema_file": "/nonexistent/schema.json"}
         )
         self.assertFalse(passed)
+        # Absolute paths are now rejected as "not allowed" rather than triggering an OS error.
         self.assertIn("schema_file", feedback)
+
+    def test_schema_file_absolute_path_rejected(self) -> None:
+        """schema_file must not accept absolute paths."""
+        passed, score, feedback = xe._grade_json_schema(
+            '{"x": 1}', {"schema_file": "/etc/passwd"}
+        )
+        self.assertFalse(passed)
+        self.assertIn("not allowed", feedback)
+
+    def test_schema_file_dotdot_traversal_rejected(self) -> None:
+        """schema_file must not accept path traversal via '..'."""
+        passed, score, feedback = xe._grade_json_schema(
+            '{"x": 1}', {"schema_file": "../../../etc/shadow"}
+        )
+        self.assertFalse(passed)
+        self.assertIn("not allowed", feedback)
+
+    def test_schema_file_without_eval_dir_fails(self) -> None:
+        """schema_file with no eval_dir context must fail cleanly."""
+        passed, score, feedback = xe._grade_json_schema(
+            '{"x": 1}', {"schema_file": "schema.json"}
+        )
+        self.assertFalse(passed)
+        self.assertIn("eval directory", feedback)
+
+    def test_schema_file_in_eval_dir_loads_correctly(self) -> None:
+        """schema_file relative to eval_dir must be read and validated."""
+        import tempfile as _tempfile
+        from pathlib import Path as _Path
+        schema = {"type": "object", "properties": {"x": {"type": "integer"}}}
+        try:
+            import jsonschema  # noqa: F401
+        except ImportError:
+            self.skipTest("jsonschema not installed")
+        with _tempfile.TemporaryDirectory() as tmpdir:
+            eval_dir = _Path(tmpdir)
+            schema_file = eval_dir / "schema.json"
+            import json as _json
+            schema_file.write_text(_json.dumps(schema), encoding="utf-8")
+            passed, score, _ = xe._grade_json_schema(
+                '{"x": 1}', {"schema_file": "schema.json"}, eval_dir
+            )
+        self.assertTrue(passed)
+        self.assertEqual(score, 1.0)
+
+    def test_schema_file_escaped_path_rejected(self) -> None:
+        """schema_file that resolves outside eval_dir must be rejected even if dots are indirect."""
+        import tempfile as _tempfile
+        from pathlib import Path as _Path
+        with _tempfile.TemporaryDirectory() as outer:
+            with _tempfile.TemporaryDirectory() as inner:
+                eval_dir = _Path(inner)
+                # Create a file outside eval_dir so we can test the boundary check.
+                outside_file = _Path(outer) / "secret.json"
+                outside_file.write_text('{"type": "object"}', encoding="utf-8")
+                passed, score, feedback = xe._grade_json_schema(
+                    '{"x": 1}', {"schema_file": "../secret.json"}, eval_dir
+                )
+        self.assertFalse(passed)
+        self.assertIn("not allowed", feedback)
 
     def test_run_graders_json_schema_type_recognised(self) -> None:
         """json_schema grader must be dispatched (not skipped) via _run_graders."""

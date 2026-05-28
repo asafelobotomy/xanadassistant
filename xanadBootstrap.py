@@ -88,7 +88,13 @@ def _archive_url(owner: str, repo: str, ref: str) -> str:
     return f"https://github.com/{owner}/{repo}/archive/refs/heads/{ref}.tar.gz"
 
 
-def _download_archive(owner: str, repo: str, ref: str, cache_root: Path) -> Path:
+def _download_archive(
+    owner: str,
+    repo: str,
+    ref: str,
+    cache_root: Path,
+    expected_sha256: str | None = None,
+) -> Path:
     """Download a GitHub archive for *ref* into the cache and return the extracted root."""
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
     sentinel = cache_dir / ".complete"
@@ -96,6 +102,12 @@ def _download_archive(owner: str, repo: str, ref: str, cache_root: Path) -> Path
         return cache_dir
 
     url = _archive_url(owner, repo, ref)
+    if not re.match(r"^v\d", ref) and not expected_sha256:
+        print(
+            f"[xanadBootstrap] WARNING: downloading from mutable ref {ref!r} without a "
+            "checksum — pass --expected-sha256 or use a tagged version for reproducibility.",
+            file=sys.stderr,
+        )
     print(f"[xanadBootstrap] Downloading {url} …", file=sys.stderr)
     cache_dir.mkdir(parents=True, exist_ok=True)
     tmp_path: Path | None = None
@@ -107,6 +119,14 @@ def _download_archive(owner: str, repo: str, ref: str, cache_root: Path) -> Path
         req = urllib.request.Request(url, headers={"User-Agent": f"xanadBootstrap/{_VERSION}"})
         with urllib.request.urlopen(req, timeout=60) as response:
             tmp_path.write_bytes(response.read())
+        if expected_sha256:
+            actual = hashlib.sha256(tmp_path.read_bytes()).hexdigest()
+            if actual != expected_sha256.lower():
+                sys.exit(
+                    f"[xanadBootstrap] Archive checksum mismatch.\n"
+                    f"  expected: {expected_sha256.lower()}\n"
+                    f"  actual:   {actual}"
+                )
         with tarfile.open(tmp_path, "r:gz") as tar:
             for member in tar.getmembers():
                 parts = Path(member.name).parts
@@ -138,6 +158,7 @@ def _resolve_package_root(
     source: str,
     version: str | None,
     cache_root: Path,
+    expected_sha256: str | None = None,
 ) -> Path:
     """Return the effective package root, downloading from GitHub if necessary."""
     if package_root_arg is not None:
@@ -147,7 +168,7 @@ def _resolve_package_root(
         return pkg
     owner, repo = _validate_source(source)
     ref = version if version else "main"
-    return _download_archive(owner, repo, ref, cache_root)
+    return _download_archive(owner, repo, ref, cache_root, expected_sha256)
 
 
 # ---------------------------------------------------------------------------
@@ -208,6 +229,12 @@ def main() -> None:
         "--cache-root", default=None,
         help="Override the default package cache directory (~/.xanadAssistant/pkg-cache).",
     )
+    parser.add_argument(
+        "--expected-sha256", default=None, dest="expected_sha256",
+        help="Expected SHA-256 hex digest of the downloaded archive. "
+             "If provided, the download is verified before extraction and the "
+             "run aborts on mismatch.",
+    )
     args, remaining = parser.parse_known_args()
 
     cache_root = (
@@ -216,7 +243,8 @@ def main() -> None:
         else _DEFAULT_CACHE_ROOT
     )
     pkg_root = _resolve_package_root(
-        args.package_root, args.source, args.version, cache_root
+        args.package_root, args.source, args.version, cache_root,
+        expected_sha256=getattr(args, "expected_sha256", None),
     )
     cli_cmd = _build_cli_command(pkg_root, args, remaining)
     result = subprocess.run(cli_cmd, check=False)

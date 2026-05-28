@@ -422,7 +422,7 @@ def _grade_llm_comparison(
     return False, 0.0, f"llm_comparison grader: unexpected response: {reply[:200]}"
 
 
-def _grade_json_schema(response: str, config: dict) -> tuple[bool, float, str]:
+def _grade_json_schema(response: str, config: dict, eval_dir: Path | None = None) -> tuple[bool, float, str]:
     """Validate that *response* is valid JSON, optionally matching an inline schema.
 
     Returns ``(passed, score, feedback)``.
@@ -440,8 +440,18 @@ def _grade_json_schema(response: str, config: dict) -> tuple[bool, float, str]:
     schema_file: str = config.get("schema_file", "")
 
     if schema is None and schema_file:
+        sf_path = Path(schema_file)
+        if sf_path.is_absolute() or ".." in sf_path.parts:
+            return False, 0.0, f"schema_file path is not allowed: {schema_file!r}"
+        if eval_dir is None:
+            return False, 0.0, "schema_file requires an eval directory context"
+        resolved_sf = (eval_dir.resolve() / sf_path).resolve()
         try:
-            schema = json.loads(Path(schema_file).read_text(encoding="utf-8"))
+            resolved_sf.relative_to(eval_dir.resolve())
+        except ValueError:
+            return False, 0.0, f"schema_file path escapes the eval directory: {schema_file!r}"
+        try:
+            schema = json.loads(resolved_sf.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as e:
             return False, 0.0, f"Cannot load schema_file {schema_file!r}: {e}"
 
@@ -518,6 +528,15 @@ def _h_2(grade_fn, response: str, config: dict) -> dict:
 
 def _h_3(grade_fn, response: str, config: dict) -> dict:
     passed, score, feedback = grade_fn(response, config)
+    rec: dict = {"pass": passed, "score": score}
+    if feedback:
+        rec["feedback"] = feedback
+    return rec
+
+
+def _h_json_schema(response: str, config: dict, ctx: dict | None) -> dict:
+    eval_dir = Path(ctx["eval_dir"]) if ctx and "eval_dir" in ctx else None
+    passed, score, feedback = _grade_json_schema(response, config, eval_dir)
     rec: dict = {"pass": passed, "score": score}
     if feedback:
         rec["feedback"] = feedback
@@ -628,7 +647,7 @@ _EXT_GRADER_TYPES = frozenset({
 _GRADER_REGISTRY: dict = {
     "text":           lambda r, c, ctx, m, t: _h_2(_grade_text, r, c),
     "behavior":       lambda r, c, ctx, m, t: _h_2(_grade_behavior, r, c),
-    "json_schema":    lambda r, c, ctx, m, t: _h_3(_grade_json_schema, r, c),
+    "json_schema":    lambda r, c, ctx, m, t: _h_json_schema(r, c, ctx),
     "program":        lambda r, c, ctx, m, t: _h_3(_grade_program, r, c),
     "prompt":         _h_prompt,
     "llm":            lambda r, c, ctx, m, t: _h_llm_like(_grade_llm, r, c, m, t),

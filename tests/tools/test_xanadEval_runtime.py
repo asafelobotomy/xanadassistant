@@ -266,18 +266,26 @@ class GradeCommandTests(DynamicTestBase, unittest.TestCase):
                 self.assertIn("GITHUB_TOKEN", err.getvalue())
                 self.assertEqual(result_path.read_text(encoding="utf-8"), original_content)
 
-    def test_grade_reapplies_expected_absent_from_saved_graders(self) -> None:
-        """cmd_grade must re-apply expected_absent patterns persisted in the saved result."""
+    def test_grade_reapplies_expected_absent_from_canonical_spec(self) -> None:
+        """cmd_grade sources expected_absent patterns from canonical task spec, not the results file."""
         with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
             with tempfile.TemporaryDirectory() as d:
                 dp = Path(d)
                 self._write_skill(dp)
                 eval_dir = dp / "evals" / "test-skill"
-                (eval_dir / "tasks").mkdir(parents=True)
+                tasks_dir = eval_dir / "tasks"
+                tasks_dir.mkdir(parents=True)
+                # Task spec declares the expected_absent pattern canonically.
+                task_file = tasks_dir / "t1.yaml"
+                task_file.write_text(
+                    json.dumps({"id": "task-1", "prompt": "p",
+                                "expected_absent": ["forbidden_word"]}),
+                    encoding="utf-8",
+                )
                 spec = {
                     "name": "test-skill-eval",
                     "graders": [{"type": "text", "name": "ref", "config": {"contains": ["test"]}}],
-                    "tasks": [],
+                    "tasks": ["tasks/*.yaml"],
                 }
                 eval_yaml = eval_dir / "eval.yaml"
                 eval_yaml.write_text(json.dumps(spec), encoding="utf-8")
@@ -291,11 +299,7 @@ class GradeCommandTests(DynamicTestBase, unittest.TestCase):
                         "id": "task-1",
                         "prompt": "p",
                         "response": "test contains forbidden_word here",
-                        "graders": [
-                            {"type": "text", "name": "ref", "pass": True, "score": 1.0},
-                            {"type": "expected_absent", "name": "forbidden_word",
-                             "pass": False, "score": 0.0},
-                        ],
+                        "graders": [],
                         "passed": False,
                         "score": 0.5,
                     }],
@@ -310,18 +314,25 @@ class GradeCommandTests(DynamicTestBase, unittest.TestCase):
         self.assertEqual(len(absent_graders), 1)
         self.assertFalse(absent_graders[0]["pass"])
 
-    def test_grade_reapplies_expected_from_saved_graders(self) -> None:
-        """cmd_grade must re-apply expected (contains) patterns persisted in the saved result."""
+    def test_grade_reapplies_expected_from_canonical_spec(self) -> None:
+        """cmd_grade sources expected patterns from canonical task spec, not the results file."""
         with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
             with tempfile.TemporaryDirectory() as d:
                 dp = Path(d)
                 self._write_skill(dp)
                 eval_dir = dp / "evals" / "test-skill"
-                (eval_dir / "tasks").mkdir(parents=True)
+                tasks_dir = eval_dir / "tasks"
+                tasks_dir.mkdir(parents=True)
+                task_file = tasks_dir / "t1.yaml"
+                task_file.write_text(
+                    json.dumps({"id": "task-1", "prompt": "p",
+                                "expected": ["required_phrase"]}),
+                    encoding="utf-8",
+                )
                 spec = {
                     "name": "test-skill-eval",
                     "graders": [{"type": "text", "name": "ref", "config": {"contains": ["test"]}}],
-                    "tasks": [],
+                    "tasks": ["tasks/*.yaml"],
                 }
                 eval_yaml = eval_dir / "eval.yaml"
                 eval_yaml.write_text(json.dumps(spec), encoding="utf-8")
@@ -335,10 +346,7 @@ class GradeCommandTests(DynamicTestBase, unittest.TestCase):
                         "id": "task-1",
                         "prompt": "p",
                         "response": "this response contains required_phrase",
-                        "graders": [
-                            {"type": "expected", "name": "required_phrase",
-                             "pass": False, "score": 0.0},
-                        ],
+                        "graders": [],
                         "passed": False,
                         "score": 0.0,
                     }],
@@ -352,6 +360,50 @@ class GradeCommandTests(DynamicTestBase, unittest.TestCase):
         self.assertEqual(len(expected_graders), 1)
         # "required_phrase" is in the response, so the re-graded result must pass
         self.assertTrue(expected_graders[0]["pass"])
+
+    def test_grade_ignores_expected_patterns_injected_via_results_file(self) -> None:
+        """Patterns added to the results file but absent from the spec must not be applied."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                self._write_skill(dp)
+                eval_dir = dp / "evals" / "test-skill"
+                (eval_dir / "tasks").mkdir(parents=True)
+                # Spec has no expected/expected_absent for any task.
+                spec = {
+                    "name": "test-skill-eval",
+                    "graders": [],
+                    "tasks": [],
+                }
+                eval_yaml = eval_dir / "eval.yaml"
+                eval_yaml.write_text(json.dumps(spec), encoding="utf-8")
+                # Results file injects an expected_absent grader that should be ignored.
+                result = {
+                    "eval": str(eval_yaml),
+                    "skill": "test-skill-eval",
+                    "model": "gpt-4o-mini",
+                    "timestamp": "2026-05-20T12:00:00Z",
+                    "summary": {"total": 1, "passed": 1, "pass_rate": 1.0, "score": 1.0},
+                    "tasks": [{
+                        "id": "task-1",
+                        "prompt": "p",
+                        "response": "the response contains injected_forbidden",
+                        "graders": [
+                            {"type": "expected_absent", "name": "injected_forbidden",
+                             "pass": True, "score": 1.0},
+                        ],
+                        "passed": True,
+                        "score": 1.0,
+                    }],
+                }
+                result_path = dp / "run-result.json"
+                result_path.write_text(json.dumps(result), encoding="utf-8")
+                xe.cmd_grade(str(eval_yaml), str(result_path), None, "text")
+                updated = json.loads(result_path.read_text(encoding="utf-8"))
+        # The injected expected_absent pattern must NOT appear in the regraded result.
+        absent_graders = [g for g in updated["tasks"][0]["graders"]
+                          if g.get("type") == "expected_absent"]
+        self.assertEqual(len(absent_graders), 0)
 
     def test_grade_write_failure_returns_2(self) -> None:
         """A filesystem error during result save must return exit 2."""
