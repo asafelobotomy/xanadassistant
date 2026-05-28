@@ -1742,9 +1742,11 @@
       ],
       "strategy": "merge-json-object",
       "requiredWhen": [],
-      "tokens": [],
+      "tokens": [
+        "{{AGENT_MAX_REQUESTS}}"
+      ],
       "chmod": "none",
-      "hash": "sha256:7ac819eceae50bbc25f6f77a9b784ba92e8869aa6d0ef0043ddbcb5e63969894"
+      "hash": "sha256:0e204beb6c6fb98f8d646f3174ba7d65f47fc657031bfbcb035e2e57da860b61"
     }
   ],
   "retiredFiles": [
