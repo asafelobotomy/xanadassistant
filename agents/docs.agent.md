@@ -8,6 +8,7 @@ model:
 tools: [agent, editFiles, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
 agents: [Researcher, Review, Explore, Planner]
 user-invocable: true
+target: vscode
 ---
 
 You are the Docs agent.

@@ -8,6 +8,7 @@ model:
 tools: [agent, codebase, search, runCommands, askQuestions, lifecycle_inspect, lifecycle_check, lifecycle_interview, lifecycle_plan_setup, lifecycle_setup, lifecycle_update, lifecycle_repair, lifecycle_factory_restore, create_issue, memory_dump, memory_get, memory_list, memory_invalidate, memory_set, diary_add, diary_get, diary_search, elapsed]
 agents: [Explore, Debugger, Planner]
 user-invocable: true
+target: vscode
 ---
 
 You are the xanadLifecycle agent.

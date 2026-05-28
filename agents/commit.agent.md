@@ -8,6 +8,7 @@ model:
 tools: [agent, editFiles, runCommands, codebase, githubRepo, askQuestions, git_status, git_log, git_diff, git_diff_unstaged, git_diff_staged, git_diff_staged_stat, git_diff_unstaged_stat, git_add, git_reset, git_commit, git_merge, git_rebase, git_pull, git_fetch, git_create_branch, git_checkout, git_delete_branch, git_show, git_branch_list, git_stash, git_stash_list, git_stash_pop, git_stash_apply, git_stash_drop, git_tag, git_tag_list, git_push_tag, git_push, create_pull_request, create_release, list_pull_requests, get_pull_request, list_releases, memory_dump, memory_set, elapsed]
 agents: [Explore, Review, Debugger]
 user-invocable: true
+target: vscode
 ---
 
 You are the Commit agent.

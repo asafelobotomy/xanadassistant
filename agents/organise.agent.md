@@ -8,6 +8,7 @@ model:
 tools: [agent, editFiles, runCommands, codebase, search, read_file, list_directory, search_files, file_info, write_file, create_directory, move_file, delete_file, memory_dump, memory_set, elapsed]
 agents: [Explore, Docs]
 user-invocable: false
+target: vscode
 ---
 
 You are the Organise agent for this repository.

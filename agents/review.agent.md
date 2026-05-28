@@ -8,6 +8,7 @@ model:
 tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_get, memory_list, memory_invalidate, memory_set, diary_add, diary_search, elapsed]
 agents: [Explore, Debugger, Planner, Researcher]
 user-invocable: true
+target: vscode
 ---
 
 You are the Review agent.

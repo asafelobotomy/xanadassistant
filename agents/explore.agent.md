@@ -6,9 +6,10 @@ model:
   - GPT-5.4 mini
   - Claude Sonnet 4.6
   - Claude Haiku 4.5
-tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
+tools: [codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
 user-invocable: true
 agents: []
+target: vscode
 ---
 
 You are the Explore agent.

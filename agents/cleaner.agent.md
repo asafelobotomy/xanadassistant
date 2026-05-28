@@ -8,6 +8,7 @@ model:
 tools: [agent, editFiles, runCommands, codebase, search, askQuestions, read_file, list_directory, search_files, file_info, delete_file, memory_dump, memory_set, elapsed]
 agents: [Review, Organise, Docs, Commit]
 user-invocable: true
+target: vscode
 ---
 
 You are the Cleaner agent.

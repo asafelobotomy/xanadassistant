@@ -8,6 +8,7 @@ model:
 tools: [agent, codebase, memory_dump, memory_set, elapsed]
 agents: [Planner]
 user-invocable: false
+target: vscode
 ---
 
 You are the Triage agent.

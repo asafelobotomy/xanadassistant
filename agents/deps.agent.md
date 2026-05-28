@@ -8,6 +8,7 @@ model:
 tools: [agent, codebase, search, runCommands, askQuestions, read_file, list_directory, search_files, file_info, query_osv, query_deps, memory_dump, memory_set, elapsed]
 agents: [Explore, Researcher, Review]
 user-invocable: true
+target: vscode
 ---
 
 You are the Deps agent.
