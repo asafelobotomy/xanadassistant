@@ -29,14 +29,19 @@ def expected_entry_bytes(
         return rendered_text.encode("utf-8")
 
     if strategy == "merge-json-object":
+        source_text = source_path.read_text(encoding="utf-8")
+        rendered_source_text = render_tokenized_text(source_text, token_values)
         if target_path is None or not target_path.exists():
-            source_data = load_json(source_path)
+            try:
+                source_data = json.loads(rendered_source_text)
+            except json.JSONDecodeError:
+                return None
             if not isinstance(source_data, dict):
                 return None
             return serialize_json_object(source_data)
         try:
             existing_data = load_json(target_path)
-            source_data = load_json(source_path)
+            source_data = json.loads(rendered_source_text)
         except json.JSONDecodeError:
             return None
         if not isinstance(existing_data, dict) or not isinstance(source_data, dict):

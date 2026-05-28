@@ -165,6 +165,12 @@ def resolve_token_values(
                 token_values[token] = _TESTING_PHILOSOPHY_LABELS.get(philosophy, philosophy)
             else:
                 token_values[token] = "(not configured)"
+        elif token == "{{AGENT_MAX_REQUESTS}}":
+            requests = resolved_answers.get("settings.agent.maxRequests")
+            if isinstance(requests, str) and requests.isdigit():
+                token_values[token] = requests
+            else:
+                token_values[token] = "128"
     if package_root is not None:
         resolved_token_conflicts = {
             key[len("resolvedTokenConflicts."):]: value

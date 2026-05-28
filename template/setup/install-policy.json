@@ -672,6 +672,11 @@
       "token": "{{pack:secret-guard}}",
       "description": "Pre-commit secret scanning discipline. Resolved from selected pack; defaults to surfacing probable secrets before staging.",
       "required": false
+    },
+    {
+      "token": "{{AGENT_MAX_REQUESTS}}",
+      "description": "Maximum number of agentic requests per conversation.",
+      "required": false
     }
   ],
   "chmodRules": {

@@ -160,6 +160,24 @@ class ConditionsTests(unittest.TestCase):
         rendered = _conditions.render_tokenized_text("Hello {{WORKSPACE_NAME}}", token_values)
         self.assertEqual(rendered, f"Hello {workspace.name}")
 
+    def test_resolve_token_values_agent_max_requests_uses_answer_or_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+
+            policy = {"canonicalSurfaces": [], "tokenRules": [{"token": "{{AGENT_MAX_REQUESTS}}"}]}
+
+            # Answer provided
+            result = _conditions.resolve_token_values(policy, workspace, {"settings.agent.maxRequests": "64"})
+            self.assertEqual(result["{{AGENT_MAX_REQUESTS}}"], "64")
+
+            # No answer → default 128
+            result = _conditions.resolve_token_values(policy, workspace, {})
+            self.assertEqual(result["{{AGENT_MAX_REQUESTS}}"], "128")
+
+            # Non-digit answer → default 128
+            result = _conditions.resolve_token_values(policy, workspace, {"settings.agent.maxRequests": "many"})
+            self.assertEqual(result["{{AGENT_MAX_REQUESTS}}"], "128")
+
 
 if __name__ == "__main__":
     unittest.main()

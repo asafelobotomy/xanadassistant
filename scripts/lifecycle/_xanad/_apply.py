@@ -56,12 +56,19 @@ def _strip_json_comments(text: str) -> str:
     return _JSONC_RE.sub(_replace, text)
 
 
-def merge_json_object_file(target_path: Path, package_root: Path, manifest_entry: dict) -> None:
+def merge_json_object_file(
+    target_path: Path,
+    package_root: Path,
+    manifest_entry: dict,
+    token_values: dict[str, str] | None = None,
+) -> None:
     source_path = package_root / manifest_entry["source"]
+    source_text = source_path.read_text(encoding="utf-8")
+    rendered_source_text = render_tokenized_text(source_text, token_values or {})
     if target_path.exists():
         try:
             existing_data = json.loads(_strip_json_comments(target_path.read_text(encoding="utf-8")))
-            source_data = load_json(source_path)
+            source_data = json.loads(rendered_source_text)
         except json.JSONDecodeError as error:
             raise LifecycleCommandError(
                 "apply_failure", "Existing JSON target could not be merged.", 9,
@@ -74,7 +81,13 @@ def merge_json_object_file(target_path: Path, package_root: Path, manifest_entry
             )
         merged_data = merge_json_objects(existing_data, source_data)
     else:
-        source_data = load_json(source_path)
+        try:
+            source_data = json.loads(rendered_source_text)
+        except json.JSONDecodeError as error:
+            raise LifecycleCommandError(
+                "apply_failure", "JSON merge source could not be parsed.", 9,
+                {"source": str(source_path), "error": str(error)},
+            ) from error
         if not isinstance(source_data, dict):
             raise LifecycleCommandError(
                 "apply_failure", "JSON merge source must be an object.", 9,

@@ -34,7 +34,16 @@ class InterviewQuestionsTests(unittest.TestCase):
 
         for server in ("xanadTools", "git", "web", "devDocs", "time", "memory", "security", "filesystem", "sequential-thinking"):
             self.assertIn(server, reason, f"\"{server}\" must appear in mcp.servers reason text")
+    def test_settings_questions_returns_agent_max_requests_with_four_options(self) -> None:
+        questions = interview_questions.settings_questions()
 
+        self.assertEqual(len(questions), 1)
+        q = questions[0]
+        self.assertEqual(q["id"], "settings.agent.maxRequests")
+        self.assertEqual(q["batch"], "advanced")
+        self.assertEqual(q["default"], "128")
+        option_ids = [o["id"] for o in q["options"]]
+        self.assertEqual(option_ids, ["32", "64", "128", "256"])
 
 if __name__ == "__main__":
     unittest.main()

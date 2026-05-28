@@ -209,15 +209,3 @@ installed prompts for day-to-day operations: `/setup`, `/update`.
 
 The lifecycle CLI (`python3 xanadAssistant.py`) is available for maintainers
 and advanced use — see [README.md](README.md).
-
-### Recommended VS Code settings
-
-Add the following to your workspace's `.vscode/settings.json` to enable
-multi-level agent delegation chains (required for handoffs deeper than one
-level — e.g. an agent you invoke can itself delegate to a specialist subagent):
-
-```json
-{
-  "chat.subagents.allowInvocationsFromSubagents": true
-}
-```

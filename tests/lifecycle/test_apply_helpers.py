@@ -50,6 +50,30 @@ class ApplyHelperTests(unittest.TestCase):
         self.assertEqual(merged_json, {"existing": 1, "setting": True})
         self.assertIn("<!-- user-added -->keep<!-- /user-added -->", merged_markdown)
 
+    def test_merge_json_object_file_substitutes_tokens_before_parsing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            package_root = root / "package"
+            package_root.mkdir()
+            source = package_root / "settings.json"
+            source.write_text('{\n  "maxRequests": {{MAX}}\n}\n', encoding="utf-8")
+            target = root / "settings.json"
+
+            # Fresh install: token resolved, integer value written
+            _apply.merge_json_object_file(target, package_root, {"source": "settings.json"}, {"{{MAX}}": "128"})
+            self.assertEqual(json.loads(target.read_text(encoding="utf-8")), {"maxRequests": 128})
+
+            # Merge: token resolved, integer merged with existing object
+            target.write_text(json.dumps({"other": True}), encoding="utf-8")
+            _apply.merge_json_object_file(target, package_root, {"source": "settings.json"}, {"{{MAX}}": "64"})
+            merged = json.loads(target.read_text(encoding="utf-8"))
+            self.assertEqual(merged["maxRequests"], 64)
+            self.assertTrue(merged["other"])
+
+            # Unresolved token → invalid JSON → LifecycleCommandError
+            with self.assertRaises(LifecycleCommandError):
+                _apply.merge_json_object_file(target, package_root, {"source": "settings.json"}, {})
+
     def test_build_summary_and_apply_chmod_rule(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             target = Path(tmpdir) / "script.sh"

@@ -78,6 +78,27 @@ def personalisation_questions() -> list[dict]:
     ]
 
 
+def settings_questions() -> list[dict]:
+    """Return the VS Code settings interview questions."""
+    return [
+        {
+            "id": "settings.agent.maxRequests",
+            "kind": "choice",
+            "batch": "advanced",
+            "prompt": "What is the maximum number of agentic requests per conversation?",
+            "required": False,
+            "default": "128",
+            "recommended": "128",
+            "options": [
+                {"id": "32", "label": "32", "description": "Conservative"},
+                {"id": "64", "label": "64", "description": "Moderate"},
+                {"id": "128", "label": "128", "description": "Default — suitable for most workspaces"},
+                {"id": "256", "label": "256", "description": "Extended — for complex long-running tasks"},
+            ],
+        },
+    ]
+
+
 def mcp_servers_question() -> dict:
     """Return the optional MCP server selection question."""
     return {

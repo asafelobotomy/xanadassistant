@@ -7,7 +7,7 @@ from scripts.lifecycle._xanad._agent_customization import build_agent_customizat
 from scripts.lifecycle._xanad._conditions import normalize_plan_answers
 from scripts.lifecycle._xanad._errors import LifecycleCommandError
 from scripts.lifecycle._xanad._inspect import collect_context
-from scripts.lifecycle._xanad._interview_questions import mcp_question, mcp_servers_question, personalisation_questions
+from scripts.lifecycle._xanad._interview_questions import mcp_question, mcp_servers_question, personalisation_questions, settings_questions
 from scripts.lifecycle._xanad._loader import load_json
 from scripts.lifecycle._xanad._plan_c import seed_answers_from_install_state, seed_answers_from_profile
 from scripts.lifecycle._xanad._prescan import scan_consumer_kept_updates, scan_existing_copilot_files
@@ -106,6 +106,7 @@ def build_interview_questions(policy: dict, metadata: dict, mode: str) -> list[d
         })
 
     questions.extend(personalisation_questions())
+    questions.extend(settings_questions())
 
     # ── full ─────────────────────────────────────────────────────────────────
     if "mcp-config" in policy.get("canonicalSurfaces", []):

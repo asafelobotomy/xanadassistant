@@ -73,6 +73,49 @@ class PlanUtilsTests(unittest.TestCase):
                 b"abc",
             )
 
+    def test_merge_json_object_substitutes_tokens_before_parsing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            package_root = root / "package"
+            package_root.mkdir()
+
+            (package_root / "settings.json").write_text(
+                '{\n  "chat.agent.maxRequests": {{MAX_REQUESTS}}\n}\n',
+                encoding="utf-8",
+            )
+
+            # Fresh install (no target): token replaced, parsed as integer
+            result = _plan_utils.expected_entry_bytes(
+                package_root,
+                {"source": "settings.json", "strategy": "merge-json-object"},
+                {"{{MAX_REQUESTS}}": "128"},
+            )
+            self.assertIsNotNone(result)
+            self.assertEqual(json.loads(result.decode("utf-8")), {"chat.agent.maxRequests": 128})
+
+            # Merge with existing target: token replaced and merged
+            target = root / "settings.json"
+            target.write_text(json.dumps({"existing": True}), encoding="utf-8")
+            merged = _plan_utils.expected_entry_bytes(
+                package_root,
+                {"source": "settings.json", "strategy": "merge-json-object"},
+                {"{{MAX_REQUESTS}}": "64"},
+                target,
+            )
+            self.assertIsNotNone(merged)
+            parsed = json.loads(merged.decode("utf-8"))
+            self.assertEqual(parsed["chat.agent.maxRequests"], 64)
+            self.assertTrue(parsed["existing"])
+
+            # Unresolved token (no substitution) → invalid JSON → returns None
+            self.assertIsNone(
+                _plan_utils.expected_entry_bytes(
+                    package_root,
+                    {"source": "settings.json", "strategy": "merge-json-object"},
+                    {},
+                )
+            )
+
     def test_expected_entry_hash_and_token_summary_cover_none_required_and_sorted_targets(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             package_root = Path(tmpdir)

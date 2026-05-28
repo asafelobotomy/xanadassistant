@@ -240,7 +240,7 @@ def _action_write_or_merge(
     target_path.parent.mkdir(parents=True, exist_ok=True)
     if action["action"] == "merge":
         if action["strategy"] == "merge-json-object":
-            merge_json_object_file(target_path, ctx.package_root, manifest_entry)
+            merge_json_object_file(target_path, ctx.package_root, manifest_entry, action.get("tokenValues", {}))
         else:
             merge_markdown_file(target_path, ctx.package_root, manifest_entry,
                                 action.get("tokenValues", {}))
