@@ -41,9 +41,18 @@ def main() -> int:
         return 1
 
     manifest = generate_manifest(repo_root, policy)
-    manifest_path = repo_root / policy.get("generationSettings", {}).get(
+    manifest_output = policy.get("generationSettings", {}).get(
         "manifestOutput", "template/setup/install-manifest.json"
     )
+    manifest_path = (repo_root / manifest_output).resolve()
+    try:
+        manifest_path.relative_to(repo_root)
+    except ValueError:
+        print(
+            f"ERROR: manifestOutput path escapes repo root: {manifest_output!r}",
+            file=sys.stderr,
+        )
+        return 1
     write_manifest(manifest_path, manifest)
     print(f"manifest → {manifest_path.relative_to(repo_root)}")
 

@@ -183,6 +183,8 @@ def req(
     except urllib.error.HTTPError as exc:
         body_text = exc.read().decode("utf-8", errors="replace")
         raise RuntimeError(format_http_error(path, exc.code, body_text)) from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"GitHub API network error for {path}: {exc.reason}") from exc
 
 
 def get(path: str, params: dict | None = None, *, token_provider=token) -> Any:

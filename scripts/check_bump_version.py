@@ -62,6 +62,7 @@ def _capture_artifact_snapshots(repo_root: Path) -> dict[Path, str | None]:
         repo_root / "template" / "setup" / "install-manifest.json",
         repo_root / ".github" / "xanadAssistant-lock.json",
         repo_root / ".github" / "copilot-version.md",
+        repo_root / "template" / "setup" / "catalog.json",
     ]
     snapshots: dict[Path, str | None] = {}
     for path in paths:

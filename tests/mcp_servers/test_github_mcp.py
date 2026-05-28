@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import unittest
+import urllib.error
 from unittest import mock
 
 from tests.mcp_servers._mcp_module_loader import load_mcp_script_pair
@@ -42,6 +43,18 @@ class GitHubMcpTests(unittest.TestCase):
                 message = module._format_http_error("/repos/o/r/pulls/123", 404, "not found")
 
                 self.assertIn("use get_issue instead", message)
+
+    def test_req_normalises_url_error_to_runtime_error(self) -> None:
+        """URLError and timeout during req() must raise RuntimeError, not leak raw exceptions."""
+        for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):
+            with self.subTest(module=module.__name__):
+                with mock.patch.object(
+                    module._shared,
+                    "req",
+                    side_effect=RuntimeError("GitHub API network error for /repos/o/r: [Errno -2] Name or service not known"),
+                ):
+                    with self.assertRaisesRegex(RuntimeError, "network error"):
+                        module._shared.req("GET", "/repos/o/r")
 
     def test_get_file_contents_rejects_parent_traversal_and_decodes_base64(self) -> None:
         for module in (SOURCE_GITHUB_MODULE, MANAGED_GITHUB_MODULE):

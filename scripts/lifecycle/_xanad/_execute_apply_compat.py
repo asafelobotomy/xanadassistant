@@ -112,9 +112,35 @@ def _validate_backup_plan_entries(
                 {"planned": backup_root},
             )
 
+    if backup_root is None and backup_plan.get("targets"):
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan backup entries require a backup root to be declared.",
+            4,
+            {"planned": None},
+        )
+
     archive_root = backup_plan.get("archiveRoot")
     if archive_root is not None:
         archive_root = validate_relative_plan_path(archive_root, "result.backupPlan.archiveRoot")
+        if not (
+            archive_root == ".xanadAssistant/archive"
+            or archive_root.startswith(".xanadAssistant/archive/")
+        ):
+            raise LifecycleCommandError(
+                "contract_input_failure",
+                "Plan archive root does not match the lifecycle contract.",
+                4,
+                {"planned": archive_root},
+            )
+
+    if archive_root is None and backup_plan.get("archiveTargets"):
+        raise LifecycleCommandError(
+            "contract_input_failure",
+            "Plan archive entries require an archive root to be declared.",
+            4,
+            {"planned": None},
+        )
 
     for index, entry in enumerate(backup_plan.get("targets", [])):
         target = validate_relative_plan_path(entry.get("target"), f"result.backupPlan.targets[{index}].target")

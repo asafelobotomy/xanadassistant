@@ -98,6 +98,20 @@ class SourceResolutionTests(unittest.TestCase):
             with self.assertRaises(LifecycleCommandError):
                 _source.resolve_workspace(f.name)
 
+    def test_resolve_workspace_require_exists_raises_for_missing_path(self) -> None:
+        with self.assertRaises(LifecycleCommandError) as ctx:
+            _source.resolve_workspace("/tmp/__nonexistent_xanad_test_workspace__", require_exists=True)
+        self.assertIn("does not exist", ctx.exception.message)
+
+    def test_resolve_workspace_require_exists_passes_for_existing_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as d:
+            result = _source.resolve_workspace(d, require_exists=True)
+            self.assertEqual(result, Path(d).resolve())
+
+    def test_resolve_workspace_no_require_exists_accepts_missing_path(self) -> None:
+        result = _source.resolve_workspace("/tmp/__nonexistent_xanad_test_workspace__")
+        self.assertIsNotNone(result)
+
     def test_validate_ref_rejects_invalid_characters(self) -> None:
         _source_remote._validate_ref("main")
         _source_remote._validate_ref("v1.2.3")

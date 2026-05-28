@@ -291,6 +291,62 @@ class ApplyContractTests(unittest.TestCase):
                 with self.subTest(payload=payload):
                     self._assert_path_validation_error(payload, package_root)
 
+    def test_backup_entries_require_declared_backup_root(self) -> None:
+        """Targets must be rejected when backupPlan has no root."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_root = Path(tmpdir)
+            self._write_policy_and_manifest(package_root)
+            payload = {
+                "result": {
+                    **self._base_result(backup_root=None),
+                    "actions": [{"id": "delete:.github/prompts/main.prompt.md", "target": ".github/prompts/main.prompt.md", "action": "delete"}],
+                    "backupPlan": {
+                        "targets": [{"target": ".github/prompts/main.prompt.md", "backupPath": ".xanadAssistant/backups/run/x.md"}],
+                        "archiveTargets": [],
+                    },
+                }
+            }
+            self._assert_path_validation_error(payload, package_root)
+
+    def test_archive_root_must_match_lifecycle_contract_prefix(self) -> None:
+        """archiveRoot must start with .xanadAssistant/archive/ ."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_root = Path(tmpdir)
+            self._write_policy_and_manifest(package_root)
+            base_result = self._base_result(backup_root=".xanadAssistant/backups/run")
+            payload = {
+                "result": {
+                    **base_result,
+                    "actions": [{"id": "migration.cleanup..github/prompts/old.prompt.md", "target": ".github/prompts/old.prompt.md", "action": "archive-retired"}],
+                    "backupPlan": {
+                        "root": ".xanadAssistant/backups/run",
+                        "archiveRoot": "arbitrary/path",
+                        "targets": [],
+                        "archiveTargets": [],
+                    },
+                }
+            }
+            self._assert_path_validation_error(payload, package_root)
+
+    def test_archive_entries_require_declared_archive_root(self) -> None:
+        """archiveTargets must be rejected when archiveRoot is absent."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_root = Path(tmpdir)
+            self._write_policy_and_manifest(package_root)
+            base_result = self._base_result(backup_root=".xanadAssistant/backups/run")
+            payload = {
+                "result": {
+                    **base_result,
+                    "actions": [{"id": "migration.cleanup..github/prompts/old.prompt.md", "target": ".github/prompts/old.prompt.md", "action": "archive-retired"}],
+                    "backupPlan": {
+                        "root": ".xanadAssistant/backups/run",
+                        "targets": [],
+                        "archiveTargets": [{"target": ".github/prompts/old.prompt.md", "archivePath": ".xanadAssistant/archive/run/x.md"}],
+                    },
+                }
+            }
+            self._assert_path_validation_error(payload, package_root)
+
     def test_load_apply_plan_rejects_invalid_payload_shapes(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)

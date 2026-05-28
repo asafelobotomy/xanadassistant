@@ -9,10 +9,19 @@ from scripts.lifecycle._xanad._errors import DEFAULT_CACHE_ROOT, LifecycleComman
 from scripts.lifecycle._xanad._source_remote import resolve_github_release, resolve_github_ref  # noqa: F401 – re-exported
 
 
-def resolve_workspace(path_value: str, *, create: bool = False) -> Path:
+def resolve_workspace(
+    path_value: str, *, create: bool = False, require_exists: bool = False
+) -> Path:
     workspace = Path(path_value).resolve()
     if create:
         workspace.mkdir(parents=True, exist_ok=True)
+    elif require_exists and not workspace.exists():
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"Workspace directory does not exist: {workspace}",
+            3,
+            {"path": str(workspace)},
+        )
     elif workspace.exists() and not workspace.is_dir():
         raise LifecycleCommandError(
             "source_resolution_failure",

@@ -193,7 +193,12 @@ def main(argv: list[str] | None = None) -> int:
 def _run_lifecycle(args: argparse.Namespace) -> int:
     """Inner lifecycle dispatch — separated so main() can close _State.log_file on exit."""
     write_commands = {"setup"}
-    workspace = resolve_workspace(args.workspace, create=args.command in write_commands)
+    require_exists_commands = {"inspect", "health-check"}
+    workspace = resolve_workspace(
+        args.workspace,
+        create=args.command in write_commands,
+        require_exists=args.command in require_exists_commands,
+    )
     if args.json and args.json_lines:
         payload, exit_code = build_error_payload(
             args.command,

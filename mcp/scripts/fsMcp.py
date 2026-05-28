@@ -83,7 +83,10 @@ def _resolve(path_str: str) -> Path:
     """Expand and resolve *path_str*; raise ValueError if outside ALLOWED_ROOT."""
     if not path_str or "\x00" in path_str:
         raise ValueError(f"Invalid path: {path_str!r}")
-    resolved = Path(path_str).expanduser().resolve()
+    p = Path(path_str).expanduser()
+    if not p.is_absolute():
+        p = ALLOWED_ROOT / p
+    resolved = p.resolve()
     try:
         resolved.relative_to(ALLOWED_ROOT)
     except ValueError:

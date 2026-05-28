@@ -62,7 +62,7 @@ WARN_LIMIT_OVERRIDES = {
     "scripts/lifecycle/generate_manifest.py": 310,
 
     # ── Lifecycle tests ────────────────────────────────────────────────────────────
-    "tests/lifecycle/test_apply_contracts.py": 400,
+    "tests/lifecycle/test_apply_contracts.py": 460,
     "tests/lifecycle/test_apply_executor.py": 330,
     "tests/lifecycle/test_health_check.py": 260,
     "tests/lifecycle/test_main_dispatch.py": 300,
@@ -125,8 +125,9 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     "tests/tools/test_xanadEval_graders_ext2.py": 340,
     # xanadEval runtime tests: grew with RetryTests, ExpectedFieldTests, TagsFilterTests
     # covering the new _call_model retry, expected task field, and --tags filter features;
-    # and AgentSurfaceResolutionTests + H2 zero-filter guard covering eval surface resolution.
-    "tests/tools/test_xanadEval_runtime.py": 620,
+    # AgentSurfaceResolutionTests + H2 zero-filter guard covering eval surface resolution;
+    # and GradeCommandTests expanded with expected-grader re-grading coverage (C1).
+    "tests/tools/test_xanadEval_runtime.py": 680,
     # graders_ext tests: all nine extended grader unit test classes.
     "tests/tools/test_xanadEval_graders_ext.py": 700,
     # workspace_grade_human MCP tests.
@@ -137,6 +138,8 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     "mcp/scripts/_memory_mcp_shared.py": 460,
     # Memory MCP entrypoint: grew with session_id threading and branch-scoped rule fixes.
     "mcp/scripts/memoryMcp.py": 450,
+    # apply_contracts test: grew with S1 backup/archive contract validation tests.
+    "tests/lifecycle/test_apply_contracts.py": 460,
 }
 
 

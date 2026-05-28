@@ -110,5 +110,65 @@ class BootstrapCommandTests(unittest.TestCase):
         self.assertEqual(excinfo.exception.code, 2)
 
 
+class DownloadArchiveTests(unittest.TestCase):
+    def test_sentinel_prevents_redownload(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_root = Path(tmpdir)
+            cache_dir = cache_root / "github" / "owner-repo" / f"ref-{_bootstrap._cache_key('main')}"
+            cache_dir.mkdir(parents=True)
+            (cache_dir / ".complete").write_text("ok\n", encoding="utf-8")
+            result = _bootstrap._download_archive("owner", "repo", "main", cache_root)
+            self.assertEqual(result, cache_dir)
+
+    def test_download_failure_exits_cleanly(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_root = Path(tmpdir)
+            with mock.patch(
+                "urllib.request.urlopen",
+                side_effect=OSError("connection refused"),
+            ), self.assertRaises(SystemExit) as excinfo:
+                _bootstrap._download_archive("owner", "repo", "main", cache_root)
+            self.assertNotEqual(excinfo.exception.code, 0)
+
+    def test_tar_extraction_skips_dotdot_members(self) -> None:
+        import io
+        import tarfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_root = Path(tmpdir)
+            key = _bootstrap._cache_key("v1.0.0")
+            cache_dir = cache_root / "github" / "owner-repo" / f"ref-{key}"
+            cache_dir.mkdir(parents=True)
+            buf = io.BytesIO()
+            with tarfile.open(fileobj=buf, mode="w:gz") as tar:
+                info = tarfile.TarInfo(name="repo-1.0.0/../../../etc/evil.txt")
+                info.size = 4
+                tar.addfile(info, io.BytesIO(b"evil"))
+                info2 = tarfile.TarInfo(name="repo-1.0.0/safe.txt")
+                info2.size = 4
+                info2.type = tarfile.REGTYPE
+                tar.addfile(info2, io.BytesIO(b"safe"))
+            buf.seek(0)
+            tmp_file = cache_dir / "archive.tar.gz"
+            tmp_file.write_bytes(buf.read())
+            with mock.patch("urllib.request.urlopen") as mock_open:
+                mock_resp = mock.MagicMock()
+                mock_resp.read.return_value = tmp_file.read_bytes()
+                mock_open.return_value.__enter__ = lambda s: mock_resp
+                mock_open.return_value.__exit__ = mock.Mock(return_value=False)
+                _bootstrap._download_archive("owner", "repo", "v1.0.0", cache_root)
+            evil_path = cache_dir / ".." / ".." / ".." / "etc" / "evil.txt"
+            self.assertFalse(evil_path.exists())
+
+    def test_validate_source_rejects_invalid_formats(self) -> None:
+        for bad in ("notgithub:owner/repo", "github:owner", "github:", "github:owner/repo/extra"):
+            with self.assertRaises(SystemExit):
+                _bootstrap._validate_source(bad)
+
+    def test_validate_source_accepts_valid_format(self) -> None:
+        owner, repo = _bootstrap._validate_source("github:myorg/myrepo")
+        self.assertEqual(owner, "myorg")
+        self.assertEqual(repo, "myrepo")
+
+
 if __name__ == "__main__":
     unittest.main()

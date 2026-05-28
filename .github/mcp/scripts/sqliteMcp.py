@@ -56,7 +56,10 @@ WORKSPACE_ROOT = discover_workspace_root(Path(__file__))
 
 
 def _resolve_db_path(db_path: str) -> Path:
-    path = Path(db_path).expanduser().resolve()
+    p = Path(db_path).expanduser()
+    if not p.is_absolute():
+        p = WORKSPACE_ROOT / p
+    path = p.resolve()
     if not path.exists():
         raise FileNotFoundError(f"Database file not found: {db_path!r}")
     if not path.is_file():

@@ -475,7 +475,16 @@ def _grade_program(response: str, config: dict) -> tuple[bool, float, str]:
 
     Exit code 0 → pass (score 1.0); non-zero → fail (score 0.0).
     stdout/stderr output is captured as feedback.
+
+    Requires ``XANAD_EVAL_ALLOW_EXTERNAL=1`` to be set — external-command graders
+    execute arbitrary commands from eval configuration and must be opted into
+    explicitly from a trusted eval suite.
     """
+    if not os.environ.get("XANAD_EVAL_ALLOW_EXTERNAL", ""):
+        return False, 0.0, (
+            "program grader: external-command graders are disabled by default. "
+            "Set XANAD_EVAL_ALLOW_EXTERNAL=1 to enable."
+        )
     command = str(config.get("command", "")).strip()
     if not command:
         return False, 0.0, "program grader: 'command' is required"

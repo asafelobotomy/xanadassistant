@@ -28,7 +28,7 @@ def _memory_checks_enabled(
     if mcp_enabled is True:
         return True
 
-    return any((workspace / rel_path).exists() for rel_path in (_MEMORY_HOOK, _MEMORY_MCP_JSON, _MEMORY_DB))
+    return any((workspace / rel_path).exists() for rel_path in (_MEMORY_HOOK, _MEMORY_DB))
 
 
 def check_memory_health(

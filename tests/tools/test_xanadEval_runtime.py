@@ -310,6 +310,49 @@ class GradeCommandTests(DynamicTestBase, unittest.TestCase):
         self.assertEqual(len(absent_graders), 1)
         self.assertFalse(absent_graders[0]["pass"])
 
+    def test_grade_reapplies_expected_from_saved_graders(self) -> None:
+        """cmd_grade must re-apply expected (contains) patterns persisted in the saved result."""
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "fake-token"}):
+            with tempfile.TemporaryDirectory() as d:
+                dp = Path(d)
+                self._write_skill(dp)
+                eval_dir = dp / "evals" / "test-skill"
+                (eval_dir / "tasks").mkdir(parents=True)
+                spec = {
+                    "name": "test-skill-eval",
+                    "graders": [{"type": "text", "name": "ref", "config": {"contains": ["test"]}}],
+                    "tasks": [],
+                }
+                eval_yaml = eval_dir / "eval.yaml"
+                eval_yaml.write_text(json.dumps(spec), encoding="utf-8")
+                result = {
+                    "eval": str(eval_yaml),
+                    "skill": "test-skill-eval",
+                    "model": "gpt-4o-mini",
+                    "timestamp": "2026-05-20T12:00:00Z",
+                    "summary": {"total": 1, "passed": 0, "pass_rate": 0.0, "score": 0.0},
+                    "tasks": [{
+                        "id": "task-1",
+                        "prompt": "p",
+                        "response": "this response contains required_phrase",
+                        "graders": [
+                            {"type": "expected", "name": "required_phrase",
+                             "pass": False, "score": 0.0},
+                        ],
+                        "passed": False,
+                        "score": 0.0,
+                    }],
+                }
+                result_path = dp / "run-result.json"
+                result_path.write_text(json.dumps(result), encoding="utf-8")
+                code = xe.cmd_grade(str(eval_yaml), str(result_path), None, "text")
+                updated = json.loads(result_path.read_text(encoding="utf-8"))
+        expected_graders = [g for g in updated["tasks"][0]["graders"]
+                            if g.get("type") == "expected"]
+        self.assertEqual(len(expected_graders), 1)
+        # "required_phrase" is in the response, so the re-graded result must pass
+        self.assertTrue(expected_graders[0]["pass"])
+
     def test_grade_write_failure_returns_2(self) -> None:
         """A filesystem error during result save must return exit 2."""
         with mock.patch("os.replace", side_effect=OSError("disk full")):

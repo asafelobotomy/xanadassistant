@@ -55,6 +55,15 @@ class PathSafetyTests(unittest.TestCase):
                     p = module._resolve(str(Path(d) / "subdir" / "file.txt"))
                     self.assertEqual(p, Path(d).resolve() / "subdir" / "file.txt")
 
+    def test_resolve_anchors_relative_path_to_allowed_root(self) -> None:
+        """A bare relative path must resolve relative to ALLOWED_ROOT, not CWD."""
+        with tempfile.TemporaryDirectory() as d:
+            for module in _MODULES:
+                with self.subTest(module=module.__name__):
+                    _set_root(module, Path(d))
+                    p = module._resolve("subdir/file.txt")
+                    self.assertEqual(p, Path(d).resolve() / "subdir" / "file.txt")
+
     def test_resolve_rejects_path_outside_root(self) -> None:
         with tempfile.TemporaryDirectory() as d:
             for module in _MODULES:

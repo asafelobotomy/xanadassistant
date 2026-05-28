@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -337,6 +338,7 @@ class JSONSchemaGraderTests(unittest.TestCase):
         self.assertEqual(results[0]["score"], 0.0)
 
 
+@mock.patch.dict(os.environ, {"XANAD_EVAL_ALLOW_EXTERNAL": "1"})
 class ProgramGraderTests(unittest.TestCase):
     """Tests for the program grader type via _grade_program and _run_graders."""
 
@@ -362,14 +364,17 @@ class ProgramGraderTests(unittest.TestCase):
         self.assertFalse(passed)
         self.assertIn("not found", feedback)
 
-    def test_run_graders_program_type_recognised(self) -> None:
-        """program grader must be dispatched (not skipped) via _run_graders."""
-        graders = [{"type": "program", "name": "always_pass",
-                    "config": {"command": "true"}}]
-        results = xe._run_graders("any", graders, "gpt-4o-mini", "")
-        self.assertEqual(len(results), 1)
-        self.assertIsNotNone(results[0]["pass"])
-        self.assertTrue(results[0]["pass"])
+
+class ProgramGraderDisabledTests(unittest.TestCase):
+    """Verify external program graders are blocked when XANAD_EVAL_ALLOW_EXTERNAL is unset."""
+
+    def test_disabled_by_default(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("XANAD_EVAL_ALLOW_EXTERNAL", None)
+            passed, score, feedback = xe._grade_program("hello", {"command": "true"})
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+        self.assertIn("disabled", feedback)
 
 
 class LlmGraderTests(DynamicTestBase, unittest.TestCase):

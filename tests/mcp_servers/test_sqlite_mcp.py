@@ -64,6 +64,24 @@ class SqliteMcpTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, "within the workspace root"):
                         module.execute_query(str(db_path), "SELECT name FROM sqlite_master")
 
+    def test_resolve_db_path_anchors_relative_path_to_workspace_root(self) -> None:
+        """A bare relative db_path must be resolved relative to WORKSPACE_ROOT, not CWD."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace_root = Path(tmpdir)
+            db_path = workspace_root / "store.db"
+            conn = sqlite3.connect(db_path)
+            try:
+                conn.execute("CREATE TABLE t (v TEXT)")
+                conn.commit()
+            finally:
+                conn.close()
+
+            for module in (SOURCE_SQLITE_MODULE, MANAGED_SQLITE_MODULE):
+                with self.subTest(module=module.__name__):
+                    module.WORKSPACE_ROOT = workspace_root
+                    resolved = module._resolve_db_path("store.db")
+                    self.assertEqual(resolved, db_path.resolve())
+
     def test_execute_query_rejects_write_mode(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             workspace_root = Path(tmpdir)

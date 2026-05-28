@@ -219,7 +219,7 @@ def cmd_grade(eval_path: str, results_path: str, model: str | None, fmt: str) ->
         response = task.get("response", "")
         grader_results = _run_graders(response, graders_spec, run_model, token or "",
                                       ctx=_grade_ctx)
-        # Re-apply expected_absent checks persisted from the original run
+        # Re-apply expected and expected_absent checks persisted from the original run
         for saved_g in task.get("graders", []):
             if saved_g.get("type") == "expected_absent":
                 pattern = saved_g.get("name", "")
@@ -230,6 +230,16 @@ def cmd_grade(eval_path: str, results_path: str, model: str | None, fmt: str) ->
                         "name": pattern,
                         "pass": not hit,
                         "score": 0.0 if hit else 1.0,
+                    })
+            elif saved_g.get("type") == "expected":
+                pattern = saved_g.get("name", "")
+                if pattern:
+                    hit = pattern.lower() in response.lower()
+                    grader_results.append({
+                        "type": "expected",
+                        "name": pattern,
+                        "pass": hit,
+                        "score": 1.0 if hit else 0.0,
                     })
         graded = [g for g in grader_results if g.get("pass") is not None]
         passed = bool(graded) and all(g["pass"] for g in graded)

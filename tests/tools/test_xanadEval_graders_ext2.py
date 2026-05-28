@@ -7,10 +7,12 @@ Imported via the xanadEval facade.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from xanadEval_test_support import xe
 
@@ -23,7 +25,7 @@ _run_graders = xe._run_graders
 
 # ── ScriptGraderTests ─────────────────────────────────────────────────────────
 
-
+@mock.patch.dict(os.environ, {"XANAD_EVAL_ALLOW_EXTERNAL": "1"})
 class ScriptGraderTests(unittest.TestCase):
     """Tests for _grade_script (JSON context in/out subprocess)."""
 
@@ -119,6 +121,18 @@ class ScriptGraderTests(unittest.TestCase):
         results = _run_graders("any", graders, "gpt-4o-mini", "")
         self.assertEqual(len(results), 1)
         self.assertTrue(results[0]["pass"])
+
+
+class ScriptGraderDisabledTests(unittest.TestCase):
+    """Verify script grader is blocked when XANAD_EVAL_ALLOW_EXTERNAL is unset."""
+
+    def test_disabled_by_default(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("XANAD_EVAL_ALLOW_EXTERNAL", None)
+            passed, score, feedback = _grade_script({"command": sys.executable, "args": ["-c", ""]})
+        self.assertFalse(passed)
+        self.assertEqual(score, 0.0)
+        self.assertIn("disabled", feedback)
 
 
 # ── HumanGraderTests ──────────────────────────────────────────────────────────

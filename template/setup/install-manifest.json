@@ -347,7 +347,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:98edb3760f40d3749b98e0718f5ca7546426c3017ea41ce9de1bcca6e0e9f6e8"
+      "hash": "sha256:d02c73cb5a88caa4c0b00cb47c5e9a04e1375e8cc2440c46b1f20ce1fa51db13"
     },
     {
       "id": "hook-scripts._memory_mcp_shared.py",
@@ -451,7 +451,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:f52dd6dd793cfac8b6ea454c57bc65d649c8e5ee9848a48dfab7f4b3996a9bbc"
+      "hash": "sha256:1233433d94dbf50d5844bd4c9dba0b56d15be764ee8c2cbd5246adbe20d0634a"
     },
     {
       "id": "hook-scripts.gitMcp.py",
@@ -679,7 +679,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:07a87f1a084258e3770e8feb94078d7ae66d08fa3773fd8d3805f0c2127dea36"
+      "hash": "sha256:e45aecae2a2f1ab5232a846f4b50a939baa36c1ee09d48ae542429ec9c7212d2"
     },
     {
       "id": "tdd-hooks.tddTestRunner.py",

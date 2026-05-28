@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import ast as _ast
 import json
+import os
 import re
 import subprocess
 from collections import Counter
@@ -630,7 +631,16 @@ def _grade_script(
     ``score`` and ``passed`` keys those values are used; otherwise exit code 0 = pass (1.0).
 
     Expected stdout JSON: ``{"score": float, "passed": bool, "message": str}``.
+
+    Requires ``XANAD_EVAL_ALLOW_EXTERNAL=1`` to be set — external-command graders
+    execute arbitrary commands from eval configuration and must be opted into
+    explicitly from a trusted eval suite.
     """
+    if not os.environ.get("XANAD_EVAL_ALLOW_EXTERNAL", ""):
+        return False, 0.0, (
+            "script grader: external-command graders are disabled by default. "
+            "Set XANAD_EVAL_ALLOW_EXTERNAL=1 to enable."
+        )
     command = str(config.get("command", "")).strip()
     if not command:
         return False, 0.0, "script grader: 'command' is required"
