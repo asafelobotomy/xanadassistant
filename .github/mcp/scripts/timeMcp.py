@@ -52,10 +52,20 @@ def _parse_iso(ts: str, *, assume_utc_for_naive: bool = True) -> datetime:
 def _tz(name: str) -> ZoneInfo:
     try:
         return ZoneInfo(name)
-    except KeyError as exc:
-        raise ValueError(
-            f"Unknown timezone: {name!r}. Use an IANA name (e.g. 'America/New_York', 'UTC')."
-        ) from exc
+    except (KeyError, SystemError):
+        pass
+    # Python 3.11 C-extension bug: ZoneInfo raises SystemError instead of
+    # ZoneInfoNotFoundError when no system tz database is found.  Fall back
+    # to loading the data file directly from the tzdata package if available.
+    try:
+        from importlib.resources import files as _files
+        _res = _files("tzdata").joinpath("zoneinfo", *name.split("/"))
+        return ZoneInfo.from_file(_res.open("rb"), key=name)
+    except Exception:
+        pass
+    raise ValueError(
+        f"Unknown timezone: {name!r}. Use an IANA name (e.g. 'America/New_York', 'UTC')."
+    )
 
 
 # ---------------------------------------------------------------------------
