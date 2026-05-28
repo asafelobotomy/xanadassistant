@@ -8,8 +8,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from scripts.lifecycle._xanad._conditions import render_tokenized_text
-from scripts.lifecycle._xanad._errors import DEFAULT_POLICY_PATH, LifecycleCommandError
-from scripts.lifecycle._xanad._loader import load_json, load_manifest
+from scripts.lifecycle._xanad._errors import LifecycleCommandError
+from scripts.lifecycle._xanad._loader import load_json
 from scripts.lifecycle._xanad._merge import (
     merge_json_objects,
     merge_markdown_with_preserved_blocks,

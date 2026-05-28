@@ -7,9 +7,9 @@ from scripts.lifecycle._xanad._conditions import resolve_token_values
 from scripts.lifecycle._xanad._defaults import derive_effective_plan_defaults
 from scripts.lifecycle._xanad._inspect_helpers import (
     annotate_manifest_entries,
-    classify_manifest_entries,
+    classify_manifest_entries,  # noqa: F401 – re-exported for consumers
     collect_successor_migration_files,
-    collect_unmanaged_files,
+    collect_unmanaged_files,  # noqa: F401 – re-exported for consumers
 )
 from scripts.lifecycle._xanad._loader import load_contract_artifacts, load_discovery_metadata, load_manifest
 from scripts.lifecycle._xanad._memory_check import check_memory_health

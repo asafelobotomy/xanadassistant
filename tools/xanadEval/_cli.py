@@ -5,7 +5,6 @@ Parses command-line arguments and dispatches to the appropriate command function
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 from _common import _DEFAULT_MODEL, _DEFAULT_RESULTS_DIR

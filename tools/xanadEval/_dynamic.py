@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import datetime
 import json
-import os
 import re
 import sys
 from pathlib import Path

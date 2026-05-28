@@ -64,6 +64,99 @@ def cmd_tokens(path: str, fmt: str) -> int:
 # ── check ─────────────────────────────────────────────────────────────────────
 
 
+def _check_items_agent(
+    fm: dict, content: str, path: str, token_count: int
+) -> tuple[list[tuple[str, bool, str]], list[tuple[str, bool, str]]]:
+    """Return (spec, advisory) for agent-specific checks."""
+    spec: list[tuple[str, bool, str]] = []
+    advisory: list[tuple[str, bool, str]] = []
+    name = fm.get("name", "")
+
+    # Agents live flat in agents/; check filename instead of parent dir.
+    # Comparison is case-insensitive: frontmatter names are title-case
+    # (e.g. "Cleaner") but filenames are lowercase ("cleaner.agent.md"),
+    # while mixed-case names like "xanadLifecycle" preserve their case.
+    actual_fname = Path(path).name
+    spec.append((
+        "spec-filename-match",
+        actual_fname.lower() == f"{name.lower()}.agent.md",
+        f"filename matches name ({actual_fname!r})",
+    ))
+
+    spec.append((
+        "spec-token-budget", token_count <= TOKEN_BUDGET,
+        f"token count {token_count:,} / {TOKEN_BUDGET:,}",
+    ))
+
+    # Agents define use-cases via "Your role:" prose or an explicit list.
+    has_use = "Your role:" in content or "Use this agent for" in content
+    spec.append(("spec-when-to-use", has_use, "role / use-case statement present"))
+
+    # Agents should explicitly list what they must NOT do.
+    has_not_use = "Do not use this agent for" in content
+    spec.append((
+        "spec-when-not-to-use", has_not_use,
+        "exclusion list present (\"Do not use this agent for\")",
+    ))
+
+    # Agents must contain a numbered workflow (regardless of heading name).
+    numbered = re.findall(r"^\s*\d+\. ", content, re.MULTILINE)
+    spec.append((
+        "spec-workflow-steps", len(numbered) >= 2,
+        f"numbered workflow steps: {len(numbered)} found (minimum 2)",
+    ))
+
+    # Advisory: agents must document their memory integration.
+    advisory.append((
+        "memory-section", "## Memory" in content,
+        "## Memory section present",
+    ))
+    return spec, advisory
+
+
+def _check_items_skill(
+    fm: dict, content: str, path: str, token_count: int, is_reference: bool
+) -> tuple[list[tuple[str, bool, str]], list[tuple[str, bool, str]]]:
+    """Return (spec, advisory) for skill-specific checks."""
+    spec: list[tuple[str, bool, str]] = []
+    advisory: list[tuple[str, bool, str]] = []
+    name = fm.get("name", "")
+
+    dir_name = Path(path).parent.name
+    spec.append((
+        "spec-dir-match", name == dir_name or dir_name == ".",
+        f"name matches directory ({dir_name!r})",
+    ))
+
+    spec.append((
+        "spec-token-budget", token_count <= TOKEN_BUDGET,
+        f"token count {token_count:,} / {TOKEN_BUDGET:,}",
+    ))
+
+    spec.append(("spec-verify-checklist", "## Verify" in content, "## Verify checklist present"))
+    spec.append(("spec-when-to-use", "## When to use" in content, "## When to use present"))
+    spec.append((
+        "spec-when-not-to-use", "## When NOT to use" in content,
+        "## When NOT to use present",
+    ))
+    has_steps = "## Steps" in content or bool(
+        re.search(r"^## Module \d+", content, re.MULTILINE)
+    )
+    spec.append((
+        "spec-steps-or-modules", has_steps or is_reference,
+        "workflow structure present (## Steps or ## Module N)",
+    ))
+
+    # Advisory: SKILL.md files should have 2–6 modules.
+    modules = re.findall(r"^## Module \d+", content, re.MULTILINE)
+    module_count = len(modules)
+    advisory.append((
+        "module-count", is_reference or 2 <= module_count <= 6,
+        f"module count: {module_count} (2\u20136 is the acceptable range)",
+    ))
+    return spec, advisory
+
+
 def _build_check_result(
     content: str, path: str
 ) -> tuple[list[tuple[str, bool, str]], list[tuple[str, bool, str]], str]:
@@ -92,78 +185,11 @@ def _build_check_result(
 
     # ── file-type-specific spec checks ───────────────────────────────────────
     if is_agent:
-        # Agents live flat in agents/; check filename instead of parent dir.
-        # Comparison is case-insensitive: frontmatter names are title-case
-        # (e.g. "Cleaner") but filenames are lowercase ("cleaner.agent.md"),
-        # while mixed-case names like "xanadLifecycle" preserve their case.
-        actual_fname = Path(path).name
-        spec.append((
-            "spec-filename-match",
-            actual_fname.lower() == f"{name.lower()}.agent.md",
-            f"filename matches name ({actual_fname!r})",
-        ))
-
-        spec.append((
-            "spec-token-budget", token_count <= TOKEN_BUDGET,
-            f"token count {token_count:,} / {TOKEN_BUDGET:,}",
-        ))
-
-        # Agents define use-cases via "Your role:" prose or an explicit list.
-        has_use = "Your role:" in content or "Use this agent for" in content
-        spec.append(("spec-when-to-use", has_use, "role / use-case statement present"))
-
-        # Agents should explicitly list what they must NOT do.
-        has_not_use = "Do not use this agent for" in content
-        spec.append((
-            "spec-when-not-to-use", has_not_use,
-            "exclusion list present (\"Do not use this agent for\")",
-        ))
-
-        # Agents must contain a numbered workflow (regardless of heading name).
-        numbered = re.findall(r"^\s*\d+\. ", content, re.MULTILINE)
-        spec.append((
-            "spec-workflow-steps", len(numbered) >= 2,
-            f"numbered workflow steps: {len(numbered)} found (minimum 2)",
-        ))
-
-        # Advisory: agents must document their memory integration.
-        advisory.append((
-            "memory-section", "## Memory" in content,
-            "## Memory section present",
-        ))
+        type_spec, type_advisory = _check_items_agent(fm, content, path, token_count)
     else:
-        dir_name = Path(path).parent.name
-        spec.append((
-            "spec-dir-match", name == dir_name or dir_name == ".",
-            f"name matches directory ({dir_name!r})",
-        ))
-
-        spec.append((
-            "spec-token-budget", token_count <= TOKEN_BUDGET,
-            f"token count {token_count:,} / {TOKEN_BUDGET:,}",
-        ))
-
-        spec.append(("spec-verify-checklist", "## Verify" in content, "## Verify checklist present"))
-        spec.append(("spec-when-to-use", "## When to use" in content, "## When to use present"))
-        spec.append((
-            "spec-when-not-to-use", "## When NOT to use" in content,
-            "## When NOT to use present",
-        ))
-        has_steps = "## Steps" in content or bool(
-            re.search(r"^## Module \d+", content, re.MULTILINE)
-        )
-        spec.append((
-            "spec-steps-or-modules", has_steps or is_reference,
-            "workflow structure present (## Steps or ## Module N)",
-        ))
-
-        # Advisory: SKILL.md files should have 2–6 modules.
-        modules = re.findall(r"^## Module \d+", content, re.MULTILINE)
-        module_count = len(modules)
-        advisory.append((
-            "module-count", is_reference or 2 <= module_count <= 6,
-            f"module count: {module_count} (2\u20136 is the acceptable range)",
-        ))
+        type_spec, type_advisory = _check_items_skill(fm, content, path, token_count, is_reference)
+    spec.extend(type_spec)
+    advisory.extend(type_advisory)
 
     # ── shared advisory checks ────────────────────────────────────────────────
     advisory.append((

@@ -92,18 +92,8 @@ def _conflict_blocked_plan(
     }
 
 
-def build_plan_result(
-    workspace: Path,
-    package_root: Path,
-    mode: str,
-    answers_path: str | None,
-    non_interactive: bool,
-    resolutions_path: str | None = None,
-) -> dict:
-    if mode not in {"setup", "update", "repair", "factory-restore"}:
-        return build_not_implemented_payload("plan", workspace, package_root, mode)
-
-    context = collect_context(workspace, package_root)
+def _validate_plan_mode(mode: str, context: dict) -> list:
+    """Check install-state preconditions for the requested mode; return repair_reasons."""
     if mode == "update" and context["installState"] == "not-installed":
         raise LifecycleCommandError(
             "inspection_failure", "Update planning requires an existing install state.", 5,
@@ -122,13 +112,28 @@ def build_plan_result(
                 "Repair planning requires legacy, malformed, or incomplete managed state.", 5,
                 {"installState": context["installState"]},
             )
-    else:
-        repair_reasons = []
+        return repair_reasons
     if mode == "factory-restore" and context["installState"] == "not-installed":
         raise LifecycleCommandError(
             "inspection_failure", "Factory-restore planning requires an existing install state.", 5,
             {"installState": context["installState"]},
         )
+    return []
+
+
+def build_plan_result(
+    workspace: Path,
+    package_root: Path,
+    mode: str,
+    answers_path: str | None,
+    non_interactive: bool,
+    resolutions_path: str | None = None,
+) -> dict:
+    if mode not in {"setup", "update", "repair", "factory-restore"}:
+        return build_not_implemented_payload("plan", workspace, package_root, mode)
+
+    context = collect_context(workspace, package_root)
+    repair_reasons = _validate_plan_mode(mode, context)
 
     raw_answers = load_answers(answers_path)
     questions, resolved_answers, unresolved, unknown_answer_ids = prepare_questions(
