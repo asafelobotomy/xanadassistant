@@ -21,6 +21,10 @@ class PromptContractTests(unittest.TestCase):
             if token.strip()
         }
 
+    def _assert_mentions_commit_tool(self, content: str, tool_name: str) -> None:
+        pattern = rf"(?i)\b(?:prefer|use)\b[^\n]*`{re.escape(tool_name)}`"
+        self.assertRegex(content, pattern)
+
     def test_commit_agent_does_not_reference_undeclared_git_tools(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
         frontmatter, body = content.split("---\n", 2)[1:]
@@ -41,32 +45,32 @@ class PromptContractTests(unittest.TestCase):
 
     def test_commit_agent_prefers_git_mcp_for_opening_inspection(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("Prefer `git_status`", content)
+        self._assert_mentions_commit_tool(content, "git_status")
         self.assertIn("`git_diff_staged_stat`", content)
         self.assertIn("`git_diff_unstaged_stat`", content)
 
     def test_commit_agent_prefers_git_mcp_for_selective_unstage_and_stash_actions(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("Prefer `git_reset`", content)
+        self._assert_mentions_commit_tool(content, "git_reset")
         self.assertIn("`git_stash_apply`", content)
         self.assertIn("`git_stash_drop`", content)
 
     def test_commit_agent_prefers_git_mcp_for_exact_tag_push(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("Prefer `git_push_tag`", content)
+        self._assert_mentions_commit_tool(content, "git_push_tag")
 
     def test_commit_agent_prefers_git_mcp_for_tag_creation(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("Prefer `git_tag`", content)
+        self._assert_mentions_commit_tool(content, "git_tag")
 
     def test_commit_agent_prefers_git_mcp_for_straightforward_pushes(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("Prefer `git_push`", content)
+        self._assert_mentions_commit_tool(content, "git_push")
 
     def test_commit_agent_prefers_git_mcp_for_noninteractive_commit_and_rebase(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("Prefer `git_commit`", content)
-        self.assertIn("Prefer `git_rebase`", content)
+        self._assert_mentions_commit_tool(content, "git_commit")
+        self._assert_mentions_commit_tool(content, "git_rebase")
 
     def test_commit_agent_prefers_structured_stash_mutation_tools(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
@@ -84,7 +88,7 @@ class PromptContractTests(unittest.TestCase):
 
     def test_commit_agent_prefers_structured_pull_results(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("Prefer `git_pull`", content)
+        self._assert_mentions_commit_tool(content, "git_pull")
         self.assertIn("failed `git_pull`", content)
 
     def test_commit_agent_prefers_structured_pr_creation_over_gh(self) -> None:
@@ -95,16 +99,16 @@ class PromptContractTests(unittest.TestCase):
 
     def test_commit_agent_prefers_git_mcp_for_fetch_branch_and_stash_workflows(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("Prefer `git_fetch`", content)
-        self.assertIn("Prefer `git_create_branch`", content)
-        self.assertIn("Prefer `git_checkout`", content)
-        self.assertIn("Prefer `git_delete_branch`", content)
-        self.assertIn("Prefer `git_stash`", content)
-        self.assertIn("Prefer `git_stash_pop`", content)
+        self._assert_mentions_commit_tool(content, "git_fetch")
+        self._assert_mentions_commit_tool(content, "git_create_branch")
+        self._assert_mentions_commit_tool(content, "git_checkout")
+        self._assert_mentions_commit_tool(content, "git_delete_branch")
+        self._assert_mentions_commit_tool(content, "git_stash")
+        self._assert_mentions_commit_tool(content, "git_stash_pop")
 
     def test_commit_agent_prefers_git_log_and_diff_for_inspection(self) -> None:
         content = (REPO_ROOT / "agents" / "commit.agent.md").read_text(encoding="utf-8")
-        self.assertIn("Prefer `git_log`", content)
+        self._assert_mentions_commit_tool(content, "git_log")
         self.assertIn("`git_diff_unstaged`", content)
         self.assertIn("`git_diff_staged`", content)
 
