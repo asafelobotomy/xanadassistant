@@ -18,7 +18,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | `Organise` | no | Subagent-only structural worker — moving files, regrouping folders, fixing caller paths after a file move |
 | `Planner` | no | Complex multi-step planning, phased rollout, migration planning, and scoped execution plans before implementation |
 | `Researcher` | no | External documentation, upstream behavior, GitHub-source research, and source-backed comparisons before implementation |
-| `Docs` | yes | Documentation updates, migration notes, contract explanations, walkthroughs, and user-facing technical guides |
+| `Docs` | yes | Creating or updating documentation files, README files for components or packs, walkthroughs, migration notes, contract explanations, user-facing technical guides, and running documentation tools (markdownlint, spellcheck, link validation) |
 
 ## Routing Table
 
@@ -31,7 +31,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 | Root-cause diagnosis, failing tests, regression triage, broken commands, or unclear behavior reproduction | `Debugger` |
 | Complex multi-step planning, phased rollout, migration planning, or a scoped execution plan before coding | `Planner` |
 | External documentation, upstream behavior, GitHub-source research, or source-backed comparisons before coding or review | `Researcher` |
-| Documentation updates, migration notes, contract explanations, walkthroughs, or README/user-facing technical guides | `Docs` |
+| Creating or updating documentation files, README files for any component or pack, migration notes, contract explanations, walkthroughs, user-facing technical guides, or running markdownlint, spellcheck, or link validation on docs | `Docs` |
 | Code review, PR review, diff review, architecture review, security review, maintainability review, correctness review, regression-risk review, test coverage review, or a bare codebase audit | `Review` |
 | xanadAssistant setup, inspect, interview, health-check, health-report, plan, apply, update, repair, factory-restore, or a health-check workflow | `xanadLifecycle` |
 | Moving files, regrouping folders, fixing broken paths, or building logical repository layouts | `Organise` |

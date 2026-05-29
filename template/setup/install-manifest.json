@@ -1512,11 +1512,11 @@
       "hash": "sha256:304426e0be19ab43030243363c66d82ccdab4c192e4390a8e5c28bb33c77bf9e"
     },
     {
-      "id": "skills.promptReview.SKILL.md",
+      "id": "skills.agenticReview.SKILL.md",
       "surface": "skills",
       "layer": "pack",
-      "source": "skills/promptReview/SKILL.md",
-      "target": ".github/skills/promptReview/SKILL.md",
+      "source": "skills/agenticReview/SKILL.md",
+      "target": ".github/skills/agenticReview/SKILL.md",
       "ownership": [
         "local",
         "plugin-backed-copilot-format"

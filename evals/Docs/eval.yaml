@@ -5,7 +5,7 @@ graders:
   - type: text
     name: references_agent
     config:
-      pattern: "(?is)(\\bDocs\\b.*documentation|documentation.*\\bDocs\\b)"
+      pattern: "(?is)(\\bDocs\\b.*(documentation|README|markdown|spellcheck)|(?:documentation|README|markdown|spellcheck).*\\bDocs\\b)"
 
   - type: behavior
     name: completion_bound

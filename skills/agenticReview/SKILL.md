@@ -254,5 +254,4 @@ Decision rules:
 - [ ] Every cognitive-load finding includes the measured metric value and the threshold
 - [ ] Every coverage-gap finding includes a suggested addition
 - [ ] The `scope-coverage:` line emitted as a standalone line after Module 5 rows
-- [ ] The consolidated findings table is present
-- [ ] The summary line states a clear merge decision
+- [ ] The consolidated findings table is present and closes with a summary line stating the merge decision

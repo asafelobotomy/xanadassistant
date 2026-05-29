@@ -9,19 +9,19 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-class PromptReviewSkillContractTests(unittest.TestCase):
-    SKILL_PATH = REPO_ROOT / "skills" / "promptReview" / "SKILL.md"
+class AgenticReviewSkillContractTests(unittest.TestCase):
+    SKILL_PATH = REPO_ROOT / "skills" / "agenticReview" / "SKILL.md"
 
     def _content(self) -> str:
         return self.SKILL_PATH.read_text(encoding="utf-8")
 
     def test_prompt_review_skill_file_exists(self) -> None:
-        self.assertTrue(self.SKILL_PATH.exists(), "skills/promptReview/SKILL.md must exist")
+        self.assertTrue(self.SKILL_PATH.exists(), "skills/agenticReview/SKILL.md must exist")
 
     def test_prompt_review_skill_has_required_frontmatter_fields(self) -> None:
         content = self._content()
         frontmatter = content.split("---\n", 2)[1]
-        self.assertIn("name: promptReview", frontmatter)
+        self.assertIn("name: agenticReview", frontmatter)
         self.assertIn("description:", frontmatter)
 
     def test_prompt_review_skill_covers_all_six_modules(self) -> None:
