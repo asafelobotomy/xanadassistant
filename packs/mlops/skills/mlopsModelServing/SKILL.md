@@ -1,6 +1,6 @@
 ---
 name: mlopsModelServing
-description: "Model serving — registry, versioning, A/B testing, canary deployments, and drift monitoring."
+description: "Use when: designing or reviewing model serving workflows, registry usage, versioning, A/B tests, canary deployments, or drift monitoring."
 type: reference
 ---
 

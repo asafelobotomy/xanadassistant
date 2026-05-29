@@ -1,6 +1,6 @@
 ---
 name: mlopsReview
-description: "ML code review checklist — data leakage, bias, reproducibility, and serving risk."
+description: "Use when: reviewing ML code or experiment plans for data leakage, bias, reproducibility, and serving risk."
 type: reference
 ---
 

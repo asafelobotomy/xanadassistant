@@ -1,6 +1,6 @@
 ---
 name: shapeupPitching
-description: "Write, review, and refine Shape Up pitches. Use when drafting a new pitch, critiquing an existing pitch for completeness, or preparing a pitch for the betting table."
+description: "Use when: writing, reviewing, or refining Shape Up pitches for drafting, completeness critique, or betting table preparation."
 type: reference
 ---
 

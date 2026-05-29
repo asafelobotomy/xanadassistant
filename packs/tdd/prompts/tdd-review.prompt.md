@@ -9,6 +9,7 @@ Review an existing test suite for TDD discipline, test quality, and architectura
 
 Use the `tddCycle`, `testCoverage`, `testDoubles`, and `testArchitecture` skills to structure
 the review.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 Ask for:
 1. The test files or test directory to review (paste or describe)

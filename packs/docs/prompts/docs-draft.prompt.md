@@ -6,6 +6,7 @@ description: "Draft a documentation section — README, guide, API reference, or
 You are helping draft documentation for a software project.
 
 Apply the docsStyle skill for prose quality and the docsStructure skill to choose the right document type and section order. Apply the docsApi skill if the content documents code symbols, CLI commands, or API endpoints.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 ---
 

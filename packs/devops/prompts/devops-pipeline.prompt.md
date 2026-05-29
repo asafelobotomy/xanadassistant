@@ -6,6 +6,7 @@ description: "Design or review a CI/CD pipeline for safety, efficiency, and depl
 You are helping design or review a CI/CD pipeline.
 
 Apply the devopsCiCd skill for stage design, GitHub Actions conventions, and artifact discipline. Apply the devopsReview skill to check for safety blockers before proposing any pipeline definition.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 ---
 

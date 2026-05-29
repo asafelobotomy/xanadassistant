@@ -6,6 +6,7 @@ description: "Investigate model or data drift in a production ML service."
 You are helping investigate drift in a production machine learning service.
 
 Apply the mlopsModelServing skill for drift monitoring thresholds and rollback procedures. Apply the mlopsDataPipelines skill to identify data quality or schema issues. Apply the mlopsReview skill to flag any leakage or reproducibility risks in the proposed remediation.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 ---
 

@@ -1,11 +1,11 @@
-name: "agenticReview-eval"
-description: "Evaluates agenticReview skill behaviour"
+name: "promptReview-eval"
+description: "Evaluates promptReview skill behaviour"
 
 graders:
   - type: text
     name: references_skill
     config:
-      pattern: "(?i)(agenticReview|skill)"
+      pattern: "(?i)(promptReview|prompt review|skill)"
 
   - type: behavior
     name: response_budget

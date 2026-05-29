@@ -1,6 +1,6 @@
 ---
 name: leanVerification
-description: "Test and validation reporting — pass/fail only, with minimal output for passing runs and concise failure triage."
+description: "Use when: reporting test and validation results with pass/fail status, minimal passing output, and concise failure triage."
 type: reference
 ---
 

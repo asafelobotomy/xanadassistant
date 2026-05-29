@@ -98,7 +98,7 @@ See `## Agent Routing` for the authoritative routing table; this section is a qu
 - `Commit` — git operations, commit messages, staging, push, pull, PR work
 - `Debugger` — diagnose failures and isolate root causes before implementation
 - `Deps` — scan dependencies, audit packages, check for vulnerabilities, install/update/repair/remove
-- `Docs` — create and update documentation files (including README files for components or packs), migration guides, technical walkthroughs, and documentation quality tooling (markdownlint, spellcheck, link validation)
+- `Docs` — write and update documentation, migration guides, and technical walkthroughs
 - `Explore` — broad read-only codebase exploration and architecture lookup
 - `Organise` — move files, regroup folders, fix broken paths (subagent-only)
 - `Planner` — produce scoped execution plans for multi-step work before implementation

@@ -1,6 +1,6 @@
 ---
 name: leanAndon
-description: "Andon cord protocol — defines when to stop and ask versus when to proceed autonomously."
+description: "Use when: deciding whether to stop and ask for clarification or proceed autonomously under an Andon cord protocol."
 type: reference
 ---
 

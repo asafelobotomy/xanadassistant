@@ -8,6 +8,7 @@ Draft or review a Shape Up pitch.
 ## Instructions
 
 Use the shapeupPitching skill to structure the output.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 If the user is **drafting** a new pitch, ask for:
 1. The problem to solve (one or two sentences of raw friction, not a solution)

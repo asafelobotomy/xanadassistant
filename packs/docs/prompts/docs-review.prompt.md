@@ -6,6 +6,7 @@ description: "Review documentation for accuracy, completeness, clarity, and link
 You are reviewing documentation for a software project.
 
 Apply the docsReview skill for the full checklist. Apply the docsStyle skill to evaluate prose quality. Apply the docsApi skill if the content documents code, CLI, or API behavior.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: docsReview
-description: "Documentation review checklist — accuracy, completeness, clarity, and link health."
+description: "Use when: reviewing documentation for accuracy, completeness, clarity, link health, and merge readiness."
 type: reference
 ---
 

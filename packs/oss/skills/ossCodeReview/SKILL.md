@@ -1,6 +1,6 @@
 ---
 name: ossCodeReview
-description: "OSS code review discipline — PR review standards, review comment etiquette, and contribution gate criteria."
+description: "Use when: reviewing OSS pull requests against review standards, comment etiquette, and contribution gate criteria."
 type: reference
 ---
 

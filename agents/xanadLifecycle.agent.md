@@ -237,7 +237,7 @@ python3 xanadBootstrap.py apply \
   --workspace . --version v1.0.0 --non-interactive --json
 ```
 
-## Workflow discipline
+## On every invocation
 
 0. Call `memory_dump(agent="xanadLifecycle")` before taking any action (see `## Memory`).
 1. **Inspect first.** Run `inspect` to understand the current state before taking
@@ -249,6 +249,7 @@ python3 xanadBootstrap.py apply \
    or `factory-restore` as appropriate.
 4. **Diagnose unclear failures.** Use `Debugger` when lifecycle commands fail, drift is surprising, or the controlling state is unclear.
 5. **Scope complex remediation.** Use `Planner` when repair, update, or migration work spans multiple managed surfaces or needs phased execution.
+6. **Inventory unfamiliar workspaces.** Use `Explore` when the workspace layout, installed surfaces, or relevant files are unclear before planning a lifecycle operation.
 
 ## Command reference
 

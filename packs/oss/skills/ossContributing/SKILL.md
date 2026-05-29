@@ -1,6 +1,6 @@
 ---
 name: ossContributing
-description: "OSS contributing workflow — CONTRIBUTING.md structure, DCO/CLA guidance, and contributor onboarding checklist."
+description: "Use when: writing or reviewing OSS contributing guidance, CONTRIBUTING.md structure, DCO/CLA guidance, or contributor onboarding checklists."
 type: reference
 ---
 

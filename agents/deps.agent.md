@@ -6,7 +6,7 @@ model:
   - Claude Sonnet 4.6
   - GPT-5.4
 tools: [agent, codebase, search, runCommands, askQuestions, read_file, list_directory, search_files, file_info, query_osv, query_deps, memory_dump, memory_set, elapsed]
-agents: [Explore, Researcher, Review]
+agents: [Researcher]
 user-invocable: true
 target: vscode
 ---

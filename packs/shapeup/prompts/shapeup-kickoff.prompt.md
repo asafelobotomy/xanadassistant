@@ -8,6 +8,7 @@ Create a cycle kickoff document from a betted Shape Up pitch.
 ## Instructions
 
 Use the shapeupCycleWork skill to structure the output.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 Ask the user for:
 1. The betted pitch (paste or summarize it)

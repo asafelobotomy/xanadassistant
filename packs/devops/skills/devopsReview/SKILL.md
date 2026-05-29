@@ -1,6 +1,6 @@
 ---
 name: devopsReview
-description: "DevOps review checklist — pipeline safety, secret hygiene, permissions, rollback, and deployment risk."
+description: "Use when: reviewing DevOps changes for pipeline safety, secret hygiene, permissions, rollback, and deployment risk."
 type: reference
 ---
 

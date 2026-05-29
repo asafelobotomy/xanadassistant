@@ -6,6 +6,7 @@ description: "Generate a structured incident response runbook for a service or d
 You are helping create or fill out an incident response runbook.
 
 Apply the devopsReview skill to identify risk surfaces and rollback options. Apply the devopsCiCd skill when the incident involves a pipeline or deployment.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 ---
 

@@ -6,6 +6,7 @@ description: "Produce a STRIDE threat model for the described component or featu
 Produce a STRIDE threat model for the component or feature described below.
 
 Use the `threatModel` skill for STRIDE category definitions and output format.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 Output:
 1. **Trust boundaries**: list the points where data crosses a trust boundary

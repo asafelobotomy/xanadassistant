@@ -1,6 +1,6 @@
 ---
 name: docsApi
-description: "API and code documentation — docstring conventions, OpenAPI patterns, and parameter table format."
+description: "Use when: writing or reviewing API and code documentation, including docstrings, OpenAPI patterns, and parameter tables."
 type: reference
 ---
 

@@ -6,6 +6,7 @@ description: "Draft a pull request title and body for an OSS contribution."
 You are helping draft a GitHub pull request for an open-source project.
 
 Apply the ossCodeReview skill to verify the PR meets the project's gate criteria, and apply the ossChangelog skill if the change needs a changelog entry.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 ---
 

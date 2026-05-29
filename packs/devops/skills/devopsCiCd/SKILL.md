@@ -1,6 +1,6 @@
 ---
 name: devopsCiCd
-description: "CI/CD pipeline patterns — GitHub Actions, stage design, environment gates, and artifact discipline."
+description: "Use when: designing or reviewing CI/CD pipelines, GitHub Actions, stage design, environment gates, or artifact discipline."
 type: reference
 ---
 

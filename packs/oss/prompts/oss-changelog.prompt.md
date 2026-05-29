@@ -6,6 +6,7 @@ description: "Generate a CHANGELOG entry for the current release from git histor
 You are helping generate a CHANGELOG entry for an open-source project release.
 
 Apply the ossChangelog skill for formatting rules and how to categorize conventional commit types into changelog sections.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 If the ossGitLog tool is available, use it to fetch structured commit history for the release range.
 

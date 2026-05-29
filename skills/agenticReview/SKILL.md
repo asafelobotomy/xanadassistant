@@ -1,6 +1,6 @@
 ---
 name: agenticReview
-description: "Six-module quality review for .prompt.md, .agent.md, SKILL.md, and .instructions.md files — contradiction detection, ambiguity analysis, persona consistency, cognitive load, coverage gaps, and composition conflict analysis. Integrates xanadEval-backed metrics and LLM-as-judge scoring in Modules 1–5."
+description: "Use when: reviewing .prompt.md, .agent.md, SKILL.md, or .instructions.md files for contradictions, ambiguity, persona consistency, cognitive load, coverage gaps, and composition conflicts."
 ---
 
 # Agentic Review

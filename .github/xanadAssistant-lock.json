@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:7e767ff7aa9fa9256c855d4f51f3295750857c71829203e7bee7515b2bacb952"
+    "hash": "sha256:af996b8265cb26ef20573b5d94b173cedcfd4ed1915f687fbaac836ae4a9a907"
   },
   "timestamps": {
-    "appliedAt": "2026-05-28T22:55:42Z",
-    "updatedAt": "2026-05-28T22:55:42Z"
+    "appliedAt": "2026-05-29T11:04:13Z",
+    "updatedAt": "2026-05-29T11:04:13Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -37,6 +37,14 @@
     "agent.persona": "professional",
     "testing.philosophy": "always",
     "memory.gitignore": true,
+    "settings.agent.maxRequests": "128",
+    "settings.copilot.nextEditSuggestions": "enabled",
+    "settings.editor.inlineSuggest.enabled": true,
+    "settings.editor.inlineSuggest.toolbar": "onHover",
+    "settings.copilot.codesearch": true,
+    "settings.files.trimTrailingWhitespace": true,
+    "settings.files.insertFinalNewline": true,
+    "settings.files.trimFinalNewlines": true,
     "mcp.servers": [],
     "hooks.enabled": true
   },
@@ -86,6 +94,7 @@
     ".github/prompts/tdd-review.prompt.md",
     ".github/prompts/tdd-session.prompt.md",
     ".github/prompts/threat-model.prompt.md",
+    ".github/skills/agenticReview/SKILL.md",
     ".github/skills/ciPreflight/SKILL.md",
     ".github/skills/dependencyAudit/SKILL.md",
     ".github/skills/devopsCiCd/SKILL.md",
@@ -109,7 +118,7 @@
     ".github/skills/ossCodeReview/SKILL.md",
     ".github/skills/ossContributing/SKILL.md",
     ".github/skills/ossLicensing/SKILL.md",
-    ".github/skills/agenticReview/SKILL.md",
+    ".github/skills/promptReview/SKILL.md",
     ".github/skills/secretScanning/SKILL.md",
     ".github/skills/secureReview/SKILL.md",
     ".github/skills/shapeupBetting/SKILL.md",

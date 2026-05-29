@@ -1,6 +1,6 @@
 ---
 name: mlopsExperiments
-description: "ML experiment tracking — reproducibility, hyperparameter discipline, and metric logging conventions."
+description: "Use when: designing, reviewing, or debugging ML experiments for reproducibility, hyperparameter discipline, and metric logging."
 type: reference
 ---
 

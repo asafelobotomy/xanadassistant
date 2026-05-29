@@ -1,6 +1,6 @@
 ---
 name: shapeupReview
-description: "Review pitches, cycle work, and betting table decisions for Shape Up compliance. Use when auditing a pitch for completeness, reviewing in-cycle scope discipline, or validating that a betting table decision meets Shape Up principles."
+description: "Use when: auditing a Shape Up pitch for completeness, reviewing in-cycle scope discipline, or validating that a betting table decision meets Shape Up principles."
 type: reference
 ---
 

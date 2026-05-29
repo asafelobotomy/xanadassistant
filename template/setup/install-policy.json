@@ -1062,6 +1062,7 @@
     },
     "unmanagedSourceExcludes": [
       "template/setup/**",
+      "packs/*/README.md",
       "packs/*/tokens.json",
       "packs/*/evals/**",
       "tools/xanadEval/**"

@@ -1,6 +1,6 @@
 ---
 name: testDoubles
-description: "Test double selection — stubs, mocks, fakes, and spies for test isolation and determinism."
+description: "Use when: selecting stubs, mocks, fakes, or spies for test isolation and deterministic behavior."
 type: reference
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: leanOutput
-description: "Output discipline — lean factual responses with no filler, summaries as counts, and omitted routine narration."
+description: "Use when: producing lean factual responses with no filler, count-based summaries, and omitted routine narration."
 type: reference
 ---
 

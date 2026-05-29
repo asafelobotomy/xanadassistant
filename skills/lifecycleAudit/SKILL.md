@@ -1,11 +1,11 @@
 ---
 name: lifecycleAudit
-description: Check xanadAssistant workspace health — inspect install status, surface repair reasons, and validate the lockfile before proposing install, update, repair, or restore operations
+description: "Use when: checking xanadAssistant workspace health, install status, repair reasons, or lockfile validity before proposing install, update, repair, or restore operations."
 ---
 
 # Lifecycle Health Check
 
-> Skill metadata: version "1.1"; license MIT; tags [xanadAssistant, lifecycle, inspect, repair, lockfile]; recommended tools [codebase, runCommands].
+> Skill metadata: version "1.2"; license MIT; tags [xanadAssistant, lifecycle, inspect, repair, lockfile]; recommended tools [codebase, runCommands].
 
 Systematic lifecycle state review before any install, update, repair, or factory-restore operation.
 
@@ -19,14 +19,17 @@ Systematic lifecycle state review before any install, update, repair, or factory
 
 - During an already-in-progress lifecycle operation — proceed without auditing mid-flight
 - When the user explicitly requests a specific operation and state is already known
+- When executing a lifecycle command or remediation workflow — use the `xanadLifecycle` agent instead of this preflight audit skill
 
-## Steps
+## Module 1 — Inspect And Read Health
 
 > `<xanad-root>` is the directory containing `xanadAssistant.py`. Use `.` when running from the package root (self-hosted install) or the absolute path to the installed package otherwise. If `xanadAssistant.py` is not found, halt and report the error to the user before proceeding.
 
 1. **Inspect** — run `python3 xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` and verify `installState` and `manifestSummary`. If the command exits non-zero, halt and report the error before proceeding.
 
 2. **Check** — run `python3 xanadAssistant.py health-check --workspace . --package-root <xanad-root> --json` and read `status`, `warnings`, and `result.summary`. Treat exit `7` as a normal drift signal to classify, not as an execution failure. Halt only on other non-zero exits. If you need machine-readable `repairReasons`, run `python3 xanadAssistant.py plan repair --workspace . --package-root <xanad-root> --json` and read them from `plan` output rather than `health-check`.
+
+## Module 2 — Classify And Report
 
 3. **Classify the state** — the `needsMigration: true` row takes priority over all other rows:
 

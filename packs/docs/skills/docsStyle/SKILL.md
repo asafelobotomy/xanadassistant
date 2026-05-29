@@ -1,6 +1,6 @@
 ---
 name: docsStyle
-description: "Documentation writing style — prose register, active voice, imperative mood, and term consistency."
+description: "Use when: improving documentation writing style, prose register, active voice, imperative mood, or term consistency."
 type: reference
 ---
 

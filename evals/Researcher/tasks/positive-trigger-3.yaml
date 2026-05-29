@@ -1,0 +1,11 @@
+id: positive-trigger-3
+description: "Verify Researcher names web_search as the GitHub-unavailable fallback for release and source lookups"
+prompt: |
+  Which agent should fall back to web_search for release and source lookups when the GitHub MCP server is unavailable?
+expected:
+  - "Researcher"
+  - "web_search"
+tags:
+  - smoke
+  - positive
+  - mcp

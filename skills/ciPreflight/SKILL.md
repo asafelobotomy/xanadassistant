@@ -5,7 +5,7 @@ description: "Use when: running pre-commit or pre-push CI-equivalent checks in a
 
 # CI Preflight
 
-> Skill metadata: version "1.1"; tags [commit, preflight, ci, workflow, generic]; recommended tools [file_search, read_file, grep_search, run_in_terminal, vscode_askQuestions].
+> Skill metadata: version "1.2"; tags [commit, preflight, ci, workflow, generic]; recommended tools [file_search, read_file, grep_search, run_in_terminal, vscode_askQuestions].
 
 Discover and execute a workspace's CI checks locally before commit or push,
 using workspace tools to read actual workflow definitions rather than assuming
@@ -25,7 +25,7 @@ knowledge of the project's specific tooling or conventions.
 - When the user has explicitly asked to forgo verification
 - When there is nothing staged and no proposed file list to verify against
 
-## Steps
+## Module 1 — Discover And Scope Checks
 
 ### 0. Discover CI workflow files
 
@@ -87,6 +87,8 @@ search and file-reading tools:
 
 If fallback detection finds nothing credible, stop and report that no
 locally-executable CI-equivalent command could be derived from the workspace.
+
+## Module 2 — Execute And Report
 
 ### 4. Order checks cheapest-first
 

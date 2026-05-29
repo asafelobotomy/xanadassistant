@@ -1,7 +1,7 @@
 id: basic-invocation
-description: "Verify skill runs all six modules and produces a findings table with a merge decision"
+description: "Verify promptReview runs all six modules and produces a findings table with a merge decision"
 prompt: |
-  Run the agenticReview skill on skills/agenticReview/SKILL.md. Produce a consolidated findings
+  Run the promptReview skill on packs/docs/prompts/docs-review.prompt.md. Produce a consolidated findings
   table covering all six modules and close with a summary line stating the merge decision.
 expected:
   - "Module 1"

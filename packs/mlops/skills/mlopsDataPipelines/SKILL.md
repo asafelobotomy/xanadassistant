@@ -1,6 +1,6 @@
 ---
 name: mlopsDataPipelines
-description: "Data pipeline conventions — versioning, feature engineering discipline, and leakage prevention."
+description: "Use when: designing or reviewing ML data pipelines for versioning, feature engineering discipline, and leakage prevention."
 type: reference
 ---
 

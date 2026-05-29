@@ -6,6 +6,7 @@ description: "Design or review a machine learning experiment with reproducibilit
 You are helping design or review a machine learning experiment.
 
 Apply the mlopsExperiments skill for tracking, reproducibility, and hyperparameter discipline. Apply the mlopsDataPipelines skill to check for data leakage and split correctness. Apply the mlopsReview skill to flag any blocking issues before proposing a final design or verdict.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 ---
 

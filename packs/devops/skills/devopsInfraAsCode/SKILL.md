@@ -1,6 +1,6 @@
 ---
 name: devopsInfraAsCode
-description: "Infrastructure as Code conventions — naming, state management, modularity, and drift detection."
+description: "Use when: writing or reviewing Infrastructure as Code for naming, state management, modularity, and drift detection."
 type: reference
 ---
 

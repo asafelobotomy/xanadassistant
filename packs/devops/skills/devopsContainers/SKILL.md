@@ -1,6 +1,6 @@
 ---
 name: devopsContainers
-description: "Container and image discipline — Dockerfile best practices, multi-stage builds, layer caching, and image security."
+description: "Use when: writing or reviewing Dockerfiles, container images, multi-stage builds, layer caching, or image security."
 type: reference
 ---
 

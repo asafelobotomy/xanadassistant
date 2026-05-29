@@ -7,6 +7,7 @@ Run a TDD session for the feature or behavior described below.
 
 Use the `tddCycle` skill for Red-Green-Refactor discipline and commit guidance.
 Use the `testDoubles` skill when the implementation requires isolation from dependencies.
+If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
 Work one cycle at a time:
 

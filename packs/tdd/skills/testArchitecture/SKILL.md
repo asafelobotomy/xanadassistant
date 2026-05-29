@@ -1,6 +1,6 @@
 ---
 name: testArchitecture
-description: "Test isolation, modular test design, and test boundary conventions. Use when structuring a test suite, separating unit from integration tests, or deciding what a test should and should not cross as a boundary."
+description: "Use when: structuring a test suite, separating unit from integration tests, or deciding what a test should and should not cross as a boundary."
 type: reference
 ---
 

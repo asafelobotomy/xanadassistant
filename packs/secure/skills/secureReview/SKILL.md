@@ -1,6 +1,6 @@
 ---
 name: secureReview
-description: "Security-focused code review against OWASP Top 10:2025 — finding classification and output format."
+description: "Use when: reviewing code for OWASP Top 10:2025 security findings with severity classification and a structured output format."
 type: reference
 ---
 

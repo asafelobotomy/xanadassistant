@@ -1,6 +1,6 @@
 ---
 name: ossLicensing
-description: "OSS license guidance — choosing a license, LICENSE file format, SPDX identifiers, and header placement."
+description: "Use when: choosing or reviewing OSS licenses, LICENSE file format, SPDX identifiers, or header placement."
 type: reference
 ---
 
