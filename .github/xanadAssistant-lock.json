@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:346f0e94b28598552015c2061fdc6e90601a231cf12f837081c2396a7937cf0a"
+    "hash": "sha256:d5c5490ca09fa3441b9cd58100d8f09bbc580cf1b6d9ca1fa15d4e7d7acb5069"
   },
   "timestamps": {
-    "appliedAt": "2026-05-31T21:38:53Z",
-    "updatedAt": "2026-05-31T21:38:53Z"
+    "appliedAt": "2026-05-31T22:09:05Z",
+    "updatedAt": "2026-05-31T22:09:05Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -129,6 +129,7 @@
     ".github/skills/testArchitecture/SKILL.md",
     ".github/skills/testCoverage/SKILL.md",
     ".github/skills/testDoubles/SKILL.md",
+    ".github/skills/testing/SKILL.md",
     ".github/skills/threatModel/SKILL.md"
   ],
   "retiredManagedFiles": [],

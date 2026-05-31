@@ -202,7 +202,7 @@ def mcp_servers_question() -> dict:
         "recommended": [],
         "default": [],
         "reason": (
-            "The xanadTools, git, web, devDocs, time, memory, security, filesystem, and sequential-thinking servers "
+            "The xanadTools, workspaceTesting, git, web, devDocs, time, memory, security, filesystem, and sequential-thinking servers "
             "are always enabled when MCP is on. "
             "GitHub (requires GITHUB_TOKEN) and SQLite (workspace-specific) ship disabled "
             'by default in .vscode/mcp.json — toggle the "disabled" flag directly in '
@@ -224,7 +224,7 @@ def mcp_question() -> dict:
         "recommended": True,
         "reason": (
             "Enabling MCP installs all hook scripts and .vscode/mcp.json atomically. "
-            "Always-on servers: xanadWorkspaceMcp.py (lifecycle), memoryMcp.py (persistent SQLite-backed agent memory under .github/xanadAssistant/memory), gitMcp.py (git), "
+            "Always-on servers: xanadWorkspaceMcp.py (lifecycle), workspaceTestingMcp.py (generic workspace testing), memoryMcp.py (persistent SQLite-backed agent memory under .github/xanadAssistant/memory), gitMcp.py (git), "
             "webMcp.py (search + fetch), devDocsMcp.py (API/framework docs), timeMcp.py (time/duration), "
             "securityMcp.py (OSV + deps.dev), fsMcp.py (sandboxed workspace file access), sequentialThinkingMcp.py (reasoning). "
             "Optional servers (disabled by default): githubMcp.py (GitHub REST API, requires GITHUB_TOKEN), "

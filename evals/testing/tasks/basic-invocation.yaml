@@ -1,0 +1,16 @@
+id: basic-invocation
+description: "Verify testing skill prefers workspaceTesting tools and delegates unclear failures"
+prompt: |
+  Run the testing skill for a Python change. Use the workspace's declared test
+  apparatus, prefer workspaceTesting testing_run_tests for targeted and full tests,
+  summarize the result, and explain when to hand failures to Debugger.
+expected:
+  - "testing"
+  - "testing_run_tests"
+  - "testing_parse_coverage"
+  - "targeted"
+  - "full"
+  - "Debugger"
+tags:
+  - basic
+  - smoke

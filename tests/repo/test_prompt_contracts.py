@@ -310,7 +310,7 @@ class PromptContractTests(unittest.TestCase):
         content = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn("prefer these structured MCP tools over generic terminal or shell execution", content)
         self.assertIn("`github` and `sqlite` are shipped disabled by default", content)
-        self.assertIn("`xanadTools`, `git`, `web`, `devDocs`, `time`, `memory`, `security`, `filesystem`, and `sequential-thinking`", content)
+        self.assertIn("`xanadTools`, `workspaceTesting`, `git`, `web`, `devDocs`, `time`, `memory`, `security`, `filesystem`, and `sequential-thinking`", content)
         self.assertIn("prefer the structured `lifecycle_*` MCP tools first", content)
 
     def test_tool_mcp_contracts_document_exact_server_ids_and_explicit_fallbacks(self) -> None:
@@ -320,7 +320,7 @@ class PromptContractTests(unittest.TestCase):
         self.assertIn("reference these exact configured server ids", boundary)
         self.assertIn("fall back to its documented native tool or CLI path", boundary)
         self.assertIn("matching server id is connected", v1)
-        self.assertIn("reference exact server ids such as `xanadTools`, `security`, `devDocs`, `memory`, `time`, and `filesystem`", v1)
+        self.assertIn("reference exact server ids such as `xanadTools`, `workspaceTesting`, `security`, `devDocs`, `memory`, `time`, and `filesystem`", v1)
         self.assertIn("fallback must be an explicit documented native tool or CLI path", v1)
 
     def test_template_mcp_config_preserves_default_server_availability_contract(self) -> None:
@@ -332,6 +332,7 @@ class PromptContractTests(unittest.TestCase):
 
         for server_id in (
             "xanadTools",
+            "workspaceTesting",
             "git",
             "web",
             "devDocs",

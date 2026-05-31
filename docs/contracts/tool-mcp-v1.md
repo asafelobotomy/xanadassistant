@@ -12,7 +12,7 @@ V1 transport is delegated to FastMCP via `uvx --from "mcp[cli]" mcp run`. Tool n
 
 ## V1 Goal
 
-Ship one small first-party MCP server that is useful in consumer workspaces without requiring the full xanadAssistant package checkout to be present for every tool.
+Ship a small first-party MCP surface that is useful in consumer workspaces without requiring the full xanadAssistant package checkout to be present for every tool.
 
 ## Controlling Constraint
 
@@ -38,17 +38,17 @@ Agent and prompt guidance should therefore treat MCP tools as the preferred path
 
 ## V1 Server Identity
 
-The initial workspace-local stdio server should use a concise first-party name such as `xanadTools`.
+The lifecycle-oriented workspace-local stdio server uses the concise first-party name `xanadTools`.
 
-It should expose only a small `tools` primitive surface in V1.
+Generic test execution now lives in the separate `workspaceTesting` server because test running and coverage parsing are workspace-generic rather than xanadAssistant-specific.
 
-The configured server id is part of the public integration surface. Agents and docs should reference exact server ids such as `xanadTools`, `security`, `devDocs`, `memory`, `time`, and `filesystem`, not internal implementation names or wildcard-style shorthand.
+The configured server id is part of the public integration surface. Agents and docs should reference exact server ids such as `xanadTools`, `workspaceTesting`, `security`, `devDocs`, `memory`, `time`, and `filesystem`, not internal implementation names or wildcard-style shorthand.
 
 Resources, prompts, and apps are out of scope for the first executable slice.
 
 ## V1 Tools
 
-### `workspace_run_tests`
+### `testing_run_tests`
 
 Purpose: run the workspace test command declared in `.github/copilot-instructions.md`.
 
@@ -56,10 +56,13 @@ Input schema:
 
 - `scope`: optional enum: `default`, `full`
 - `extraArgs`: optional string array, default empty
+- `targetFiles`: optional string array, default empty; argv-safe file or test target paths
+- `testNames`: optional string array, default empty; argv-safe framework test names
+- `parseOutput`: optional boolean, default `true`; include a best-effort `testSummary`
 
-Behavior: read the `Run tests` command from the instructions file; execute in the workspace root; return `unavailable` if the command is absent or unresolved (for example `(not detected)`); reject if `extraArgs` would require shell interpolation rather than argv-safe extension.
+Behavior: read the `Run tests` command from the instructions file; execute in the workspace root; return `unavailable` if the command is absent or unresolved (for example `(not detected)`); reject if typed target inputs are not string arrays; reject if `scope=full` is combined with `extraArgs`, `targetFiles`, or `testNames` because full scope runs the declared command exactly.
 
-Output: `status` (`ok`, `failed`, `unavailable`), `command`, `exitCode`, `summary`, `stdoutTail`, `stderrTail`.
+Output: `status` (`ok`, `failed`, `unavailable`), `command`, `exitCode`, `summary`, `stdoutTail`, `stderrTail`, and when `parseOutput=true`, `testSummary` with best-effort `format`, `passed`, `failed`, `errors`, `total`, and `firstFailure` fields.
 
 ### `workspace_run_check_loc`
 
@@ -71,9 +74,31 @@ Behavior: prefer a known repo-local command from the instructions file; in xanad
 
 Output: `status`, `command`, `exitCode`, `summary`.
 
-### `workspace_show_key_commands`
+### `testing_parse_coverage`
+
+Purpose: parse a workspace-local Cobertura `coverage.xml` artifact into a structured summary.
+
+Input schema:
+
+- `coveragePath`: optional string, default `coverage.xml`; must resolve to a file inside the workspace root
+
+Behavior: parse the coverage XML locally; return `unavailable` if the path is missing or outside the workspace; return `failed` if the XML is malformed.
+
+Output: `status`, `summary`, `coveragePath`, `lineRate`, `percentCovered`, `linesValid`, `linesCovered`, `zeroCoverageFiles`.
+
+### `testing_show_key_commands`
 
 Purpose: return commands from `.github/copilot-instructions.md` so the agent can reason from explicit workspace policy instead of scraping markdown ad hoc.
+
+Input schema: no arguments.
+
+Behavior: parse the `Key Commands` table; return discovered entries as structured name/value pairs; return `unavailable` if the file is absent or malformed.
+
+Output: `status`, `commands` (array of `{label, command}`), `summary`.
+
+### `workspace_show_key_commands`
+
+Purpose: return commands from `.github/copilot-instructions.md` for repo-maintenance workflows owned by `xanadTools`.
 
 Input schema: no arguments.
 

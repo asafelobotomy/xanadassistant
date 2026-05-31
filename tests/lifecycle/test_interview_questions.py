@@ -32,7 +32,7 @@ class InterviewQuestionsTests(unittest.TestCase):
         question = interview_questions.mcp_servers_question()
         reason = question["reason"]
 
-        for server in ("xanadTools", "git", "web", "devDocs", "time", "memory", "security", "filesystem", "sequential-thinking"):
+        for server in ("xanadTools", "workspaceTesting", "git", "web", "devDocs", "time", "memory", "security", "filesystem", "sequential-thinking"):
             self.assertIn(server, reason, f"\"{server}\" must appear in mcp.servers reason text")
     def test_settings_questions_returns_agent_max_requests_with_four_options(self) -> None:
         questions = interview_questions.settings_questions()

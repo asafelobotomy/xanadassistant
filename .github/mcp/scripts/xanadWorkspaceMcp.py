@@ -263,27 +263,6 @@ def tool_workspace_show_key_commands(arguments: dict) -> dict:
     if not commands:
         return {"status": "unavailable", "summary": "No key commands were found in .github/copilot-instructions.md.", "commands": []}
     return {"status": "ok", "commands": commands, "summary": f"Discovered {len(commands)} key command(s)."}
-def tool_workspace_run_tests(arguments: dict) -> dict:
-    if not workspace_root_valid():
-        return build_tool_result(status="unavailable", summary=WORKSPACE_ROOT_UNAVAILABLE)
-    scope = arguments.get("scope", "default")
-    extra_args = arguments.get("extraArgs", [])
-    if not isinstance(extra_args, list) or not all(isinstance(arg, str) for arg in extra_args):
-        return build_tool_result(status="unavailable", summary="extraArgs must be a string array.")
-    if scope == "full" and extra_args:
-        return build_tool_result(status="unavailable", summary="scope=full runs the declared test command exactly and does not accept extraArgs.")
-    command = resolve_key_command("Run tests")
-    if command is None:
-        return build_tool_result(status="unavailable", summary="No Run tests command is declared in .github/copilot-instructions.md.")
-    command = prefer_workspace_python(command)
-    reason = reject_shell_metacharacters(command)
-    if reason is not None:
-        return {"status": "unavailable", "summary": reason, "command": command}
-    reason = _check_executable_allowed(command)
-    if reason is not None:
-        return build_tool_result(status="unavailable", summary=reason)
-    argv = shlex.split(command) if scope == "full" else shlex.split(command) + extra_args
-    return run_argv(argv)
 def tool_workspace_run_check_loc(arguments: dict) -> dict:
     del arguments
     if not workspace_root_valid():
@@ -392,11 +371,6 @@ mcp = FastMCP("xanadTools")
 def workspace_show_key_commands() -> ToolResult:
     """List the workspace key commands declared in .github/copilot-instructions.md."""
     return _tool_result(tool_workspace_show_key_commands({}))
-
-@mcp.tool()
-def workspace_run_tests(scope: str = "default", extraArgs: list[str] | None = None) -> ToolResult:
-    """Run the workspace's declared test command, optionally appending extra arguments."""
-    return _tool_result(tool_workspace_run_tests({"scope": scope, "extraArgs": extraArgs or []}))
 
 @mcp.tool()
 def workspace_run_check_loc() -> ToolResult:

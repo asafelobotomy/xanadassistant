@@ -31,6 +31,7 @@ When hooks are enabled at setup time, xanadAssistant registers these MCP servers
 | Server | Script | Purpose |
 | --- | --- | --- |
 | `xanadTools` | `xanadWorkspaceMcp.py` | Workspace lifecycle inspection and maintenance tools |
+| `workspaceTesting` | `workspaceTestingMcp.py` | Generic workspace test execution and coverage parsing |
 | `git` | `gitMcp.py` | Local git operations |
 | `web` | `webMcp.py` | Web search and fetch |
 | `devDocs` | `devDocsMcp.py` | DevDocs-backed library documentation lookup |
@@ -49,7 +50,7 @@ Agents should prefer these structured MCP tools over generic terminal or shell e
 Default availability matters:
 
 - `github` and `sqlite` are shipped disabled by default in `.vscode/mcp.json` and should be treated as optional until enabled.
-- `xanadTools`, `git`, `web`, `devDocs`, `time`, `memory`, `security`, `filesystem`, and `sequential-thinking` are the default-on server ids agents should reference in prompts and docs.
+- `xanadTools`, `workspaceTesting`, `git`, `web`, `devDocs`, `time`, `memory`, `security`, `filesystem`, and `sequential-thinking` are the default-on server ids agents should reference in prompts and docs.
 
 ## Requirements
 

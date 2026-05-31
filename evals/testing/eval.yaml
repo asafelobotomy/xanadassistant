@@ -1,0 +1,16 @@
+name: "testing-eval"
+description: "Evaluates testing skill behavior for MCP-preferred test execution and failure handoff"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?is)(testing.*testing_run_tests|testing_run_tests.*testing)"
+
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 1000
+
+tasks:
+  - "tasks/*.yaml"

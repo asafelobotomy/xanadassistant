@@ -20,7 +20,7 @@ The goal is not to collect generic third-party tools. The goal is to expose stab
 
 ## Core Rule
 
-The `xanadTools` workspace MCP must expose semantic workflow tools, not arbitrary shell access.
+The `xanadTools` workspace MCP must expose semantic lifecycle and repo-maintenance tools, not arbitrary shell access.
 
 When a workflow has both a structured MCP tool and a generic native tool, agents should prefer the structured MCP tool first because it carries the narrower contract, typed inputs, and safer output shape. Generic shell or terminal execution is a fallback only when the relevant MCP server is unavailable, disabled, or lacks the needed workflow.
 
@@ -43,11 +43,12 @@ Recommended first domains:
 
 - `lifecycle_*` for lifecycle engine entrypoints (implemented: `xanadTools`)
 - `workspace_*` for repo-approved validation commands (implemented: `xanadTools`)
+- `testing_*` for generic workspace test execution and coverage parsing (implemented: `workspaceTesting`)
 - `package_*` for generation and freshness workflows (deferred)
 
 ## V1 Server Shape
 
-The initial shape is one workspace-local stdio MCP server (`xanadTools`), managed by the lifecycle engine and referenced from `.vscode/mcp.json`. Companion servers are shipped alongside it and registered in the same MCP config under the IDs `git`, `web`, `devDocs`, `time`, `memory`, `security`, `github`, `sqlite`, and `sequential-thinking`. Internal FastMCP server names may differ from those registered config IDs.
+The initial shape is one workspace-local stdio MCP server (`xanadTools`) plus narrowly scoped companion servers when the domain boundary is meaningfully different. The current default-on first-party testing companion server is `workspaceTesting`, managed alongside the lifecycle server and referenced from `.vscode/mcp.json`. Other companion servers are shipped alongside them and registered in the same MCP config under the IDs `git`, `web`, `devDocs`, `time`, `memory`, `security`, `github`, `sqlite`, and `sequential-thinking`. Internal FastMCP server names may differ from those registered config IDs.
 
 Agents, prompts, docs, and evals should reference these exact configured server ids and exported tool names. Ambiguous shorthand such as `lifecycle.*` weakens tool awareness and should not be used in normative guidance.
 
@@ -61,11 +62,16 @@ The complete `xanadTools` tool set is (see `tool-mcp-v1.md` for V1 vs Extended d
 - `lifecycle_update`
 - `lifecycle_repair`
 - `lifecycle_factory_restore`
-- `workspace_run_tests`
 - `workspace_run_check_loc`
 - `workspace_show_key_commands`
 - `workspace_show_install_state`
 - `workspace_validate_lockfile`
+
+The complete `workspaceTesting` tool set is:
+
+- `testing_show_key_commands`
+- `testing_run_tests`
+- `testing_parse_coverage`
 
 ## Input Rule
 
@@ -75,7 +81,7 @@ It must not accept a free-form command string when a narrower typed input can ex
 
 Examples:
 
-- `quality.run_targeted_tests` may accept test module paths.
+- `testing_run_tests` may accept typed target file paths or framework test names.
 - `lifecycle_plan_setup` may accept workspace, package root, and non-interactive flags.
 - `package.generate` should not accept arbitrary subprocess arguments.
 
@@ -106,8 +112,6 @@ Requirements:
 - trust assumptions documented for local and sandboxed execution
 
 If a tool needs network access, that access must be explicit in the server documentation and configuration assumptions.
-
-Retired tool tombstones may remain available only to return stable migration guidance for stale callers; they are not part of the supported MCP surface.
 
 ## Installation Rule
 

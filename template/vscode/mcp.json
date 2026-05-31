@@ -15,6 +15,21 @@
         "${workspaceFolder}/.github/mcp/scripts/xanadWorkspaceMcp.py"
       ]
     },
+    "workspaceTesting": {
+      "type": "stdio",
+      "command": "uvx",
+      "env": {
+        "CLAUDE_TMPDIR": "${userHome}/.cache/uv",
+        "TMPDIR": "${userHome}/.cache/uv"
+      },
+      "args": [
+        "--from",
+        "mcp[cli]==1.27.1",
+        "mcp",
+        "run",
+        "${workspaceFolder}/.github/mcp/scripts/workspaceTestingMcp.py"
+      ]
+    },
     "git": {
       "type": "stdio",
       "command": "uvx",

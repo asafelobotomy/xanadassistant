@@ -260,7 +260,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:cc70543537bd7dfa4897527f6da7f3c58048a42eeab40795c575e96ba3406ca5"
+      "hash": "sha256:3db7fddab734d6e694d706b9eb9287a5e2b6e9d3c50d3be154dc07f08487e7ac"
     },
     {
       "id": "instructions.agents.instructions.md",
@@ -377,6 +377,23 @@
       "tokens": [],
       "chmod": "executable",
       "hash": "sha256:2605a4edc2ea449d0bed2af76ac23d7985ce4a2477a91599f1346da3d1931dbd"
+    },
+    {
+      "id": "hook-scripts._workspace_testing_shared.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/_workspace_testing_shared.py",
+      "target": ".github/mcp/scripts/_workspace_testing_shared.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:8d63051956ef233a1b82f031cd1794680c89d587a44d3cac0a3b89909f28bba5"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -746,6 +763,23 @@
       "hash": "sha256:a9eba9996b0c816ce7253f536425f615b2634822268499d04c8c85de09ac2023"
     },
     {
+      "id": "hook-scripts.workspaceTestingMcp.py",
+      "surface": "hooks",
+      "layer": "core",
+      "source": "mcp/scripts/workspaceTestingMcp.py",
+      "target": ".github/mcp/scripts/workspaceTestingMcp.py",
+      "ownership": [
+        "local"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [
+        "hooks.enabled"
+      ],
+      "tokens": [],
+      "chmod": "executable",
+      "hash": "sha256:1e077ad95dd7bf5264ee57ef0f924b5ca1e2d793c3f7c643cd7f51eda557e8fd"
+    },
+    {
       "id": "hook-scripts.xanadWorkspaceMcp.py",
       "surface": "hooks",
       "layer": "core",
@@ -760,7 +794,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:5aea8b37ad0f8c1c036d0106a5c5f9db9992a6a076ba6ed280797f87dc91040c"
+      "hash": "sha256:d9f5072d802c2ef41dc2129b41056477c0678dc4887f32f1755dd62d40218706"
     },
     {
       "id": "prompts.bootstrap.md",
@@ -1725,6 +1759,22 @@
       "hash": "sha256:890f7b18cfcfcf45890366bfbbebd82c7ad0bd5281879d802b6d13de5e812b59"
     },
     {
+      "id": "skills.testing.SKILL.md",
+      "surface": "skills",
+      "layer": "pack",
+      "source": "skills/testing/SKILL.md",
+      "target": ".github/skills/testing/SKILL.md",
+      "ownership": [
+        "local",
+        "plugin-backed-copilot-format"
+      ],
+      "strategy": "replace-verbatim",
+      "requiredWhen": [],
+      "tokens": [],
+      "chmod": "none",
+      "hash": "sha256:9f727ec0e30e92235edc44518ea6f00d25335032f739a863b09e771666ffaee8"
+    },
+    {
       "id": "secure-skills.threatModel.SKILL.md",
       "surface": "skills",
       "layer": "pack",
@@ -1757,7 +1807,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:940beb6dd3d7935cbcebc725d4c48a06e5dbe5a2717be4f163a64615c5a4bba7"
+      "hash": "sha256:20ef8f1381f73d5dbcc7769856a0d006a7a4e1414c62862e33d5fe3e5898b0cc"
     },
     {
       "id": "vscode-settings.settings.json",

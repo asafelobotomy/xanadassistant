@@ -91,6 +91,7 @@ See `## Agent Routing` for the authoritative routing table; this section is a qu
 - `lifecycleAudit` — loaded on demand; run before any lifecycle operation
 - `agenticReview` — loaded on demand; evaluate or improve Copilot surface files
 - `ciPreflight` — loaded on demand; run CI-equivalent checks before push
+- `testing` — loaded on demand; run targeted or full tests through workspace-declared test apparatus
 
 ### Agents
 
