@@ -94,7 +94,7 @@ class ScriptAuditRegressionsTests(unittest.TestCase):
             error = subprocess.CalledProcessError(1, ["git"], stderr=b"fatal: nope")
             with mock.patch("subprocess.run", side_effect=error):
                 with self.assertRaises(LifecycleCommandError) as ref_exc:
-                    resolve_github_ref("owner", "repo", "main", cache_root)
+                    resolve_github_ref("owner", "repo", "main", cache_root, allow_mutable_ref=True)
 
             self.assertEqual(ref_exc.exception.exit_code, 3)
 

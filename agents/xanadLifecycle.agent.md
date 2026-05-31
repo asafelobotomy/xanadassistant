@@ -63,8 +63,9 @@ Before fetching the bootstrap runner, install the `xanadLifecycle` agent so all
 future lifecycle operations route through it automatically.
 
 ```sh
+TAG=v1.0.0  # replace with the target release
 mkdir -p .github/agents && curl -fsSL \
-  https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md \
+  "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/agents/xanadLifecycle.agent.md" \
   -o .github/agents/xanadLifecycle.agent.md
 ```
 
@@ -75,7 +76,7 @@ python3 -c "
 import urllib.request, os
 os.makedirs('.github/agents', exist_ok=True)
 urllib.request.urlretrieve(
-  'https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md',
+  'https://raw.githubusercontent.com/asafelobotomy/xanadassistant/v1.0.0/agents/xanadLifecycle.agent.md',
   '.github/agents/xanadLifecycle.agent.md')
 "
 ```
@@ -85,19 +86,20 @@ Proceed with the remaining steps below.
 **Step 1 — Fetch the bootstrap runner**
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py -o xanadBootstrap.py
+TAG=v1.0.0  # replace with the target release
+curl -fsSL "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/xanadBootstrap.py" -o xanadBootstrap.py
 ```
 
 Or with Python if curl is unavailable:
 
 ```sh
-python3 -c "import urllib.request; urllib.request.urlretrieve('https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py', 'xanadBootstrap.py')"
+python3 -c "import urllib.request; urllib.request.urlretrieve('https://raw.githubusercontent.com/asafelobotomy/xanadassistant/v1.0.0/xanadBootstrap.py', 'xanadBootstrap.py')"
 ```
 
 **Step 2 — Inspect**
 
 ```sh
-python3 xanadBootstrap.py inspect --workspace . --json
+python3 xanadBootstrap.py inspect --workspace . --version "${TAG}" --json
 ```
 
 Confirm `installState` is `not-installed` before continuing.
@@ -105,7 +107,7 @@ Confirm `installState` is `not-installed` before continuing.
 **Step 3 — Interview and collect answers**
 
 ```sh
-python3 xanadBootstrap.py interview --workspace . --mode setup --json
+python3 xanadBootstrap.py interview --workspace . --version "${TAG}" --mode setup --json
 ```
 
 Parse `result.questions`. Each question carries a `batch` field with one of
@@ -186,27 +188,28 @@ decision):
 ```
 
 Pass `--resolutions .xanadAssistant/tmp/conflict-resolutions.json` to both
-`plan setup` (or `plan update`) and `apply` (or `update`).
+`plan setup` (or `plan update`) and `setup` (or `update`).
 Omit this step when `existingFiles` is empty.
 
 **Step 4 — Plan and confirm**
 
 ```sh
 python3 xanadBootstrap.py plan setup \
-  --workspace . \
+  --workspace . --version "${TAG}" \
   --answers .xanadAssistant/tmp/setup-answers.json \
+  --plan-out .xanadAssistant/tmp/setup-plan.json \
   --non-interactive --json
 ```
 
 If `approvalRequired` is `true`, summarise the planned writes for the user and
 ask for confirmation before applying.
 
-**Step 5 — Apply**
+**Step 5 — Setup**
 
 ```sh
-python3 xanadBootstrap.py apply \
-  --workspace . \
-  --answers .xanadAssistant/tmp/setup-answers.json \
+python3 xanadBootstrap.py setup \
+  --workspace . --version "${TAG}" \
+  --plan .xanadAssistant/tmp/setup-plan.json \
   --non-interactive --json
 ```
 
@@ -225,17 +228,9 @@ installed CLI directly.
 
 ### Pinning to a release
 
-To target a specific release instead of `main`, pass `--version v1.0.0` to the
-bootstrap runner. **Pass `--version` to every bootstrap command in the sequence**
-so all steps use the same cached release.
-Check the
-[releases page](https://github.com/asafelobotomy/xanadassistant/releases) for
-available tags.
-
-```sh
-python3 xanadBootstrap.py apply \
-  --workspace . --version v1.0.0 --non-interactive --json
-```
+Use a release tag for both the downloaded bootstrap runner and every bootstrap
+command in the sequence. Use `main` only for development or edge testing, and
+then pass `--allow-mutable-ref` explicitly.
 
 ## On every invocation
 
@@ -334,7 +329,7 @@ python3 xanadAssistant.py apply \
   --dry-run --json-lines
 
 # Use a GitHub release instead of a local checkout
-python3 xanadAssistant.py apply \
+python3 xanadAssistant.py update \
   --workspace <consumer-repo-path> \
   --source github:asafelobotomy/xanadAssistant \
   --version v1.0.0 \

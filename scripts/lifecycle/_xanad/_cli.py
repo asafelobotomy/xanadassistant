@@ -10,6 +10,7 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--source", help="Package source identifier.")
     parser.add_argument("--version", help="Requested release version.")
     parser.add_argument("--ref", help="Requested source ref.")
+    parser.add_argument("--allow-mutable-ref", action="store_true", help="Allow branch-like remote refs; prefer --version or a full commit SHA.")
     parser.add_argument("--json", action="store_true", help="Emit a single JSON result.")
     parser.add_argument("--json-lines", action="store_true", help="Emit JSON Lines protocol events.")
     parser.add_argument("--non-interactive", action="store_true", help="Disable interactive prompting.")

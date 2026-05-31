@@ -104,7 +104,7 @@ def read_lockfile() -> dict | None:
         return json.loads(WORKSPACE_LOCKFILE_PATH.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError, ValueError):
         return None
-def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None) -> tuple[Path | None, str | None]:
+def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None, allow_mutable_ref: object | None = None) -> tuple[Path | None, str | None]:
     lockfile = read_lockfile()
     package_block = lockfile.get("package") if isinstance(lockfile, dict) else None
     if package_root_arg is not None:
@@ -139,13 +139,15 @@ def resolve_lifecycle_package_root(package_root_arg: object | None, source_arg: 
     for name, value in (("source", resolved_source), ("version", resolved_version), ("ref", resolved_ref)):
         if value is not None and (not isinstance(value, str) or not value.strip()):
             return None, f"{name} must be a non-empty string when provided."
+    if allow_mutable_ref not in {None, False, True}:
+        return None, "allowMutableRef must be a boolean when provided."
     try:
         owner, repo = parse_github_source(resolved_source)
         cache_root = Path(os.environ.get("XANAD_PKG_CACHE", DEFAULT_CACHE_ROOT)).expanduser().resolve()
         if isinstance(resolved_version, str) and resolved_version.strip():
             return resolve_github_release(owner, repo, resolved_version, cache_root), None
         resolved_ref_value = resolved_ref if isinstance(resolved_ref, str) and resolved_ref.strip() else "main"
-        return resolve_github_ref(owner, repo, resolved_ref_value, cache_root), None
+        return resolve_github_ref(owner, repo, resolved_ref_value, cache_root, allow_mutable_ref=allow_mutable_ref is True), None
     except (ValueError, OSError, subprocess.CalledProcessError) as exc:
         return None, f"Failed to resolve remote lifecycle source: {exc}"
 def resolve_lifecycle_cli(package_root: Path) -> tuple[list[str] | None, str | None]:
@@ -224,10 +226,10 @@ def _resolve_workspace_file(path_value: object, argument_name: str) -> tuple[Pat
     return resolved, None
 
 
-def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None = None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None, mode: str | None = None, mode_as_flag: bool = False, answers_path: object | None = None, non_interactive: object | None = None, dry_run: object | None = None, plan_path: object | None = None) -> dict:
+def run_lifecycle_command(cli_command: str, *, package_root_arg: object | None = None, source_arg: object | None = None, version_arg: object | None = None, ref_arg: object | None = None, allow_mutable_ref: object | None = None, mode: str | None = None, mode_as_flag: bool = False, answers_path: object | None = None, non_interactive: object | None = None, dry_run: object | None = None, plan_path: object | None = None) -> dict:
     if not workspace_root_valid():
         return build_tool_result(status="unavailable", summary="The MCP server is not installed in a workspace root.")
-    package_root, reason = resolve_lifecycle_package_root(package_root_arg, source_arg, version_arg, ref_arg)
+    package_root, reason = resolve_lifecycle_package_root(package_root_arg, source_arg, version_arg, ref_arg, allow_mutable_ref)
     if reason is not None or package_root is None:
         return build_tool_result(status="unavailable", summary=reason or "Lifecycle package root could not be resolved.")
     cli_prefix, cli_reason = resolve_lifecycle_cli(package_root)

@@ -146,11 +146,11 @@ class SourceResolutionTests(unittest.TestCase):
             clone_error = subprocess.CalledProcessError(1, ["git", "clone"], stderr=b"clone failed")
             with mock.patch("scripts.lifecycle._xanad._source_remote.subprocess.run", side_effect=clone_error):
                 with self.assertRaises(LifecycleCommandError):
-                    _source_remote.resolve_github_ref("owner", "repo", "main", cache_root)
+                    _source_remote.resolve_github_ref("owner", "repo", "main", cache_root, allow_mutable_ref=True)
             self.assertFalse(cache_dir.exists())
 
             with mock.patch("scripts.lifecycle._xanad._source_remote.subprocess.run") as run_mock:
-                result = _source_remote.resolve_github_ref("owner", "repo", "main", cache_root)
+                result = _source_remote.resolve_github_ref("owner", "repo", "main", cache_root, allow_mutable_ref=True)
 
         self.assertEqual(result, cache_dir)
         self.assertEqual(
@@ -161,6 +161,12 @@ class SourceResolutionTests(unittest.TestCase):
     def test_get_cache_root_honors_environment_override(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir, mock.patch.dict(os.environ, {"XANAD_PKG_CACHE": tmpdir}):
             self.assertEqual(_source.get_cache_root(), Path(tmpdir).resolve())
+
+    def test_resolve_github_ref_rejects_mutable_ref_without_opt_in(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.assertRaises(LifecycleCommandError) as ctx:
+                _source_remote.resolve_github_ref("owner", "repo", "main", Path(tmpdir))
+        self.assertIn("mutable", ctx.exception.message)
 
     def test_resolve_effective_package_root_uses_package_root_and_inferred_git_source(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir, mock.patch(
@@ -191,7 +197,7 @@ class SourceResolutionTests(unittest.TestCase):
             return_value=Path(cache_dir) / "ref",
         ):
             release_root, release_info = _source.resolve_effective_package_root(None, "github:owner/repo", "v1.2.3", None)
-            ref_root, ref_info = _source.resolve_effective_package_root(None, "github:owner/repo", None, "dev")
+            ref_root, ref_info = _source.resolve_effective_package_root(None, "github:owner/repo", None, "dev", allow_mutable_ref=True)
 
         self.assertEqual(release_root, Path(cache_dir) / "release")
         self.assertEqual(release_info["kind"], "github-release")

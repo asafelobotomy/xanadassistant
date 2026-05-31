@@ -20,6 +20,7 @@ When more than one file describes the same thing, the extra files should be:
 | --- | --- | --- |
 | Lifecycle CLI and apply behavior | `scripts/lifecycle/_xanad/` | contracts, prompts, install docs, regression tests |
 | Managed package truth | `template/setup/install-policy.json`, registries, template source files | `template/setup/install-manifest.json`, `template/setup/catalog.json` |
+| Repo-local `.github/` mirrors | `agents/`, `skills/`, `template/`, `mcp/scripts/` source files refreshed through `xanadAssistant.py update --workspace . --package-root .` | `.github/` managed mirrors and `.github/xanadAssistant-lock.json` |
 | Consumer-managed `.github` surfaces | lifecycle plan/apply/update flow | repo-local generated copies and consumer installs |
 | Verification command set | `scripts/drift_preflight.py` | `.github/workflows/ci.yml`, maintainer docs |
 | User-facing setup/apply flow | CLI contract + regression tests | prompts, install docs, README examples |
@@ -29,8 +30,8 @@ When more than one file describes the same thing, the extra files should be:
 When changing source, follow this order:
 
 1. Edit the authority first.
-2. Regenerate derived artifacts instead of editing them manually.
-3. Refresh managed surfaces through lifecycle when source-managed files changed.
+2. Regenerate derived artifacts instead of editing them manually: run `python3 scripts/generate.py` after any managed source surface change, including setup policy, registries, templates, agents, skills, prompts, instructions, MCP scripts, or packs.
+3. Refresh repo-local managed mirrors when a managed source surface changed: run `python3 xanadAssistant.py update --workspace . --package-root . --json`. The generate step updates manifest and catalog; the lifecycle update propagates source changes into `.github/` mirrors.
 4. Run the narrowest targeted tests for the touched authority.
 5. Run `python3 scripts/drift_preflight.py` before merge or push.
 6. If prompts, contracts, or mirrored hook copies changed, make sure parity or contract tests exist for that surface.

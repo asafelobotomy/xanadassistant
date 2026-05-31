@@ -13,7 +13,8 @@ Usage:
 Source options:
     --package-root <path>       Use a local xanadAssistant checkout (dev / CI).
     --source github:owner/repo  GitHub source (default: github:asafelobotomy/xanadassistant).
-    --version <tag>             Pin to a release tag (e.g. v1.0.0). Defaults to main.
+    --version <tag>             Pin to a release tag (e.g. v1.0.0).
+    --allow-mutable-ref         Explicitly allow downloading a branch-like ref.
 
 All other flags are forwarded verbatim to the underlying xanadAssistant CLI.
 """
@@ -85,7 +86,13 @@ def _archive_url(owner: str, repo: str, ref: str) -> str:
     """Return the GitHub tarball URL for a branch or tag ref."""
     if re.match(r"^v\d", ref):
         return f"https://github.com/{owner}/{repo}/archive/refs/tags/{ref}.tar.gz"
+    if re.match(r"^[0-9a-fA-F]{40}$", ref):
+        return f"https://github.com/{owner}/{repo}/archive/{ref}.tar.gz"
     return f"https://github.com/{owner}/{repo}/archive/refs/heads/{ref}.tar.gz"
+
+
+def _is_immutable_ref(ref: str) -> bool:
+    return bool(re.match(r"^v\d", ref) or re.match(r"^[0-9a-fA-F]{40}$", ref))
 
 
 def _download_archive(
@@ -94,6 +101,7 @@ def _download_archive(
     ref: str,
     cache_root: Path,
     expected_sha256: str | None = None,
+    allow_mutable_ref: bool = False,
 ) -> Path:
     """Download a GitHub archive for *ref* into the cache and return the extracted root."""
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
@@ -102,7 +110,13 @@ def _download_archive(
         return cache_dir
 
     url = _archive_url(owner, repo, ref)
-    if not re.match(r"^v\d", ref) and not expected_sha256:
+    if not _is_immutable_ref(ref) and not expected_sha256 and not allow_mutable_ref:
+        sys.exit(
+            f"[xanadBootstrap] Ref {ref!r} is mutable. Pass --version with a "
+            "release tag, pass --expected-sha256, or pass --allow-mutable-ref "
+            "to opt in explicitly."
+        )
+    if not _is_immutable_ref(ref) and not expected_sha256:
         print(
             f"[xanadBootstrap] WARNING: downloading from mutable ref {ref!r} without a "
             "checksum — pass --expected-sha256 or use a tagged version for reproducibility.",
@@ -159,6 +173,7 @@ def _resolve_package_root(
     version: str | None,
     cache_root: Path,
     expected_sha256: str | None = None,
+    allow_mutable_ref: bool = False,
 ) -> Path:
     """Return the effective package root, downloading from GitHub if necessary."""
     if package_root_arg is not None:
@@ -168,7 +183,7 @@ def _resolve_package_root(
         return pkg
     owner, repo = _validate_source(source)
     ref = version if version else "main"
-    return _download_archive(owner, repo, ref, cache_root, expected_sha256)
+    return _download_archive(owner, repo, ref, cache_root, expected_sha256, allow_mutable_ref)
 
 
 # ---------------------------------------------------------------------------
@@ -219,7 +234,11 @@ def main() -> None:
     )
     parser.add_argument(
         "--version", default=None,
-        help="Release tag to pin (e.g. v1.0.0). Defaults to the main branch.",
+        help="Release tag to pin (e.g. v1.0.0). Remote installs should use a tag.",
+    )
+    parser.add_argument(
+        "--allow-mutable-ref", action="store_true",
+        help="Allow the default main branch or another branch-like ref when no checksum is provided.",
     )
     parser.add_argument(
         "--package-root", default=None,
@@ -245,6 +264,7 @@ def main() -> None:
     pkg_root = _resolve_package_root(
         args.package_root, args.source, args.version, cache_root,
         expected_sha256=getattr(args, "expected_sha256", None),
+        allow_mutable_ref=args.allow_mutable_ref,
     )
     cli_cmd = _build_cli_command(pkg_root, args, remaining)
     result = subprocess.run(cli_cmd, check=False)

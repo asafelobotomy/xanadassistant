@@ -22,8 +22,9 @@ cleanup. No manual commands needed.
 If you prefer to run Step 0 yourself before handing off to Copilot:
 
 ```sh
+TAG=v1.0.0  # replace with the target release
 mkdir -p .github/agents && curl -fsSL \
-  https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md \
+  "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/agents/xanadLifecycle.agent.md" \
   -o .github/agents/xanadLifecycle.agent.md
 ```
 
@@ -42,25 +43,27 @@ these steps. No prior installation or local checkout is needed.
 
 ### Step 1 — Fetch the bootstrap runner
 
+Replace `v1.0.0` with the latest release tag from the
+[releases page](https://github.com/asafelobotomy/xanadassistant/releases).
+Use `main` only for development or edge testing, and then pass
+`--allow-mutable-ref` explicitly.
+
 Download `xanadBootstrap.py` using whichever method is available:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py -o xanadBootstrap.py
+TAG=v1.0.0
+curl -fsSL "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/xanadBootstrap.py" -o xanadBootstrap.py
 ```
 
 ```sh
-python3 -c "import urllib.request; urllib.request.urlretrieve('https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py', 'xanadBootstrap.py')"
+TAG=v1.0.0
+python3 -c "import os, urllib.request; tag = os.environ.get('TAG', 'v1.0.0'); urllib.request.urlretrieve(f'https://raw.githubusercontent.com/asafelobotomy/xanadassistant/{tag}/xanadBootstrap.py', 'xanadBootstrap.py')"
 ```
-
-To pin to a specific release instead of `main`, replace `main` in the URL with
-the release tag (e.g. `v1.0.0`). Check the
-[releases page](https://github.com/asafelobotomy/xanadassistant/releases) for
-the latest tag.
 
 ### Step 2 — Inspect the workspace
 
 ```sh
-python3 xanadBootstrap.py inspect --workspace . --json
+python3 xanadBootstrap.py inspect --workspace . --version "${TAG}" --json
 ```
 
 Review `installState`. If it is not `not-installed`, stop and report the state
@@ -69,7 +72,7 @@ to the user before continuing.
 ### Step 3 — Run the interview
 
 ```sh
-python3 xanadBootstrap.py interview --workspace . --mode setup --json
+python3 xanadBootstrap.py interview --workspace . --version "${TAG}" --mode setup --json
 ```
 
 Parse the `result.questions` array. For each question, present the `prompt` and
@@ -186,17 +189,19 @@ factory-restore).
 Two-step install using defaults:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py -o xanadBootstrap.py
-python3 xanadBootstrap.py plan setup --workspace . --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
-python3 xanadBootstrap.py setup --workspace . --plan .xanadAssistant/tmp/setup-plan.json --json
+TAG=v1.0.0  # replace with the target release
+curl -fsSL "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/xanadBootstrap.py" -o xanadBootstrap.py
+python3 xanadBootstrap.py plan setup --workspace . --version "${TAG}" --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
+python3 xanadBootstrap.py setup --workspace . --version "${TAG}" --plan .xanadAssistant/tmp/setup-plan.json --json
 ```
 
 Or download-then-run for a pinned release:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py -o xanadBootstrap.py
-python3 xanadBootstrap.py plan setup --workspace . --version v1.0.0 --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
-python3 xanadBootstrap.py setup --workspace . --plan .xanadAssistant/tmp/setup-plan.json --json
+TAG=v1.0.0  # replace with the target release
+curl -fsSL "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/xanadBootstrap.py" -o xanadBootstrap.py
+python3 xanadBootstrap.py plan setup --workspace . --version "${TAG}" --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
+python3 xanadBootstrap.py setup --workspace . --version "${TAG}" --plan .xanadAssistant/tmp/setup-plan.json --json
 ```
 
 ---

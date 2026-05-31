@@ -1,0 +1,10 @@
+# Pinned constraints for reproducible CI and local dev tooling.
+# Update intentionally when refreshing MCP, eval, or test dependencies.
+# Usage: pip install -r requirements-dev.txt -c constraints-dev.txt
+
+beautifulsoup4==4.14.3
+httpx==0.28.1
+jsonschema==4.26.0
+markdownify==1.2.2
+mcp==1.27.1
+tzdata==2026.2

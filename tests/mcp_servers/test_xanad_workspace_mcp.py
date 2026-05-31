@@ -77,9 +77,14 @@ class XanadWorkspaceMcpDiscoveryTests(XanadWorkspaceMcpTestCaseMixin, unittest.T
                     "resolve_github_ref",
                     side_effect=OSError("cache failed"),
                 ):
-                    package_root, reason = module.resolve_lifecycle_package_root(None, source_arg="github:owner/repo")
+                    package_root, reason = module.resolve_lifecycle_package_root(None, source_arg="github:owner/repo", allow_mutable_ref=True)
                 self.assertIsNone(package_root)
                 self.assertIn("Failed to resolve remote lifecycle source", reason)
+
+                with mock.patch.object(module, "read_lockfile", return_value={"package": {"source": "github:owner/repo"}}):
+                    package_root, reason = module.resolve_lifecycle_package_root(None)
+                self.assertIsNone(package_root)
+                self.assertIn("mutable", reason)
 
                 with tempfile.TemporaryDirectory() as tmpdir:
                     package_root = Path(tmpdir)

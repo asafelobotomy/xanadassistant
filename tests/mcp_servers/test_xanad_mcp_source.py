@@ -57,7 +57,7 @@ class XanadMcpSourceTests(unittest.TestCase):
                     (cache_dir / ".git").mkdir(parents=True)
 
                     with mock.patch.object(module.subprocess, "run") as run_mock:
-                        result = module.resolve_github_ref("owner", "repo", "main", cache_root)
+                        result = module.resolve_github_ref("owner", "repo", "main", cache_root, allow_mutable_ref=True)
 
                     self.assertEqual(result, cache_dir)
                     self.assertEqual(
@@ -72,7 +72,7 @@ class XanadMcpSourceTests(unittest.TestCase):
                     cache_root = Path(tmpdir)
                     cache_dir = cache_root / "github" / "owner-repo" / f"ref-{module._cache_key('feature/test')}"
                     with mock.patch.object(module.subprocess, "run") as run_mock:
-                        result = module.resolve_github_ref("owner", "repo", "feature/test", cache_root)
+                        result = module.resolve_github_ref("owner", "repo", "feature/test", cache_root, allow_mutable_ref=True)
 
                     self.assertEqual(result, cache_dir)
                     self.assertEqual(
@@ -109,18 +109,25 @@ class XanadMcpSourceTests(unittest.TestCase):
                     clone_error = subprocess.CalledProcessError(1, ["git", "clone"], stderr=b"clone failed")
                     with mock.patch.object(module.subprocess, "run", side_effect=clone_error):
                         with self.assertRaises(subprocess.CalledProcessError):
-                            module.resolve_github_ref("owner", "repo", "main", cache_root)
+                            module.resolve_github_ref("owner", "repo", "main", cache_root, allow_mutable_ref=True)
 
                     self.assertFalse(cache_dir.exists())
 
                     with mock.patch.object(module.subprocess, "run") as run_mock:
-                        result = module.resolve_github_ref("owner", "repo", "main", cache_root)
+                        result = module.resolve_github_ref("owner", "repo", "main", cache_root, allow_mutable_ref=True)
 
                     self.assertEqual(result, cache_dir)
                     self.assertEqual(
                         run_mock.call_args.args[0],
                         ["git", "clone", "--depth", "1", "--branch", "main", "https://github.com/owner/repo.git", str(cache_dir)],
                     )
+
+    def test_resolve_github_ref_rejects_mutable_ref_without_opt_in(self) -> None:
+        for module in (SOURCE_MODULE, MANAGED_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with self.assertRaisesRegex(ValueError, "mutable"):
+                        module.resolve_github_ref("owner", "repo", "main", Path(tmpdir))
 
 
 if __name__ == "__main__":

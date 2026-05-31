@@ -169,8 +169,15 @@ class DownloadArchiveTests(unittest.TestCase):
         self.assertEqual(owner, "myorg")
         self.assertEqual(repo, "myrepo")
 
-    def test_mutable_ref_without_checksum_emits_warning(self) -> None:
-        """Downloading from a branch without --expected-sha256 must print a warning."""
+    def test_mutable_ref_without_checksum_requires_explicit_opt_in(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_root = Path(tmpdir)
+            with self.assertRaises(SystemExit) as excinfo:
+                _bootstrap._download_archive("owner", "repo", "main", cache_root)
+        self.assertIn("mutable", str(excinfo.exception.code).lower())
+
+    def test_mutable_ref_with_opt_in_emits_warning(self) -> None:
+        """Downloading from a branch without --expected-sha256 must require opt-in and warn."""
         with tempfile.TemporaryDirectory() as tmpdir:
             cache_root = Path(tmpdir)
             import io
@@ -189,7 +196,7 @@ class DownloadArchiveTests(unittest.TestCase):
                 mock_resp.read.return_value = archive_bytes
                 mock_open.return_value.__enter__ = lambda s: mock_resp
                 mock_open.return_value.__exit__ = mock.Mock(return_value=False)
-                _bootstrap._download_archive("owner", "repo", "main", cache_root)
+                _bootstrap._download_archive("owner", "repo", "main", cache_root, allow_mutable_ref=True)
             # Warning about mutable ref must have been printed.
             written = "".join(str(c) for c in mock_stderr.write.call_args_list)
             self.assertIn("mutable", written.lower())

@@ -292,8 +292,19 @@ class PromptContractTests(unittest.TestCase):
         content = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn("--plan-out .xanadAssistant/tmp/setup-plan.json", content)
         self.assertIn("--plan .xanadAssistant/tmp/setup-plan.json --json", content)
-        self.assertIn("xanadBootstrap.py setup --workspace . \\", content)
+        self.assertIn('xanadBootstrap.py setup --workspace . --version "${TAG}" \\', content)
         self.assertNotRegex(content, re.compile(r"xanadBootstrap.py apply \\\n(?:.+\\\n)*\s+--answers "))
+
+    def test_install_surfaces_do_not_teach_mutable_main_bootstrap_urls(self) -> None:
+        paths = [
+            REPO_ROOT / "README.md",
+            REPO_ROOT / "INSTALL.md",
+            REPO_ROOT / "agents" / "xanadLifecycle.agent.md",
+        ]
+        pattern = re.compile(r"raw\.githubusercontent\.com/asafelobotomy/xanadassistant/main/(?:agents/xanadLifecycle\.agent\.md|xanadBootstrap\.py)")
+        for path in paths:
+            with self.subTest(path=path):
+                self.assertNotRegex(path.read_text(encoding="utf-8"), pattern)
 
     def test_readme_documents_mcp_precedence_and_server_availability(self) -> None:
         content = (REPO_ROOT / "README.md").read_text(encoding="utf-8")

@@ -227,6 +227,7 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
             getattr(args, "source", None),
             getattr(args, "version", None),
             getattr(args, "ref", None),
+            getattr(args, "allow_mutable_ref", False),
         )
         _State.session_source_info = _resolved_source_info
     except LifecycleCommandError as error:

@@ -15,6 +15,7 @@ from pathlib import Path
 from scripts.lifecycle._xanad._errors import LifecycleCommandError
 
 _SAFE_REF_RE = re.compile(r"^[A-Za-z0-9._/-]+$")
+_IMMUTABLE_REF_RE = re.compile(r"^(v\d|[0-9a-fA-F]{40}$)")
 
 
 def _cache_key(raw: str) -> str:
@@ -37,6 +38,10 @@ def _validate_ref(ref: str) -> None:
             3,
             {"ref": ref},
         )
+
+
+def is_immutable_ref(ref: str) -> bool:
+    return bool(_IMMUTABLE_REF_RE.match(ref))
 
 
 def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path) -> Path:  # pragma: no cover
@@ -95,9 +100,16 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     return cache_dir
 
 
-def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:  # pragma: no cover
+def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path, *, allow_mutable_ref: bool = False) -> Path:  # pragma: no cover
     """Clone or update a GitHub repo at a specific ref to the cache and return the path."""
     _validate_ref(ref)
+    if not allow_mutable_ref and not is_immutable_ref(ref):
+        raise LifecycleCommandError(
+            "source_resolution_failure",
+            f"Ref {ref!r} is mutable; pass --version with a release tag, use a full commit SHA, or pass --allow-mutable-ref to opt in.",
+            3,
+            {"ref": ref, "allowMutableRef": False},
+        )
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
     clone_url = f"https://github.com/{owner}/{repo}.git"
     clone_required = not (cache_dir / ".git").exists()

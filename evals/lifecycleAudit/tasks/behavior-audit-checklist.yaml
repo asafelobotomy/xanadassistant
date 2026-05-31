@@ -1,0 +1,15 @@
+id: behavior-audit-checklist
+description: "Verify lifecycleAudit reports structured state, repair causes, migration status, and verification"
+prompt: |
+  Run lifecycleAudit before suggesting a repair. The result must include a compact
+  structured summary of installState, check.status, repairReasons, needsMigration,
+  and the verification checklist you used.
+expected:
+  - "installState"
+  - "check.status"
+  - "repairReasons"
+  - "needsMigration"
+  - "Verify"
+tags:
+  - smoke
+  - behavior

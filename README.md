@@ -75,8 +75,9 @@ For a step-by-step walkthrough of what happens, see [INSTALL.md](INSTALL.md).
 If you prefer to run the agent install step yourself before involving Copilot:
 
 ```sh
+TAG=v1.0.0  # replace with the target release
 mkdir -p .github/agents && curl -fsSL \
-  https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/agents/xanadLifecycle.agent.md \
+  "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/agents/xanadLifecycle.agent.md" \
   -o .github/agents/xanadLifecycle.agent.md
 ```
 
@@ -87,11 +88,12 @@ Then in Copilot chat: **@xanadLifecycle Setup xanadAssistant**
 > **Note:** Use a Copilot method above when possible. This is a fallback for environments without Copilot agent mode.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/asafelobotomy/xanadassistant/main/xanadBootstrap.py \
+TAG=v1.0.0  # replace with the target release
+curl -fsSL "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/xanadBootstrap.py" \
   -o xanadBootstrap.py
-python3 xanadBootstrap.py plan setup --workspace . --non-interactive \
+python3 xanadBootstrap.py plan setup --workspace . --version "${TAG}" --non-interactive \
   --plan-out .xanadAssistant/tmp/setup-plan.json --json
-python3 xanadBootstrap.py setup --workspace . \
+python3 xanadBootstrap.py setup --workspace . --version "${TAG}" \
   --plan .xanadAssistant/tmp/setup-plan.json --json
 ```
 
@@ -339,7 +341,7 @@ Each managed workspace maintains `.github/xanadAssistant-lock.json` recording th
 ## Contributing
 
 1. Read before modifying — never edit a file not opened in the current session.
-2. `template/setup/install-manifest.json` and `catalog.json` are generated — run `python3 scripts/generate.py` after any policy or template content change.
+2. `template/setup/install-manifest.json` and `catalog.json` are generated — run `python3 scripts/generate.py` after any managed source surface change, including agents, skills, prompts, instructions, MCP scripts, packs, setup policy, registries, and template content.
 3. `template/copilot-instructions.md` must retain `{{}}` tokens — do not resolve them in the template.
 4. Contracts in `docs/contracts/` are frozen — changes require explicit discussion.
 5. Engine modules under `scripts/lifecycle/_xanad/` must stay ≤ 250 lines each; MCP scripts use the warning and hard-limit budgets enforced by `scripts/check_loc.py` (default 250 warning / 400 hard, with documented per-file overrides).

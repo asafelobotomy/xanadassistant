@@ -236,7 +236,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:1925aad96fc8b49df3314218fa1495a6acfe87b91c24eedcbf5390fdd8352d44"
+      "hash": "sha256:79f46ff2921beac701a5757c02b3fdb9d27074d2d328e6f5da6e49f4a4be4f16"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -393,7 +393,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:64cf9a156d1f7d31fe2dc994f210a95eb7cdcc290796b0ec1fbea4748e284b91"
+      "hash": "sha256:f881dccbb6c497046d08a8d9eb97fdf3e38d31043ffb7525fab3fc5d4e00a66d"
     },
     {
       "id": "hook-scripts.devDocsMcp.py",
@@ -760,7 +760,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:7faaae152c95a426aa5f71602679824df09b285d9f093afb7eafa156a3777d0a"
+      "hash": "sha256:5aea8b37ad0f8c1c036d0106a5c5f9db9992a6a076ba6ed280797f87dc91040c"
     },
     {
       "id": "prompts.bootstrap.md",

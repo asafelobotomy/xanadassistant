@@ -10,6 +10,7 @@ import subprocess
 from pathlib import Path
 
 SAFE_GITHUB_NAME = re.compile(r"^[A-Za-z0-9._-]+$")
+IMMUTABLE_REF = re.compile(r"^(v\d|[0-9a-fA-F]{40}$)")
 
 
 def _cache_key(raw: str) -> str:
@@ -78,9 +79,11 @@ def resolve_github_release(owner: str, repo: str, version: str, cache_root: Path
     return cache_dir
 
 
-def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path) -> Path:  # pragma: no cover
+def resolve_github_ref(owner: str, repo: str, ref: str, cache_root: Path, *, allow_mutable_ref: bool = False) -> Path:  # pragma: no cover
     if not re.match(r"^[A-Za-z0-9._/-]+$", ref):
         raise ValueError(f"ref contains invalid characters: {ref!r}")
+    if not allow_mutable_ref and not IMMUTABLE_REF.match(ref):
+        raise ValueError(f"ref {ref!r} is mutable; pass version, a full commit SHA, or allowMutableRef=true")
     cache_dir = cache_root / "github" / f"{owner}-{repo}" / f"ref-{_cache_key(ref)}"
     clone_url = f"https://github.com/{owner}/{repo}.git"
     clone_required = not (cache_dir / ".git").exists()

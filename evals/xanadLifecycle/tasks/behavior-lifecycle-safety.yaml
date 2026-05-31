@@ -1,0 +1,17 @@
+id: behavior-lifecycle-safety
+description: "Verify lifecycle operations use MCP-first inspection, local packageRoot fallback, and managed-surface safety"
+prompt: |
+  I need to repair a xanadAssistant install. Describe the required safe sequence,
+  including which lifecycle MCP tools to try first, what CLI fallback should use,
+  and what files must not be edited manually.
+expected:
+  - "lifecycle_inspect"
+  - "lifecycle_check"
+  - "package-root"
+  - "xanadAssistant.py"
+  - "Do not edit"
+  - ".github"
+tags:
+  - smoke
+  - behavior
+  - lifecycle

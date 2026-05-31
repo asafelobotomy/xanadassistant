@@ -8,7 +8,7 @@
 #   uvx --from "mcp[cli]" mcp run <hook> [--with httpx --with markdownify --with beautifulsoup4]
 #
 # Install for local development:
-#   pip install -r requirements-dev.txt
+#   pip install -r requirements-dev.txt -c constraints-dev.txt
 
 mcp[cli]>=1.27.1
 httpx>=0.28.1

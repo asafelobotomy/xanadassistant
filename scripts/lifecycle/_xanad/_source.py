@@ -142,6 +142,7 @@ def resolve_effective_package_root(
     source_arg: str | None,
     version_arg: str | None,
     ref_arg: str | None,
+    allow_mutable_ref: bool = False,
 ) -> tuple[Path, dict]:
     """Resolve the effective package root from CLI args, returning (path, source_info)."""
     if package_root_arg is not None:
@@ -181,7 +182,7 @@ def resolve_effective_package_root(
         }
 
     resolved_ref = ref_arg if ref_arg is not None else "main"  # pragma: no cover
-    pkg_root = resolve_github_ref(owner, repo, resolved_ref, cache_root)  # pragma: no cover
+    pkg_root = resolve_github_ref(owner, repo, resolved_ref, cache_root, allow_mutable_ref=allow_mutable_ref)  # pragma: no cover
     return pkg_root, {  # pragma: no cover
         "kind": "github-ref",
         "source": source_arg,
