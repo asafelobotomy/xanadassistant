@@ -465,14 +465,15 @@ class RetryTests(DynamicTestBase, unittest.TestCase):
             fp=_io.BytesIO(b"transient"),
         )
 
+    def _assert_http_error_closed(self, err: urllib.error.HTTPError) -> None:
+        self.assertTrue(err.fp is None or err.fp.closed)
+
     @mock.patch("time.sleep")
     def test_retries_on_429_and_succeeds(self, mock_sleep) -> None:
         """_call_model must retry on 429 and return the first successful response."""
-        import urllib.error as _ue
         err = self._make_http_error(429)
         with mock.patch("urllib.request.urlopen") as mock_open:
             # Fail once then succeed
-            import io as _io
             import json as _json
             ok_body = _json.dumps(
                 {"choices": [{"message": {"content": "ok response"}}]}
@@ -487,16 +488,19 @@ class RetryTests(DynamicTestBase, unittest.TestCase):
             )
         self.assertEqual(result, "ok response")
         mock_sleep.assert_called_once_with(2)  # first retry backoff: 2^1 = 2s
+        self._assert_http_error_closed(err)
 
     @mock.patch("time.sleep")
     def test_raises_after_max_retries(self, _mock_sleep) -> None:
         """_call_model must raise RuntimeError after exhausting retries."""
-        err = self._make_http_error(429)
-        with mock.patch("urllib.request.urlopen", side_effect=err):
+        errors = [self._make_http_error(429) for _ in range(3)]
+        with mock.patch("urllib.request.urlopen", side_effect=errors):
             with self.assertRaises(RuntimeError):
                 xe._call_model(
                     [{"role": "user", "content": "hi"}], "gpt-4o-mini", "fake-token"
                 )
+        for err in errors:
+            self._assert_http_error_closed(err)
 
     @mock.patch("time.sleep")
     def test_does_not_retry_on_401(self, mock_sleep) -> None:
@@ -509,6 +513,7 @@ class RetryTests(DynamicTestBase, unittest.TestCase):
                 )
         mock_sleep.assert_not_called()
         self.assertIn("401", str(cm.exception))
+        self._assert_http_error_closed(err)
 
 
 class ExpectedFieldTests(DynamicTestBase, unittest.TestCase):

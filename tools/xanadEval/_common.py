@@ -153,7 +153,10 @@ def _call_model(messages: list[dict], model: str, token: str) -> str:
                 resp_data = json.loads(resp.read())
                 return resp_data["choices"][0]["message"]["content"]
         except urllib.error.HTTPError as e:
-            body = e.read().decode(errors="replace")
+            try:
+                body = e.read().decode(errors="replace")
+            finally:
+                e.close()
             if e.code in (429, 500, 502, 503, 504) and attempt < 2:
                 last_error = RuntimeError(f"HTTP {e.code}: {body[:200]}")
                 continue
