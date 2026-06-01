@@ -67,6 +67,10 @@ skill — it knows the project's exact commands and repair steps.
 Proceed to the commit workflow only after preflight returns **pass**, or the
 user explicitly accepts any residual risk surfaced.
 
+If preflight blocks on failing tests or unclear test apparatus, hand off to
+`Debugger`; that diagnosis should use the `testing` skill and prefer the
+`workspaceTesting` MCP server before broad shell commands.
+
 ## Commit workflow
 
 1. Run the secret-guard check over all candidate files before staging anything. Surface any probable secret to the user and stop until resolved.

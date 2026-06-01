@@ -18,7 +18,7 @@ missing rollback procedures, and overly broad IAM permissions.
 |---|---|
 | **Skills** | `devopsCiCd`, `devopsContainers`, `devopsInfraAsCode`, `devopsReview` |
 | **Prompts** | `/devops-pipeline`, `/devops-incident` |
-| **MCP** | `devopsEnvCheck.py` — checks environment variable usage for exposed secrets and misconfigured references |
+| **Tool scripts** | `.github/mcp/scripts/devopsEnvCheck.py` when the devops pack is installed — checks environment variable usage for exposed secrets and misconfigured references. Not part of the default core MCP server roster. |
 
 ## Token overrides
 

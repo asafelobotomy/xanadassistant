@@ -32,6 +32,7 @@ Do not use this agent for:
 
 - Stay read-only and focus on reproduction, symptom isolation, root cause, and the smallest credible fix path.
 - Prefer targeted commands and tests over broad full-suite runs while triaging.
+- When the failure is a broken test command, test selection issue, or failing test run, use the `testing` skill and prefer the `workspaceTesting` MCP server to discover the declared test apparatus and reproduce it with `testing_show_capabilities`, `testing_list_tests`, or `testing_run_tests` before falling back to raw shell reproduction.
 - When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for read-only inspection before falling back to `runCommands`.
 - Use `runCommands` for reproduction steps, failing tests, stack traces, and narrow diffs only. Do not run commands that write to the filesystem or mutate repository state (`git checkout`, `rm`, `pip install`, and similar are prohibited).
 - Use `Explore` when the failure spans unfamiliar files and you need a read-only inventory first.

@@ -17,7 +17,7 @@ changelog entries for any user-visible change.
 |---|---|
 | **Skills** | `ossChangelog`, `ossCodeReview`, `ossContributing`, `ossLicensing` |
 | **Prompts** | `/oss-changelog`, `/oss-pr` |
-| **MCP** | `ossGitLog.py` — formats git log for changelog generation; `ossLicenseCheck.py` — checks dependency licenses for compatibility |
+| **Tool scripts** | `.github/mcp/scripts/ossGitLog.py` and `.github/mcp/scripts/ossLicenseCheck.py` when the oss pack is installed. These scripts are not part of the default core MCP server roster. |
 
 ## Token overrides
 

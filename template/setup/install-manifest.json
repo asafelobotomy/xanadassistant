@@ -68,7 +68,7 @@
         "{{agent:commit:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:f93127d3681a06aafc96a241c2a1e7383684fa1469cd8bcdf616a9ab03d215c9"
+      "hash": "sha256:17f2de84b32b81a2f77cfca8f0168d0f9a532ac4734c88a1cd12c4038ada65d5"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -84,7 +84,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:83ed39b9ee0378ce5a0f6137dabb4c27504d5366ff433cccafd722d2ea37fc78"
+      "hash": "sha256:3d93a91262cf7df5f72f4832b6013f46a73155d5c6f4f454dd4b53dd6c61044d"
     },
     {
       "id": "agents.deps.agent.md",
@@ -118,7 +118,7 @@
         "{{agent:docs:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:1f2b31091a11a810e9070c25810bba08f74645bcff9f7c8566df42b990e00293"
+      "hash": "sha256:ae12633bb9f80cc85fa4cae53a53ea141c22a9f603abe6f12d541af11231b28a"
     },
     {
       "id": "agents.explore.agent.md",
@@ -204,7 +204,7 @@
         "{{agent:review:reporting-threshold}}"
       ],
       "chmod": "none",
-      "hash": "sha256:cec44bb57a598b8427d5aff335994a6a687d02167cf906dbe649d0660312a2a4"
+      "hash": "sha256:584ed7ee1894b19e20abfcef0f832f9afab7ab94ac74d2416b8bbbeba11f9531"
     },
     {
       "id": "agents.triage.agent.md",
@@ -236,7 +236,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:79f46ff2921beac701a5757c02b3fdb9d27074d2d328e6f5da6e49f4a4be4f16"
+      "hash": "sha256:3e3f04f6d571047d125849d85bbba77aa77ee64936d08fcdea307189c8264a36"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -393,7 +393,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:8d63051956ef233a1b82f031cd1794680c89d587a44d3cac0a3b89909f28bba5"
+      "hash": "sha256:4dc0fa49161e9cdd792d319833bee9e97fe45a1fc403b2f3f160b6c6a27ddbbb"
     },
     {
       "id": "hook-scripts._xanad_mcp_source.py",
@@ -777,7 +777,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:1e077ad95dd7bf5264ee57ef0f924b5ca1e2d793c3f7c643cd7f51eda557e8fd"
+      "hash": "sha256:dc5fc1be8c73dc27ab09b23d5ad935fd5cec89022ee4605f051ef1155793f6b7"
     },
     {
       "id": "hook-scripts.xanadWorkspaceMcp.py",
@@ -979,7 +979,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:8b9634d8ebc555b77d33f3c414b0f5478bf77c777d2edd7b07b2fd1d2026d9ce"
+      "hash": "sha256:151c6816dff9b310cd7f0059625ec0235864cd35cf922a66e52ede11e393af8a"
     },
     {
       "id": "oss-prompts.oss-pr.prompt.md",
@@ -1184,7 +1184,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:62eafe6c3fffac9cc0faccd0585138b4991d8c4adf954a8a12700460e3027cd1"
+      "hash": "sha256:74447290042ae1d5bc835d83457313b3e14493003d4b8ba46e12b336dc729962"
     },
     {
       "id": "devops-skills.devopsCiCd.SKILL.md",
@@ -1416,7 +1416,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:797cd5b32d800fbb9cc12b197916acdbaf6482773fc5d636c3df04ad64788796"
+      "hash": "sha256:be0daaa8d76c7cb346b815eff587b747fbd22e9ded16423aeb4fa6aa6a424027"
     },
     {
       "id": "mlops-skills.mlopsDataPipelines.SKILL.md",
@@ -1506,7 +1506,7 @@
       ],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:4cb33b486fc039bd2d136e89b4c74bdcf86e882a0a90d384c14881768f9abf00"
+      "hash": "sha256:0374d5651915e87aa2e49b4de261977e37170553651159a66725651d5155d3ab"
     },
     {
       "id": "oss-skills.ossCodeReview.SKILL.md",
@@ -1772,7 +1772,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:9f727ec0e30e92235edc44518ea6f00d25335032f739a863b09e771666ffaee8"
+      "hash": "sha256:f0356814e7b83810651180ca1e2c3f4b17e2863399d650a2f2ceff8098c894cb"
     },
     {
       "id": "secure-skills.threatModel.SKILL.md",

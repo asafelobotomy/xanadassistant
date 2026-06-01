@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:d5c5490ca09fa3441b9cd58100d8f09bbc580cf1b6d9ca1fa15d4e7d7acb5069"
+    "hash": "sha256:7b919c368e8a940f98d57f547c2c266ce78bc54c262e855e49c407db8274a14e"
   },
   "timestamps": {
-    "appliedAt": "2026-05-31T22:09:05Z",
-    "updatedAt": "2026-05-31T22:09:05Z"
+    "appliedAt": "2026-06-01T00:03:59Z",
+    "updatedAt": "2026-06-01T00:03:59Z"
   },
   "selectedPacks": [],
   "profile": "balanced",
@@ -53,7 +53,16 @@
     "mcpAvailable": true,
     "mcpEnabled": true
   },
-  "files": [],
+  "files": [
+    {
+      "id": "hook-scripts.workspaceTestingMcp.py",
+      "target": ".github/mcp/scripts/workspaceTestingMcp.py",
+      "sourceHash": "sha256:dc5fc1be8c73dc27ab09b23d5ad935fd5cec89022ee4605f051ef1155793f6b7",
+      "installedHash": "sha256:dc5fc1be8c73dc27ab09b23d5ad935fd5cec89022ee4605f051ef1155793f6b7",
+      "ownershipMode": "local",
+      "status": "applied"
+    }
+  ],
   "skippedManagedFiles": [
     ".github/agents/cleaner.agent.md",
     ".github/agents/commit.agent.md",
@@ -134,5 +143,8 @@
   ],
   "retiredManagedFiles": [],
   "consumerResolutions": {},
-  "unknownValues": {}
+  "unknownValues": {},
+  "lastBackup": {
+    "path": ".xanadAssistant/backups/2026-06-01T00-03-59Z"
+  }
 }

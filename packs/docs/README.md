@@ -16,7 +16,7 @@ leaving TODO placeholders, and match the register of the surrounding doc corpus.
 |---|---|
 | **Skills** | `docsApi`, `docsReview`, `docsStructure`, `docsStyle` |
 | **Prompts** | `/docs-draft`, `/docs-review` |
-| **MCP** | `docsLinkCheck.py` — validates Markdown links and surfaces broken references |
+| **Tool scripts** | `.github/mcp/scripts/docsLinkCheck.py` when the docs pack is installed — validates Markdown links and surfaces broken references. Not part of the default core MCP server roster. |
 
 ## Token overrides
 

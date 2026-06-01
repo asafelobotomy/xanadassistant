@@ -1,7 +1,7 @@
 ---
 name: xanadLifecycle
-description: "Use when: set up xanadAssistant, inspect workspace, run lifecycle check, interview, plan setup, apply setup, update xanadAssistant, repair install, factory restore, run health check, submit health check report, or coordinate any lifecycle command in a consumer workspace."
-argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, apply, update, repair, factory restore, or health check."
+description: "Use when: set up xanadAssistant, inspect workspace, run lifecycle check, interview, plan setup, update xanadAssistant, repair install, factory restore, run health check, submit health check report, or coordinate any lifecycle command in a consumer workspace."
+argument-hint: "Describe the lifecycle task: inspect, check, interview, plan setup, setup, update, repair, factory restore, or health check."
 model:
   - Claude Sonnet 4.6
   - GPT-5.4
@@ -37,7 +37,7 @@ is unavailable or package source resolution is missing.
 
 ## Trigger phrases
 
-- Install or set up xanadAssistant → cold-start path (see below) if not installed; `apply` otherwise
+- Install or set up xanadAssistant → cold-start path (see below) if not installed; `setup` otherwise
 - Update to the latest version → run `update`
 - Re-interview or reconfigure an existing install → run `interview --mode update` then `update --answers` (see `## Re-interview workflow`)
 - Repair a broken or incomplete install → run `repair`
@@ -240,7 +240,7 @@ then pass `--allow-mutable-ref` explicitly.
 2. **Plan before writing.** Always run `plan <mode>` and review the output before
    running a write-capable command. Require user approval if `approvalRequired` is
    true in the plan payload.
-3. **Apply only after approval.** Once approved, run `apply`, `update`, `repair`,
+3. **Write only after approval.** Once approved, run `setup`, `update`, `repair`,
    or `factory-restore` as appropriate.
 4. **Diagnose unclear failures.** Use `Debugger` when lifecycle commands fail, drift is surprising, or the controlling state is unclear.
 5. **Scope complex remediation.** Use `Planner` when repair, update, or migration work spans multiple managed surfaces or needs phased execution.
@@ -279,8 +279,8 @@ python3 xanadAssistant.py plan factory-restore \
   --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
 
-# Apply the setup plan
-python3 xanadAssistant.py apply \
+# Execute the setup plan
+python3 xanadAssistant.py setup \
   --workspace <consumer-repo-path> \
   --package-root <xanadAssistant-checkout> \
   --non-interactive --ui agent --json-lines
@@ -322,8 +322,8 @@ python3 xanadAssistant.py health-report \
   --package-root <xanadAssistant-checkout> \
   [--label <workspace-alias>] --json
 
-# Preview any write-capable command without making changes
-python3 xanadAssistant.py apply \
+# Preview setup without making changes
+python3 xanadAssistant.py setup \
   --workspace <consumer-repo-path> \
   --package-root <xanadAssistant-checkout> \
   --dry-run --json-lines

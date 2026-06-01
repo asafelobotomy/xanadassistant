@@ -5,7 +5,7 @@ description: "Use when: checking xanadAssistant workspace health, install status
 
 # Lifecycle Health Check
 
-> Skill metadata: version "1.2"; license MIT; tags [xanadAssistant, lifecycle, inspect, repair, lockfile]; recommended tools [codebase, runCommands].
+> Skill metadata: version "1.3"; license MIT; tags [xanadAssistant, lifecycle, inspect, repair, lockfile]; recommended tools [lifecycle_inspect, lifecycle_check, lifecycle_plan_setup, runCommands].
 
 Systematic lifecycle state review before any install, update, repair, or factory-restore operation.
 
@@ -25,9 +25,9 @@ Systematic lifecycle state review before any install, update, repair, or factory
 
 > `<xanad-root>` is the directory containing `xanadAssistant.py`. Use `.` when running from the package root (self-hosted install) or the absolute path to the installed package otherwise. If `xanadAssistant.py` is not found, halt and report the error to the user before proceeding.
 
-1. **Inspect** — run `python3 xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json` and verify `installState` and `manifestSummary`. If the command exits non-zero, halt and report the error before proceeding.
+1. **Inspect** — prefer `lifecycle_inspect` when the `xanadTools` MCP server is connected and can resolve the package source; otherwise run `python3 xanadAssistant.py inspect --workspace . --package-root <xanad-root> --json`. Verify `installState` and `manifestSummary`. If the tool or command exits non-zero, halt and report the error before proceeding.
 
-2. **Check** — run `python3 xanadAssistant.py health-check --workspace . --package-root <xanad-root> --json` and read `status`, `warnings`, and `result.summary`. Treat exit `7` as a normal drift signal to classify, not as an execution failure. Halt only on other non-zero exits. If you need machine-readable `repairReasons`, run `python3 xanadAssistant.py plan repair --workspace . --package-root <xanad-root> --json` and read them from `plan` output rather than `health-check`.
+2. **Check** — prefer `lifecycle_check` when the `xanadTools` MCP server is connected and can resolve the package source; otherwise run `python3 xanadAssistant.py health-check --workspace . --package-root <xanad-root> --json`. Read `status`, `warnings`, and `result.summary`. Treat exit `7` as a normal drift signal to classify, not as an execution failure. Halt only on other non-zero exits. If you need machine-readable `repairReasons`, prefer `lifecycle_plan_setup` only for setup planning and use `python3 xanadAssistant.py plan repair --workspace . --package-root <xanad-root> --json` for repair reasons rather than inferring them from `health-check`.
 
 ## Module 2 — Classify And Report
 

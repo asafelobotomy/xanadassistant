@@ -15,7 +15,7 @@ experienced engineers who want fast iteration and minimal prose overhead.
 |---|---|
 | **Skills** | `leanAndon`, `leanContext`, `leanOutput`, `leanVerification` |
 | **Prompts** | `/lean-plan`, `/lean-review`, `/lean-status` |
-| **MCP** | `leanContextBudget.py`, `leanTestReporter.py` |
+| **Tool scripts** | `.github/mcp/scripts/leanContextBudget.py` and `.github/mcp/scripts/leanTestReporter.py` when the lean pack is installed. These scripts are not part of the default core MCP server roster. |
 
 ## Token overrides
 

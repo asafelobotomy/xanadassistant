@@ -5,7 +5,7 @@ description: "Use when: running targeted or full tests in any workspace, choosin
 
 # Testing
 
-> Skill metadata: version "1.1"; tags [testing, validation, mcp, workflow, generic]; recommended tools [testing_show_key_commands, testing_run_tests, testing_parse_coverage, run_in_terminal].
+> Skill metadata: version "1.5"; tags [testing, validation, mcp, workflow, generic]; recommended tools [testing_show_key_commands, testing_show_capabilities, testing_list_tests, testing_run_tests, testing_parse_coverage, run_in_terminal].
 
 Procedural skill for running tests through the workspace's declared testing apparatus before, during, or after code changes.
 
@@ -28,21 +28,25 @@ Procedural skill for running tests through the workspace's declared testing appa
 1. Discover the workspace test apparatus.
    - Prefer `testing_show_key_commands` from the `workspaceTesting` MCP server.
    - Confirm a declared `Run tests` command exists and is not `(not detected)`.
+   - When available, call `testing_show_capabilities` to learn the detected runner, timeout policy, typed-targeting mode, and coverage support before choosing flags or scope.
    - If `workspaceTesting` is unavailable, read the workspace instructions or project docs for the documented test command; do not invent a shell command.
 
 2. Choose the narrowest useful scope.
-   - For a localized code change, run targeted tests first with safe argv-style target arguments.
+   - If `testing_show_capabilities` reports `supportsTestDiscovery=true`, prefer `testing_list_tests` to confirm available test ids before building a targeted run.
+   - For a localized code change, run targeted tests first with safe argv-style target arguments only when `supportsTypedTargets=true`; recognized runner families may still report `false` for compound command shapes such as `python -m unittest discover ...`.
    - For shared infrastructure, generated surfaces, or task completion, run the full declared test command.
-   - If target arguments are uncertain or framework-specific, prefer a full run over guessing unsafe flags.
+   - If `supportsTypedTargets=false` or target arguments are uncertain or framework-specific, prefer a full run over guessing unsafe flags.
 
 3. Execute through the safest available runner.
+   - Prefer `testing_list_tests(targetFiles=[...])` only when capability discovery explicitly reports safe test discovery.
    - Prefer `testing_run_tests(scope="default", extraArgs=[...])` for targeted runs.
+   - Treat `targetFiles` and `testNames` as valid only when `supportsTypedTargets=true`; otherwise expect `workspaceTesting` to reject them and use `scope="full"` or explicit `extraArgs` instead.
    - Prefer `testing_run_tests(scope="full")` for full runs.
    - Use the documented native command only when the `workspaceTesting` server is unavailable.
    - Do not use arbitrary command strings, shell interpolation, pipes, redirects, or commands requiring secrets unless the workspace documentation explicitly requires them.
 
 4. Summarize the result in an agent-readable form.
-   - Report status, command or tool used, exit code, and the relevant stdout/stderr tail.
+   - Report status, command or tool used, exit code, `runnerExitReason` when present, and the relevant stdout/stderr tail.
    - Identify first failing test, failing file, or failure class when the output makes that clear.
    - State whether the check is targeted, full, skipped, unavailable, or blocked.
 
@@ -59,8 +63,10 @@ Procedural skill for running tests through the workspace's declared testing appa
 ## Verify
 
 - [ ] A declared workspace test command or explicit unavailable state has been observed this session
+- [ ] `testing_show_capabilities` was used or an explicit reason was given for skipping capability discovery
+- [ ] `testing_list_tests` was used only when `supportsTestDiscovery=true`, or its absence was justified by capability output
 - [ ] `workspaceTesting.testing_run_tests` was preferred when available, with documented native fallback only when needed
 - [ ] Targeted runs used safe argv-style arguments; full runs used the command exactly
-- [ ] Output summary includes status, command/tool, exit code when available, and relevant output tail
+- [ ] Output summary includes status, command/tool, exit code when available, `runnerExitReason` when present, and relevant output tail
 - [ ] Coverage artifact was parsed with `testing_parse_coverage` when present or explicitly reported as not assessed
 - [ ] Failing tests were either repaired in the current slice or handed to `Debugger` with exact evidence

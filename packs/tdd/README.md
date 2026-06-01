@@ -16,7 +16,7 @@ over-implementing beyond what the current test requires.
 |---|---|
 | **Skills** | `tddCycle`, `testArchitecture`, `testCoverage`, `testDoubles` |
 | **Prompts** | `/tdd-session`, `/tdd-review` |
-| **MCP** | `tddTestRunner.py` — runs the test suite and surfaces structured pass/fail output |
+| **Tool scripts** | `.github/mcp/scripts/tddTestRunner.py` when the tdd pack is installed — runs the test suite and surfaces structured pass/fail output. Not part of the default core MCP server roster. |
 
 ## Token overrides
 

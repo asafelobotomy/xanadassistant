@@ -52,7 +52,7 @@ Run applicable tools before finishing any documentation task. If a tool is not i
 | markdownlint | After writing or editing any Markdown file | `npx markdownlint-cli2 <files>` or `markdownlint <files>` |
 | cspell | After writing prose-heavy documentation | `npx cspell <files>` |
 | aspell | Fallback spellcheck when cspell is unavailable | `aspell check <file>` per file |
-| Link validation | After writing docs that contain cross-references or external URLs | `python3 packs/docs/mcp/docsLinkCheck.py` if docs pack installed; otherwise `grep` for dead internal references |
+| Link validation | After writing docs that contain cross-references or external URLs | `python3 .github/mcp/scripts/docsLinkCheck.py` if the docs pack is installed; otherwise `grep` for dead internal references |
 
 ## Output style
 

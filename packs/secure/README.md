@@ -17,7 +17,7 @@ code review and before every commit.
 |---|---|
 | **Skills** | `dependencyAudit`, `secretScanning`, `secureReview`, `threatModel` |
 | **Prompts** | `/security-review`, `/threat-model` |
-| **MCP** | `secureOsv.py` — OSV database dependency vulnerability lookups |
+| **Tool scripts** | `.github/mcp/scripts/secureOsv.py` when the secure pack is installed — OSV database dependency vulnerability lookups. Not part of the default core MCP server roster. |
 
 ## Token overrides
 

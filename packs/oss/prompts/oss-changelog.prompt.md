@@ -8,7 +8,7 @@ You are helping generate a CHANGELOG entry for an open-source project release.
 Apply the ossChangelog skill for formatting rules and how to categorize conventional commit types into changelog sections.
 If a referenced skill is unavailable, state which skill is unavailable and proceed using this prompt's local instructions only.
 
-If the ossGitLog tool is available, use it to fetch structured commit history for the release range.
+If your workspace has separately registered the optional `ossGitLog` pack server, you may use it to fetch structured commit history for the release range. Otherwise use the manual `git log` approach below.
 
 ---
 

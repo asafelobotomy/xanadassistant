@@ -6,11 +6,11 @@ type: reference
 
 # Dependency Audit
 
-> Skill metadata: version "1.0"; tags [security, dependencies, audit, osv]; recommended tools [].
+> Skill metadata: version "1.1"; tags [security, dependencies, audit, osv]; recommended tools [query_osv, query_deps].
 
 Use this skill in workspaces with the secure pack selected.
 
-Query known CVEs for project dependencies using the `secureOsv` hook, which wraps the OSV.dev API (public, no auth required).
+Query known CVEs for project dependencies with the registered `security` MCP server when it is connected. If the server is unavailable, fall back to OSV.dev directly or a native package-manager audit command and normalize the results to the same package/version/CVE fields.
 
 ## When to use
 
@@ -31,22 +31,23 @@ Query known CVEs for project dependencies using the `secureOsv` hook, which wrap
 - When a security advisory is mentioned for a package you use
 - As part of a periodic security review
 
-## Using the secureOsv hook
+## Using the security MCP tools
 
-The hook exposes two tools:
+When the `security` MCP server is connected, prefer these tools:
 
-**`query_package_vulnerabilities(ecosystem, name, version)`**
-- `ecosystem`: `PyPI`, `npm`, `crates.io`, `Go`, `Maven`, `Hex`, `NuGet`, `RubyGems`
-- `name`: exact package name as it appears in the lockfile
+**`query_osv(package, version, ecosystem)`**
+- `package`: exact package name as it appears in the lockfile
 - `version`: exact installed version string
-- Returns: list of OSV IDs, severity (CVSS score and label), fixed-in versions
+- `ecosystem`: `PyPI`, `npm`, `crates.io`, `Go`, `Maven`, `Hex`, `NuGet`, `RubyGems`, `Packagist`, `Pub`, `Linux`, or `GitHub Actions`
+- Returns: vulnerability summaries with OSV IDs and any published severity data
 
-**`batch_query_lockfile(lockfile_path)`**
-- Accepts: `requirements.txt`, `package.json` (dependencies/devDependencies), `Cargo.toml`
-- Parses all pinned dependencies and bulk-queries OSV.dev
-- Returns: structured list of (package, version, vulnerabilities)
+**`query_deps(package, version, system)`**
+- `package`: exact package name as it appears in the lockfile
+- `version`: exact installed version string
+- `system`: `pypi`, `npm`, `cargo`, `go`, `maven`, `nuget`, `rubygems`, `packagist`, `hex`, or `pub`
+- Returns: dependency health signals including known CVE count, license data, and scorecard information
 
-For Go dependencies, use `query_package_vulnerabilities` per package/version; the bulk lockfile parser does not currently support `go.mod`.
+If the `security` MCP server is unavailable, extract the package/version pairs from the lockfile and query OSV.dev directly or run the ecosystem's native audit command, then report the results with the same package, version, severity, and fix-version fields.
 
 ## Interpreting results
 
@@ -70,6 +71,6 @@ If `batch_query_lockfile` returns zero vulnerabilities, report: "No known vulner
 
 ## Verify
 
-- [ ] Queried OSV.dev (or equivalent) for all direct dependencies
+- [ ] Queried the registered `security` MCP tools or an explicit documented fallback for all direct dependencies
 - [ ] Each CVE triaged with severity, affected version range, and patch status
 - [ ] Findings reported with ecosystem, package, version, and CVE ID

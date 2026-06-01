@@ -18,7 +18,7 @@ change that touches those surfaces.
 |---|---|
 | **Skills** | `mlopsDataPipelines`, `mlopsExperiments`, `mlopsModelServing`, `mlopsReview` |
 | **Prompts** | `/mlops-experiment`, `/mlops-drift` |
-| **MCP** | `mlopsModelCheck.py` — validates model versioning metadata and flags missing lineage or reproducibility records |
+| **Tool scripts** | `.github/mcp/scripts/mlopsModelCheck.py` when the mlops pack is installed — validates model versioning metadata and flags missing lineage or reproducibility records. Not part of the default core MCP server roster. |
 
 ## Token overrides
 

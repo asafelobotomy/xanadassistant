@@ -74,7 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Generating entries from git history
 
-Use the `ossGitLog` tool (if the hook is enabled) to get structured commit history for a range.
+Use the optional `ossGitLog` pack server only when the workspace has registered it separately. Otherwise use the manual `git log` commands below to get structured commit history for a range.
 
 Manual approach:
 ```bash

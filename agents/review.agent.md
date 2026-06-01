@@ -27,11 +27,12 @@ Do not use this agent for:
 0. Call `memory_dump(agent="review")` before using any tools (see `## Memory`).
 1. **Read first** — open every file in scope before writing any finding. Do not review from memory or partial reads.
 2. **Stay read-only** — do not edit files during review. Produce findings; let the user or the main agent decide what to apply. When using `runCommands`, limit to read-only operations (test runs to confirm findings, `grep`, `cat`, narrow diffs); do not run commands that write to the filesystem, install packages, or mutate repository state.
-3. **Scope clearly** — if the request is broad ("review the codebase"), ask for a specific focus area before proceeding.
-4. **Inventory unfamiliar scope** — use `Explore` when the review spans unfamiliar files, symbols, or ownership boundaries that need read-only discovery before findings are credible.
-5. **Diagnose first when needed** — use `Debugger` when findings depend on reproducing a failure or isolating a concrete regression.
-6. **Plan phased follow-up** — use `Planner` when the review outcome should include a scoped remediation plan rather than isolated fixes.
-7. **Research current constraints** — use `Researcher` when findings depend on current external docs, upstream behavior, or version-specific contracts.
+3. **Use the testing surface deliberately** — when findings depend on the declared test apparatus, targetability, or runnable coverage claims, use the `testing` skill and prefer the `workspaceTesting` MCP server to inspect capabilities and run the narrowest confirming test.
+4. **Scope clearly** — if the request is broad ("review the codebase"), ask for a specific focus area before proceeding.
+5. **Inventory unfamiliar scope** — use `Explore` when the review spans unfamiliar files, symbols, or ownership boundaries that need read-only discovery before findings are credible.
+6. **Diagnose first when needed** — use `Debugger` when findings depend on reproducing a failure or isolating a concrete regression.
+7. **Plan phased follow-up** — use `Planner` when the review outcome should include a scoped remediation plan rather than isolated fixes.
+8. **Research current constraints** — use `Researcher` when findings depend on current external docs, upstream behavior, or version-specific contracts.
 
 ## Review structure
 

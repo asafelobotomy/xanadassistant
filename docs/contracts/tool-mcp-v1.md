@@ -64,6 +64,8 @@ Behavior: read the `Run tests` command from the instructions file; execute in th
 
 Output: `status` (`ok`, `failed`, `unavailable`), `command`, `exitCode`, `summary`, `stdoutTail`, `stderrTail`, and when `parseOutput=true`, `testSummary` with best-effort `format`, `passed`, `failed`, `errors`, `total`, and `firstFailure` fields.
 
+`testing_run_tests` also returns `runnerExitReason` when execution was attempted. Current reason values are `completed`, `tests_failed`, `interrupted`, `internal_error`, `usage_error`, `no_tests_collected`, `runner_error`, and `timeout`.
+
 ### `workspace_run_check_loc`
 
 Purpose: run the repo LOC gate when explicitly present.
@@ -95,6 +97,32 @@ Input schema: no arguments.
 Behavior: parse the `Key Commands` table; return discovered entries as structured name/value pairs; return `unavailable` if the file is absent or malformed.
 
 Output: `status`, `commands` (array of `{label, command}`), `summary`.
+
+### `testing_show_capabilities`
+
+Purpose: report the `workspaceTesting` server's runtime testing capabilities so agents can choose targeted or full execution intentionally.
+
+Input schema: no arguments.
+
+Behavior: inspect the declared `Run tests` command when present, detect the runner family conservatively, and report static capabilities such as timeout policy, typed-targeting mode, output parsing support, test-discovery support, and supported coverage formats.
+
+Output: `status`, `summary`, `runTestsCommandAvailable`, `runTestsCommand`, `detectedRunner`, `venvPythonAvailable`, `timeoutSeconds`, `supportedScopes`, `supportsTypedTargets`, `supportsParseOutput`, `supportsTestDiscovery`, `typedTargetingMode`, `supportedCoverageFormats`, and `parsedOutputFormats`.
+
+`supportsTypedTargets` must remain conservative. In the current implementation it is true only when the full declared command shape resolves to a recognized direct runner invocation or a supported wrapper that safely forwards argv to pytest or unittest, including `uv run ...`, `poetry run ...`, `pnpm exec ...`, `yarn exec ...`, `npm exec -- ...`, and `npx ...`. Compound unittest forms such as `python -m unittest discover ...` must not claim typed-target support.
+
+`supportsTestDiscovery` must remain conservative. In the current implementation it is true only for pytest-family commands that can be collected through argv-safe flags without shell expansion.
+
+### `testing_list_tests`
+
+Purpose: list discovered test ids when the declared runner supports deterministic collection.
+
+Input schema:
+
+- `targetFiles`: optional string array, default empty; argv-safe file paths passed directly to the runner's collection command
+
+Behavior: resolve the declared `Run tests` command, reject unsupported or unresolved commands, and run a conservative discovery variant only when the detected runner advertises safe test discovery. Return `unavailable` when the runner does not support safe deterministic collection. In the current implementation, discovery is supported only for pytest-family commands, including supported argv-forwarding wrappers such as `uv run ...`, `poetry run ...`, `pnpm exec ...`, `yarn exec ...`, `npm exec -- ...`, and `npx ...`, via `--collect-only -q --no-header`.
+
+Output: `status`, `summary`, `command`, `testIds`, and `total`.
 
 ### `workspace_show_key_commands`
 

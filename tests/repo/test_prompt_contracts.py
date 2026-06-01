@@ -240,33 +240,13 @@ class PromptContractTests(unittest.TestCase):
         )
 
     def test_read_heavy_agents_declare_filesystem_memory_and_time_tools(self) -> None:
-        for agent_filename in [
-            "review.agent.md",
-            "debugger.agent.md",
-            "planner.agent.md",
-            "docs.agent.md",
-        ]:
+        for agent_filename in ["review.agent.md", "debugger.agent.md", "planner.agent.md", "docs.agent.md"]:
             with self.subTest(agent=agent_filename):
                 declared = self._declared_tools(agent_filename)
-                self.assertTrue(
-                    {
-                        "read_file",
-                        "list_directory",
-                        "search_files",
-                        "file_info",
-                        "memory_dump",
-                        "memory_set",
-                        "elapsed",
-                    }.issubset(declared)
-                )
+                self.assertTrue({"read_file", "list_directory", "search_files", "file_info", "memory_dump", "memory_set", "elapsed"}.issubset(declared))
 
     def test_read_heavy_agents_prefer_filesystem_tools_for_read_only_inspection(self) -> None:
-        for agent_filename in [
-            "review.agent.md",
-            "debugger.agent.md",
-            "planner.agent.md",
-            "docs.agent.md",
-        ]:
+        for agent_filename in ["review.agent.md", "debugger.agent.md", "planner.agent.md", "docs.agent.md"]:
             with self.subTest(agent=agent_filename):
                 content = (REPO_ROOT / "agents" / agent_filename).read_text(encoding="utf-8")
                 self.assertIn("When the `filesystem` server is connected", content)
@@ -274,6 +254,14 @@ class PromptContractTests(unittest.TestCase):
                 self.assertIn("`list_directory`", content)
                 self.assertIn("`search_files`", content)
                 self.assertIn("`file_info`", content)
+
+    def test_applicable_agents_reference_testing_skill_and_workspacetesting(self) -> None:
+        expectations = {"debugger.agent.md": ["`testing` skill", "`workspaceTesting` MCP server"], "review.agent.md": ["`testing` skill", "`workspaceTesting` MCP server"], "commit.agent.md": ["`testing` skill", "`workspaceTesting` MCP server"]}
+        for agent_filename, snippets in expectations.items():
+            with self.subTest(agent=agent_filename):
+                content = (REPO_ROOT / "agents" / agent_filename).read_text(encoding="utf-8")
+                for snippet in snippets:
+                    self.assertIn(snippet, content)
 
     def test_template_prompts_use_serialized_plan_setup_flow(self) -> None:
         prompt_paths = [

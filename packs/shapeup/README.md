@@ -17,7 +17,7 @@ run cycle kick-offs, and manage the betting table.
 |---|---|
 | **Skills** | `shapeupBetting`, `shapeupCycleWork`, `shapeupPitching`, `shapeupReview` |
 | **Prompts** | `/shapeup-pitch`, `/shapeup-kickoff` |
-| **MCP** | `shapeupScopeCheck.py` — inspects open work items for unbounded scope or missing appetite |
+| **Tool scripts** | `.github/mcp/scripts/shapeupScopeCheck.py` when the shapeup pack is installed — inspects open work items for unbounded scope or missing appetite. Not part of the default core MCP server roster. |
 
 ## Token overrides
 

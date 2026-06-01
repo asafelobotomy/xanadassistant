@@ -5,7 +5,7 @@ graders:
   - type: text
     name: references_skill
     config:
-      pattern: "(?is)(testing.*testing_run_tests|testing_run_tests.*testing)"
+      pattern: "(?is)(testing_show_capabilities.*testing_list_tests|testing_list_tests.*testing_run_tests|testing_show_capabilities.*testing_run_tests|testing_run_tests.*testing_show_capabilities|testing.*testing_run_tests|testing_run_tests.*testing)"
 
   - type: behavior
     name: response_budget

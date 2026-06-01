@@ -70,6 +70,8 @@ The complete `xanadTools` tool set is (see `tool-mcp-v1.md` for V1 vs Extended d
 The complete `workspaceTesting` tool set is:
 
 - `testing_show_key_commands`
+- `testing_show_capabilities`
+- `testing_list_tests`
 - `testing_run_tests`
 - `testing_parse_coverage`
 
@@ -82,6 +84,7 @@ It must not accept a free-form command string when a narrower typed input can ex
 Examples:
 
 - `testing_run_tests` may accept typed target file paths or framework test names.
+- `testing_list_tests` may accept typed target file paths only when the detected runner supports deterministic discovery.
 - `lifecycle_plan_setup` may accept workspace, package root, and non-interactive flags.
 - `package.generate` should not accept arbitrary subprocess arguments.
 
