@@ -301,27 +301,31 @@ class WorkspaceTestingMcpTests(WorkspaceTestingMcpTestCaseMixin, unittest.TestCa
         for module in self.MODULES:
             for command, expected_argv in cases:
                 with self.subTest(module=module.__name__, command=command):
-                    with self._workspace_ready(module, resolve_key_command=command), mock.patch.object(
-                        module,
-                        "run_argv",
-                        return_value={
-                            "status": "ok",
-                            "summary": "Command completed successfully.",
-                            "stdoutTail": "tests/test_a.py::test_one\n",
-                            "_stdoutFull": "tests/test_a.py::test_one\ntests/test_a.py::TestSuite::test_two\n",
-                            "stderrTail": "warning: tail noise\n",
-                            "_stderrFull": "warning: collection note\n",
-                        },
-                    ) as run_argv:
-                        result = module.tool_testing_list_tests({"targetFiles": ["tests/test_a.py"]})
-
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        workspace_root = Path(tmpdir)
+                        resolved_expected_argv = expected_argv
+                        if resolved_expected_argv is None:
+                            workspace_python = workspace_root / ".venv" / "bin" / "python"
+                            workspace_python.parent.mkdir(parents=True)
+                            workspace_python.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+                            resolved_expected_argv = [str(workspace_python), "-m", "pytest", "-q", "--collect-only", "-q", "--no-header", "tests/test_a.py"]
+                        with self._workspace_ready(module, resolve_key_command=command), mock.patch.object(module, "WORKSPACE_ROOT", workspace_root), mock.patch.object(
+                            module,
+                            "run_argv",
+                            return_value={
+                                "status": "ok",
+                                "summary": "Command completed successfully.",
+                                "stdoutTail": "tests/test_a.py::test_one\n",
+                                "_stdoutFull": "tests/test_a.py::test_one\ntests/test_a.py::TestSuite::test_two\n",
+                                "stderrTail": "warning: tail noise\n",
+                                "_stderrFull": "warning: collection note\n",
+                            },
+                        ) as run_argv:
+                            result = module.tool_testing_list_tests({"targetFiles": ["tests/test_a.py"]})
                     self.assertEqual(result["status"], "ok")
                     self.assertEqual(result["testIds"], ["tests/test_a.py::test_one", "tests/test_a.py::TestSuite::test_two"])
                     self.assertEqual(result["total"], 2)
-                    if expected_argv is None:
-                        expected_python = str(module.WORKSPACE_ROOT / ".venv" / "bin" / "python")
-                        expected_argv = [expected_python, "-m", "pytest", "-q", "--collect-only", "-q", "--no-header", "tests/test_a.py"]
-                    self.assertEqual(run_argv.call_args.args[0], expected_argv)
+                    self.assertEqual(run_argv.call_args.args[0], resolved_expected_argv)
 
     def test_testing_run_tests_parses_summary_from_full_mixed_output(self) -> None:
         for module in self.MODULES:
@@ -391,7 +395,6 @@ class WorkspaceTestingMcpTests(WorkspaceTestingMcpTestCaseMixin, unittest.TestCa
                     self.assertIn("existing file", missing["summary"])
                     self.assertEqual(broken["status"], "failed")
                     self.assertIn("Cannot parse coverage XML", broken["summary"])
-
 
 if __name__ == "__main__":
     unittest.main()
