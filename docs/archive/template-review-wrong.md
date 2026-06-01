@@ -36,6 +36,7 @@ suppress patterns, behavioral patterns, cooldowns, and prompt pattern regexes. T
 re-implements something the VS Code agent framework should handle natively.
 
 Problems:
+
 - Must be kept in sync with agent frontmatter (two sources of truth for the same routing intent).
 - Confidence thresholds are not documented as having any runtime effect in the VS Code agent protocol.
 - The JSON file adds maintenance cost without a clear runtime guarantee.
@@ -49,6 +50,7 @@ controlled precisely when it may not be.
 ### W3 — Multi-plugin-format fragmentation
 
 Three plugin manifest formats are maintained in parallel:
+
 - `plugin.json` — VS Code Copilot native (agents + skills only; no hooks/MCP)
 - `.plugin/` — OpenPlugin format (`${PLUGIN_ROOT}` paths)
 - `.claude-plugin/` — Claude format (`${CLAUDE_PLUGIN_ROOT}` paths)
@@ -66,6 +68,7 @@ resolves in the Claude plugin context — not in VS Code native mode.
 ### W4 — Runtime state mixed with git-tracked knowledge
 
 `.copilot/workspace/` mixes:
+
 - **Git-tracked knowledge**: `knowledge/MEMORY.md`, `knowledge/SOUL.md`,
   `knowledge/USER.md`, `knowledge/RESEARCH.md`
 - **Runtime state**: `runtime/.heartbeat-events.jsonl`, `runtime/state.json`,

@@ -43,7 +43,7 @@ Do not use this agent for:
 ## MCP usage
 
 | Server | Tools | When to use |
-|---|---|---|
+| --- | --- | --- |
 | `devDocs` | `resolve_library_id`, `query_docs` | **First choice** for API and framework reference lookups — scoped to DevDocs content, fast, no broad web crawl |
 | `web` | `web_search`, `fetch` | General upstream docs, package metadata, release notes, issue context when DevDocs does not cover the target |
 | `github` | `get_repo`, `get_file_contents`, `search_code`, `list_issues`, `get_issue`, `list_pull_requests`, `get_pull_request`, `list_releases`, `list_workflow_runs` | Source-backed comparisons, upstream release history, GitHub-hosted docs or changelogs — only when the `github` MCP server is connected |
@@ -58,6 +58,7 @@ Structure output as: **Summary** (one paragraph), **Sources** (cited list), **Fi
 ## Memory
 
 At the start of every task, call `memory_dump(agent="researcher")`.
+
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.

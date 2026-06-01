@@ -49,6 +49,7 @@ Scan the workspace for dependency manifests. Recognise all of the following:
 | PHP | `composer.json`, `composer.lock` |
 
 For each manifest found, extract:
+
 - Package name and declared version (or range)
 - Whether a lock file is present
 
@@ -68,6 +69,7 @@ For each ecosystem detected, check what is actually installed versus what the ma
 - **Other**: use the ecosystem's canonical list command
 
 Note:
+
 - Packages declared but not installed (drift)
 - Packages installed but not declared (phantom installs)
 - Version mismatches between manifest and installed state
@@ -83,13 +85,14 @@ For each declared package, assess:
 Use `query_osv` (via the `security` MCP server) if the security MCP companion is connected;
 otherwise fall back to `pip-audit` (Python), `npm audit` (Node.js), or
 `osv-scanner` (all ecosystems). Query at minimum every package that is:
+
 - Pinned to a version older than 6 months
 - Flagged by the package manager as having known issues
 - In a security-sensitive role (auth, crypto, HTTP, file parsing)
 
 Report each vulnerability as:
 
-```
+```text
 [CVE-YYYY-XXXXX / GHSA-xxxx] Package@version — <one-line description>
 Severity: Critical | High | Medium | Low
 Fix: upgrade to <version>
@@ -101,6 +104,7 @@ Use `query_deps` (via the `security` MCP server) if the security MCP companion i
 otherwise fetch package metadata from the ecosystem registry directly
 (`pip index versions`, `npm view`, `cargo search`, etc.) or via `search`.
 Retrieve deps.dev signals for each package:
+
 - Latest stable version vs installed version
 - OpenSSF Scorecard (if available)
 - License
@@ -156,7 +160,7 @@ After each operation, re-check the installed state to confirm success.
 
 ### Audit summary
 
-```
+```text
 ## Dep Audit — <workspace or project name>
 Manifests found: <list>
 Ecosystems: <list>
@@ -202,6 +206,7 @@ Use the audit summary format defined in `## Reporting format`. Outside of full a
 ## Memory
 
 At the start of every task, call `memory_dump(agent="deps")`.
+
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.

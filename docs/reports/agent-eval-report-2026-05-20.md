@@ -3,7 +3,7 @@
 Full report from four xanadEval passes run across all 12 agents in `agents/`.
 
 | Pass | Command | Requires API |
-|---|---|---|
+| --- | --- | --- |
 | Structural metrics | `xanadEval tokens` | No |
 | Spec compliance | `xanadEval check` | No |
 | Quality scoring | `xanadEval quality` | Yes (gpt-4o-mini) |
@@ -14,7 +14,7 @@ Full report from four xanadEval passes run across all 12 agents in `agents/`.
 ## 1. Structural Metrics (`tokens`)
 
 | Agent | Tokens | Sections | Code blocks | Workflow detected | Max nesting |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | cleaner | 919 | 5 | 1 | yes | **4** |
 | commit | 2 325 | 15 | 0 | yes | 2 |
 | debugger | 608 | 4 | 0 | yes | 2 |
@@ -43,7 +43,7 @@ agents (`spec-dir-match`, `spec-verify-checklist`, `spec-when-to-use`,
 ### Compliance ratings
 
 | Agent | Compliance | Genuine failures |
-|---|---|---|
+| --- | --- | --- |
 | cleaner | Low | `complexity` (depth 4), `negative-delta-risk` (1 pattern) |
 | commit | Low | `negative-delta-risk` (1 pattern) |
 | debugger | Medium | — |
@@ -59,23 +59,27 @@ agents (`spec-dir-match`, `spec-verify-checklist`, `spec-when-to-use`,
 
 ### Spec check raw output (genuine checks only)
 
-**cleaner**
+#### cleaner
+
 ```json
 { "id": "complexity",           "pass": false, "detail": "max nesting depth: 4 (threshold: 3)" }
 { "id": "negative-delta-risk",  "pass": false, "detail": "negative-delta patterns: 1 found" }
 ```
 
-**commit**
+#### commit
+
 ```json
 { "id": "negative-delta-risk",  "pass": false, "detail": "negative-delta patterns: 1 found" }
 ```
 
-**planner**
+#### planner
+
 ```json
 { "id": "over-specificity",     "pass": false, "detail": "max rules per section: 10 (threshold: 10)" }
 ```
 
-**xanadLifecycle**
+#### xanadLifecycle
+
 ```json
 { "id": "negative-delta-risk",  "pass": false, "detail": "negative-delta patterns: 2 found" }
 ```
@@ -99,7 +103,7 @@ item from the compliance check failures.
 Five dimensions: `clarity`, `completeness`, `trigger_precision`, `scope_coverage`, `anti_patterns`.
 
 | Agent | Clarity | Completeness | Trigger precision | Scope | Anti-patterns | **Overall** |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | cleaner | 0.90 | 1.00 | 0.90 | 0.90 | 1.00 | **0.94** |
 | organise | 0.90 | 1.00 | 0.80 | 0.90 | 0.90 | **0.90** |
 | researcher | 0.90 | 1.00 | 0.80 | 0.90 | 0.90 | **0.90** |
@@ -136,7 +140,7 @@ Same five dimensions as `quality`, scored independently. Surfaces the top 3
 improvement suggestions per agent.
 
 | Agent | Clarity | Completeness | Trigger | Scope | Anti-patterns | **Overall** |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | deps | 0.80 | 0.90 | 0.85 | 0.90 | 0.95 | **0.82** |
 | commit | 0.80 | 0.90 | 0.85 | 0.80 | 0.70 | **0.82** |
 | researcher | 0.90 | 0.80 | 0.85 | 0.75 | 0.90 | **0.82** |
@@ -152,62 +156,74 @@ improvement suggestions per agent.
 
 ### Top improvements per agent
 
-**cleaner (0.76)**
+#### cleaner (0.76)
+
 1. Clarify examples for user prompts to avoid ambiguity.
 2. Provide more explicit guidelines on what constitutes "stale" or "dead" files.
 3. Incorporate more detailed case studies or scenarios to illustrate proper usage.
 
-**commit (0.82)**
+#### commit (0.82)
+
 1. Provide examples for each git task in the description to enhance clarity.
 2. Add more explicit warnings or checks for high-risk operations to prevent user errors.
 3. Ensure that all sections are complete and properly formatted — current message conventions section is absent.
 
-**debugger (0.74)**
+#### debugger (0.74)
+
 1. Clarify the output style section with specific examples of structured diagnosis.
 2. Provide more detailed instructions on what to do if `memory_dump` fails beyond just emitting a note.
 3. Expand on the criteria for "minimal next fix step" to ensure agents can determine what qualifies as minimal.
 
-**deps (0.82)**
+#### deps (0.82)
+
 1. Include specific examples in the documentation of each operation for better understanding.
 2. Ensure that the process for citing sources is emphasized and clarified within the auditing section.
 3. Add a troubleshooting guide or FAQ section for common issues users might encounter.
 
-**docs (0.72)**
+#### docs (0.72)
+
 1. Expand the guidelines section to include examples of acceptable and unacceptable documentation formats.
 2. Clarify the roles of each agent with specific use cases to enhance understanding for users.
 3. Include a checklist for verifying commands, paths, and code examples to ensure thorough validation.
 
-**explore (0.80)**
+#### explore (0.80)
+
 1. Add examples of common queries to improve user understanding.
 2. Clarify the expected output format for different thoroughness tiers.
 3. Include more specific guidelines for handling errors or unexpected inputs.
 
-**organise (0.78)**
+#### organise (0.78)
+
 1. Include examples of common file organization issues that might arise.
 2. Provide clearer definitions of terms like "logical directories" and "caller paths".
 3. Outline specific scenarios that warrant stopping for ambiguity instead of proceeding.
 
-**planner (0.66)**
+#### planner (0.66)
+
 1. Provide more specific examples of scoped execution plans to enhance clarity.
 2. Include details on potential risks and how to handle them in the planning process.
 3. Clarify the definitions of terms like "blast radius" and "stop conditions" for better understanding.
 
-**researcher (0.82)**
+#### researcher (0.82)
+
 1. Add specific examples of research targets to enhance understanding.
 2. Clarify the output format to include more detailed sections.
 3. Include potential pitfalls or common mistakes in the research process.
 
-**review (0.70)**
+#### review (0.70)
+
 1. Enhance the argument-hint with specific examples for various review types to improve clarity.
 2. Specify consequences for ignoring the scoping question to guide users more effectively.
 3. Add examples of findings to illustrate expected output structure and increase completeness.
 
-**triage (0.74)**
+#### triage (0.74)
+
 1. Provide examples for each tier to enhance understanding of the classification process.
 2. Clarify the circumstances under which to consider a task as Blocked to avoid confusion.
 3. Suggest defining clear user confirmation steps for Blocked tasks to ensure safety before proceeding.
 
-**xanadLifecycle (0.82)**
+#### xanadLifecycle (0.82)
+
 1. Provide more detailed examples of natural-language requests that should not trigger the agent.
 2. Clarify the consequences of ignoring the authority section regarding file management.
 3. Include a troubleshooting section for common issues users might encounter during lifecycle operations.
@@ -221,7 +237,7 @@ improvement suggestions per agent.
 Found by: manual inspection triggered by `dev` anti_patterns scores and reading
 agent source.
 
-```
+```text
 agents/debugger.agent.md:37        {{pack:output-style}}
 agents/docs.agent.md:36            {{agent:docs:output-style}}
 agents/explore.agent.md:39         {{agent:explore:output-style}}
@@ -234,7 +250,7 @@ agents/commit.agent.md:45          {{agent:commit:secret-guard}}
 **Critical — section body completely empty (placeholder is all there is):**
 
 | Agent | Line | Section | Impact |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `commit.agent.md` | 41 | `## Message conventions` | No commit format defined; all commits are free-form |
 | `planner.agent.md` | 38 | `## Plan format` | No plan schema returned to callers |
 | `docs.agent.md` | 36 | `## Output style` | No output format guidance |
@@ -242,7 +258,7 @@ agents/commit.agent.md:45          {{agent:commit:secret-guard}}
 **Non-critical — orphaned placeholder, real content present below:**
 
 | Agent | Line | Section | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `debugger.agent.md` | 37 | `## Output style` | Bullet-point format defined directly below |
 | `explore.agent.md` | 39 | `## Output style` | Output guidance present below |
 | `review.agent.md` | 50 | `## Reporting threshold` | Default rule present below |
@@ -251,7 +267,7 @@ agents/commit.agent.md:45          {{agent:commit:secret-guard}}
 ### Bug Class B — Static compliance (genuine findings)
 
 | Agent | Check | Detail |
-|---|---|---|
+| --- | --- | --- |
 | `cleaner.agent.md` | `complexity` | Nesting depth 4, threshold 3; approval-gate YAML block is over-nested |
 | `cleaner.agent.md` | `negative-delta-risk` | 1 negative-delta pattern |
 | `commit.agent.md` | `negative-delta-risk` | 1 negative-delta pattern |
@@ -261,7 +277,7 @@ agents/commit.agent.md:45          {{agent:commit:secret-guard}}
 ### Bug Class C — Content gaps (from `dev` analysis)
 
 | Agent | Dev overall | Primary gap |
-|---|---|---|
+| --- | --- | --- |
 | `planner` | 0.66 | Empty plan format; undefined jargon ("blast radius", "stop conditions") |
 | `review` | 0.70 | Empty reporting threshold; no example findings |
 | `docs` | 0.72 | Empty output style; scope coverage gaps |
@@ -277,7 +293,7 @@ No eval suite exists for any of the 12 agents.
 ## 6. Prioritized Fix List
 
 | # | Severity | Agent | Action |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | Critical | `commit.agent.md` | Define `## Message conventions` — remove placeholder, add commit message format |
 | 2 | Critical | `planner.agent.md` | Define `## Plan format` — remove placeholder, add plan schema |
 | 3 | Critical | `docs.agent.md` | Define `## Output style` — remove placeholder, add output guidance |

@@ -44,7 +44,7 @@ Do not use this agent for:
 
 Emit a compact triage result:
 
-```
+```text
 Tier: <tier>
 Scope: <one-line description of what changes and where>
 Approach: <recommended path>
@@ -74,6 +74,7 @@ Do not over-classify. A task that touches 3 files with a clear pattern is Simple
 ## Memory
 
 At the start of every task, call `memory_dump(agent="triage")`.
+
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.

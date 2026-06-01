@@ -8,11 +8,11 @@
   },
   "manifest": {
     "schemaVersion": "0.1.0",
-    "hash": "sha256:7b919c368e8a940f98d57f547c2c266ce78bc54c262e855e49c407db8274a14e"
+    "hash": "sha256:4e634aa204fea21d227129ca27d57b4510ba76723478d92a89dc76a038e6626e"
   },
   "timestamps": {
-    "appliedAt": "2026-06-01T00:03:59Z",
-    "updatedAt": "2026-06-01T00:03:59Z"
+    "appliedAt": "2026-06-01T10:52:13Z",
+    "updatedAt": "2026-06-01T10:52:13Z"
   },
   "selectedPacks": [],
   "profile": "balanced",

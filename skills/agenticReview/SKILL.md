@@ -101,7 +101,7 @@ Warn when the prompt's structural complexity makes it difficult to apply reliabl
 
 **Gather metrics.** Run these commands from the workspace root:
 
-```
+```sh
 python3 tools/xanadEval/xanadEval.py tokens <path>
 python3 tools/xanadEval/xanadEval.py check <path>
 ```
@@ -135,6 +135,7 @@ When xanadEval is available, its advisory flags supersede the manual thresholds 
 If xanadEval reports no workflow steps detected on an agent or prompt file, emit `cognitive-load: warning` — the file may lack clear procedure structure. For skill files, `workflow_steps: not detected` is expected and does not generate a warning.
 
 **Also flag:**
+
 - Tables with more than 10 rows that lack a labelled sort column or indexed key
 - Sentences over 40 words
 - Numbered lists that mix independent rules with sequential steps in the same list
@@ -169,17 +170,20 @@ Severity: High if the gap leaves an error path unhandled; Medium if it is a miss
 Apply after Module 5 for the specific file type under review.
 
 *Agent files (`.agent.md`):*
+
 - [ ] Handoffs are defined for at least: scope-unclear, unexpected-failure, and out-of-domain cases
 - [ ] Risk tiers cover all destructive operations mentioned in the body
 - [ ] The frontmatter `tools:` list covers every tool referenced by name in the body
 
 *Skill files (`SKILL.md`):*
+
 - [ ] A `## Verify` checklist is present
 - [ ] Every step either has a success criterion or delegates to a fallback
 - [ ] `xanadEval check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings; `eval-presence` advisory absence is Medium. If xanadEval is unavailable, emit: `coverage-gap: [medium] spec-compliance — xanadEval unavailable; spec checks could not be run`.
 - [ ] If coverage gaps were found: run `python3 tools/xanadEval/xanadEval.py suggest --dry-run <path>`; each expected eval task not yet present is a Low-severity finding. If xanadEval is unavailable, note the gap manually.
 
 *Instructions files (`.instructions.md`):*
+
 - [ ] `applyTo:` pattern is present and non-empty
 - [ ] Rules are expressed as imperatives, not preferences ("Do X", not "You might want to X")
 
@@ -192,6 +196,7 @@ Apply after Module 5 for the specific file type under review.
 Detect conflicts between the file under review and any files it imports or references.
 
 **Step 1 — Identify imports.** Scan the file for:
+
 - Markdown links: `[label](path)` where `path` exists on disk as a `.agent.md`, `.prompt.md`, `SKILL.md`, or `.instructions.md` file in the workspace
 - Template variable references: `{{token:name}}` or `{{agent:name:key}}` that expand from a pack tokens file
 - Explicit `applyTo:` references that match another file's scope
@@ -201,6 +206,7 @@ Use workspace file-reading tools to read each referenced file. If a referenced f
 **Step 2 — Compare each import pair.**
 
 For each (parent, import) pair, check:
+
 - **Direct contradiction**: a rule in the parent negates a rule in the import for the same condition
 - **Shadowing**: a local rule restates and subtly changes a rule from the import, creating an undetected conflict
 - **Duplicate rules that have drifted**: the same rule appears in both files but with different wording that may produce different behavior
@@ -234,6 +240,7 @@ Close with a summary line:
 > **Result:** `N` critical, `N` high, `N` medium, `N` low — [ready to merge | needs revision before merge | block: restructure required]
 
 Decision rules:
+
 - Any Critical → **block: restructure required**
 - Any High → **needs revision before merge**
 - Medium or lower only → **ready to merge** (with suggestions noted)
@@ -243,6 +250,7 @@ Decision rules:
 ## Verify
 
 **Per-module checks:**
+
 - [ ] All six modules run and each produced at least a "no findings" row
 - [ ] Module 4: `xanadEval tokens` figures used, or xanadEval unavailability noted
 - [ ] For SKILL.md files: `xanadEval check` spec violations reported as coverage-gap findings
@@ -250,6 +258,7 @@ Decision rules:
 - [ ] Composition imports resolved — linked files read before reporting conflict findings
 
 **Output format checks:**
+
 - [ ] Every ambiguity finding includes a rewrite suggestion
 - [ ] Every cognitive-load finding includes the measured metric value and the threshold
 - [ ] Every coverage-gap finding includes a suggested addition

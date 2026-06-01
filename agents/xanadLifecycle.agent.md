@@ -57,7 +57,7 @@ downloads the package automatically.
 
 ### Bootstrap steps
 
-**Step 0 — Install this agent**
+#### Step 0 — Install this agent
 
 Before fetching the bootstrap runner, install the `xanadLifecycle` agent so all
 future lifecycle operations route through it automatically.
@@ -83,7 +83,7 @@ urllib.request.urlretrieve(
 
 Proceed with the remaining steps below.
 
-**Step 1 — Fetch the bootstrap runner**
+#### Step 1 — Fetch the bootstrap runner
 
 ```sh
 TAG=v1.0.0  # replace with the target release
@@ -96,7 +96,7 @@ Or with Python if curl is unavailable:
 python3 -c "import urllib.request; urllib.request.urlretrieve('https://raw.githubusercontent.com/asafelobotomy/xanadassistant/v1.0.0/xanadBootstrap.py', 'xanadBootstrap.py')"
 ```
 
-**Step 2 — Inspect**
+#### Step 2 — Inspect
 
 ```sh
 python3 xanadBootstrap.py inspect --workspace . --version "${TAG}" --json
@@ -104,7 +104,7 @@ python3 xanadBootstrap.py inspect --workspace . --version "${TAG}" --json
 
 Confirm `installState` is `not-installed` before continuing.
 
-**Step 3 — Interview and collect answers**
+#### Step 3 — Interview and collect answers
 
 ```sh
 python3 xanadBootstrap.py interview --workspace . --version "${TAG}" --mode setup --json
@@ -150,7 +150,7 @@ resolution before proceeding.
 Any key omitted from the file is resolved to its declared `default` by the
 lifecycle engine.
 
-**Step 3.5 — Resolve pre-existing files (optional)**
+#### Step 3.5 — Resolve pre-existing files (optional)
 
 Inspect `result.existingFiles` in the interview output.  If the array is
 non-empty, present each entry to the user.
@@ -191,7 +191,7 @@ Pass `--resolutions .xanadAssistant/tmp/conflict-resolutions.json` to both
 `plan setup` (or `plan update`) and `setup` (or `update`).
 Omit this step when `existingFiles` is empty.
 
-**Step 4 — Plan and confirm**
+#### Step 4 — Plan and confirm
 
 ```sh
 python3 xanadBootstrap.py plan setup \
@@ -204,7 +204,7 @@ python3 xanadBootstrap.py plan setup \
 If `approvalRequired` is `true`, summarise the planned writes for the user and
 ask for confirmation before applying.
 
-**Step 5 — Setup**
+#### Step 5 — Setup
 
 ```sh
 python3 xanadBootstrap.py setup \
@@ -216,7 +216,7 @@ python3 xanadBootstrap.py setup \
 Check `validation.status`. If it is not `passed`, report the error and
 `backupPath` to the user.
 
-**Step 6 — Clean up**
+#### Step 6 — Clean up
 
 ```sh
 rm xanadBootstrap.py
@@ -248,7 +248,7 @@ then pass `--allow-mutable-ref` explicitly.
 
 ## Command reference
 
-```
+```sh
 # Read-only inspection
 python3 xanadAssistant.py inspect \
   --workspace <consumer-repo-path> \
@@ -370,6 +370,7 @@ Do not interpret manifests, copy files, or modify `.github/` contents directly.
 ## Memory
 
 At the start of every lifecycle task, call `memory_dump(agent="xanadLifecycle")`.
+
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.

@@ -1,7 +1,7 @@
 # Template Review — copilot-instructions-template vs xanadassistant
 
-> Reviewed: 2026-05-07  
-> Source repo: `/mnt/SteamLibrary/git/copilot-instructions-template` @ v0.7.0  
+> Reviewed: 2026-05-07
+> Source repo: `/mnt/SteamLibrary/git/copilot-instructions-template` @ v0.7.0
 > Scope: architectural patterns, instruction file design, lifecycle model, memory, hooks, CI.
 
 ---
@@ -45,7 +45,7 @@ boundary unambiguous and CI-enforceable.
     [[ "$count" -ge 3 ]] || { echo "Only $count tokens — template may have been resolved"; exit 1; }
 ```
 
-The backtick-stripping step (`perl -pe 's/\`[^\`]*\`//g'`) is important — it allows the
+The backtick-stripping step (``perl -pe 's/`[^`]*`//g'``) is important — it allows the
 developer instructions to *document* `{{PLACEHOLDER}}` syntax without triggering the
 check. The template's CI also enforces parity between `.github/instructions/` and
 `template/instructions/` using a cross-reference validation script.
@@ -110,6 +110,7 @@ is triggered only by canonical phrases (`"Update your instructions"`,
 invoke the Setup agent — not by arbitrary agent judgment.
 
 Key rules from §8:
+
 - **Never delete** existing rules without explicit user instruction.
 - **Additive by default** — append to sections; don't restructure.
 - **Flag before writing** — describe the change and wait for confirmation before editing §1–§7.
@@ -163,6 +164,7 @@ prevents the skill from over-triggering when adjacent task descriptions are simi
 "fix a failing workflow" should route to `fix-ci-failure`, not `agentic-workflows`).
 
 CI checks from `ci.yml`:
+
 ```yaml
 - name: Skills have valid SKILL.md
   # enforces: name, description fields present in frontmatter
@@ -221,6 +223,7 @@ is architecturally different from an instruction that says "be careful with dest
 commands." The instruction can be ignored under context pressure; the hook cannot.
 
 **`guard-destructive.sh` implementation details:**
+
 - Runs on `PreToolUse` for any `terminal`, `command`, `bash`, or `shell` tool (plus `create_and_run_task`)
 - Parses `tool_input.command` (or `tool_input.task.command`) via Python to extract the actual shell command
 - Checks against a JSON policy file (`guard-policy.json`) with deny-list patterns and caution-list patterns
@@ -228,6 +231,7 @@ commands." The instruction can be ignored under context pressure; the hook canno
 - Falls back to `"ask"` if Python is unavailable rather than silently allowing
 
 **`session-start.sh` implementation details:**
+
 - Runs on `SessionStart`; drains stdin (required by hook protocol but unused)
 - Gathers: OS/distro/arch, git branch+commit, project name+version from `package.json`/`pyproject.toml`/`Cargo.toml`
 - Reads `HEARTBEAT.md` pulse state
@@ -235,6 +239,7 @@ commands." The instruction can be ignored under context pressure; the hook canno
 - Returns all context as `additionalContext` JSON field
 
 **Hook config** — two locations kept in sync:
+
 - `.github/hooks/copilot-hooks.json` — developer workspace (all-local mode)
 - `hooks/hooks.json` — plugin component (delivered to consumers via plugin install)
 

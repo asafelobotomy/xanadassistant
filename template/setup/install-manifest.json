@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.1.0",
-  "packageVersion": "0.4.0",
+  "packageVersion": "0.4.1",
   "policySchemaVersion": "0.1.0",
   "sourceRoots": {
     "template": "template",
@@ -49,7 +49,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:6e7c82d17f7b6052b63f7a0cd43adceb336d4562868d34ab46ad845cc3a8207a"
+      "hash": "sha256:c1ea3134fe9271d3c21fdddb7734a6f0801d42729cce378fe193a5d9d49602c1"
     },
     {
       "id": "agents.commit.agent.md",
@@ -68,7 +68,7 @@
         "{{agent:commit:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:17f2de84b32b81a2f77cfca8f0168d0f9a532ac4734c88a1cd12c4038ada65d5"
+      "hash": "sha256:2a5a68237c29fd06b10f4a3a13873ba260d6828c78337140f390c1d3b8ea2c0c"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -84,7 +84,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:3d93a91262cf7df5f72f4832b6013f46a73155d5c6f4f454dd4b53dd6c61044d"
+      "hash": "sha256:bddcd3041920a7d0de2db3e8ac697d6b2a645158c8672c2a491271a9b531b682"
     },
     {
       "id": "agents.deps.agent.md",
@@ -100,7 +100,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:0c9c89fcda46cfdc0b2183dacceb2baf706e9911871ac8a4621befb6fb551f7d"
+      "hash": "sha256:69310ab4a59daf8f518e1efc627eb86e719523ae66451bff36730fdce0e35d13"
     },
     {
       "id": "agents.docs.agent.md",
@@ -118,7 +118,7 @@
         "{{agent:docs:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:ae12633bb9f80cc85fa4cae53a53ea141c22a9f603abe6f12d541af11231b28a"
+      "hash": "sha256:6778f80557b300d2251fc5f27459273ee38c0357bc968efbc44b2aec6f8d59e4"
     },
     {
       "id": "agents.explore.agent.md",
@@ -136,7 +136,7 @@
         "{{agent:explore:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:8131835023bb72b05d237852b3032e2f6343a6f1e5f87609016abc130ea35544"
+      "hash": "sha256:f02330d92dad45077520568c4b965ace5d3e22d712140ea79f8e8cdd42e822e4"
     },
     {
       "id": "agents.organise.agent.md",
@@ -152,7 +152,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:76cc93a8e52a51978fbadf6234722280216a73c81a5664c12e6c40325f7ea919"
+      "hash": "sha256:8664566e2388f02b8290fca6b506c3c795e99dff36bbbe8de501ade6853775e4"
     },
     {
       "id": "agents.planner.agent.md",
@@ -170,7 +170,7 @@
         "{{agent:planner:plan-format}}"
       ],
       "chmod": "none",
-      "hash": "sha256:e1221f3d4b1818f47b5022df1c8d98e3898b2ee5e235ef033cdee58371fe289c"
+      "hash": "sha256:b2d8017c0f07e70127c76c1cb967506bf512c73f65c7836e6e606ed66d8f5261"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -186,7 +186,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:7ca2fa42989967a7002faa5d13de2d08b8cde983d98300db7ac0a43a117bf5d8"
+      "hash": "sha256:3dfcbf4699ddf07f997480f0e4287b2cc3380e6320944af31319d33102cdb402"
     },
     {
       "id": "agents.review.agent.md",
@@ -204,7 +204,7 @@
         "{{agent:review:reporting-threshold}}"
       ],
       "chmod": "none",
-      "hash": "sha256:584ed7ee1894b19e20abfcef0f832f9afab7ab94ac74d2416b8bbbeba11f9531"
+      "hash": "sha256:34e007f96a7a0c816c5286e9d934bd2fd8b7d143c0979a6272021d9a60afd607"
     },
     {
       "id": "agents.triage.agent.md",
@@ -220,7 +220,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:e1949e3471da64046b6b147fcba456209a668af183daabbba81ee5e766e56753"
+      "hash": "sha256:4a7a19497db502446d231b87dc6d1d85abed28915f6203c065f1b9938ce5987a"
     },
     {
       "id": "agents.xanadLifecycle.agent.md",
@@ -236,7 +236,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:3e3f04f6d571047d125849d85bbba77aa77ee64936d08fcdea307189c8264a36"
+      "hash": "sha256:cf76a9fdb2685c4565cb82b11c402bf0650fac901da5b27478a913f510a74e25"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -1150,7 +1150,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:4fcb437ac3f1b0870811d861550156e1cfdf9da306cf173f6694e5910de4a478"
+      "hash": "sha256:4354923e81ff7ae8a6c7ae0118066c7a8ae3cead60653b12a1769007a4b7f237"
     },
     {
       "id": "skills.ciPreflight.SKILL.md",
@@ -1166,7 +1166,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:fc615b83d244a56e3fb43c1acd9941fa59bfffbabf642dca3db61f4699057a70"
+      "hash": "sha256:d20387f27896a52bf0748ba1a4e3b22fd5bb1c8f95717c19f92478dc2e5657b8"
     },
     {
       "id": "secure-skills.dependencyAudit.SKILL.md",

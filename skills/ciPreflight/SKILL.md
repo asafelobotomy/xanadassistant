@@ -48,6 +48,7 @@ tool invocation that operates on local files (e.g. `python3 ...`, `npm test`,
 `make check`, `go test ./...`, `cargo test`, `./gradlew test`).
 
 **Omit** a step when its `run:` block meets any of these conditions:
+
 - References `${{ secrets.* }}` — requires external credentials
 - References environment variables only available on GitHub Actions runners
   (e.g. `GITHUB_RUN_ID`, `RUNNER_TOOL_CACHE`)
@@ -64,6 +65,7 @@ Run `git diff --cached --name-only` with a terminal tool to get the staged file
 list.
 
 Narrow the extracted check list by that scope:
+
 - Exclude Python-specific checks when no `.py` files or test-config files are staged
 - Exclude Node checks when no `.js`, `.ts`, or `package.json` are staged
 - Keep any check whose scope cannot be narrowed (e.g. a global lint or a
@@ -122,6 +124,7 @@ Run each command with a terminal tool. For each result:
 ### 6. Return a summary to the caller
 
 Return:
+
 - The workflow files read and the commands extracted from them (or "detected
   from project structure" if Step 3 was used)
 - Which checks were excluded and why; whether any artifacts were regenerated and staged

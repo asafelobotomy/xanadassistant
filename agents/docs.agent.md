@@ -61,6 +61,7 @@ Run applicable tools before finishing any documentation task. If a tool is not i
 ## Memory
 
 At the start of every task, call `memory_dump(agent="docs")`.
+
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
 - **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
