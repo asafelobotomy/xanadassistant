@@ -1,0 +1,16 @@
+name: "securityReview-eval"
+description: "Evaluates securityReview skill behavior for trust boundary mapping, injection scanning, secret detection, and structured finding output"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(trust.boundar|injection|secret|credential|sql.inject|command.inject|hardcoded|authentication|authorization|grep_search|securityReview)"
+
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 1500
+
+tasks:
+  - "tasks/*.yaml"

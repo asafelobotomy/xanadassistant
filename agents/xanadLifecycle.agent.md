@@ -243,6 +243,8 @@ then pass `--allow-mutable-ref` explicitly.
 3. **Write only after approval.** Once approved, run `setup`, `update`, `repair`,
    or `factory-restore` as appropriate.
 4. **Diagnose unclear failures.** Use `debugger` when lifecycle commands fail, drift is surprising, or the controlling state is unclear.
+4a. **VS Code and Copilot layer issues.** When the failure is in VS Code configuration, MCP registration, extension conflicts, or Copilot Chat behavior rather than the lifecycle CLI itself, use the `sessionDiagnostics` skill to gather evidence before escalating.
+4b. **Extension setup.** When the setup or update workflow surfaces a requirement for VS Code extensions, use the `extensionManagement` skill to discover, recommend, or install the required extensions.
 5. **Scope complex remediation.** Use `planner` when repair, update, or migration work spans multiple managed surfaces or needs phased execution.
 6. **Inventory unfamiliar workspaces.** Use `explore` when the workspace layout, installed surfaces, or relevant files are unclear before planning a lifecycle operation.
 

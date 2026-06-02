@@ -40,6 +40,10 @@ Do not use this agent for:
 - Use `explore` when documentation accuracy requires confirming local implementation details across multiple files.
 - Use `review` when the draft needs a quality pass for clarity, correctness, or missing caveats.
 - Use `planner` when the documentation work should be scoped first because the surface is broad or coupled to a larger rollout.
+- Use the `workspaceSearch` skill when searching for existing documentation, related files, or symbols — prefer exact-text, file-path, or semantic search as appropriate rather than delegating to `explore` for simple targeted lookups.
+- When creating or updating `.agent.md`, `SKILL.md`, or `.instructions.md` files, use the `agenticReview` skill as a quality gate before finishing — these files have specific schema and structural requirements.
+- When creating or updating `.prompt.md` files, use the `promptReview` skill as a quality gate before finishing.
+- Before finishing, use `ciPreflight` to confirm the workspace passes pre-commit checks; if the documentation change touches code-adjacent files, also use the `testing` skill to run the narrowest confirming tests.
 - Verify commands, paths, and examples against the repo before writing them down.
 - Do not silently change runtime behavior while doing docs-only work.
 

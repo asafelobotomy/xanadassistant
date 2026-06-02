@@ -34,6 +34,8 @@ Do not use this agent for:
 - Prefer primary sources and current documentation over memory or inference.
 - Cite the source of each external claim in your output.
 - Use `explore` when you need a broader local inventory before spending time on upstream material.
+- Use the `workspaceSearch` skill for the local inventory phase — it helps choose between exact-text, file-path, and semantic search to confirm what exists in the workspace before fetching external sources.
+- When the task is to research a specific GitHub issue — classification, reproduction steps, fix discovery — use the `issueResolution` skill for structured intake before fetching external references.
 - Use `planner` when research findings imply a multi-step implementation or remediation path.
 - Use `docs` when the research should be turned into maintained project documentation rather than a one-off summary.
 - Use `review` when research output needs to be translated into correctness, contract, or regression-risk findings.

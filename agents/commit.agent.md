@@ -71,6 +71,8 @@ If preflight blocks on failing tests or unclear test apparatus, hand off to
 `debugger`; that diagnosis should use the `testing` skill and prefer the
 `workspaceTesting` MCP server before broad shell commands.
 
+When the staged set includes Copilot surface files (`.agent.md`, `SKILL.md`, `.instructions.md`), also run the `agenticReview` skill to check for contradictions or coverage gaps before committing. When `.prompt.md` files are staged, use the `promptReview` skill.
+
 ## Commit workflow
 
 1. Run the secret-guard check over all candidate files before staging anything. Surface any probable secret to the user and stop until resolved.

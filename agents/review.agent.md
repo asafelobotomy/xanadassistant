@@ -33,6 +33,8 @@ Do not use this agent for:
 6. **Diagnose first when needed** — use `debugger` when findings depend on reproducing a failure or isolating a concrete regression.
 7. **Plan phased follow-up** — use `planner` when the review outcome should include a scoped remediation plan rather than isolated fixes.
 8. **Research current constraints** — use `researcher` when findings depend on current external docs, upstream behavior, or version-specific contracts.
+9. **Copilot surface files** — when the review scope includes `.agent.md`, `SKILL.md`, or `.instructions.md` files, use the `agenticReview` skill to check for contradictions, ambiguity, persona consistency, and coverage gaps before reporting findings. When the scope is `.prompt.md` files, use the `promptReview` skill instead.
+10. **Security review** — when the review scope includes authentication, user-input handling, database queries, file operations, or external API calls, use the `securityReview` skill to systematically scan for injection surfaces, credential exposure, and authorization gaps. If the `secure` pack is installed, augment findings with OWASP Top 10:2025 category tags from `secureReview`.
 
 ## Review structure
 

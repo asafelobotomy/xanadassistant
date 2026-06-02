@@ -35,6 +35,7 @@ Do not use this agent for:
 - Prefer concrete phases, file lists, stop conditions (states that make continued execution unsafe), and assumptions over generic advice.
 - When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for read-only inspection before falling back to `runCommands`.
 - Use `explore` when you need a broader read-only inventory before the plan is credible.
+- Use the `workspaceSearch` skill to find affected files, callers, and import relationships before estimating blast radius — exact-text for symbol references, file-path for module patterns, semantic for cross-cutting themes.
 - Use `debugger` when existing failures or unclear broken state must be diagnosed before the plan is reliable.
 - Use `researcher` when the plan depends on current external docs, upstream contracts, or version-specific behavior.
 - Use `docs` when the plan output should be persisted as migration guidance, operational notes, or a project doc.

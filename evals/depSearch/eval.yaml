@@ -1,0 +1,16 @@
+name: "depSearch-eval"
+description: "Evaluates depSearch skill behavior for manifest discovery, registry metadata lookup, vulnerability assessment, and import usage confirmation"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(manifest|requirements|pyproject|package\\.json|query_osv|query_deps|osv|CVE|GHSA|import usage|OpenSSF|vulnerability|depSearch)"
+
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 1200
+
+tasks:
+  - "tasks/*.yaml"

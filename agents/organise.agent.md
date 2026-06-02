@@ -43,12 +43,13 @@ Do not use this agent for:
 - Prefer a small number of cohesive moves over wide churn.
 - Use `explore` when you need a read-only inventory of callers or affected file
   clusters before moving files.
+- Use the `workspaceSearch` skill to find every caller of a file before moving it — combine exact-text search for import paths and file-path search for reference patterns.
 - Use `docs` when file moves require updating documentation, migration guides,
   or user-facing references beyond inline path fixes.
 - When the `filesystem` server is connected, prefer `move_file` for renames and moves, `create_directory` to make parent trees, and `list_directory` or `search_files` for inventory — these tools enforce the workspace path boundary and produce cleaner output than shell equivalents.
 - Update every direct caller in the same pass so the tree stays runnable.
 - Prefer direct path retargeting over temporary wrappers.
-- Validate with targeted checks first. Run the repo test suite once before task
+- Validate with targeted checks first. Use the `testing` skill to run the repo test suite before task
   completion, or earlier only if a targeted failure required a fix and broader
   re-verification is warranted.
 - If the scope is ambiguous or a move would conflict with user changes, stop and

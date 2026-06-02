@@ -50,6 +50,8 @@ Do not use this agent for:
 - Use `docs` when cleanup changes archive conventions, maintenance guidance, or
   user-facing file references.
 - Use `commit` when the cleanup scope is approved and changes are ready to stage.
+- Use the `workspaceSearch` skill to build the dry-run inventory — exact-text search for orphaned references, file-path search for generated-file patterns, and regex for naming conventions.
+- Before calling `commit`, validate the workspace using `ciPreflight` to confirm pre-commit checks pass; if the repo has a test suite, also use the `testing` skill to confirm cleanup did not silently break imports or references.
 - Prefer the smallest reversible cleanup first, then validate before widening scope.
 - When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for the dry-run inventory phase, and `delete_file` for the actual removal step after approval — `delete_file` enforces path-safety and rejects directories, preventing accidental wide deletion.
 

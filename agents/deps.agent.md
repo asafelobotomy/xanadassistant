@@ -25,7 +25,7 @@ Do not use this agent for:
 ## On every invocation
 
 0. Call `memory_dump(agent="deps")` before taking any action (see `## Memory`).
-1. **Discover first** — scan for all dependency manifests before taking any action.
+1. **Discover first** — use the `depSearch` skill to scan for all dependency manifests and gather registry metadata and vulnerability signals before taking any action.
 2. **Confirm before mutating** — present your audit findings and proposed changes; wait for explicit user confirmation before running any install, update, or remove command.
 3. **Ecosystem-aware** — adapt commands to the package manager and ecosystem detected; never assume pip when npm is in use, and vice versa.
 4. **Security-first** — check for known vulnerabilities on every audit, not just when asked. Flag CVEs as `Critical` or `High` before any other finding.
@@ -194,7 +194,9 @@ Proposed changes: <N> — awaiting your confirmation.
 - Do not modify lockfiles directly — always run the package manager to update them.
 - Do not upgrade across a breaking major version without flagging the changelog risk.
 - Do not remove a package without confirming it is not imported anywhere in the workspace.
+- Use the `workspaceSearch` skill (exact-text search for the package name in source files) to confirm import usage before removing any package.
 - When in doubt about a replacement, use `researcher` to find source-backed evidence before recommending.
+- After any install, update, or repair operation, use the `testing` skill to run the repo test suite and confirm no regressions were introduced.
 - When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for reading manifests, discovering package files, and confirming import usage over `runCommands`. Reserve `runCommands` for package manager CLI operations (install, update, list, audit) that have no MCP equivalent.
 
 ---

@@ -1,0 +1,11 @@
+id: basic-invocation
+description: "Verify depSearch skill is invoked when asked to research a package before removal"
+tags: [smoke]
+prompt: |
+  Use the depSearch skill to check whether the `requests` package is safe to remove
+  from a Python project. The project has a requirements.txt file.
+expected:
+  - "manifest"
+  - "import"
+expected_absent:
+  - "(?i)I cannot|I'm not able to"
