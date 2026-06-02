@@ -75,7 +75,7 @@ WARN_LIMIT_OVERRIDES = {
     # ── MCP test modules ───────────────────────────────────────────────────────────
     "tests/mcp_servers/test_web_mcp.py": 420,
     "tests/mcp_servers/test_xanad_workspace_mcp_lifecycle.py": 280,
-    "tests/mcp_servers/test_memory_mcp.py": 570,
+    "tests/mcp_servers/test_memory_mcp.py": 610,
 
     # ── Prompt contract test module ────────────────────────────────────────────────
     # Grows with each new per-agent contract assertion; one test per invariant.
@@ -142,12 +142,14 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # two-tier retention system (short_term/long_term, v2→v3 migration),
     # and audit fixes: tightened _add_column_safe, negative-prune guard, session-rule rejection.
     "mcp/scripts/_memory_mcp_shared.py": 540,
-    # Memory MCP entrypoint: grew with session_id threading and branch-scoped rule fixes.
-    "mcp/scripts/memoryMcp.py": 450,
+    # Memory MCP entrypoint: grew with session_id threading, branch-scoped rule fixes,
+    # _chk_str_len helper + _MAX_STR_LENS, ttl_days guard, and field length enforcement.
+    "mcp/scripts/memoryMcp.py": 475,
     # Memory MCP test suite: grew with smart dump tests (summary, age metadata, task_hint),
     # two-tier retention tests (invalid retention, short_term TTL, long_term never-stale),
-    # and audit-fix tests (negative prune, session rule rejection, DB state verification).
-    "tests/mcp_servers/test_memory_mcp.py": 600,
+    # audit-fix tests (negative prune, session rule rejection, DB state verification),
+    # and second-pass tests (zero prune, zero TTL, oversized value, has_data all-invalidated).
+    "tests/mcp_servers/test_memory_mcp.py": 640,
     # apply_contracts test: grew with S1 backup/archive contract validation tests and
     # S2 delete-surface restriction tests.
     "tests/lifecycle/test_apply_contracts.py": 520,

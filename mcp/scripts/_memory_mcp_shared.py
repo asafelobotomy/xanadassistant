@@ -354,9 +354,9 @@ def memory_dump(agent: str, root: str, branch: str, session_id: str = "", task_h
 
 
 def memory_prune(agent: str | None, scope: str | None, max_age_days: float | None, root: str) -> str:
-    if max_age_days is not None and max_age_days < 0:
+    if max_age_days is not None and max_age_days <= 0:
         raise ValueError(
-            f"max_age_days must be >= 0; got {max_age_days!r}. "
+            f"max_age_days must be > 0; got {max_age_days!r}. "
             "Pass None to only remove expired rows."
         )
     extra, extra_params = prune_extra(agent, scope)

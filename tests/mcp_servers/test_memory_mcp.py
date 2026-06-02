@@ -167,7 +167,7 @@ class MemoryMcpTests(unittest.TestCase):
 
                 with tempfile.TemporaryDirectory() as tmpdir:
                     with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
-                        module.memory_set("tester", "repo.temp", "x", ttl_days=-1)
+                        module.memory_set("tester", "repo.temp", "x")
                         pruned = module.memory_prune(agent="tester", scope="workspace", max_age_days=0.4)
 
                 self.assertIn("Pruned", pruned)
@@ -584,3 +584,38 @@ class MemoryMcpTests(unittest.TestCase):
                         ).fetchone()
                         conn.close()
                 self.assertIsNone(db_row, "Row must be physically deleted after memory_remove")
+
+    def test_memory_prune_rejects_zero_max_age_days(self) -> None:
+        """memory_prune must raise ValueError for max_age_days=0 (same class as negative)."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with self.assertRaisesRegex(ValueError, "max_age_days"):
+                            module.memory_prune(max_age_days=0)
+
+    def test_memory_set_rejects_zero_ttl_days(self) -> None:
+        """memory_set must raise ValueError for ttl_days=0 (would create immediately-invisible fact)."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with self.assertRaisesRegex(ValueError, "ttl_days"):
+                    module.memory_set("tester", "k", "v", ttl_days=0)
+
+    def test_memory_set_rejects_oversized_value(self) -> None:
+        """memory_set must raise ValueError when value exceeds the max length."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with self.assertRaisesRegex(ValueError, "value"):
+                    module.memory_set("tester", "k", "x" * 4097)
+
+    def test_memory_dump_has_data_false_when_all_facts_invalidated(self) -> None:
+        """memory_dump has_data must be False when every fact has been invalidated."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "k1", "v1")
+                        module.memory_invalidate("tester", "k1")
+                        dump = json.loads(module.memory_dump("tester"))
+                self.assertFalse(dump["summary"]["has_data"],
+                                 "has_data must be False when all facts are invalidated")

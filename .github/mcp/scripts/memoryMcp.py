@@ -28,6 +28,14 @@ _VALID_RULE_TYPES = {"never", "always", "prefer", "avoid"}
 _VALID_RETENTIONS = {"short_term", "long_term"}
 _VALID_RULE_SCOPES: frozenset[str] = frozenset({"workspace", "project", "branch"})
 _SHORT_TERM_AUTO_TTL_DAYS: float = 8 / 24   # short_term facts auto-expire in 8 hours
+_MAX_STR_LENS: dict[str, int] = {
+    "key": 256,
+    "value": 4096,
+    "source_description": 1024,
+    "description": 2048,
+    "entry": 8192,
+    "tags": 1024,
+}
 _AGENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9\-]*$")
 _SESSION_ID: str = str(uuid.uuid4())
 
@@ -117,6 +125,14 @@ def _chk_rule_scope(v: str) -> None:
     _shared_chk_scope(v, _VALID_RULE_SCOPES)
 
 
+def _chk_str_len(field: str, value: str | None) -> None:
+    """Raise ValueError if value exceeds the registered per-field max length."""
+    if value is not None and len(value) > _MAX_STR_LENS[field]:
+        raise ValueError(
+            f"{field!r} exceeds max length {_MAX_STR_LENS[field]}; got {len(value)} chars."
+        )
+
+
 def _parse_iso8601(value: str, field: str) -> str:
     """Parse and normalise an ISO-8601 timestamp to canonical ``YYYY-MM-DDTHH:MM:SSZ``."""
     for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S"):
@@ -154,6 +170,11 @@ def memory_set(
     _chk_agent(agent)
     _chk_scope(scope)
     _chk_retention(retention)
+    _chk_str_len("key", key)
+    _chk_str_len("value", value)
+    _chk_str_len("source_description", source_description)
+    if ttl_days is not None and ttl_days <= 0:
+        raise ValueError(f"ttl_days must be > 0; got {ttl_days!r}. Pass None for no expiry.")
     root = _workspace_root()
     branch = _advisory_branch(scope, root)
     confidence = _chk_confidence(confidence)
@@ -370,6 +391,7 @@ def rule_add(
     _chk_agent(agent)
     _chk_branch(branch)
     _chk_rule_scope(scope)
+    _chk_str_len("description", description)
     root = _workspace_root()
     if scope == "branch" and branch is None:
         branch = _advisory_branch(scope, root)
@@ -399,6 +421,8 @@ def diary_add(
     """Append a decision or action entry to the agent diary."""
     _chk_agent(agent)
     _chk_scope(scope)
+    _chk_str_len("entry", entry)
+    _chk_str_len("tags", tags)
     root = _workspace_root()
     branch = _advisory_branch(scope, root)
     session_id = _SESSION_ID if scope == "session" else ""

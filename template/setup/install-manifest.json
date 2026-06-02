@@ -376,7 +376,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:390d30757b069616c2e987ecf2c3f07b8ae1aaafbcdda4df93a8792916b052a0"
+      "hash": "sha256:2d919abb6d5ad02ef6d94a75e2c07f2bd0dfc4bfa2c383043af788c3b3b48e45"
     },
     {
       "id": "hook-scripts._workspace_testing_shared.py",
@@ -567,7 +567,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:ba19562caf8ecfaccaf3bf040eb6efccadd0d867e045d942d1becab47b48eb6d"
+      "hash": "sha256:cd4d0840fc02400fb930985f4ef734446b756315cb435eabd570db721c88e984"
     },
     {
       "id": "mlops-hooks.mlopsModelCheck.py",
