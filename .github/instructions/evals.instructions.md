@@ -10,7 +10,7 @@ description: "Conventions for eval.yaml suite files and task files in this works
 
 - `name` must be `"<SuiteName>-eval"` where `SuiteName` matches the parent directory name exactly.
 - `description` must state what agent or skill behavior the suite evaluates.
-- `graders` must include at least one entry; use `text` (with a `pattern` config key) for keyword presence and `behavior` (with a `max_tokens` config key) for token or timing bounds. An `llm` grader type is available for semantic correctness; consult the eval schema before using it as its config fields are not standardised here.
+- `graders` must include at least one entry; use `text` (with a `pattern` config key accepting a regex) for content presence checks and `behavior` (with a `max_tokens` config key) for response length bounds. An `llm` grader type is available for semantic correctness; consult `tools/xanadEval/xanadEval.py` for its config fields as they are not standardised here.
 - `tasks` must contain exactly one glob entry (`- "tasks/*.yaml"`); do not list individual task files by name.
 
 ## Task files
@@ -19,6 +19,7 @@ description: "Conventions for eval.yaml suite files and task files in this works
 - Every task must include `description`, `prompt`, and at least one of `expected` or `expected_absent`.
 - Every task must have a `tags` list that includes `smoke`.
 - Name task files by role: `basic-invocation.yaml` for the primary happy-path invocation of a skill; `positive-trigger-N.yaml` to verify an agent or skill triggers on a matching prompt; `negative-trigger-N.yaml` to verify it does not trigger on unrelated input.
+- Ensure `tasks/` contains at least one task file; an empty directory produces zero tests with no diagnostic error.
 
 ## Coverage requirements
 

@@ -15,9 +15,10 @@ description: "Conventions for test files in this workspace — framework, fixtur
 
 ## Authoring conventions
 
-- Fixtures are self-contained in test methods — no external test data files unless the framework requires them.
+- Test state must not depend on external files or shared state between tests; use `setUp`/`tearDown` or in-method setup for isolation. Do not use external test data files unless the framework requires them.
 - Use temporary directories for any test that needs a filesystem workspace; ensure cleanup is automatic.
 - Test through public interfaces, not internal implementation details.
 - Prefer real implementations over mocks; use framework-provided mocking only for I/O, network calls, or non-deterministic system calls.
 - When fixing a bug, write a failing test first, then fix the code.
 - Each test class or module covers one logical concern; test method or function names describe the expected behaviour, not the implementation.
+- Fix failing tests before proceeding; do not commit or continue to the next code change with a failing test suite.

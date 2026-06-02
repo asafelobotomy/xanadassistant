@@ -290,7 +290,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:5e5137ec4fc2b234c34a4345caf2a97ada3bf18e750bc1f3ef95bf143f53c7b5"
+      "hash": "sha256:c3b5db33b748329dc26755ef92093f933928b9dacf84bc1ca7ebb0f74583e7bd"
     },
     {
       "id": "instructions.scripts.instructions.md",
@@ -308,7 +308,7 @@
         "{{PRIMARY_LANGUAGE}}"
       ],
       "chmod": "none",
-      "hash": "sha256:f083b13358d3727989d6f99fce0ee45cd2a01e214df0a06c7db6ee54f0b70dd6"
+      "hash": "sha256:59a58bcdb24c49ef0c645ffa327cdb6d7776586dfd77700b188643a82ff78371"
     },
     {
       "id": "instructions.skills.instructions.md",
@@ -323,7 +323,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:ee2e8a77641d750313be5756a20481a4f7ec23209f0d64d39a70d086f6a98347"
+      "hash": "sha256:3fb0ccf97d39c6af13009ee3cd4c3e1ffe58137d1dd122d9980eead4e7ec2b85"
     },
     {
       "id": "instructions.tests.instructions.md",
@@ -342,7 +342,7 @@
         "{{TEST_COMMAND}}"
       ],
       "chmod": "none",
-      "hash": "sha256:3d10a554ff7e0c624db854ab0b4ea27c95397f2b41bf147276d342a68fc3ad77"
+      "hash": "sha256:a0c412242daf6c04390c6900028cf629a5dc99e2bf784408bf4f177d0050813d"
     },
     {
       "id": "hook-scripts._github_mcp_shared.py",

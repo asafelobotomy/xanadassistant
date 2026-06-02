@@ -10,14 +10,14 @@ description: "Conventions for SKILL.md files in this workspace — frontmatter, 
 
 - Every `SKILL.md` must include `name` and `description` in the YAML frontmatter.
 - `name` must match the parent directory name exactly.
-- `description` must be a single sentence beginning with `Use when:` or precisely stating what the skill does and when.
+- `description` must be a single sentence beginning with `Use when:`.
 
 ## Required sections
 
 - Sections must appear in this order: `## When to use`, `## When NOT to use`, then the step or module body, then `## Verify`.
 - `## When NOT to use` must include at least one entry covering the case where a more-specific skill should be preferred instead.
 - `## Verify` must be a Markdown checklist (`- [ ]` items); each item must reference an observable outcome, not merely a completed step (e.g., "`inspect` output has been read this session", not "Step 3 was completed").
-- The skill body must open with a metadata comment block: `> Skill metadata: version "X.Y"; tags [...]; recommended tools [...]`. Start new skills at `version "1.0"` and increment the minor version with each behavioural change. List only tools the skill's steps explicitly call in `recommended tools`.
+- The skill body must open with a metadata comment block: `> Skill metadata: version "X.Y"; tags [...]; recommended tools [...]`. Start new skills at `version "1.0"`. Increment the minor version for each behavioural change (updated steps, new modules, changed fallback paths); increment the major version for breaking structural changes (e.g. removing a module or the `## Verify` section); do not bump the version for prose-only edits. List only tools the skill's steps explicitly call in `recommended tools`.
 
 ## Skill types
 
