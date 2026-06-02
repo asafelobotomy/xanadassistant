@@ -44,6 +44,8 @@ Do not edit files under `.github/agents/`, `.github/skills/`, `.github/mcp/`, or
 
 Route specialist work to the matching agent before acting directly. If a task involves work that maps to a specialist agent's domain, delegate that work to the specialist agent first and continue from the returned result. If a delegated agent cannot complete its task, handle the failure inline or surface it to the user before continuing.
 
+When a request spans multiple specialist domains or the correct routing match is unclear, run `triage` first to get a classification and routing recommendation before acting.
+
 See [AGENTS.md](../AGENTS.md) for the full routing table, roster, handoff rules, and trigger phrases. That file is loaded automatically as an instruction source, so routing guidance is always in context.
 
 ## Coding Conventions
@@ -96,7 +98,7 @@ See `## Agent Routing` for the authoritative routing table; this section is a qu
 
 ### Agents
 
-- `cleaner` — prune stale artefacts, caches, archives, and dead files
+- `cleaner` — review for archive/cleanup candidates; prune stale artefacts, caches, archives, and dead files
 - `commit` — git operations, commit messages, staging, push, pull, PR work
 - `debugger` — diagnose failures and isolate root causes before implementation
 - `deps` — scan dependencies, audit packages, check for vulnerabilities, install/update/repair/remove

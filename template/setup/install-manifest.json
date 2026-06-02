@@ -49,7 +49,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:d7d3cc91b17e926d649ea0ebadf67417546590cb2d82ca46a1f80ded5ab6e76a"
+      "hash": "sha256:9e9b3ab0e1ca742995cb6b29d894a5a6f770e39a33cba110d85ef0a52a7cf0a3"
     },
     {
       "id": "agents.commit.agent.md",
@@ -260,7 +260,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:c51ceaa3db76c93bfd493fecd35530708b0bb172770afc4399f27e7e4bbf80c5"
+      "hash": "sha256:2383100a8fe925d5e6090ea2c500b7a92a9a604e91603b202ca10452c92b47d2"
     },
     {
       "id": "instructions.agents.instructions.md",

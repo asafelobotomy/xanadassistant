@@ -1,7 +1,7 @@
 ---
 name: cleaner
-description: "Use when: pruning stale artefacts, caches, archives, and dead files; removing generated debris; tightening repository hygiene without changing intended behaviour."
-argument-hint: "Say what to clean — e.g. 'clean up repo clutter', 'remove stale files', 'prune caches and archives', or 'tidy old artefacts'."
+description: "Use when: reviewing a directory or file tree to assess what should be archived or removed; pruning stale artefacts, caches, archives, and dead files; removing generated debris; tightening repository hygiene without changing intended behaviour."
+argument-hint: "Say what to review, clean, or archive — e.g. 'review docs/ and archive as needed', 'clean up repo clutter', 'remove stale files', 'prune caches and archives', or 'tidy old artefacts'."
 model:
   - Claude Sonnet 4.6
   - GPT-5.4

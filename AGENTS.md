@@ -7,7 +7,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 
 | Agent | User-invocable | Use when |
 | --- | --- | --- |
-| `cleaner` | yes | Pruning stale artefacts, caches, archives, and dead files; tightening repository hygiene without changing behaviour |
+| `cleaner` | yes | Reviewing a directory or file tree to assess what to archive or remove; pruning stale artefacts, caches, archives, and dead files; tightening repository hygiene without changing behaviour |
 | `commit` | yes | Git status, staging, commit messages, commits, pushes, pulls, rebases, branches, tags, releases, and PR work |
 | `deps` | yes | Scanning workspace dependencies, auditing installed packages, checking for vulnerabilities, suggesting updates or alternatives, and installing/updating/repairing/removing packages |
 | `explore` | yes | Broad read-only codebase exploration, file discovery, symbol discovery, architecture lookup, dependency tracing, example search, and repository structure questions |
@@ -24,7 +24,7 @@ Use it to decide which specialist agent should own a task before widening scope.
 
 | Work type | Required agent |
 | --- | --- |
-| Pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `cleaner` |
+| Reviewing a directory or file tree to decide what to archive or remove; pruning stale artefacts, caches, archives, dead files, or tightening repository hygiene | `cleaner` |
 | Git status, staging, commit messages, commits, preflight before push, push, pull, rebase, branch, stash, tag, release notes, PR title/body, or PR creation | `commit` |
 | Scanning workspace dependencies, auditing packages, checking for CVEs or outdated versions, suggesting updates or alternatives, or installing/updating/repairing/removing packages | `deps` |
 | Broad read-only codebase exploration, architecture lookup, file discovery, symbol discovery, or "find where this lives" | `explore` |
