@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  Summarize the GitHub issue #42 for me.
+expected_absent:
+  - "(?i)\\bciPreflight\\b"
+tags:
+  - smoke
+  - negative

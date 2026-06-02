@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to run pre-commit checks before pushing"
+prompt: |
+  Which skill discovers CI workflow commands and runs checks cheapest-first
+  before I push staged changes to the remote?
+expected:
+  - "ciPreflight"
+  - "pre-commit"
+tags:
+  - smoke
+  - positive

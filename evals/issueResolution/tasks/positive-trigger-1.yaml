@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to fetch and resolve a GitHub issue"
+prompt: |
+  Which skill covers fetching a GitHub issue, triaging duplicates,
+  locating the relevant code, and proposing a fix?
+expected:
+  - "issueResolution"
+  - "issue"
+tags:
+  - smoke
+  - positive

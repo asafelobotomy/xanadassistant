@@ -2,6 +2,8 @@
 name: ossChangelog
 description: "Use when: generating or reviewing OSS changelog entries with Keep a Changelog format, versioning discipline, or git history."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # ossChangelog

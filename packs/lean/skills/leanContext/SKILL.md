@@ -2,6 +2,8 @@
 name: leanContext
 description: "Use when: keeping working context tight, current, actionable, and free of stale detail."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Lean Context

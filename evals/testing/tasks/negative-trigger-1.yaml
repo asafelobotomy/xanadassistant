@@ -1,0 +1,10 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  Which git command undoes the last commit without discarding working directory changes?
+expected_absent:
+  - "(?i)\\btesting skill\\b"
+  - "(?i)use the testing"
+tags:
+  - smoke
+  - negative

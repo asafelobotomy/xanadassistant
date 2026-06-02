@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to choose a workspace search strategy"
+prompt: |
+  Which skill helps me choose between exact text, regex, semantic, and file-path
+  search modes when exploring a large codebase?
+expected:
+  - "workspaceSearch"
+  - "search"
+tags:
+  - smoke
+  - positive

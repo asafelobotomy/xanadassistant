@@ -2,6 +2,8 @@
 name: leanAndon
 description: "Use when: deciding whether to stop and ask for clarification or proceed autonomously under an Andon cord protocol."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Lean Andon

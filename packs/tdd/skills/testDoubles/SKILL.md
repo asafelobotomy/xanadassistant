@@ -2,6 +2,8 @@
 name: testDoubles
 description: "Use when: selecting stubs, mocks, fakes, or spies for test isolation and deterministic behavior."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Test Doubles

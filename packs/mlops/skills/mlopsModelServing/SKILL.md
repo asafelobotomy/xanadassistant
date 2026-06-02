@@ -2,6 +2,8 @@
 name: mlopsModelServing
 description: "Use when: designing or reviewing model serving workflows, registry usage, versioning, A/B tests, canary deployments, or drift monitoring."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # mlopsModelServing

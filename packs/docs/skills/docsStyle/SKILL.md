@@ -2,6 +2,8 @@
 name: docsStyle
 description: "Use when: improving documentation writing style, prose register, active voice, imperative mood, or term consistency."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # docsStyle

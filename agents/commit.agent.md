@@ -49,9 +49,13 @@ Do not use this agent for:
 
 {{agent:commit:message-style}}
 
+> If this token is unresolved, use [Conventional Commits 1.0](https://www.conventionalcommits.org/) format: `<type>(<scope>): <subject>`. Valid types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`. Subject must be imperative, ≤ 72 characters, lowercase first word, no trailing period.
+
 ## Secret guard
 
 {{agent:commit:secret-guard}}
+
+> If this token is unresolved: before staging any file, scan its diff for high-entropy strings, bearer tokens, private key headers (`-----BEGIN`), environment variable assignments containing credentials (`API_KEY=`, `SECRET=`, `PASSWORD=`, `TOKEN=`), and known secret file patterns (`.env`, `id_rsa`). Surface any probable secret to the user and stop until resolved.
 
 ## CI preflight
 
@@ -86,9 +90,7 @@ When the staged set includes Copilot surface files (`.agent.md`, `SKILL.md`, `.i
    - Set `message` to a fenced markdown code block containing the **full proposed commit message** — subject line, blank line, and body — verbatim. The `message` field is mandatory; never leave it empty.
    - Include "Approve — commit now" and "Edit before committing" as options.
    - Do not commit without acknowledgement.
-8. Use `git_commit` for the final non-interactive commit step so the result comes back as a structured envelope instead of raw terminal text.
-9. Report the short hash and subject after a successful commit, using `git_log` with `max_count=1` to confirm the new commit.
-10. When the user wants to inspect the full content of a specific commit (e.g., before incorporating, reverting, or referencing it), use `git_show` with the commit revision instead of shelling out for `git show`.
+8. Use `git_commit` for the final non-interactive commit step. After a successful commit, report the short hash and subject using `git_log` with `max_count=1`. Use `git_show` with the commit revision when the user wants to inspect the full content of a specific commit (e.g., before incorporating, reverting, or referencing it).
 
 ## Push workflow
 
@@ -158,7 +160,6 @@ When the staged set includes Copilot surface files (`.agent.md`, `SKILL.md`, `.i
 
 ## Memory
 
-At the start of every task — before the `## On every invocation` steps — call `memory_dump(agent="commit")`.
 
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.

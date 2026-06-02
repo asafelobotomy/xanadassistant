@@ -2,6 +2,8 @@
 name: docsStructure
 description: "Use when: structuring documentation with Diátaxis, README anatomy, ADR format, or section ordering conventions."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # docsStructure

@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to diagnose Copilot Chat problems"
+prompt: |
+  Which skill diagnoses why my Copilot Chat instructions are being ignored
+  and MCP tools are failing to register?
+expected:
+  - "sessionDiagnostics"
+  - "diagnostics"
+tags:
+  - smoke
+  - positive

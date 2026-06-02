@@ -1,6 +1,8 @@
 ---
 name: issueResolution
 description: "Use when: fetching, classifying, and resolving a GitHub issue — covering intake triage, duplicate search, code location, fix proposal, and PR readiness assessment."
+version: "1.0"
+license: MIT
 ---
 
 # Issue Resolution

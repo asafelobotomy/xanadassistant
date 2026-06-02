@@ -2,6 +2,8 @@
 name: shapeupPitching
 description: "Use when: writing, reviewing, or refining Shape Up pitches for drafting, completeness critique, or betting table preparation."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Shape Up — Pitching

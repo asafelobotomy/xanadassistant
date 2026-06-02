@@ -22,7 +22,7 @@ description: "Conventions for eval.yaml suite files and task files in this works
 
 ## Coverage requirements
 
-- Every agent eval suite must contain at least `positive-trigger-1.yaml` and `negative-trigger-1.yaml`.
-- Every skill eval suite must contain at least `basic-invocation.yaml`.
-- `expected` values are plain strings matched against the response; `expected_absent` values are regex patterns that must not appear in the response.
+- Every agent eval suite must contain at least `positive-trigger-1.yaml`, `positive-trigger-2.yaml`, and `negative-trigger-1.yaml`.
+- Every skill eval suite must contain at least `basic-invocation.yaml`, `positive-trigger-1.yaml`, and `negative-trigger-1.yaml`.
+- `expected` values are plain literal strings matched against the response — no escaping needed; dots and special characters are treated as literals. `expected_absent` values are regex patterns that must not appear in the response — escape literal dots and special characters (e.g., use `\.` for a literal dot in a version string like `1\.2\.3`).
 - Pack eval suites under `packs/**/evals/` follow the same coverage requirements as top-level suites.

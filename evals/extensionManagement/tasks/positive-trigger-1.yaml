@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to discover or install VS Code extensions"
+prompt: |
+  Which skill helps me discover and install VS Code extensions by intent
+  or known extension ID?
+expected:
+  - "extensionManagement"
+  - "extension"
+tags:
+  - smoke
+  - positive

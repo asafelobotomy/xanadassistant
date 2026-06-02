@@ -26,7 +26,7 @@ Do not use this agent for:
 ## On every invocation
 
 1. Call `memory_dump(agent="explore")` before running any tool calls.
-2. Confirm the thoroughness tier (`quick` / `medium` / `thorough`) from the caller's request before proceeding.
+2. Determine the thoroughness tier (`quick` / `medium` / `thorough`) from the caller's request. If the caller does not specify, default to `medium` and state the assumed tier at the top of the response. Do not ask the caller to confirm when invoked as a subagent.
 3. Return results directly to the caller — do not sub-delegate.
 
 ## Guidelines

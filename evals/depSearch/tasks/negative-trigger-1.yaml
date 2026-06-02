@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  Review this SKILL.md for persona inconsistency.
+expected_absent:
+  - "(?i)\\bdepSearch\\b"
+tags:
+  - smoke
+  - negative

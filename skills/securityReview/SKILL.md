@@ -1,6 +1,8 @@
 ---
 name: securityReview
 description: "Use when: conducting a security-focused review of source code, API surfaces, authentication flows, or trust boundaries — covering injection, secret exposure, access control, and cryptographic failures."
+version: "1.0"
+license: MIT
 ---
 
 # Security Review

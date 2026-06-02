@@ -1,6 +1,8 @@
 ---
 name: depSearch
 description: "Use when: discovering package manifests, querying registry metadata, assessing dependency health signals, finding replacement candidates, or confirming import usage before removing a package."
+version: "1.0"
+license: MIT
 ---
 
 # Dep Search

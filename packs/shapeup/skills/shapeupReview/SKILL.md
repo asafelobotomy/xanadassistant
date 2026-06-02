@@ -2,6 +2,8 @@
 name: shapeupReview
 description: "Use when: auditing a Shape Up pitch for completeness, reviewing in-cycle scope discipline, or validating that a betting table decision meets Shape Up principles."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Shape Up — Review

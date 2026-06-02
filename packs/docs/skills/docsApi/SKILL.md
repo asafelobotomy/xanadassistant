@@ -2,6 +2,8 @@
 name: docsApi
 description: "Use when: writing or reviewing API and code documentation, including docstrings, OpenAPI patterns, and parameter tables."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # docsApi

@@ -63,7 +63,6 @@ def cmd_tokens(path: str, fmt: str) -> int:
 
 # ── check ─────────────────────────────────────────────────────────────────────
 
-
 def _check_items_agent(
     fm: dict, content: str, path: str, token_count: int
 ) -> tuple[list[tuple[str, bool, str]], list[tuple[str, bool, str]]]:
@@ -147,13 +146,30 @@ def _check_items_skill(
         "workflow structure present (## Steps or ## Module N)",
     ))
 
-    # Advisory: SKILL.md files should have 2–6 modules.
     modules = re.findall(r"^## Module \d+", content, re.MULTILINE)
-    module_count = len(modules)
-    advisory.append((
-        "module-count", is_reference or 2 <= module_count <= 6,
-        f"module count: {module_count} (2\u20136 is the acceptable range)",
-    ))
+    mc = len(modules)
+    _ALLOWED_SKILL_FIELDS = {
+        "name", "description", "type", "version", "license",
+        "metadata", "tags", "compatibility", "authors",
+    }
+    unknown = set(fm.keys()) - _ALLOWED_SKILL_FIELDS
+    _PROC = re.compile(
+        r"\b(use when|when to use|when:|triggers?:|how to|step \d|invoke|dispatch|run this)",
+        re.IGNORECASE,
+    )
+    meta = fm.get("metadata", {})
+    has_version = ("version" in meta if isinstance(meta, dict) else bool(fm.get("version")))
+    advisory.extend([
+        ("module-count", is_reference or (mc == 0 and "## Steps" in content) or 2 <= mc <= 6,
+         f"module count: {mc} (2\u20136 is the acceptable range)"),
+        ("spec-version", has_version, "metadata.version or version field present"),
+        ("spec-license", bool(fm.get("license")), "license field present"),
+        ("spec-allowed-fields", not unknown,
+         f"unknown frontmatter fields: {sorted(unknown)}" if unknown else "all frontmatter fields are spec-allowed"),
+        ("procedural-content", bool(_PROC.search(fm.get("description", ""))),
+         "description contains procedural language (\"when:\", \"use when:\", etc.)"),
+    ])
+
     return spec, advisory
 
 
@@ -202,26 +218,16 @@ def _build_check_result(
         (len(re.findall(r"^[-*] ", body, re.MULTILINE)) for body in section_bodies),
         default=0,
     )
-    advisory.append((
-        "over-specificity", max_rules <= 10,
-        f"max rules per section: {max_rules} (threshold: 10)",
-    ))
-
     neg_hits = re.findall(
         r"\b(ignore|skip|bypass|override|never ask|always proceed)\b",
-        content,
-        re.IGNORECASE,
+        content, re.IGNORECASE,
     )
-    advisory.append((
-        "negative-delta-risk", len(neg_hits) == 0,
-        f"negative-delta patterns: {len(neg_hits)} found",
-    ))
-
     max_depth = _max_nesting_depth(content)
-    advisory.append((
-        "complexity", max_depth <= 3,
-        f"max nesting depth: {max_depth} (threshold: 3)",
-    ))
+    advisory.extend([
+        ("over-specificity", max_rules <= 10, f"max rules per section: {max_rules} (threshold: 10)"),
+        ("negative-delta-risk", not neg_hits, f"negative-delta patterns: {len(neg_hits)} found"),
+        ("complexity", max_depth <= 3, f"max nesting depth: {max_depth} (threshold: 3)"),
+    ])
 
     if name:
         # Agents live one level below the repo root (agents/).
@@ -240,16 +246,8 @@ def _build_check_result(
 
     spec_score = sum(1 for _, ok, _ in spec if ok) / len(spec)
     adv_score = sum(1 for _, ok, _ in advisory if ok) / len(advisory)
-    weighted = spec_score * 0.7 + adv_score * 0.3
-    level = (
-        "High"
-        if weighted >= 0.90
-        else "Medium-High"
-        if weighted >= 0.75
-        else "Medium"
-        if weighted >= 0.50
-        else "Low"
-    )
+    w = spec_score * 0.7 + adv_score * 0.3
+    level = "High" if w >= 0.90 else "Medium-High" if w >= 0.75 else "Medium" if w >= 0.50 else "Low"
     return spec, advisory, level
 
 
@@ -332,6 +330,12 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
         f"prompt: |\n  {desc_short}\n"
         f"tags:\n  - basic\n  - smoke\n  - positive\n"
     )
+    positive_task2_yaml = (
+        f"id: positive-trigger-2\n"
+        f"description: {_yaml_str('Verify ' + kind + ' triggers on a second positive prompt variant')}\n"
+        f"prompt: |\n  {desc_short}\n"
+        f"tags:\n  - smoke\n  - positive\n"
+    )
     negative_task_yaml = (
         f"id: negative-trigger-1\n"
         f"description: {_yaml_str('Verify ' + kind + ' does NOT trigger on an unrelated request')}\n"
@@ -365,6 +369,9 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
         print(f"# Would write: evals/{name}/tasks/positive-trigger-1.yaml")
         print()
         print(positive_task_yaml)
+        print(f"# Would write: evals/{name}/tasks/positive-trigger-2.yaml")
+        print()
+        print(positive_task2_yaml)
         print(f"# Would write: evals/{name}/tasks/negative-trigger-1.yaml")
         print()
         print(negative_task_yaml)
@@ -376,6 +383,9 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
             (eval_dir / "tasks" / "positive-trigger-1.yaml").write_text(
                 positive_task_yaml, encoding="utf-8"
             )
+            (eval_dir / "tasks" / "positive-trigger-2.yaml").write_text(
+                positive_task2_yaml, encoding="utf-8"
+            )
             (eval_dir / "tasks" / "negative-trigger-1.yaml").write_text(
                 negative_task_yaml, encoding="utf-8"
             )
@@ -384,6 +394,7 @@ def cmd_suggest(path: str, dry_run: bool) -> int:
             return 2
         print(f"Written: {eval_dir / 'eval.yaml'}")
         print(f"Written: {eval_dir / 'tasks' / 'positive-trigger-1.yaml'}")
+        print(f"Written: {eval_dir / 'tasks' / 'positive-trigger-2.yaml'}")
         print(f"Written: {eval_dir / 'tasks' / 'negative-trigger-1.yaml'}")
 
     return 0

@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to audit xanadAssistant workspace health"
+prompt: |
+  Which skill should I run to check xanadAssistant install status, repair reasons,
+  and lockfile validity before proposing an update?
+expected:
+  - "lifecycleAudit"
+  - "health"
+tags:
+  - smoke
+  - positive

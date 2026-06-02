@@ -1,6 +1,8 @@
 ---
 name: sessionDiagnostics
 description: "Use when: diagnosing unexpected Copilot Chat behavior, slow responses, missing instructions or skills, tool call failures, extension conflicts, MCP registration issues, or workspace configuration problems."
+version: "1.0"
+license: MIT
 ---
 
 # Session Diagnostics
@@ -42,7 +44,7 @@ Procedural skill for diagnosing unexpected behavior in VS Code Copilot Chat. Tri
    | Hook not firing, instruction `applyTo` not matching | **3 — Workspace config** | `.github/` directory layout + frontmatter |
    | Multiple unrelated anomalies at once | **All tiers** | Investigate Tier 1 first, then widen |
 
-2. **State the tier explicitly** before collecting evidence. Do not skip ahead to later tiers.
+2. **State the tier explicitly** before collecting evidence. Proceed through tiers in order; do not jump ahead to later tiers.
 
 ---
 
@@ -82,7 +84,7 @@ Procedural skill for diagnosing unexpected behavior in VS Code Copilot Chat. Tri
    - Read the found config file with `read_file` and verify the server entry, command path, and args.
    - Check whether the server is listed in the VS Code diagnostics output under MCP servers.
 
-9. **Check extension conflicts** — if the symptom is a command not found or an unexpected override:
+9. **Check extension conflicts** — if the symptom is a command not found or an unexpected command remapping:
    - Identify which extension owns the command or setting from the error message.
    - Note the extension ID and version from the diagnostics output.
 

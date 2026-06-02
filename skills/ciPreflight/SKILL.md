@@ -1,6 +1,8 @@
 ---
 name: ciPreflight
 description: "Use when: running pre-commit or pre-push CI-equivalent checks in any workspace — discovers the project's CI workflow commands using workspace tools, filters for local executability, scopes to staged changes, and runs checks cheapest-first before delegating failures."
+version: "1.2"
+license: MIT
 ---
 
 # CI Preflight

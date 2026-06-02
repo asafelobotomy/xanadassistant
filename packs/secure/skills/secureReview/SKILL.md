@@ -2,6 +2,8 @@
 name: secureReview
 description: "Use when: reviewing code for OWASP Top 10:2025 security findings with severity classification and a structured output format."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Secure Review

@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  Format all Python files in the project using black.
+expected_absent:
+  - "(?i)\\blifecycleAudit\\b"
+tags:
+  - smoke
+  - negative

@@ -1,6 +1,8 @@
 ---
 name: extensionManagement
 description: "Use when: discovering, recommending, installing, enabling, disabling, or uninstalling VS Code extensions by intent or known extension ID."
+version: "1.0"
+license: MIT
 ---
 
 # Extension Management
@@ -27,7 +29,7 @@ Procedural skill for managing VS Code extensions: recommending extensions by use
 ## Module 1 — Discover And Recommend
 
 1. **Determine the user's intent.**
-   - If the user named a specific extension or provided a known ID, skip to Module 2.
+   - If the user named a specific extension or provided a known ID, proceed to Module 2.
    - If the user described a task, problem, or language (e.g. "I need something for Python formatting"), extract 2–4 search keywords from that description.
 
 2. **Search the marketplace.**

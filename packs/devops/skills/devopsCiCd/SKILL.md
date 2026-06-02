@@ -2,6 +2,8 @@
 name: devopsCiCd
 description: "Use when: designing or reviewing CI/CD pipelines, GitHub Actions, stage design, environment gates, or artifact discipline."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # devopsCiCd

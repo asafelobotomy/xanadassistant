@@ -1,6 +1,8 @@
 ---
 name: agenticReview
 description: "Use when: reviewing .prompt.md, .agent.md, SKILL.md, or .instructions.md files for contradictions, ambiguity, persona consistency, cognitive load, coverage gaps, and composition conflicts."
+version: "1.1"
+license: MIT
 ---
 
 # Agentic Review
@@ -131,6 +133,10 @@ When xanadEval is available, its advisory flags supersede the manual thresholds 
 | `over-specificity` | warning | Excessive rigidity that reduces adaptability |
 | `negative-delta-risk` | warning | Instructions that could cause the agent to refuse valid work, be less helpful in its target domain, or add friction without a stated safety benefit |
 | `max-rules-per-section` | block | Rules per section exceeds the block threshold — cross-reference the metric table above |
+| `spec-version` | low | `metadata.version` or `version` field absent from SKILL.md frontmatter |
+| `spec-license` | low | `license` field absent from SKILL.md frontmatter |
+| `spec-allowed-fields` | medium | Unknown frontmatter keys present — may fail agentskills.io submission |
+| `procedural-content` | low | Description lacks procedural language ("use when:", "when:", etc.) |
 
 If xanadEval reports no workflow steps detected on an agent or prompt file, emit `cognitive-load: warning` — the file may lack clear procedure structure. For skill files, `workflow_steps: not detected` is expected and does not generate a warning.
 
@@ -140,6 +146,8 @@ If xanadEval reports no workflow steps detected on an agent or prompt file, emit
 - Sentences over 40 words
 - Numbered lists that mix independent rules with sequential steps in the same list
 
+When xanadEval `run` results are available, check that `trials_per_task` ≥ 2; single-trial results mask flaky grader behavior. If only one trial is reported, emit `cognitive-load: warning trials_per_task=1 — single-trial results may hide flaky grader output`.
+
 **Output:** `cognitive-load: [warning|block] <section> — <metric> = <value> (threshold: <threshold>). Suggested fix: <fix>`.
 
 ---
@@ -148,7 +156,7 @@ If xanadEval reports no workflow steps detected on an agent or prompt file, emit
 
 Identify gaps in the file's stated intent: scenarios that should be handled but are not.
 
-After completing the checklist, rate overall coverage Completeness (LLM-as-judge): **Complete / Gaps-present / Incomplete** — Complete: all paths documented; Gaps-present: 1–2 non-critical paths missing; Incomplete: happy path absent or 3+ paths missing. Gaps-present or Incomplete confirms coverage-gap findings. Also rate Scope coverage: is the file's scope well-defined, or does it bleed into adjacent agent territory? Output: `scope-coverage: [well-defined | bleeding] — <description>`. Bleeding scope is a Medium-severity coverage-gap finding.
+After completing the checklist, rate overall coverage Completeness (LLM-as-judge): **Complete / Gaps-present / Incomplete** — Complete: all paths documented; Gaps-present: 1–2 non-critical paths missing; Incomplete: happy path absent or 3+ paths missing. Gaps-present or Incomplete confirms coverage-gap findings. Also rate Scope coverage: is the file's scope well-defined, or does it bleed into adjacent agent territory? Output: `scope-coverage: [well-defined | bleeding] — <description>`. Bleeding scope is a Medium-severity coverage-gap finding. Cross-reference with xanadEval's `procedural-content` advisory — a skill with no procedural language in its description typically scores Incomplete for scope definition.
 
 Run for every file type. Also apply ## File-type Coverage Checks below for the specific file type under review.
 
@@ -180,12 +188,13 @@ Apply after Module 5 for the specific file type under review.
 - [ ] A `## Verify` checklist is present
 - [ ] Every step either has a success criterion or delegates to a fallback
 - [ ] `xanadEval check` spec compliance passes — failing checks (`spec-frontmatter`, `spec-name`, `spec-dir-match`, `spec-description`) are High-severity findings; `eval-presence` advisory absence is Medium. If xanadEval is unavailable, emit: `coverage-gap: [medium] spec-compliance — xanadEval unavailable; spec checks could not be run`.
-- [ ] If coverage gaps were found: run `python3 tools/xanadEval/xanadEval.py suggest --dry-run <path>`; each expected eval task not yet present is a Low-severity finding. If xanadEval is unavailable, note the gap manually.
+- [ ] If coverage gaps were found: run `python3 tools/xanadEval/xanadEval.py suggest --dry-run <path>`; each expected eval task not yet present is a Low-severity finding; `positive-trigger-1.yaml` and `positive-trigger-2.yaml` absence are each Low. If xanadEval is unavailable, note the gap manually.
+- [ ] Trigger-precision eval tasks (type `trigger`) that measure invocation precision should set `inject_skill_body: false` in their task config to isolate routing behavior from skill content.
+- [ ] If `run --baseline` results are available, verify the skill shows positive uplift (skill score > baseline score); near-zero or negative uplift is a High-severity coverage-gap finding.
 
 *Instructions files (`.instructions.md`):*
 
-- [ ] `applyTo:` pattern is present and non-empty
-- [ ] Rules are expressed as imperatives, not preferences ("Do X", not "You might want to X")
+- [ ] `applyTo:` pattern is present, non-empty, and rules are expressed as imperatives ("Do X", not "You might want to X")
 
 **Output:** `coverage-gap: [severity] <section> — <description>. Suggested addition: <addition>`.
 

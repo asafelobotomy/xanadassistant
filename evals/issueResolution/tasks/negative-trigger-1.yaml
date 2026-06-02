@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  What is the token count of this SKILL.md?
+expected_absent:
+  - "(?i)\\bissueResolution\\b"
+tags:
+  - smoke
+  - negative

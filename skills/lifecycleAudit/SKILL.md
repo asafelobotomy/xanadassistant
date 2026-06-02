@@ -1,6 +1,8 @@
 ---
 name: lifecycleAudit
 description: "Use when: checking xanadAssistant workspace health, install status, repair reasons, or lockfile validity before proposing install, update, repair, or restore operations."
+version: "1.3"
+license: MIT
 ---
 
 # Lifecycle Health Check

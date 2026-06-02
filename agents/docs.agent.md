@@ -36,13 +36,8 @@ Do not use this agent for:
 - Keep the scope on explanation, discoverability, migration guidance, and examples.
 - **Creation tasks**: when asked to create documentation for a set of components, survey each component's source files before writing; derive content from the actual code and configuration rather than from memory.
 - When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for repo inspection before falling back to `runCommands`.
-- Use `researcher` when the docs depend on current external references, upstream behavior, or version-specific constraints.
-- Use `explore` when documentation accuracy requires confirming local implementation details across multiple files.
-- Use `review` when the draft needs a quality pass for clarity, correctness, or missing caveats.
-- Use `planner` when the documentation work should be scoped first because the surface is broad or coupled to a larger rollout.
-- Use the `workspaceSearch` skill when searching for existing documentation, related files, or symbols — prefer exact-text, file-path, or semantic search as appropriate rather than delegating to `explore` for simple targeted lookups.
-- When creating or updating `.agent.md`, `SKILL.md`, or `.instructions.md` files, use the `agenticReview` skill as a quality gate before finishing — these files have specific schema and structural requirements.
-- When creating or updating `.prompt.md` files, use the `promptReview` skill as a quality gate before finishing.
+- Delegate to `researcher` for external constraints, `explore` for local accuracy, `review` for quality passes, and `planner` when the scope is broad or coupled to a larger rollout.
+- Use `workspaceSearch` for finding files and symbols; use `agenticReview` as a quality gate for `.agent.md`, `SKILL.md`, and `.instructions.md`; use `promptReview` for `.prompt.md` files.
 - Before finishing, use `ciPreflight` to confirm the workspace passes pre-commit checks; if the documentation change touches code-adjacent files, also use the `testing` skill to run the narrowest confirming tests.
 - Verify commands, paths, and examples against the repo before writing them down.
 - Do not silently change runtime behavior while doing docs-only work.

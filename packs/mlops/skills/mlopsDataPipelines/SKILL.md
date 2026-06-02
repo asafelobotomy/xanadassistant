@@ -2,6 +2,8 @@
 name: mlopsDataPipelines
 description: "Use when: designing or reviewing ML data pipelines for versioning, feature engineering discipline, and leakage prevention."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # mlopsDataPipelines

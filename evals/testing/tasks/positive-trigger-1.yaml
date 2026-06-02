@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to run tests and summarize results"
+prompt: |
+  Which skill chooses the safest available test command, runs the test suite,
+  and decides when to hand failing tests to the debugger?
+expected:
+  - "testing"
+  - "test"
+tags:
+  - smoke
+  - positive

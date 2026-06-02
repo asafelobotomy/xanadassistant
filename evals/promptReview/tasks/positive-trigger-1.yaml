@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to review a .prompt.md file before merge"
+prompt: |
+  Which skill reviews a .prompt.md file for cognitive load, composition conflicts,
+  and coverage gaps before merging?
+expected:
+  - "promptReview"
+  - "prompt"
+tags:
+  - smoke
+  - positive

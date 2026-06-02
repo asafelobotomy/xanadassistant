@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  Scaffold a new eval suite for this SKILL.md using xanadEval suggest.
+expected_absent:
+  - "(?i)\\bsecurityReview\\b"
+tags:
+  - smoke
+  - negative

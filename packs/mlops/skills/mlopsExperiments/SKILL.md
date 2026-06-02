@@ -2,6 +2,8 @@
 name: mlopsExperiments
 description: "Use when: designing, reviewing, or debugging ML experiments for reproducibility, hyperparameter discipline, and metric logging."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # mlopsExperiments

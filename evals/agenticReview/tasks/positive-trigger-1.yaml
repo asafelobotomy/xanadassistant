@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to review a surface file for quality issues"
+prompt: |
+  Which skill should I use when reviewing a .agent.md file for contradictions,
+  ambiguity, and coverage gaps before merging?
+expected:
+  - "agenticReview"
+  - "review"
+tags:
+  - smoke
+  - positive

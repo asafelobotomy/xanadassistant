@@ -1,6 +1,8 @@
 ---
 name: testing
 description: "Use when: running targeted or full tests in any workspace, choosing the safest available test command, summarizing test results, or deciding when to hand failing tests to debugger."
+version: "1.5"
+license: MIT
 ---
 
 # Testing

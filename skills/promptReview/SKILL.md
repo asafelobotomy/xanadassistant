@@ -1,6 +1,8 @@
 ---
 name: promptReview
 description: "Use when: reviewing .prompt.md files for contradictions, ambiguity, persona consistency, cognitive load, coverage gaps, and composition conflicts before merge or troubleshooting."
+version: "1.0"
+license: MIT
 ---
 
 # Prompt Review

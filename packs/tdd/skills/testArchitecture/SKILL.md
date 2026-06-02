@@ -2,6 +2,8 @@
 name: testArchitecture
 description: "Use when: structuring a test suite, separating unit from integration tests, or deciding what a test should and should not cross as a boundary."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Test Architecture

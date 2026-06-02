@@ -2,6 +2,8 @@
 name: ossCodeReview
 description: "Use when: reviewing OSS pull requests against review standards, comment etiquette, and contribution gate criteria."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # ossCodeReview

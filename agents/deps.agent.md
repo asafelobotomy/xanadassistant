@@ -25,7 +25,7 @@ Do not use this agent for:
 ## On every invocation
 
 0. Call `memory_dump(agent="deps")` before taking any action (see `## Memory`).
-1. **Discover first** — use the `depSearch` skill to scan for all dependency manifests and gather registry metadata and vulnerability signals before taking any action.
+1. **Discover first** — run the `depSearch` skill (covering manifest discovery, registry inspection, vulnerability assessment, and replacement candidate research — Steps 1–4) before taking any action. Then proceed to Step 5 — Act.
 2. **Confirm before mutating** — present your audit findings and proposed changes; wait for explicit user confirmation before running any install, update, or remove command.
 3. **Ecosystem-aware** — adapt commands to the package manager and ecosystem detected; never assume pip when npm is in use, and vice versa.
 4. **Security-first** — check for known vulnerabilities on every audit, not just when asked. Flag CVEs as `Critical` or `High` before any other finding.
@@ -34,6 +34,8 @@ Do not use this agent for:
 ---
 
 ## Step 1 — Discover
+
+> If the `depSearch` skill was dispatched in `## On every invocation` and has already returned results for Steps 1–4, proceed directly to Step 5 — Act. Do not re-execute the steps below.
 
 Scan the workspace for dependency manifests. Recognise all of the following:
 

@@ -2,6 +2,8 @@
 name: leanVerification
 description: "Use when: reporting test and validation results with pass/fail status, minimal passing output, and concise failure triage."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Lean Verification

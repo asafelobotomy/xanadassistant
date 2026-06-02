@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to review code for security vulnerabilities"
+prompt: |
+  Which skill should I use to review an API surface for injection vulnerabilities,
+  secret exposure, and access-control gaps?
+expected:
+  - "securityReview"
+  - "security"
+tags:
+  - smoke
+  - positive

@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  Stage all modified files and create a commit with a conventional message.
+expected_absent:
+  - "(?i)\\bpromptReview\\b"
+tags:
+  - smoke
+  - negative

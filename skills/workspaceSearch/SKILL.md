@@ -1,6 +1,8 @@
 ---
 name: workspaceSearch
 description: "Use when: choosing the right search strategy for a workspace query, executing and refining searches, and acting on results — covering exact text, regex, semantic, file-path, and VS Code search-panel modes."
+version: "1.0"
+license: MIT
 ---
 
 # Workspace Search

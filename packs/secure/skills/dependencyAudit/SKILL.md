@@ -2,6 +2,8 @@
 name: dependencyAudit
 description: "Use when: auditing dependency vulnerabilities with OSV.dev queries for lockfile packages and CVE triage."
 type: reference
+version: "1.1"
+license: MIT
 ---
 
 # Dependency Audit

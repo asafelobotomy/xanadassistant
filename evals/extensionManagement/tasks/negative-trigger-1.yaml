@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  Run the test suite and summarize which tests failed.
+expected_absent:
+  - "(?i)\\bextensionManagement\\b"
+tags:
+  - smoke
+  - negative

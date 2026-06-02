@@ -34,12 +34,8 @@ Do not use this agent for:
 - Frame the problem, identify in-scope files, estimate blast radius (all files, callers, and downstream consumers the change could affect), and list targeted verification.
 - Prefer concrete phases, file lists, stop conditions (states that make continued execution unsafe), and assumptions over generic advice.
 - When the `filesystem` server is connected, prefer `read_file`, `list_directory`, `search_files`, and `file_info` for read-only inspection before falling back to `runCommands`.
-- Use `explore` when you need a broader read-only inventory before the plan is credible.
-- Use the `workspaceSearch` skill to find affected files, callers, and import relationships before estimating blast radius — exact-text for symbol references, file-path for module patterns, semantic for cross-cutting themes.
-- Use `debugger` when existing failures or unclear broken state must be diagnosed before the plan is reliable.
-- Use `researcher` when the plan depends on current external docs, upstream contracts, or version-specific behavior.
-- Use `docs` when the plan output should be persisted as migration guidance, operational notes, or a project doc.
-- Use `review` when the plan depends on contract, architecture, or regression-risk analysis.
+- Use `explore` and the `workspaceSearch` skill for the inventory phase — exact-text for symbol references, file-path for module patterns, semantic for cross-cutting themes — before estimating blast radius.
+- Delegate to `debugger` for broken state, `researcher` for external constraints, `docs` to persist the plan, and `review` for contract or regression-risk analysis.
 - Name the narrowest tests or commands that can falsify the plan.
 - Return an executable plan, not an implementation.
 

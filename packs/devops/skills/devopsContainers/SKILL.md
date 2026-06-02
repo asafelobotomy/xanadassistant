@@ -2,6 +2,8 @@
 name: devopsContainers
 description: "Use when: writing or reviewing Dockerfiles, container images, multi-stage builds, layer caching, or image security."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # devopsContainers

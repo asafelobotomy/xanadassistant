@@ -54,6 +54,7 @@ class SuggestCommandTests(unittest.TestCase):
             root = Path(d) / "evals" / "test-skill"
             self.assertTrue((root / "eval.yaml").exists())
             self.assertTrue((root / "tasks" / "positive-trigger-1.yaml").exists())
+            self.assertTrue((root / "tasks" / "positive-trigger-2.yaml").exists())
             self.assertTrue((root / "tasks" / "negative-trigger-1.yaml").exists())
             self.assertIn("test-skill", (root / "eval.yaml").read_text())
 
@@ -82,6 +83,19 @@ class SuggestCommandTests(unittest.TestCase):
         output = buf.getvalue()
         self.assertIn("negative-trigger-1", output)
         self.assertIn("negative", output)
+
+    def test_suggest_generates_two_positive_trigger_tasks(self) -> None:
+        with tempfile.TemporaryDirectory() as d:
+            skill_dir = Path(d) / "test-skill"
+            skill_dir.mkdir()
+            p = skill_dir / "SKILL.md"
+            p.write_text(_MINIMAL_SKILL, encoding="utf-8")
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                xe.cmd_suggest(str(p), dry_run=True)
+        output = buf.getvalue()
+        self.assertIn("positive-trigger-1", output)
+        self.assertIn("positive-trigger-2", output)
 
     def test_suggest_dry_run_outside_skills_warns(self) -> None:
         """--dry-run must emit a layout warning when SKILL.md is not under skills/."""

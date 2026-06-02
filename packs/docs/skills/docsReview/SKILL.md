@@ -2,6 +2,8 @@
 name: docsReview
 description: "Use when: reviewing documentation for accuracy, completeness, clarity, link health, and merge readiness."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # docsReview

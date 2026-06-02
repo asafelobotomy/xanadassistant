@@ -2,6 +2,8 @@
 name: devopsInfraAsCode
 description: "Use when: writing or reviewing Infrastructure as Code for naming, state management, modularity, and drift detection."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # devopsInfraAsCode

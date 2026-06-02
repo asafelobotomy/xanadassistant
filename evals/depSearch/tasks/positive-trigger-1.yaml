@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify skill triggers when asked to assess a dependency's health or find replacements"
+prompt: |
+  Which skill should I use to check whether a Python package is still maintained
+  and find replacement candidates before removing it?
+expected:
+  - "depSearch"
+  - "dependency"
+tags:
+  - smoke
+  - positive

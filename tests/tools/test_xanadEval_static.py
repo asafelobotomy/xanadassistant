@@ -175,6 +175,72 @@ class CheckCommandTests(unittest.TestCase):
         os_check = next(c for c in data["advisory_checks"] if c["id"] == "over-specificity")
         self.assertFalse(os_check["pass"])
 
+    def test_advisory_spec_version_absent(self) -> None:
+        output, _ = self._check(_MINIMAL_SKILL, fmt="json")
+        data = json.loads(output)
+        sv = next(c for c in data["advisory_checks"] if c["id"] == "spec-version")
+        self.assertFalse(sv["pass"])
+
+    def test_advisory_spec_version_present_via_metadata(self) -> None:
+        versioned = _MINIMAL_SKILL.replace(
+            'description: "A minimal skill used for xanadEval unit tests"',
+            'description: "A minimal skill used for xanadEval unit tests"\nmetadata:\n  version: "1.0"',
+        )
+        output, _ = self._check(versioned, fmt="json")
+        data = json.loads(output)
+        sv = next(c for c in data["advisory_checks"] if c["id"] == "spec-version")
+        self.assertTrue(sv["pass"])
+
+    def test_advisory_spec_license_absent(self) -> None:
+        output, _ = self._check(_MINIMAL_SKILL, fmt="json")
+        data = json.loads(output)
+        sl = next(c for c in data["advisory_checks"] if c["id"] == "spec-license")
+        self.assertFalse(sl["pass"])
+
+    def test_advisory_spec_license_present(self) -> None:
+        licensed = _MINIMAL_SKILL.replace(
+            'description: "A minimal skill used for xanadEval unit tests"',
+            'description: "A minimal skill used for xanadEval unit tests"\nlicense: MIT',
+        )
+        output, _ = self._check(licensed, fmt="json")
+        data = json.loads(output)
+        sl = next(c for c in data["advisory_checks"] if c["id"] == "spec-license")
+        self.assertTrue(sl["pass"])
+
+    def test_advisory_spec_allowed_fields_passes_for_known_fields(self) -> None:
+        output, _ = self._check(_MINIMAL_SKILL, fmt="json")
+        data = json.loads(output)
+        af = next(c for c in data["advisory_checks"] if c["id"] == "spec-allowed-fields")
+        self.assertTrue(af["pass"])
+
+    def test_advisory_spec_allowed_fields_fails_for_unknown_field(self) -> None:
+        unknown_field = _MINIMAL_SKILL.replace(
+            'description: "A minimal skill used for xanadEval unit tests"',
+            'description: "A minimal skill used for xanadEval unit tests"\ncustom_field: value',
+        )
+        output, _ = self._check(unknown_field, fmt="json")
+        data = json.loads(output)
+        af = next(c for c in data["advisory_checks"] if c["id"] == "spec-allowed-fields")
+        self.assertFalse(af["pass"])
+        self.assertIn("custom_field", af["detail"])
+
+    def test_advisory_procedural_content_present(self) -> None:
+        output, _ = self._check(_MINIMAL_SKILL, fmt="json")
+        data = json.loads(output)
+        pc = next(c for c in data["advisory_checks"] if c["id"] == "procedural-content")
+        # _MINIMAL_SKILL description is "A minimal skill used for xanadEval unit tests" — no procedural marker
+        self.assertFalse(pc["pass"])
+
+    def test_advisory_procedural_content_with_use_when(self) -> None:
+        procedural = _MINIMAL_SKILL.replace(
+            'description: "A minimal skill used for xanadEval unit tests"',
+            'description: "Use when running xanadEval tests to verify minimal compliance"',
+        )
+        output, _ = self._check(procedural, fmt="json")
+        data = json.loads(output)
+        pc = next(c for c in data["advisory_checks"] if c["id"] == "procedural-content")
+        self.assertTrue(pc["pass"])
+
 
 class ErrorHandlingTests(unittest.TestCase):
 

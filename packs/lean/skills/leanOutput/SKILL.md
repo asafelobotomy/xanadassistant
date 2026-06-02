@@ -2,6 +2,8 @@
 name: leanOutput
 description: "Use when: producing lean factual responses with no filler, count-based summaries, and omitted routine narration."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Lean Output

@@ -2,6 +2,8 @@
 name: ossContributing
 description: "Use when: writing or reviewing OSS contributing guidance, CONTRIBUTING.md structure, DCO/CLA guidance, or contributor onboarding checklists."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # ossContributing

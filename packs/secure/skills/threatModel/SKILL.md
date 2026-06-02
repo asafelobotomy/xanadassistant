@@ -2,6 +2,8 @@
 name: threatModel
 description: "Use when: producing STRIDE threat models with trust boundaries, asset identification, and feature threat classification."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Threat Model

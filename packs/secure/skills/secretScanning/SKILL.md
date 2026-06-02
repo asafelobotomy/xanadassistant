@@ -2,6 +2,8 @@
 name: secretScanning
 description: "Use when: scanning for credential leakage before version control or enforcing pre-commit secret hygiene."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Secret Scanning

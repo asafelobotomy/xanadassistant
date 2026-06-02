@@ -37,6 +37,14 @@ Do not use this agent for:
 2. Inventory callers and references before moving any file.
 3. Update every direct caller in the same pass — do not leave the tree in a broken state.
 
+## Risk tiers
+
+| Operation | Risk | Rule |
+| ----------- | ------ | ------ |
+| Read-only inventory, `list_directory`, `search_files` | Low | Proceed without confirmation |
+| `move_file`, path updates in callers | Medium | Show all old→new path pairs; confirm when scope is ambiguous |
+| `delete_file` | High | List every file to be deleted and all known callers; require explicit user approval |
+
 ## Guidelines
 
 - Read the affected files and callers before moving anything.
@@ -47,7 +55,6 @@ Do not use this agent for:
 - Use `docs` when file moves require updating documentation, migration guides,
   or user-facing references beyond inline path fixes.
 - When the `filesystem` server is connected, prefer `move_file` for renames and moves, `create_directory` to make parent trees, and `list_directory` or `search_files` for inventory — these tools enforce the workspace path boundary and produce cleaner output than shell equivalents.
-- Update every direct caller in the same pass so the tree stays runnable.
 - Prefer direct path retargeting over temporary wrappers.
 - Validate with targeted checks first. Use the `testing` skill to run the repo test suite before task
   completion, or earlier only if a targeted failure required a fix and broader

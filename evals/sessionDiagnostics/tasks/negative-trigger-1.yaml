@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  Clean up stale __pycache__ directories and archive old build outputs.
+expected_absent:
+  - "(?i)\\bsessionDiagnostics\\b"
+tags:
+  - smoke
+  - negative

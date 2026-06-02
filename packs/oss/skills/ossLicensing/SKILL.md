@@ -2,6 +2,8 @@
 name: ossLicensing
 description: "Use when: choosing or reviewing OSS licenses, LICENSE file format, SPDX identifiers, or header placement."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # ossLicensing

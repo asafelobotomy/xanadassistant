@@ -2,6 +2,8 @@
 name: testCoverage
 description: "Use when: analyzing test coverage as a diagnostic tool, identifying gaps, or evaluating assertion strength."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # Test Coverage

@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated coding request"
+prompt: |
+  How do I refactor this Python function to reduce cyclomatic complexity?
+expected_absent:
+  - "(?i)\\bagenticReview\\b"
+tags:
+  - smoke
+  - negative

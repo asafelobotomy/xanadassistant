@@ -47,6 +47,14 @@ is unavailable or package source resolution is missing.
 - Submit a health check report → run the `health-report` command (see `## Health check workflow`)
 - Natural-language requests to add a convention or preference to instructions are not lifecycle operations; do not invoke this agent for phrases like `Remember this for next time` or `Add this to your instructions`.
 
+## Risk tiers
+
+| Operation | Risk | Rule |
+| ----------- | ------ | ------ |
+| `inspect`, `health-check`, `health-report` | Low | Read-only; proceed without confirmation |
+| `setup`, `update`, `repair` | Medium | Show the plan output and wait for user approval before applying |
+| `factory-restore` | High | Summarise every file that will be overwritten or removed; require explicit user confirmation before applying |
+
 ## Cold-start (blank workspace)
 
 This agent is installed by xanadAssistant and is not present in a fresh
@@ -243,10 +251,10 @@ then pass `--allow-mutable-ref` explicitly.
 3. **Write only after approval.** Once approved, run `setup`, `update`, `repair`,
    or `factory-restore` as appropriate.
 4. **Diagnose unclear failures.** Use `debugger` when lifecycle commands fail, drift is surprising, or the controlling state is unclear.
-4a. **VS Code and Copilot layer issues.** When the failure is in VS Code configuration, MCP registration, extension conflicts, or Copilot Chat behavior rather than the lifecycle CLI itself, use the `sessionDiagnostics` skill to gather evidence before escalating.
-4b. **Extension setup.** When the setup or update workflow surfaces a requirement for VS Code extensions, use the `extensionManagement` skill to discover, recommend, or install the required extensions.
-5. **Scope complex remediation.** Use `planner` when repair, update, or migration work spans multiple managed surfaces or needs phased execution.
-6. **Inventory unfamiliar workspaces.** Use `explore` when the workspace layout, installed surfaces, or relevant files are unclear before planning a lifecycle operation.
+5. **VS Code and Copilot layer issues.** When the failure is in VS Code configuration, MCP registration, extension conflicts, or Copilot Chat behavior rather than the lifecycle CLI itself, use the `sessionDiagnostics` skill to gather evidence before escalating.
+6. **Extension setup.** When the setup or update workflow surfaces a requirement for VS Code extensions, use the `extensionManagement` skill to discover, recommend, or install the required extensions.
+7. **Scope complex remediation.** Use `planner` when repair, update, or migration work spans multiple managed surfaces or needs phased execution.
+8. **Inventory unfamiliar workspaces.** Use `explore` when the workspace layout, installed surfaces, or relevant files are unclear before planning a lifecycle operation.
 
 ## Command reference
 

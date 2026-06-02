@@ -2,6 +2,8 @@
 name: mlopsReview
 description: "Use when: reviewing ML code or experiment plans for data leakage, bias, reproducibility, and serving risk."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # mlopsReview

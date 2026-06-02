@@ -30,6 +30,6 @@ Pack skills under `packs/*/skills/` are typically reference skills unless they c
 
 ## Authoring rules
 
-- Multi-module skills must contain 2–6 modules or top-level sections (xanadEval `module-count` threshold).
+- Multi-module skills must contain 2–6 `## Module N` headings (xanadEval `module-count` threshold). Skills using `## Steps` instead of `## Module N` are exempt from this check — xanadEval's `module-count: 0` advisory can be ignored for `## Steps`-based skills.
 - External dependencies (MCP servers, other agents, APIs) must each have a documented failure path or fallback.
 - Do not embed agent routing decisions inside a skill — a skill describes a procedure, not a routing table.

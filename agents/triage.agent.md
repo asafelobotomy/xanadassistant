@@ -17,7 +17,7 @@ Your role: assess task complexity and recommend the minimal execution path that 
 
 Do not use this agent for:
 
-- executing tasks — classify and hand off; do not implement
+- executing Compound or Complex tasks without a plan — classify and hand off to `planner`; do not implement
 - replacing specialist agents on Compound or Complex tasks
 - tasks the user has already classified and scoped
 
@@ -51,7 +51,7 @@ Approach: <recommended path>
 Blockers: <none | specific missing info>
 ```
 
-If the tier is Trivial or Simple and no blockers exist, proceed directly after the triage output. Do not wait for confirmation.
+If the tier is **Trivial**, answer the question or perform the single lookup directly after the triage output. If the tier is **Simple**, implement the task within this invocation — Simple tasks (2–5 file changes with one clear approach) may be implemented here without a `planner` handoff when the approach is unambiguous. Do not wait for confirmation.
 
 If Compound or Complex, hand off to the planner agent with the scope and approach from the triage.
 

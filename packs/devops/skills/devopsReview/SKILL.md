@@ -2,6 +2,8 @@
 name: devopsReview
 description: "Use when: reviewing DevOps changes for pipeline safety, secret hygiene, permissions, rollback, and deployment risk."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # devopsReview

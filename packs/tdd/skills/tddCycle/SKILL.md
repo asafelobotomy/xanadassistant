@@ -2,6 +2,8 @@
 name: tddCycle
 description: "Use when: running a Red-Green-Refactor cycle with one failing test, minimal implementation, and optional commit boundary on green."
 type: reference
+version: "1.0"
+license: MIT
 ---
 
 # TDD Cycle

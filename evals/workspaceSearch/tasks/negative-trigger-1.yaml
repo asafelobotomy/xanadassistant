@@ -1,0 +1,9 @@
+id: negative-trigger-1
+description: "Verify skill does NOT trigger on an unrelated request"
+prompt: |
+  Audit all packages in requirements.txt for known CVEs.
+expected_absent:
+  - "(?i)\\bworkspaceSearch\\b"
+tags:
+  - smoke
+  - negative
