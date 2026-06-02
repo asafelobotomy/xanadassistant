@@ -142,12 +142,18 @@ def init_db(conn: sqlite3.Connection) -> None:
 
 
 def _add_column_safe(conn: sqlite3.Connection, table: str, col: str, typedef: str) -> None:
-    """Add a column if it does not already exist (idempotent)."""
+    """Add a column if it does not already exist (idempotent).
+
+    Only swallows ``OperationalError`` on a concurrent-add race (the column
+    appears in a re-check).  Any other failure is re-raised so schema
+    migrations cannot silently mark themselves complete after a real error.
+    """
     if col not in {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}:
         try:
             conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typedef}")
         except sqlite3.OperationalError:
-            pass  # concurrent startup: another process added the column first
+            if col not in {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}:
+                raise  # column still missing — not a race; propagate the real error
 
 
 def _rebuild_advisory_memory(conn: sqlite3.Connection) -> None:
@@ -286,7 +292,9 @@ def memory_dump(agent: str, root: str, branch: str, session_id: str = "", task_h
             conn.execute(
                 "SELECT id, rule_type, description, scope, branch, created_at FROM rules "
                 "WHERE (agent IS NULL OR agent=?) "
-                "  AND (branch IS NULL OR branch='' OR branch=?) ORDER BY created_at",
+                "  AND (branch IS NULL OR branch='' OR branch=?) "
+                "  AND scope != 'session' "
+                "ORDER BY created_at",
                 (agent, branch),
             ).fetchall()
         )
@@ -346,6 +354,11 @@ def memory_dump(agent: str, root: str, branch: str, session_id: str = "", task_h
 
 
 def memory_prune(agent: str | None, scope: str | None, max_age_days: float | None, root: str) -> str:
+    if max_age_days is not None and max_age_days < 0:
+        raise ValueError(
+            f"max_age_days must be >= 0; got {max_age_days!r}. "
+            "Pass None to only remove expired rows."
+        )
     extra, extra_params = prune_extra(agent, scope)
     with closing(get_conn(root)) as conn:
         expired = conn.execute(
@@ -357,21 +370,20 @@ def memory_prune(agent: str | None, scope: str | None, max_age_days: float | Non
         age_deleted = 0
         diary_deleted = 0
         if max_age_days is not None:
-            cutoff_secs = max(0, int(float(max_age_days) * 86400))
+            cutoff_secs = int(float(max_age_days) * 86400)
+            offset = f"-{cutoff_secs} seconds"
             stale = conn.execute(
                 f"DELETE FROM advisory_memory WHERE updated_at <= "
-                f"strftime('%Y-%m-%dT%H:%M:%SZ',datetime('now','-{cutoff_secs} seconds'))"
-                f"{extra}",
-                extra_params,
+                f"strftime('%Y-%m-%dT%H:%M:%SZ',datetime('now',?)){extra}",
+                [offset, *extra_params],
             )
             age_deleted = stale.rowcount
             old_ids = [
                 row_in[0]
                 for row_in in conn.execute(
                     f"SELECT id FROM agent_diary WHERE recorded_at <= "
-                    f"strftime('%Y-%m-%dT%H:%M:%SZ',datetime('now','-{cutoff_secs} seconds'))"
-                    f"{extra}",
-                    extra_params,
+                    f"strftime('%Y-%m-%dT%H:%M:%SZ',datetime('now',?)){extra}",
+                    [offset, *extra_params],
                 ).fetchall()
             ]
             if old_ids:
@@ -387,6 +399,11 @@ def memory_prune(agent: str | None, scope: str | None, max_age_days: float | Non
 
 
 def rule_add(description: str, rule_type: str, agent: str | None, scope: str, branch: str | None, root: str) -> str:
+    if scope == "session":
+        raise ValueError(
+            "scope='session' is not supported for rules; rule session-isolation is not yet "
+            "implemented. Use scope='workspace' for persistent rules."
+        )
     if branch and scope != "branch":
         raise ValueError(
             f"branch must be None or empty for scope={scope!r}; "

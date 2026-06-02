@@ -49,7 +49,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:742b7ac929051388ea92805afcf2e3adb9b0119e8b7b89b48807f52b69b76cad"
+      "hash": "sha256:d7d3cc91b17e926d649ea0ebadf67417546590cb2d82ca46a1f80ded5ab6e76a"
     },
     {
       "id": "agents.commit.agent.md",
@@ -68,7 +68,7 @@
         "{{agent:commit:secret-guard}}"
       ],
       "chmod": "none",
-      "hash": "sha256:86ea40967c4f4616d05ab87cbfd89ad4e4a5e22be1c18c90f9271b73b3ce4ec3"
+      "hash": "sha256:69a802159a5f0088c62b3e76e10b34018e521950c5f57e75bdf8049afb875aa4"
     },
     {
       "id": "agents.debugger.agent.md",
@@ -84,7 +84,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:82b79f75f3985f0108e63a7e4d9bc3dc427db4b1555210af091a4a9aa544b1ab"
+      "hash": "sha256:670ff00934f4d2fc58d7b8d776af1ff7644cc80a7e464e2460ee99b2e114736c"
     },
     {
       "id": "agents.deps.agent.md",
@@ -100,7 +100,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:b6e5e50702499f326d9d0c02e976393669ac8c2db621504724f9c5544b648b6a"
+      "hash": "sha256:1ea82d4f5fdf17c69f5e8ba1e2c6b645083042353ec06956c57c4c3d7bfad6bf"
     },
     {
       "id": "agents.docs.agent.md",
@@ -118,7 +118,7 @@
         "{{agent:docs:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:851ba490580e4c02ea2eb47da027cf5430fa4a2fb54d712b7ca29d7d2acb69d6"
+      "hash": "sha256:e97307ac0510ce24f3373dd24bac1cfc7e7c8abe3507d76529770b414044636d"
     },
     {
       "id": "agents.explore.agent.md",
@@ -136,7 +136,7 @@
         "{{agent:explore:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:439bb6b075f615ef4b475337aac5f4f393e86642f0cdab2e50f550c7fe622e6e"
+      "hash": "sha256:f4af0f2142c6fe70bdc961695020126054f496749cd3346d6e2d1f93240322a1"
     },
     {
       "id": "agents.organise.agent.md",
@@ -152,7 +152,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:a5c4ed1ef57674fb5e9dcdee670c296985ce8caccb0a21d22b14e07980edc72b"
+      "hash": "sha256:ee542da1f97daac5155b49ff94d4a517381692a1eb03e78983e836fffb2f7c12"
     },
     {
       "id": "agents.planner.agent.md",
@@ -170,7 +170,7 @@
         "{{agent:planner:plan-format}}"
       ],
       "chmod": "none",
-      "hash": "sha256:bf2d82fc2d20c7f8f91c70ceef00884299fa1561240c5a9b8f3661ae6335034b"
+      "hash": "sha256:64b62051e602466d550773ac0669b7591c59d639b985e60a1cb0a9e5c4593a38"
     },
     {
       "id": "agents.researcher.agent.md",
@@ -186,7 +186,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:c4b1e64e80e6efe56e7a4434d9d3720ed597f1074d840f5e757f94373ef68f7f"
+      "hash": "sha256:1491a0f5be0dff367cc90dabeee2e82987c328d48af36570f60c99721e2deafa"
     },
     {
       "id": "agents.review.agent.md",
@@ -204,7 +204,7 @@
         "{{agent:review:reporting-threshold}}"
       ],
       "chmod": "none",
-      "hash": "sha256:f8066eb88f48c35e9f9173a6b3677225933dfb30b59791d0305656958d8e0c96"
+      "hash": "sha256:b86e2b530f4c5659cf3270e6308911befc26d4dbedbbdc7a40395c372557dc9b"
     },
     {
       "id": "agents.triage.agent.md",
@@ -220,7 +220,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:424f81908cd1c224f7411b943809d36f65da4740c5593e55bd3741bbd2316ebc"
+      "hash": "sha256:bc5445df7a408a014d8e4fbc5489c2e6fc9b97c8d30853c4dbaadb797cb8a392"
     },
     {
       "id": "agents.xanadLifecycle.agent.md",
@@ -236,7 +236,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:5892aa0259ac5833b60f35ef83b5b38ed99d0e1bdb13c9f9116efe3a601a00c4"
+      "hash": "sha256:eb2b8f99028e6b4920f7102abcfe97d5c8b00422e4623142c8e23c9a1fc487cf"
     },
     {
       "id": "core-instructions.copilot-instructions.md",
@@ -260,7 +260,7 @@
         "{{WORKSPACE_NAME}}"
       ],
       "chmod": "none",
-      "hash": "sha256:89cdf46e52fccd9be99ab0bf9a6e16af5a89310eae6ada414ca06e34a6cfac6e"
+      "hash": "sha256:c51ceaa3db76c93bfd493fecd35530708b0bb172770afc4399f27e7e4bbf80c5"
     },
     {
       "id": "instructions.agents.instructions.md",
@@ -376,7 +376,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:c6e109ec4a352b3925d6dd3a2d70b4ac56d5af5b599157419bf68a05e747854c"
+      "hash": "sha256:390d30757b069616c2e987ecf2c3f07b8ae1aaafbcdda4df93a8792916b052a0"
     },
     {
       "id": "hook-scripts._workspace_testing_shared.py",
@@ -567,7 +567,7 @@
       ],
       "tokens": [],
       "chmod": "executable",
-      "hash": "sha256:622c8c0a46a6fb84d0e762065d46075985fddca54fa533c379135e353339140f"
+      "hash": "sha256:ba19562caf8ecfaccaf3bf040eb6efccadd0d867e045d942d1becab47b48eb6d"
     },
     {
       "id": "mlops-hooks.mlopsModelCheck.py",

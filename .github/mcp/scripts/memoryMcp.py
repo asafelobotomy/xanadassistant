@@ -26,6 +26,7 @@ mcp = FastMCP("xanadMemory")
 _VALID_SCOPES = {"workspace", "project", "branch", "session"}
 _VALID_RULE_TYPES = {"never", "always", "prefer", "avoid"}
 _VALID_RETENTIONS = {"short_term", "long_term"}
+_VALID_RULE_SCOPES: frozenset[str] = frozenset({"workspace", "project", "branch"})
 _SHORT_TERM_AUTO_TTL_DAYS: float = 8 / 24   # short_term facts auto-expire in 8 hours
 _AGENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9\-]*$")
 _SESSION_ID: str = str(uuid.uuid4())
@@ -109,6 +110,11 @@ def _chk_confidence(v: float) -> float:
 def _chk_retention(v: str) -> None:
     if v not in _VALID_RETENTIONS:
         raise ValueError(f"retention must be one of {sorted(_VALID_RETENTIONS)}; got {v!r}")
+
+
+def _chk_rule_scope(v: str) -> None:
+    """Validate scope for rule tools — session scope is not supported for rules."""
+    _shared_chk_scope(v, _VALID_RULE_SCOPES)
 
 
 def _parse_iso8601(value: str, field: str) -> str:
@@ -363,7 +369,7 @@ def rule_add(
     _chk_rule_type(rule_type)
     _chk_agent(agent)
     _chk_branch(branch)
-    _chk_scope(scope)
+    _chk_rule_scope(scope)
     root = _workspace_root()
     if scope == "branch" and branch is None:
         branch = _advisory_branch(scope, root)
@@ -374,7 +380,7 @@ def rule_add(
 def rule_list(agent: str | None = None, scope: str = "workspace") -> str:
     """List authoritative rules for an agent and scope."""
     _chk_agent(agent)
-    _chk_scope(scope)
+    _chk_rule_scope(scope)
     root = _workspace_root()
     branch = _advisory_branch(scope, root)
     return _shared_rule_list(agent, scope, branch, root)

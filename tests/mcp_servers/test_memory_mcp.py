@@ -491,3 +491,96 @@ class MemoryMcpTests(unittest.TestCase):
                 self.assertIn("long_term_count", summary)
                 self.assertEqual(summary["short_term_count"], 1)
                 self.assertEqual(summary["long_term_count"], 2)
+
+    # ── Audit-fix tests ────────────────────────────────────────────────────────────
+
+    def test_memory_prune_rejects_negative_max_age_days(self) -> None:
+        """memory_prune must raise ValueError for negative max_age_days (not silently delete all)."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with self.assertRaisesRegex(ValueError, "max_age_days"):
+                            module.memory_prune(max_age_days=-1.0)
+
+    def test_rule_add_rejects_session_scope(self) -> None:
+        """rule_add must reject scope='session' since session isolation is not implemented."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with self.assertRaisesRegex(ValueError, "session"):
+                    module.rule_add("never do foo", "never", scope="session")
+
+    def test_rule_list_rejects_session_scope(self) -> None:
+        """rule_list must reject scope='session' since session isolation is not implemented."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with self.assertRaisesRegex(ValueError, "session"):
+                    module.rule_list(agent="tester", scope="session")
+
+    def test_memory_dump_excludes_session_scoped_rules(self) -> None:
+        """memory_dump must not return rules with scope='session' (simulates pre-fix legacy rows)."""
+        import sqlite3 as _sqlite3
+        from pathlib import Path as _Path
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "k", "v")  # initialise DB
+                        db_path = (
+                            _Path(tmpdir) / ".github" / "xanadAssistant" / "memory" / "memory.db"
+                        )
+                        conn = _sqlite3.connect(str(db_path))
+                        conn.execute(
+                            "INSERT INTO rules (agent, scope, branch, rule_type, description) "
+                            "VALUES (?, ?, ?, ?, ?)",
+                            ("tester", "session", "", "always", "legacy session rule"),
+                        )
+                        conn.commit()
+                        conn.close()
+                        dump = json.loads(module.memory_dump("tester"))
+                self.assertEqual(dump["summary"]["total_rules"], 0,
+                                 "session-scoped rules must be excluded from memory_dump")
+
+    def test_memory_invalidate_soft_deletes_row(self) -> None:
+        """memory_invalidate must set invalidated_at but keep the row; memory_get must not return it."""
+        import sqlite3 as _sqlite3
+        from pathlib import Path as _Path
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "project.lang", "Python")
+                        module.memory_invalidate("tester", "project.lang")
+                        db_path = (
+                            _Path(tmpdir) / ".github" / "xanadAssistant" / "memory" / "memory.db"
+                        )
+                        conn = _sqlite3.connect(str(db_path))
+                        db_row = conn.execute(
+                            "SELECT invalidated_at FROM advisory_memory WHERE key='project.lang'"
+                        ).fetchone()
+                        conn.close()
+                        after = module.memory_get("tester", "project.lang")
+                self.assertIsNotNone(db_row, "Row must still exist after invalidation")
+                self.assertIsNotNone(db_row[0], "invalidated_at must be set after soft-delete")
+                self.assertIn("No active fact", after,
+                              "Invalidated fact must not be returned by memory_get")
+
+    def test_memory_remove_hard_deletes_row(self) -> None:
+        """memory_remove must physically delete the row from advisory_memory."""
+        import sqlite3 as _sqlite3
+        from pathlib import Path as _Path
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "project.lang", "Python")
+                        module.memory_remove("tester", "project.lang")
+                        db_path = (
+                            _Path(tmpdir) / ".github" / "xanadAssistant" / "memory" / "memory.db"
+                        )
+                        conn = _sqlite3.connect(str(db_path))
+                        db_row = conn.execute(
+                            "SELECT 1 FROM advisory_memory WHERE key='project.lang'"
+                        ).fetchone()
+                        conn.close()
+                self.assertIsNone(db_row, "Row must be physically deleted after memory_remove")
