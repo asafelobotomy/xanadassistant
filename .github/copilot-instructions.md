@@ -76,11 +76,12 @@ Memory provides workspace-specific rules and cached facts; use it when available
 
 When hooks are enabled, a `memory` MCP server is available. Each specialist agent's instruction file defines when and how to use it. The pattern used by every agent is:
 
-1. Call `memory_dump(agent="<agent-name>")` at the start of each task to load rules and cached facts.
-2. Follow all returned **rules** unconditionally for the rest of the task.
-3. For any **fact** you intend to act on, call `elapsed(start=fact.updated_at)` to verify its age.
-4. When you discover something specific to this workspace's commands, tool versions, paths, or established conventions, call `memory_set(agent="<agent-name>", key=..., value=...)` before finishing.
-5. If the `memory` server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
+1. **Conditionally** call `memory_dump(agent="<agent-name>", task_hint="<one-sentence task description>")` at the start of each task **when the task involves workspace-specific work** (commands, file edits, paths, tool versions, conventions). Skip the dump for trivial, purely-conversational, or read-only informational tasks that require no workspace context.
+2. If `summary.has_data` is `false`, skip memory-dependent steps — memory is empty for this agent.
+3. Follow all returned **rules** unconditionally for the rest of the task.
+4. Use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess fact freshness directly — no separate `elapsed()` call is needed for basic freshness checks. Call `elapsed()` only when precise age in seconds matters.
+5. When you discover something specific to this workspace's commands, tool versions, paths, or established conventions, call `memory_set(agent="<agent-name>", key=..., value=...)` before finishing.
+6. If the `memory` server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 
 ## Skills and Agents
 

@@ -242,7 +242,7 @@ then pass `--allow-mutable-ref` explicitly.
 
 ## On every invocation
 
-0. Call `memory_dump(agent="xanadLifecycle")` before taking any action (see `## Memory`).
+0. Call `memory_dump(agent="xanadLifecycle", task_hint="<one-sentence task description>")` before taking any action if the task involves workspace-specific context (see `## Memory`).
 1. **Inspect first.** Run `inspect` to understand the current state before taking
    any action.
 2. **Plan before writing.** Always run `plan <mode>` and review the output before
@@ -379,11 +379,12 @@ Do not interpret manifests, copy files, or modify `.github/` contents directly.
 
 ## Memory
 
-At the start of every lifecycle task, call `memory_dump(agent="xanadLifecycle")`.
+At the start of each lifecycle task **when workspace-specific context is needed** (install state, paths, versions, prior operations), call `memory_dump(agent="xanadLifecycle", task_hint="<one-sentence task description>")`. Skip the dump for trivial or purely-conversational requests.
 
+- If `summary.has_data` is `false`, skip memory-dependent steps — memory is empty for this agent.
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
-- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
+- **Facts** returned are working context — use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess freshness directly. Call `elapsed()` only when precise age in seconds matters.
 
 When you learn something durable about a workspace (install state, known repair paths, workspace-specific conventions), call `memory_set(agent="xanadLifecycle", key=..., value=...)` before finishing.
 

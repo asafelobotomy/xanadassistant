@@ -33,7 +33,7 @@ Do not use this agent for:
 
 ## On every invocation
 
-1. Call `memory_dump(agent="cleaner")` before using any tools (see `## Memory`).
+1. Call `memory_dump(agent="cleaner", task_hint="<one-sentence task description>")` before using any tools if the task involves workspace-specific work (see `## Memory`).
 2. Classify the request: dry-run inventory, targeted prune, deletion, or hygiene check?
 3. Check reversibility: tracked deletions always require the approval gate — this gate is mandatory.
 
@@ -81,10 +81,11 @@ Present findings as a classified inventory: `cache`, `generated`, `archive`, `st
 
 ## Memory
 
-At the start of every task, call `memory_dump(agent="cleaner")`.
+At the start of each task **when the task involves workspace-specific work** (commands, file paths, tool versions, conventions), call `memory_dump(agent="cleaner", task_hint="<one-sentence task description>")`. Skip the dump for trivial or purely-conversational tasks.
 
+- If `summary.has_data` is `false`, skip memory-dependent steps — memory is empty for this agent.
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
-- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
+- **Facts** returned are working context — use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess freshness directly. Call `elapsed()` only when precise age in seconds matters.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="cleaner", key=..., value=...)` before finishing.

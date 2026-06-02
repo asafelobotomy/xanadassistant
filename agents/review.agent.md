@@ -24,7 +24,7 @@ Do not use this agent for:
 
 ## On every invocation
 
-0. Call `memory_dump(agent="review")` before using any tools (see `## Memory`).
+0. Call `memory_dump(agent="review", task_hint="<one-sentence task description>")` before using any tools if the task involves workspace-specific work (see `## Memory`).
 1. **Read first** — open every file in scope before writing any finding. Do not review from memory or partial reads.
 2. **Stay read-only** — do not edit files during review. Produce findings; let the user or the main agent decide what to apply. When using `runCommands`, limit to read-only operations (test runs to confirm findings, `grep`, `cat`, narrow diffs); do not run commands that write to the filesystem, install packages, or mutate repository state.
 3. **Use the testing surface deliberately** — when findings depend on the declared test apparatus, targetability, or runnable coverage claims, use the `testing` skill and prefer the `workspaceTesting` MCP server to inspect capabilities and run the narrowest confirming test.
@@ -84,11 +84,12 @@ End every review with:
 
 ## Memory
 
-At the start of every task, call `memory_dump(agent="review")`.
+At the start of each task **when the task involves workspace-specific work** (commands, file paths, tool versions, conventions), call `memory_dump(agent="review", task_hint="<one-sentence task description>")`. Skip the dump for trivial or purely-conversational tasks.
 
+- If `summary.has_data` is `false`, skip memory-dependent steps — memory is empty for this agent.
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
-- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
+- **Facts** returned are working context — use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess freshness directly. Call `elapsed()` only when precise age in seconds matters.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="review", key=..., value=...)` before finishing.
 

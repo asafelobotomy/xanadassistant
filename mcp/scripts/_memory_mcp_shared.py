@@ -1,14 +1,51 @@
 from __future__ import annotations
 
 from contextlib import closing
+from datetime import datetime, timezone
 import json
 import math
 from pathlib import Path
+import re
 import sqlite3
 from typing import Any
 
 
 _SCHEMA_VERSION = 2
+
+# Freshness thresholds used when enriching memory_dump facts.
+_AGE_FRESH_HOURS: float = 24.0    # facts updated < 24 h ago are "fresh"
+_AGE_STALE_HOURS: float = 168.0   # facts not updated for 7 days are "stale"
+
+
+def _age_metadata(updated_at: str) -> dict:
+    """Compute age-hours and freshness flags from an ISO-8601 UTC timestamp."""
+    try:
+        dt = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+        age_h = (datetime.now(timezone.utc) - dt).total_seconds() / 3600.0
+    except (ValueError, TypeError):
+        age_h = 0.0
+    return {
+        "age_hours": round(age_h, 2),
+        "is_fresh": age_h < _AGE_FRESH_HOURS,
+        "is_stale": age_h > _AGE_STALE_HOURS,
+    }
+
+
+def _tokenize_hint(text: str) -> frozenset[str]:
+    """Split a task-hint string into lowercase alphanumeric tokens."""
+    return frozenset(re.findall(r"[a-z0-9]+", text.lower())) if text else frozenset()
+
+
+def _score_task_relevance(fact: dict, hint_tokens: frozenset[str]) -> int:
+    """Count how many hint tokens appear in the fact's key, source_description, or value."""
+    if not hint_tokens:
+        return 0
+    haystack = " ".join(filter(None, [
+        fact.get("key", ""),
+        fact.get("source_description") or "",
+        (fact.get("value") or "")[:200],
+    ])).lower()
+    return len(hint_tokens & frozenset(re.findall(r"[a-z0-9]+", haystack)))
 
 
 def get_conn(root: str) -> sqlite3.Connection:
@@ -220,7 +257,14 @@ def _collapse_facts_by_key(facts: list[dict], primary_agent: str) -> list[dict]:
     return result
 
 
-def memory_dump(agent: str, root: str, branch: str, session_id: str = "") -> str:
+def memory_dump(agent: str, root: str, branch: str, session_id: str = "", task_hint: str = "") -> str:
+    """Return currently applicable rules and facts as JSON, enriched with age metadata.
+
+    When *task_hint* is provided, each fact gains a ``relevance_score`` (token-overlap
+    with the hint) and facts are sorted by score descending before being returned.
+    The top-level ``summary`` key lets callers skip memory-dependent steps quickly
+    when ``has_data`` is ``false``.
+    """
     with closing(get_conn(root)) as conn:
         rules = rows(
             conn.execute(
@@ -230,7 +274,7 @@ def memory_dump(agent: str, root: str, branch: str, session_id: str = "") -> str
                 (agent, branch),
             ).fetchall()
         )
-        facts = rows(
+        raw_facts = rows(
             conn.execute(
                 """
                 SELECT agent, scope, branch, key, value, confidence, source,
@@ -251,7 +295,30 @@ def memory_dump(agent: str, root: str, branch: str, session_id: str = "") -> str
                 (agent, "shared", "", branch, session_id, agent),
             ).fetchall()
         )
-    return json.dumps({"rules": rules, "facts": _collapse_facts_by_key(facts, agent)})
+    hint_tokens = _tokenize_hint(task_hint)
+    collapsed = _collapse_facts_by_key(raw_facts, agent)
+    enriched: list[dict] = []
+    fresh_count = stale_count = 0
+    for fact in collapsed:
+        meta = _age_metadata(fact["updated_at"])
+        ef = {**fact, **meta}
+        if hint_tokens:
+            ef["relevance_score"] = _score_task_relevance(fact, hint_tokens)
+        if meta["is_fresh"]:
+            fresh_count += 1
+        if meta["is_stale"]:
+            stale_count += 1
+        enriched.append(ef)
+    if hint_tokens:
+        enriched.sort(key=lambda f: f.get("relevance_score", 0), reverse=True)
+    summary = {
+        "total_rules": len(rules),
+        "total_facts": len(enriched),
+        "has_data": bool(rules or enriched),
+        "fresh_count": fresh_count,
+        "stale_count": stale_count,
+    }
+    return json.dumps({"summary": summary, "rules": rules, "facts": enriched})
 
 
 def memory_prune(agent: str | None, scope: str | None, max_age_days: float | None, root: str) -> str:

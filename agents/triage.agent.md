@@ -33,7 +33,7 @@ Do not use this agent for:
 
 ## On every invocation
 
-1. Call `memory_dump(agent="triage")` before classifying (see `## Memory`).
+1. Call `memory_dump(agent="triage", task_hint="<one-sentence task description>")` before classifying if the task involves workspace-specific context (see `## Memory`).
 2. **Identify the core action** — what change is being made and to what?
 3. **Count affected surfaces** — how many files, modules, or subsystems are touched?
 4. **Check reversibility** — can the action be undone without data loss? If no, and the user has not explicitly confirmed the destruction is intentional and safe, the tier is **Blocked** regardless of scope or complexity.
@@ -73,10 +73,11 @@ Do not over-classify. A task that touches 3 files with a clear pattern is Simple
 
 ## Memory
 
-At the start of every task, call `memory_dump(agent="triage")`.
+At the start of each task **when the task involves workspace-specific work** (commands, file paths, tool versions, conventions), call `memory_dump(agent="triage", task_hint="<one-sentence task description>")`. Skip the dump for trivial or purely-conversational tasks.
 
+- If `summary.has_data` is `false`, skip memory-dependent steps — memory is empty for this agent.
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
-- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
+- **Facts** returned are working context — use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess freshness directly. Call `elapsed()` only when precise age in seconds matters.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="triage", key=..., value=...)` before finishing.

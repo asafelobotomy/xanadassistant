@@ -23,7 +23,7 @@ Do not use this agent for:
 
 ## On every invocation
 
-1. Call `memory_dump(agent="commit")` before using any tools (see `## Memory`).
+1. Call `memory_dump(agent="commit", task_hint="<one-sentence task description>")` before using any tools if the task involves workspace-specific work (see `## Memory`).
 2. **Determine scope** from the user's request before doing anything.
 3. **Use Git MCP tools first** — for any supported git operation, use the dedicated `git_*` or GitHub MCP tool instead of `runCommands`. Reserve `runCommands` for repository preflight commands, interactive rebase, or fallback cases where no MCP tool exists or the MCP tool is unavailable.
 4. **Never push silently** as a side-effect of committing — push only when the user requests it.
@@ -160,9 +160,9 @@ When the staged set includes Copilot surface files (`.agent.md`, `SKILL.md`, `.i
 
 ## Memory
 
-
+- If `summary.has_data` is `false`, skip memory-dependent steps — memory is empty for this agent.
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
-- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
+- **Facts** returned are working context — use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess freshness directly. Call `elapsed()` only when precise age in seconds matters.
 
 When you learn something specific to this workspace's commands, tool versions, paths, or established conventions, call `memory_set(agent="commit", key=..., value=...)` before finishing.

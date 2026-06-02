@@ -340,3 +340,68 @@ class MemoryMcpTests(unittest.TestCase):
                     self.assertIn("Rule on feature/b", result)
                     self.assertNotIn("Rule on feature/a", result)
 
+    def test_memory_dump_summary_field_shape(self) -> None:
+        """memory_dump must include a summary with has_data, total_facts, total_rules, counts."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        empty_dump = json.loads(module.memory_dump("tester"))
+                        module.memory_set("tester", "ci.cmd", "pytest")
+                        module.rule_add("Prefer pytest", "prefer", agent="tester")
+                        full_dump = json.loads(module.memory_dump("tester"))
+
+                # Empty DB: has_data must be False
+                empty_summary = empty_dump["summary"]
+                self.assertFalse(empty_summary["has_data"])
+                self.assertEqual(empty_summary["total_facts"], 0)
+                self.assertEqual(empty_summary["total_rules"], 0)
+
+                # Non-empty DB: has_data True, counts correct
+                full_summary = full_dump["summary"]
+                self.assertTrue(full_summary["has_data"])
+                self.assertEqual(full_summary["total_facts"], 1)
+                self.assertEqual(full_summary["total_rules"], 1)
+                self.assertIn("fresh_count", full_summary)
+                self.assertIn("stale_count", full_summary)
+
+    def test_memory_dump_facts_include_age_metadata(self) -> None:
+        """Each fact in memory_dump must include age_hours, is_fresh, and is_stale."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "build.tool", "make")
+                        dump = json.loads(module.memory_dump("tester"))
+
+                fact = dump["facts"][0]
+                self.assertIn("age_hours", fact)
+                self.assertIn("is_fresh", fact)
+                self.assertIn("is_stale", fact)
+                # A fact written seconds ago must be fresh and not stale
+                self.assertIsInstance(fact["age_hours"], float)
+                self.assertGreaterEqual(fact["age_hours"], 0.0)
+                self.assertTrue(fact["is_fresh"], "A just-written fact must be fresh")
+                self.assertFalse(fact["is_stale"], "A just-written fact must not be stale")
+
+    def test_memory_dump_task_hint_adds_relevance_score(self) -> None:
+        """task_hint must add a relevance_score field and sort higher-scoring facts first."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "ci.commands", "pytest tests/")
+                        module.memory_set("tester", "repo.language", "python")
+                        dump_hint = json.loads(module.memory_dump("tester", task_hint="run ci tests"))
+                        dump_no_hint = json.loads(module.memory_dump("tester"))
+
+                # With hint: every fact must have a relevance_score
+                for fact in dump_hint["facts"]:
+                    self.assertIn("relevance_score", fact)
+                # "ci.commands" shares tokens with "ci" and "tests" in the hint; must rank first
+                self.assertEqual(dump_hint["facts"][0]["key"], "ci.commands",
+                                 "ci.commands must rank highest for hint='run ci tests'")
+                # Without hint: no relevance_score field
+                for fact in dump_no_hint["facts"]:
+                    self.assertNotIn("relevance_score", fact)
+

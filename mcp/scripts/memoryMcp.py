@@ -309,12 +309,21 @@ def memory_invalidate(agent: str, key: str, scope: str = "workspace") -> str:
 
 
 @mcp.tool()
-def memory_dump(agent: str) -> str:
-    """Return currently applicable rules and facts as JSON for one agent."""
+def memory_dump(agent: str, task_hint: str = "") -> str:
+    """Return currently applicable rules and facts as JSON for one agent.
+
+    Args:
+        agent: Agent identifier.
+        task_hint: One-sentence description of the current task. When provided,
+            each fact gains a ``relevance_score`` and facts are sorted by
+            relevance descending so the most pertinent context appears first.
+            Also enables the caller to skip memory-dependent steps quickly
+            when the returned ``summary.has_data`` is ``false``.
+    """
     _chk_agent(agent)
     root = _workspace_root()
     branch = _current_branch(root) or ""
-    return _shared_memory_dump(agent, root, branch, _SESSION_ID)
+    return _shared_memory_dump(agent, root, branch, _SESSION_ID, task_hint)
 
 
 @mcp.tool()

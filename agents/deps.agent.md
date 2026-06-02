@@ -24,7 +24,7 @@ Do not use this agent for:
 
 ## On every invocation
 
-0. Call `memory_dump(agent="deps")` before taking any action (see `## Memory`).
+0. Call `memory_dump(agent="deps", task_hint="<one-sentence task description>")` before taking any action if the task involves workspace-specific work (see `## Memory`).
 1. **Discover first** — run the `depSearch` skill (covering manifest discovery, registry inspection, vulnerability assessment, and replacement candidate research — Steps 1–4) before taking any action. Then proceed to Step 5 — Act.
 2. **Confirm before mutating** — present your audit findings and proposed changes; wait for explicit user confirmation before running any install, update, or remove command.
 3. **Ecosystem-aware** — adapt commands to the package manager and ecosystem detected; never assume pip when npm is in use, and vice versa.
@@ -209,10 +209,11 @@ Use the audit summary format defined in `## Reporting format`. Outside of full a
 
 ## Memory
 
-At the start of every task, call `memory_dump(agent="deps")`.
+At the start of each task **when the task involves workspace-specific work** (commands, file paths, tool versions, conventions), call `memory_dump(agent="deps", task_hint="<one-sentence task description>")`. Skip the dump for trivial or purely-conversational tasks.
 
+- If `summary.has_data` is `false`, skip memory-dependent steps — memory is empty for this agent.
 - If the `memory` MCP server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
-- **Facts** returned are working context — for any fact you intend to act on, call `elapsed(start=fact.updated_at)` (via the `time` MCP server) to verify its age.
+- **Facts** returned are working context — use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess freshness directly. Call `elapsed()` only when precise age in seconds matters.
 
 When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="deps", key=..., value=...)` before finishing.
