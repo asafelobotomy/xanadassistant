@@ -177,6 +177,8 @@ frontmatter, no `name:` field, no structured body sections. It will not be disco
 by the VS Code skill protocol. The CI `Skills have valid SKILL.md` check from the
 template would fail for it.
 
+> **Update (resolved):** `skills/lifecycleAudit/SKILL.md` now has full YAML frontmatter, structured sections, and a `## Verify` checklist. This finding no longer applies.
+
 ---
 
 ### R6 — Living update protocol — plugin delivery model

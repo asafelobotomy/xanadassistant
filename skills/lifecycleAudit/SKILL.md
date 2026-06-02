@@ -7,7 +7,7 @@ license: MIT
 
 # Lifecycle Health Check
 
-> Skill metadata: version "1.3"; license MIT; tags [xanadAssistant, lifecycle, inspect, repair, lockfile]; recommended tools [lifecycle_inspect, lifecycle_check, lifecycle_plan_setup, runCommands].
+> Skill metadata: version "1.3"; tags [xanadAssistant, lifecycle, inspect, repair, lockfile]; recommended tools [lifecycle_inspect, lifecycle_check, lifecycle_plan_setup, run_in_terminal].
 
 Systematic lifecycle state review before any install, update, repair, or factory-restore operation.
 

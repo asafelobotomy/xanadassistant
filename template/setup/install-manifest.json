@@ -1150,7 +1150,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:7897cb2908c861cd4fd5679e73bc60734eecf6548b6153b1f4708644d0f8230b"
+      "hash": "sha256:fb207df1692770ec86fc273e239565ccb42af39d5865dc1ee09c4aa8fa138b15"
     },
     {
       "id": "skills.ciPreflight.SKILL.md",
@@ -1464,7 +1464,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:1eadd160519795fbb686b99881fb2da21e3c25b2c6e0543afc9dd0455d281654"
+      "hash": "sha256:0c3f208cf11c18eed6326b77d94a97a60fa17fa067e6e3f40632e4182630066d"
     },
     {
       "id": "mlops-skills.mlopsDataPipelines.SKILL.md",

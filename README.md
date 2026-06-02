@@ -76,7 +76,7 @@ For a step-by-step walkthrough of what happens, see [INSTALL.md](INSTALL.md).
 If you prefer to run the agent install step yourself before involving Copilot:
 
 ```sh
-TAG=v1.0.0  # replace with the target release
+TAG=v0.5.0  # replace with the target release
 mkdir -p .github/agents && curl -fsSL \
   "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/agents/xanadLifecycle.agent.md" \
   -o .github/agents/xanadLifecycle.agent.md
@@ -89,7 +89,7 @@ Then in Copilot chat: **@xanadLifecycle Setup xanadAssistant**
 > **Note:** Use a Copilot method above when possible. This is a fallback for environments without Copilot agent mode.
 
 ```sh
-TAG=v1.0.0  # replace with the target release
+TAG=v0.5.0  # replace with the target release
 curl -fsSL "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/xanadBootstrap.py" \
   -o xanadBootstrap.py
 python3 xanadBootstrap.py plan setup --workspace . --version "${TAG}" --non-interactive \

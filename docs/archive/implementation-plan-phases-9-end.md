@@ -48,7 +48,7 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 
 - [x] Replace hand-maintained mirrors with generated outputs where safe. (`install-manifest.json` and `catalog.json` are both generated; `check_manifest_freshness.py` enforces both.)
 - [x] Keep only necessary differences between plugin, template, developer workspace, and compatibility formats. (Ownership and strategy differences are fully policy-driven; no hand-maintained format forks exist.)
-- [x] Update contributor docs for the new flow. (`scripts/generate.py` is the single regeneration command; `agents/lifecycle-planning.agent.md` and `template/prompts/setup.md` cover the contributor workflow.)
+- [x] Update contributor docs for the new flow. (`scripts/generate.py` is the single regeneration command; `agents/lifecycle-planning.agent.md` (archived — succeeded by `agents/xanadLifecycle.agent.md`) and `template/prompts/setup.md` cover the contributor workflow.)
 - [x] Replace redundant inventories with links to generated machine-readable artifacts. (Stale backlog slices updated; `catalog.json` and `install-manifest.json` are the authoritative inventories.)
 - [x] Ensure CI checks derived-state freshness. (`.github/workflows/ci.yml` runs unit tests and manifest+catalog freshness on every push and PR.)
 
@@ -79,7 +79,7 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 ### Memory Checklist
 
 - [x] Core lifecycle does not depend on optional memory infrastructure.
-- [x] Memory v1 scope, routing, and verification rules are defined. (`docs/contracts/memory-v1.md`)
+- [x] Memory v1 scope, routing, and verification rules are defined. (`docs/contracts/memory-v1.md` — archived; see `docs/archive/memory-v1-contract.md`)
 - [ ] Durable memory uses citations or directly verifiable source anchors.
 - [ ] Memory state can be expired, repaired, or discarded safely.
 - [ ] Repo-scoped memory is kept separate from user-wide preference memory.
@@ -88,8 +88,8 @@ Remove hand-maintained duplication and make canonical authoring obvious.
 
 - [x] Version metadata is bumped consistently.
 - [x] Manifest regeneration is part of release prep. (`python3 scripts/generate.py`)
-- [x] Stale-consumer fixture upgrade passes before release. (`StaleConsumerFixtureConvergenceTests` in `tests/test_convergence_and_network.py`)
-- [x] Lockfile migration coverage is current. (`LockfileMigrationTests` in `tests/test_xanadAssistant_inspect.py`)
+- [x] Stale-consumer fixture upgrade passes before release. (`StaleConsumerFixtureConvergenceTests` in `tests/test_convergence_and_network.py` — archived; test removed)
+- [x] Lockfile migration coverage is current. (`LockfileMigrationTests` in `tests/test_xanadAssistant_inspect.py` — archived; test removed)
 - [x] Catalog, pack, and profile metadata remain in sync.
 
 ## Suggested Initial Backlog By Slice

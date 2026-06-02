@@ -7,7 +7,7 @@ license: MIT
 
 # Agentic Review
 
-> Skill metadata: version "1.1"; tags [review, prompt, agent, skill, instructions, quality]; recommended tools [read_file, file_search, grep_search, semantic_search]; bundled tools [xanadEval].
+> Skill metadata: version "1.1"; tags [review, prompt, agent, skill, instructions, quality]; recommended tools [read_file, file_search, grep_search, semantic_search].
 
 Systematic quality review of Copilot surface files. Run all six modules in sequence; each produces zero or more labelled findings. Collect every finding before returning the summary.
 

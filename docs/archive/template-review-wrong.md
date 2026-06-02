@@ -150,7 +150,7 @@ has separate agent procedure sections for each mode that can diverge independent
 
 ### X4 — CI-enforced manifest and catalog freshness
 
-`check_manifest_freshness.py` in CI fails if `install-manifest.json` or `catalog.json`
+`scripts/lifecycle/check_manifest_freshness.py` in CI fails if `install-manifest.json` or `catalog.json`
 are stale relative to their source inputs. The template's CI enforces LOC budgets and
 token presence but not semantic artifact freshness.
 

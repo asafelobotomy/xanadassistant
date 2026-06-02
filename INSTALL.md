@@ -22,7 +22,7 @@ cleanup. No manual commands needed.
 If you prefer to run Step 0 yourself before handing off to Copilot:
 
 ```sh
-TAG=v1.0.0  # replace with the target release
+TAG=v0.5.0  # replace with the target release
 mkdir -p .github/agents && curl -fsSL \
   "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/agents/xanadLifecycle.agent.md" \
   -o .github/agents/xanadLifecycle.agent.md
@@ -43,7 +43,7 @@ these steps. No prior installation or local checkout is needed.
 
 ### Step 1 — Fetch the bootstrap runner
 
-Replace `v1.0.0` with the latest release tag from the
+Replace `v0.5.0` with the latest release tag from the
 [releases page](https://github.com/asafelobotomy/xanadassistant/releases).
 Use `main` only for development or edge testing, and then pass
 `--allow-mutable-ref` explicitly.
@@ -51,13 +51,13 @@ Use `main` only for development or edge testing, and then pass
 Download `xanadBootstrap.py` using whichever method is available:
 
 ```sh
-TAG=v1.0.0
+TAG=v0.5.0
 curl -fsSL "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/xanadBootstrap.py" -o xanadBootstrap.py
 ```
 
 ```sh
-TAG=v1.0.0
-python3 -c "import os, urllib.request; tag = os.environ.get('TAG', 'v1.0.0'); urllib.request.urlretrieve(f'https://raw.githubusercontent.com/asafelobotomy/xanadassistant/{tag}/xanadBootstrap.py', 'xanadBootstrap.py')"
+TAG=v0.5.0
+python3 -c "import os, urllib.request; tag = os.environ.get('TAG', 'v0.5.0'); urllib.request.urlretrieve(f'https://raw.githubusercontent.com/asafelobotomy/xanadassistant/{tag}/xanadBootstrap.py', 'xanadBootstrap.py')"
 ```
 
 ### Step 2 — Inspect the workspace
@@ -189,7 +189,7 @@ factory-restore).
 Two-step install using defaults:
 
 ```sh
-TAG=v1.0.0  # replace with the target release
+TAG=v0.5.0  # replace with the target release
 curl -fsSL "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/xanadBootstrap.py" -o xanadBootstrap.py
 python3 xanadBootstrap.py plan setup --workspace . --version "${TAG}" --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
 python3 xanadBootstrap.py setup --workspace . --version "${TAG}" --plan .xanadAssistant/tmp/setup-plan.json --json
@@ -198,7 +198,7 @@ python3 xanadBootstrap.py setup --workspace . --version "${TAG}" --plan .xanadAs
 Or download-then-run for a pinned release:
 
 ```sh
-TAG=v1.0.0  # replace with the target release
+TAG=v0.5.0  # replace with the target release
 curl -fsSL "https://raw.githubusercontent.com/asafelobotomy/xanadassistant/${TAG}/xanadBootstrap.py" -o xanadBootstrap.py
 python3 xanadBootstrap.py plan setup --workspace . --version "${TAG}" --non-interactive --plan-out .xanadAssistant/tmp/setup-plan.json --json
 python3 xanadBootstrap.py setup --workspace . --version "${TAG}" --plan .xanadAssistant/tmp/setup-plan.json --json

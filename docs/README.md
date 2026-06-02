@@ -11,5 +11,6 @@ The `docs/` root is reserved for living reference notes that are neither contrac
 
 - `maintenance-drift.md` is the maintainer drift-control policy referenced by the main README.
 - `template-review-adopt.md` is the template-adoption decision ledger referenced by agent routing and attention-budget checks.
+- `workspace-testing-mcp.md` documents the workspace testing MCP server setup and conventions.
 
 If a new document is primarily a plan, place it under `docs/plans/`. If it defines a stable interface or protocol, place it under `docs/contracts/`. Keep the root small and limited to standing reference ledgers like the two files above.

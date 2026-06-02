@@ -9,7 +9,7 @@ Archive documents here when they are:
 - unreferenced by current instructions, agents, or contracts
 - still worth keeping for project history or design context
 
-Active authority stays in `docs/contracts/`, `docs/memory.md`, the current
+Active authority stays in `docs/contracts/`, the current
 instructions, and the canonical repo surfaces they cite.
 
 Current archived documents:
