@@ -27,3 +27,5 @@ Current archived documents:
 - `memory-review-adopt.md`
 - `template-review-right.md`
 - `template-review-wrong.md`
+- `workspace-testing-mcp-background.md`
+- `interview-expansion-plan.md`
