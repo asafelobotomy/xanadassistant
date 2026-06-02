@@ -5,7 +5,7 @@ argument-hint: "Describe the review scope: file path, PR, diff, audit focus, or 
 model:
   - GPT-5.4
   - Claude Sonnet 4.6
-tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_get, memory_list, memory_invalidate, memory_set, diary_add, diary_search, elapsed]
+tools: [agent, codebase, search, runCommands, read_file, list_directory, search_files, file_info, testing_show_key_commands, testing_show_capabilities, testing_list_tests, testing_run_tests, testing_parse_coverage, memory_dump, memory_get, memory_list, memory_invalidate, memory_set, diary_add, diary_search, elapsed]
 agents: [explore, debugger, planner, researcher]
 user-invocable: true
 target: vscode

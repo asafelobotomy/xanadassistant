@@ -136,7 +136,7 @@
         "{{agent:explore:output-style}}"
       ],
       "chmod": "none",
-      "hash": "sha256:f4af0f2142c6fe70bdc961695020126054f496749cd3346d6e2d1f93240322a1"
+      "hash": "sha256:4e5ad03659f44ca47b8d7902c1d296404d0f084e82af2bd664324a2e7d7fea9c"
     },
     {
       "id": "agents.organise.agent.md",
@@ -186,7 +186,7 @@
       "requiredWhen": [],
       "tokens": [],
       "chmod": "none",
-      "hash": "sha256:1491a0f5be0dff367cc90dabeee2e82987c328d48af36570f60c99721e2deafa"
+      "hash": "sha256:1bc4896e75d5025f01bdcf053fce42c723b9a9f57cdd8d10aabc58140a466e7b"
     },
     {
       "id": "agents.review.agent.md",
@@ -204,7 +204,7 @@
         "{{agent:review:reporting-threshold}}"
       ],
       "chmod": "none",
-      "hash": "sha256:b86e2b530f4c5659cf3270e6308911befc26d4dbedbbdc7a40395c372557dc9b"
+      "hash": "sha256:e85a27d5de44030e00df6c7f4a3cb12e61b02048011dfd450ed19dfdd0344fa7"
     },
     {
       "id": "agents.triage.agent.md",

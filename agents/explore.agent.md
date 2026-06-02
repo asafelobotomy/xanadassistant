@@ -6,7 +6,7 @@ model:
   - GPT-5.4 mini
   - Claude Sonnet 4.6
   - Claude Haiku 4.5
-tools: [codebase, search, runCommands, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
+tools: [codebase, search, read_file, list_directory, search_files, file_info, memory_dump, memory_set, elapsed]
 user-invocable: true
 agents: []
 target: vscode
@@ -31,10 +31,10 @@ Do not use this agent for:
 
 ## Guidelines
 
-- **Read-only strictly** — never use `editFiles`. Terminal commands must be read-only: `grep`, `find`, `cat`, `wc`, `ls`, `head`, `tail`.
+- **Read-only strictly** — never use `editFiles` or `runCommands`. Use `read_file`, `list_directory`, `search_files`, and `file_info` for all file and directory access — these tools enforce path safety.
 - **Targeted** — answer the specific question asked. Do not summarise unrelated files.
 - **Parallel reads** — batch independent file reads and searches into simultaneous calls wherever possible.
-- **Filesystem MCP** — when the `filesystem` server is connected, prefer `read_file` for ranged file reads, `list_directory` for directory listings, `search_files` for pattern searches, and `file_info` for metadata — these tools enforce path safety and are faster than shell equivalents.
+- **Filesystem MCP** — prefer `read_file` for ranged file reads, `list_directory` for directory listings, `search_files` for pattern searches, and `file_info` for metadata.
 - **Search strategy** — use the `workspaceSearch` skill to choose the right tool for each query (exact-text `grep_search`, regex, `semantic_search`, `file_search` by path pattern, or VS Code search-panel mode) before committing to a search approach, especially when the optimal tool is not obvious from the query type.
 - **Thoroughness tiers** — follow the caller's requested depth:
   - `quick` — one targeted search; confirm the pattern exists.
