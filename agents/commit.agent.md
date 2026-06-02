@@ -165,4 +165,4 @@ When the staged set includes Copilot surface files (`.agent.md`, `SKILL.md`, `.i
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
 - **Facts** returned are working context — use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess freshness directly. Call `elapsed()` only when precise age in seconds matters.
 
-When you learn something specific to this workspace's commands, tool versions, paths, or established conventions, call `memory_set(agent="commit", key=..., value=...)` before finishing.
+When you learn something about the workspace, call `memory_set(agent="commit", key=..., value=..., retention=...)` before finishing. Use `retention="short_term"` for task-scoped discoveries (auto-expires in 8 h); use `retention="long_term"` for durable facts (conventions, build system, tool versions).

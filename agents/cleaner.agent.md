@@ -88,4 +88,4 @@ At the start of each task **when the task involves workspace-specific work** (co
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
 - **Facts** returned are working context — use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess freshness directly. Call `elapsed()` only when precise age in seconds matters.
 
-When you learn something durable about the workspace (conventions, commands, tool versions, paths), call `memory_set(agent="cleaner", key=..., value=...)` before finishing.
+When you learn something about the workspace, call `memory_set(agent="cleaner", key=..., value=..., retention=...)` before finishing. Use `retention="short_term"` for task-scoped discoveries (auto-expires in 8 h); use `retention="long_term"` for durable facts (conventions, build system, tool versions).

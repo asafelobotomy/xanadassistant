@@ -386,7 +386,7 @@ At the start of each lifecycle task **when workspace-specific context is needed*
 - **Rules** returned are authoritative — follow every rule unconditionally for the rest of this task.
 - **Facts** returned are working context — use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess freshness directly. Call `elapsed()` only when precise age in seconds matters.
 
-When you learn something durable about a workspace (install state, known repair paths, workspace-specific conventions), call `memory_set(agent="xanadLifecycle", key=..., value=...)` before finishing.
+When you learn something durable about a workspace (install state, known repair paths, workspace-specific conventions), call `memory_set(agent="xanadLifecycle", key=..., value=..., retention=...)` before finishing. Use `retention="short_term"` for task-scoped discoveries (auto-expires in 8 h); use `retention="long_term"` for durable facts (install state, versions, conventions).
 
 Use `memory_get` / `memory_list` to retrieve specific install-state facts (package root, version) before running lifecycle commands.
 Use `memory_invalidate` to mark cached install state stale after a repair or factory restore.

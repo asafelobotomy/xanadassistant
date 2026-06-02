@@ -405,3 +405,89 @@ class MemoryMcpTests(unittest.TestCase):
                 for fact in dump_no_hint["facts"]:
                     self.assertNotIn("relevance_score", fact)
 
+    def test_memory_set_invalid_retention_raises(self) -> None:
+        """memory_set must raise ValueError for an unrecognised retention value."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        with self.assertRaisesRegex(ValueError, "retention must be one of"):
+                            module.memory_set("tester", "key", "val", retention="standard")
+
+    def test_memory_set_short_term_auto_sets_expires_at(self) -> None:
+        """short_term facts without explicit ttl_days must automatically get an expires_at."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "task.file", "src/foo.py",
+                                          retention="short_term")
+                        result = json.loads(module.memory_get("tester", "task.file"))
+
+                self.assertIsNotNone(result.get("expires_at"),
+                                     "short_term must auto-set expires_at")
+                self.assertRegex(result["expires_at"], r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+
+    def test_memory_dump_retention_field_on_facts(self) -> None:
+        """Each fact in memory_dump must carry the retention value that was stored."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "task.file", "edit.py",
+                                          retention="short_term")
+                        module.memory_set("tester", "project.lang", "Python",
+                                          retention="long_term")
+                        dump = json.loads(module.memory_dump("tester"))
+
+                retentions = {f["key"]: f["retention"] for f in dump["facts"]}
+                self.assertEqual(retentions["task.file"], "short_term")
+                self.assertEqual(retentions["project.lang"], "long_term")
+
+    def test_memory_dump_long_term_never_stale(self) -> None:
+        """long_term facts must remain fresh and non-stale even with a very old updated_at."""
+        import sqlite3 as _sqlite3
+        from pathlib import Path as _Path
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "project.lang", "Python",
+                                          retention="long_term")
+                        db_path = (
+                            _Path(tmpdir) / ".github" / "xanadAssistant" / "memory" / "memory.db"
+                        )
+                        conn = _sqlite3.connect(str(db_path))
+                        conn.execute(
+                            "UPDATE advisory_memory SET updated_at = '2000-01-01T00:00:00Z' "
+                            "WHERE key = 'project.lang'"
+                        )
+                        conn.commit()
+                        conn.close()
+                        dump = json.loads(module.memory_dump("tester"))
+
+                fact = next(f for f in dump["facts"] if f["key"] == "project.lang")
+                self.assertTrue(fact["is_fresh"],
+                                "long_term fact must always be fresh regardless of age")
+                self.assertFalse(fact["is_stale"],
+                                 "long_term fact must never be stale regardless of age")
+
+    def test_memory_dump_summary_retention_counts(self) -> None:
+        """memory_dump summary must include short_term_count and long_term_count."""
+        for module in (SOURCE_MEMORY_MODULE, MANAGED_MEMORY_MODULE):
+            with self.subTest(module=module.__name__):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with mock.patch.dict(os.environ, {"WORKSPACE_ROOT": tmpdir}, clear=False):
+                        module.memory_set("tester", "task.cmd", "pytest",
+                                          retention="short_term")
+                        module.memory_set("tester", "project.lang", "Python",
+                                          retention="long_term")
+                        module.memory_set("tester", "project.build", "make",
+                                          retention="long_term")
+                        dump = json.loads(module.memory_dump("tester"))
+
+                summary = dump["summary"]
+                self.assertIn("short_term_count", summary)
+                self.assertIn("long_term_count", summary)
+                self.assertEqual(summary["short_term_count"], 1)
+                self.assertEqual(summary["long_term_count"], 2)

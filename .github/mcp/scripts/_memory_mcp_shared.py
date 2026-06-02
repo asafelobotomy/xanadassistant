@@ -10,24 +10,35 @@ import sqlite3
 from typing import Any
 
 
-_SCHEMA_VERSION = 2
+_SCHEMA_VERSION = 3
 
-# Freshness thresholds used when enriching memory_dump facts.
-_AGE_FRESH_HOURS: float = 24.0    # facts updated < 24 h ago are "fresh"
-_AGE_STALE_HOURS: float = 168.0   # facts not updated for 7 days are "stale"
+# Freshness thresholds by retention tier.
+_SHORT_TERM_FRESH_HOURS: float = 1.0   # short_term: fresh if updated < 1 h ago
+_SHORT_TERM_STALE_HOURS: float = 4.0   # short_term: stale if not updated for > 4 h
+# long_term facts are always fresh and never stale.
 
 
-def _age_metadata(updated_at: str) -> dict:
-    """Compute age-hours and freshness flags from an ISO-8601 UTC timestamp."""
+def _age_metadata(updated_at: str, retention: str = "long_term") -> dict:
+    """Compute age-hours and freshness flags from an ISO-8601 UTC timestamp.
+
+    Thresholds vary by retention tier:
+    - ``long_term``: always fresh, never stale (assumed to remain valid indefinitely).
+    - ``short_term``: fresh < 1 h; stale > 4 h (warns before the 8 h auto-TTL expires).
+    """
     try:
         dt = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
         age_h = (datetime.now(timezone.utc) - dt).total_seconds() / 3600.0
     except (ValueError, TypeError):
         age_h = 0.0
+    if retention == "long_term":
+        is_fresh, is_stale = True, False
+    else:  # short_term
+        is_fresh = age_h < _SHORT_TERM_FRESH_HOURS
+        is_stale = age_h > _SHORT_TERM_STALE_HOURS
     return {
         "age_hours": round(age_h, 2),
-        "is_fresh": age_h < _AGE_FRESH_HOURS,
-        "is_stale": age_h > _AGE_STALE_HOURS,
+        "is_fresh": is_fresh,
+        "is_stale": is_stale,
     }
 
 
@@ -102,6 +113,7 @@ def init_db(conn: sqlite3.Connection) -> None:
             updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
             expires_at TEXT, valid_from TEXT, valid_until TEXT, invalidated_at TEXT,
             source_description TEXT,
+            retention TEXT NOT NULL DEFAULT 'long_term',
             UNIQUE (agent, scope, branch, session_id, key)
         );
         CREATE TABLE IF NOT EXISTS rules (
@@ -167,8 +179,12 @@ def _run_schema_migrations(conn: sqlite3.Connection) -> None:
         _add_column_safe(conn, "advisory_memory", "session_id", "TEXT NOT NULL DEFAULT ''")
         _add_column_safe(conn, "advisory_memory", "source_description", "TEXT")
     # v1 → v2: rebuild advisory_memory with new UNIQUE key; add session_id to agent_diary.
-    _rebuild_advisory_memory(conn)
-    _add_column_safe(conn, "agent_diary", "session_id", "TEXT NOT NULL DEFAULT ''")
+    if version < 2:
+        _rebuild_advisory_memory(conn)
+        _add_column_safe(conn, "agent_diary", "session_id", "TEXT NOT NULL DEFAULT ''")
+    # v2 → v3: add retention tier to advisory_memory.
+    if version < 3:
+        _add_column_safe(conn, "advisory_memory", "retention", "TEXT NOT NULL DEFAULT 'long_term'")
     conn.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
     conn.commit()
 
@@ -278,7 +294,8 @@ def memory_dump(agent: str, root: str, branch: str, session_id: str = "", task_h
             conn.execute(
                 """
                 SELECT agent, scope, branch, key, value, confidence, source,
-                       updated_at, expires_at, valid_from, valid_until, source_description
+                       updated_at, expires_at, valid_from, valid_until, source_description,
+                       retention
                 FROM advisory_memory
                 WHERE agent IN (?, ?) AND branch IN (?, ?)
                                 AND (scope != 'session' OR session_id = ?)
@@ -298,9 +315,10 @@ def memory_dump(agent: str, root: str, branch: str, session_id: str = "", task_h
     hint_tokens = _tokenize_hint(task_hint)
     collapsed = _collapse_facts_by_key(raw_facts, agent)
     enriched: list[dict] = []
-    fresh_count = stale_count = 0
+    fresh_count = stale_count = short_term_count = long_term_count = 0
     for fact in collapsed:
-        meta = _age_metadata(fact["updated_at"])
+        ret = fact.get("retention", "long_term")
+        meta = _age_metadata(fact["updated_at"], ret)
         ef = {**fact, **meta}
         if hint_tokens:
             ef["relevance_score"] = _score_task_relevance(fact, hint_tokens)
@@ -308,6 +326,10 @@ def memory_dump(agent: str, root: str, branch: str, session_id: str = "", task_h
             fresh_count += 1
         if meta["is_stale"]:
             stale_count += 1
+        if ret == "short_term":
+            short_term_count += 1
+        else:
+            long_term_count += 1
         enriched.append(ef)
     if hint_tokens:
         enriched.sort(key=lambda f: f.get("relevance_score", 0), reverse=True)
@@ -317,6 +339,8 @@ def memory_dump(agent: str, root: str, branch: str, session_id: str = "", task_h
         "has_data": bool(rules or enriched),
         "fresh_count": fresh_count,
         "stale_count": stale_count,
+        "short_term_count": short_term_count,
+        "long_term_count": long_term_count,
     }
     return json.dumps({"summary": summary, "rules": rules, "facts": enriched})
 

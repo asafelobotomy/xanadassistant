@@ -138,12 +138,14 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # GE-T1: added three regression tests for _grade_trigger skill_path traversal prevention.
     "tests/tools/test_xanadEval_graders_ext.py": 820,
     # Memory MCP shared module: grew with versioned migration helpers, session isolation,
-    # and smart dump enhancements (age metadata, task_hint relevance, summary block).
-    "mcp/scripts/_memory_mcp_shared.py": 500,
+    # smart dump enhancements (age metadata, task_hint relevance, summary block),
+    # and two-tier retention system (short_term/long_term, v2→v3 migration).
+    "mcp/scripts/_memory_mcp_shared.py": 520,
     # Memory MCP entrypoint: grew with session_id threading and branch-scoped rule fixes.
     "mcp/scripts/memoryMcp.py": 450,
-    # Memory MCP test suite: grew with smart dump tests (summary, age metadata, task_hint).
-    "tests/mcp_servers/test_memory_mcp.py": 440,
+    # Memory MCP test suite: grew with smart dump tests (summary, age metadata, task_hint)
+    # and two-tier retention tests (invalid retention, short_term TTL, long_term never-stale).
+    "tests/mcp_servers/test_memory_mcp.py": 510,
     # apply_contracts test: grew with S1 backup/archive contract validation tests and
     # S2 delete-surface restriction tests.
     "tests/lifecycle/test_apply_contracts.py": 520,

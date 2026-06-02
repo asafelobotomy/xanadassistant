@@ -80,7 +80,7 @@ When hooks are enabled, a `memory` MCP server is available. Each specialist agen
 2. If `summary.has_data` is `false`, skip memory-dependent steps — memory is empty for this agent.
 3. Follow all returned **rules** unconditionally for the rest of the task.
 4. Use `fact.age_hours`, `fact.is_fresh`, and `fact.is_stale` to assess fact freshness directly — no separate `elapsed()` call is needed for basic freshness checks. Call `elapsed()` only when precise age in seconds matters.
-5. When you discover something specific to this workspace's commands, tool versions, paths, or established conventions, call `memory_set(agent="<agent-name>", key=..., value=...)` before finishing.
+5. When you discover workspace-specific facts, call `memory_set(agent="<agent-name>", key=..., value=..., retention=...)` before finishing. Use `retention="short_term"` for task-scoped discoveries (auto-expires in 8 h); use `retention="long_term"` for durable project facts (language, build system, conventions).
 6. If the `memory` server is unavailable, emit one visible note ("⚠️ Memory MCP unavailable: [reason]") then continue without it.
 
 ## Skills and Agents

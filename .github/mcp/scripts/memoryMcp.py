@@ -25,6 +25,8 @@ except ImportError as _exc:  # pragma: no cover
 mcp = FastMCP("xanadMemory")
 _VALID_SCOPES = {"workspace", "project", "branch", "session"}
 _VALID_RULE_TYPES = {"never", "always", "prefer", "avoid"}
+_VALID_RETENTIONS = {"short_term", "long_term"}
+_SHORT_TERM_AUTO_TTL_DAYS: float = 8 / 24   # short_term facts auto-expire in 8 hours
 _AGENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9\-]*$")
 _SESSION_ID: str = str(uuid.uuid4())
 
@@ -104,6 +106,11 @@ def _chk_confidence(v: float) -> float:
     return _shared_chk_confidence(v)
 
 
+def _chk_retention(v: str) -> None:
+    if v not in _VALID_RETENTIONS:
+        raise ValueError(f"retention must be one of {sorted(_VALID_RETENTIONS)}; got {v!r}")
+
+
 def _parse_iso8601(value: str, field: str) -> str:
     """Parse and normalise an ISO-8601 timestamp to canonical ``YYYY-MM-DDTHH:MM:SSZ``."""
     for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S"):
@@ -123,6 +130,7 @@ def memory_set(
     ttl_days: float | None = None,
     valid_from: str | None = None, valid_until: str | None = None,
     source_description: str | None = None,
+    retention: str = "long_term",
 ) -> str:
     """Upsert a fact into advisory memory.
     Args:
@@ -135,15 +143,19 @@ def memory_set(
         ttl_days: If set, fact expires after this many days.
         valid_from: ISO-8601 UTC; fact not applicable before this date.
         valid_until: ISO-8601 UTC; soft validity end.
+        retention: One of short_term/long_term. short_term auto-expires in 8 h.
     """
     _chk_agent(agent)
     _chk_scope(scope)
+    _chk_retention(retention)
     root = _workspace_root()
     branch = _advisory_branch(scope, root)
     confidence = _chk_confidence(confidence)
     if valid_from is not None: valid_from = _parse_iso8601(valid_from, "valid_from")
     if valid_until is not None: valid_until = _parse_iso8601(valid_until, "valid_until")
     session_id = _SESSION_ID if scope == "session" else ""
+    if retention == "short_term" and ttl_days is None:
+        ttl_days = _SHORT_TERM_AUTO_TTL_DAYS
     expires_at: str | None = None
     if ttl_days is not None:
         expires_at = (
@@ -155,18 +167,20 @@ def memory_set(
             INSERT INTO advisory_memory
                 (agent, scope, branch, key, value, confidence, source,
                  expires_at, valid_from, valid_until, invalidated_at,
-                 session_id, source_description)
-            VALUES (?,?,?,?,?,?,?,?,?,?,NULL,?,?)
+                 session_id, source_description, retention)
+            VALUES (?,?,?,?,?,?,?,?,?,?,NULL,?,?,?)
             ON CONFLICT(agent,scope,branch,session_id,key) DO UPDATE SET
                 value=excluded.value, confidence=excluded.confidence,
                 source=excluded.source,
                 updated_at=strftime('%Y-%m-%dT%H:%M:%SZ','now'),
                 expires_at=excluded.expires_at, valid_from=excluded.valid_from,
                 valid_until=excluded.valid_until, invalidated_at=NULL,
-                session_id=excluded.session_id, source_description=excluded.source_description
+                session_id=excluded.session_id,
+                source_description=excluded.source_description,
+                retention=excluded.retention
             """,
             (agent, scope, branch, key, value, confidence, source,
-             expires_at, valid_from, valid_until, session_id, source_description),
+             expires_at, valid_from, valid_until, session_id, source_description, retention),
         )
         conn.commit()
     return f"Stored {key!r} for {agent!r} (scope={scope!r}, branch={branch!r})."
