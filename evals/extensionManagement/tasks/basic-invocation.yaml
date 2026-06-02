@@ -1,0 +1,22 @@
+id: basic-invocation
+description: "Verify extensionManagement skill searches the marketplace by intent, presents candidates, confirms destructive ops, and executes via run_vscode_command"
+prompt: |
+  Use the extensionManagement skill. The user says: "I need a good Python linter
+  for VS Code — find me something and install it." Search the marketplace using
+  vscode_searchExtensions_internal with relevant keywords and the Linters category,
+  present up to 3 candidates with their extension IDs, confirm the user's choice,
+  resolve the pre-release flag for the current environment, and install it with
+  run_vscode_command. Then explain what you would do differently if the user asked
+  to uninstall an extension instead.
+expected:
+  - "vscode_searchExtensions_internal"
+  - "run_vscode_command"
+  - "installExtension"
+  - "publisher"
+  - "installPreReleaseVersion"
+  - "skipCheck"
+  - "uninstall"
+  - "confirm"
+tags:
+  - basic
+  - smoke

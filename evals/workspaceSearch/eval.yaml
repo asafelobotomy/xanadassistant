@@ -1,0 +1,16 @@
+name: "workspaceSearch-eval"
+description: "Evaluates workspaceSearch skill behavior for method selection, refinement discipline, and result dispatch"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(grep_search|semantic_search|file_search|search\\.action\\.getSearchResults|workspaceSearch|includePattern|vscode_listCodeUsages)"
+
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 1000
+
+tasks:
+  - "tasks/*.yaml"

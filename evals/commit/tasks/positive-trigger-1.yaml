@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify agent triggers on its primary use case"
+prompt: |
+  Which agent should handle staging files, preparing a commit message, and pushing a branch?
+expected:
+  - "commit"
+  - "git"
+tags:
+  - basic
+  - smoke
+  - positive

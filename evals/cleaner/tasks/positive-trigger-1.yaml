@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify agent triggers on its primary use case"
+prompt: |
+  Which agent should inventory and prune stale artefacts, caches, archives, and dead files without changing intended behaviour?
+expected:
+  - "cleaner"
+  - "repository hygiene"
+tags:
+  - basic
+  - smoke
+  - positive

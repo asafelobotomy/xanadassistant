@@ -1,0 +1,11 @@
+id: positive-trigger-2
+description: "Verify cleaner agent triggers on cache and generated output removal"
+prompt: |
+  Which agent should remove __pycache__ directories, stale .pyc files, and generated
+  output left behind by a build, without modifying source files?
+expected:
+  - "cleaner"
+  - "generated"
+tags:
+  - smoke
+  - positive

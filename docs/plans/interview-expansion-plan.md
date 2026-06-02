@@ -1,6 +1,6 @@
 # Interview Expansion Plan
 
-> Status: Base interview implementation complete; installed-agent follow-up customization now shipped for Commit, Docs, Explore, Planner, and Review. Tier 3-B and Tier 4 remain deferred.
+> Status: Base interview implementation complete; installed-agent follow-up customization now shipped for commit, docs, explore, planner, and review. Tier 3-B and Tier 4 remain deferred.
 > Sources: `copilot-instructions-template` interview.md + setup.agent.md + template;
 > GitHub Copilot customization docs; progressive-disclosure UX research.
 
@@ -17,11 +17,11 @@ Current shipped configurable agents:
 
 | Agent | Answer keys | Agent tokens | Fallback token(s) |
 | --- | --- | --- | --- |
-| Commit | `agent.commit.messageStyle`, `agent.commit.secretGuardMode` | `{{agent:commit:message-style}}`, `{{agent:commit:secret-guard}}` | `{{pack:commit-style}}`, `{{pack:secret-guard}}` |
-| Docs | `agent.docs.outputStyle` | `{{agent:docs:output-style}}` | `{{pack:output-style}}` |
-| Explore | `agent.explore.outputStyle` | `{{agent:explore:output-style}}` | `{{pack:output-style}}` |
-| Planner | `agent.planner.planFormat` | `{{agent:planner:plan-format}}` | `{{pack:plan-format}}` |
-| Review | `agent.review.reportingThreshold` | `{{agent:review:reporting-threshold}}` | `{{pack:review-depth}}` |
+|commit | `agent.commit.messageStyle`, `agent.commit.secretGuardMode` | `{{agent:commit:message-style}}`, `{{agent:commit:secret-guard}}` | `{{pack:commit-style}}`, `{{pack:secret-guard}}` |
+|docs | `agent.docs.outputStyle` | `{{agent:docs:output-style}}` | `{{pack:output-style}}` |
+|explore | `agent.explore.outputStyle` | `{{agent:explore:output-style}}` | `{{pack:output-style}}` |
+|planner | `agent.planner.planFormat` | `{{agent:planner:plan-format}}` | `{{pack:plan-format}}` |
+|review | `agent.review.reportingThreshold` | `{{agent:review:reporting-threshold}}` | `{{pack:review-depth}}` |
 
 Auto-detected tokens (no questions, scanner runs silently):
 
@@ -59,7 +59,7 @@ Auto-detected tokens (no questions, scanner runs silently):
 | 2-B | ✅ done | `autonomy.level` → `{{AUTONOMY_LEVEL}}` | 1 | 1 |
 | 2-C | ✅ done | `agent.persona` → `{{AGENT_PERSONA}}` | 1 | 1 |
 | 3-A | ✅ done | `testing.philosophy` → `{{TESTING_PHILOSOPHY}}` | 1 | 1 |
-| Agent rollout | ✅ done | Installed-agent follow-up registry, replay, and wrapper-token customization for Commit, Docs, Explore, Planner, and Review | 6 | 6 |
+| Agent rollout | ✅ done | Installed-agent follow-up registry, replay, and wrapper-token customization for commit, docs, explore, planner, and review | 6 | 6 |
 | 3-B | 🔧 deferred | `loc.thresholds` → `{{LOC_WARN}}` + `{{LOC_HARD}}` | 1 | 2 |
 | 4 | 🔧 future | Additional CIT tokens — see Tier 4 table below | — | — |
 

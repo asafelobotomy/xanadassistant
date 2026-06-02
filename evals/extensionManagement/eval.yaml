@@ -1,0 +1,16 @@
+name: "extensionManagement-eval"
+description: "Evaluates extensionManagement skill behavior for marketplace search, recommendation, and install/enable/disable/uninstall lifecycle"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(vscode_searchExtensions_internal|run_vscode_command|installExtension|extensionManagement|extension.id|publisher\\.)"
+
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 1200
+
+tasks:
+  - "tasks/*.yaml"

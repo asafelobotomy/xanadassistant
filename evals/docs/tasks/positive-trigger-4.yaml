@@ -1,0 +1,13 @@
+id: positive-trigger-4
+description: "Verify docs agent triggers on documentation tooling requests (markdownlint, spellcheck)"
+prompt: |
+  After editing several Markdown files in the docs/ directory, which agent should I use to run
+  markdownlint and a spellcheck pass over them before committing?
+expected:
+  - "docs"
+  - "markdownlint"
+tags:
+  - basic
+  - smoke
+  - positive
+  - tooling

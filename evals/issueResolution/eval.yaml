@@ -1,0 +1,16 @@
+name: "issueResolution-eval"
+description: "Evaluates issueResolution skill behavior for issue intake, classification, duplicate search, code location, and PR readiness"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(issueResolution|mcp_xanadgithub_get_issue|classify|duplicate|root.cause|vscode_listCodeUsages|PR.readiness|secureReview)"
+
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 1200
+
+tasks:
+  - "tasks/*.yaml"

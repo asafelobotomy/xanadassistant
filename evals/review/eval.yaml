@@ -1,0 +1,16 @@
+name: "review-eval"
+description: "Evaluates review agent routing behaviour and response bounds"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?is)(\\breview\\b.*read-only|read-only.*\\breview\\b)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

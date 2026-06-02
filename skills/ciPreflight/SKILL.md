@@ -115,7 +115,7 @@ Run each command with a terminal tool. For each result:
 | --- | --- |
 | Exit 0 | Continue to the next check |
 | Stale generated artifact (exit nonzero and the output includes an explicit invocation of the form `python3 …generate`, `npm run generate`, or a similar regen tool) | Re-run the generator, explicitly `git add` regenerated outputs, then re-run the check |
-| Unit or lint failure | Delegate to `Debugger` with the exact failure output and staged file list; apply the minimal fix returned; re-run the failing check. If `Debugger` cannot isolate a fix, surface the raw failure output to the user and ask whether to block the commit or accept residual risk. |
+| Unit or lint failure | Delegate to `debugger` with the exact failure output and staged file list; apply the minimal fix returned; re-run the failing check. If `debugger` cannot isolate a fix, surface the raw failure output to the user and ask whether to block the commit or accept residual risk. |
 | Budget / LOC / format violation | Surface the exact violation output to the user; ask whether to fix now or accept residual risk before proceeding |
 | Template-safety violation (unresolved `{{}}` tokens in a template file) | Block the commit until resolved |
 | Step requires secrets or infra (detected mid-run) | Note in summary — not a blocker |
@@ -139,5 +139,5 @@ Return:
 - [ ] `git diff --cached --name-only` used to scope checks to staged files
 - [ ] Commands executed in cheapest-first order; stopped at first blocker
 - [ ] Stale artifacts repaired and restaged before re-running the failing check
-- [ ] `Debugger` delegated to for test/lint failures, not ad-hoc guesses
+- [ ] `debugger` delegated to for test/lint failures, not ad-hoc guesses
 - [ ] Summary returned with pass / block / residual-risk outcome

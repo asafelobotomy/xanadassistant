@@ -1,6 +1,6 @@
 ---
 name: testing
-description: "Use when: running targeted or full tests in any workspace, choosing the safest available test command, summarizing test results, or deciding when to hand failing tests to Debugger."
+description: "Use when: running targeted or full tests in any workspace, choosing the safest available test command, summarizing test results, or deciding when to hand failing tests to debugger."
 ---
 
 # Testing
@@ -13,13 +13,13 @@ Procedural skill for running tests through the workspace's declared testing appa
 
 - When a task needs targeted tests, full tests, or a validation summary
 - When the workspace's test command should be discovered instead of assumed
-- When deciding whether a failing test needs Debugger handoff
+- When deciding whether a failing test needs debugger handoff
 
 ## When NOT to use
 
 - When the user asks for a full CI-equivalent pre-commit or pre-push gate — prefer `ciPreflight`
-- When tests are already failing and root-cause diagnosis is the main task — prefer `Debugger`
-- When the task is test coverage adequacy or regression-risk review — prefer `Review`
+- When tests are already failing and root-cause diagnosis is the main task — prefer `debugger`
+- When the task is test coverage adequacy or regression-risk review — prefer `review`
 - When strict Red-Green-Refactor coaching is needed and the TDD pack is installed — prefer the TDD pack skill or prompt
 - When the workspace has no declared test apparatus and the task is to define one — prefer direct repo maintenance or documentation updates over this runtime workflow
 
@@ -57,7 +57,7 @@ Procedural skill for running tests through the workspace's declared testing appa
 
 6. Act on failures deliberately.
    - If the failure is clearly caused by the current edit slice, fix that slice and rerun the same test.
-   - If root cause is unclear, delegate to `Debugger` with the exact command, output tail, changed files, and why the test was selected.
+   - If root cause is unclear, delegate to `debugger` with the exact command, output tail, changed files, and why the test was selected.
    - If a test cannot run because the workspace lacks a declared test command, report the missing apparatus and suggest adding one to workspace instructions.
 
 ## Verify
@@ -69,4 +69,4 @@ Procedural skill for running tests through the workspace's declared testing appa
 - [ ] Targeted runs used safe argv-style arguments; full runs used the command exactly
 - [ ] Output summary includes status, command/tool, exit code when available, `runnerExitReason` when present, and relevant output tail
 - [ ] Coverage artifact was parsed with `testing_parse_coverage` when present or explicitly reported as not assessed
-- [ ] Failing tests were either repaired in the current slice or handed to `Debugger` with exact evidence
+- [ ] Failing tests were either repaired in the current slice or handed to `debugger` with exact evidence

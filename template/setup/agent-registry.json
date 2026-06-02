@@ -8,7 +8,7 @@
   "agents": [
     {
       "id": "commit",
-      "name": "Commit",
+      "name": "commit",
       "summary": "Git lifecycle tasks including staging, commits, and pushes.",
       "status": "active",
       "surface": "agents",
@@ -21,7 +21,7 @@
             "id": "message-style",
             "answerKey": "agent.commit.messageStyle",
             "kind": "choice",
-            "prompt": "How should the Commit agent format commit messages by default?",
+            "prompt": "How should the commit agent format commit messages by default?",
             "required": false,
             "fallbackToken": "{{pack:commit-style}}",
             "options": [
@@ -48,7 +48,7 @@
             "id": "secret-guard-mode",
             "answerKey": "agent.commit.secretGuardMode",
             "kind": "choice",
-            "prompt": "How strict should the Commit agent be when it detects a probable secret?",
+            "prompt": "How strict should the commit agent be when it detects a probable secret?",
             "required": false,
             "fallbackToken": "{{pack:secret-guard}}",
             "options": [
@@ -76,7 +76,7 @@
     },
     {
       "id": "docs",
-      "name": "Docs",
+      "name": "docs",
       "summary": "Documentation drafting and update workflows.",
       "status": "active",
       "surface": "agents",
@@ -89,7 +89,7 @@
             "id": "output-style",
             "answerKey": "agent.docs.outputStyle",
             "kind": "choice",
-            "prompt": "What writing style should the Docs agent use by default?",
+            "prompt": "What writing style should the docs agent use by default?",
             "required": false,
             "fallbackToken": "{{pack:output-style}}",
             "options": [
@@ -117,7 +117,7 @@
     },
     {
       "id": "planner",
-      "name": "Planner",
+      "name": "planner",
       "summary": "Scoped execution planning before implementation.",
       "status": "active",
       "surface": "agents",
@@ -130,7 +130,7 @@
             "id": "plan-format",
             "answerKey": "agent.planner.planFormat",
             "kind": "choice",
-            "prompt": "How detailed should the Planner agent be by default?",
+            "prompt": "How detailed should the planner agent be by default?",
             "required": false,
             "fallbackToken": "{{pack:plan-format}}",
             "options": [
@@ -158,7 +158,7 @@
     },
     {
       "id": "explore",
-      "name": "Explore",
+      "name": "explore",
       "summary": "Fast read-only codebase exploration.",
       "status": "active",
       "surface": "agents",
@@ -171,7 +171,7 @@
             "id": "output-style",
             "answerKey": "agent.explore.outputStyle",
             "kind": "choice",
-            "prompt": "How much context should the Explore agent include by default?",
+            "prompt": "How much context should the explore agent include by default?",
             "required": false,
             "fallbackToken": "{{pack:output-style}}",
             "options": [
@@ -199,7 +199,7 @@
     },
     {
       "id": "review",
-      "name": "Review",
+      "name": "review",
       "summary": "Structured code and architecture review.",
       "status": "active",
       "surface": "agents",
@@ -212,7 +212,7 @@
             "id": "reporting-threshold",
             "answerKey": "agent.review.reportingThreshold",
             "kind": "choice",
-            "prompt": "How broadly should the Review agent report findings by default?",
+            "prompt": "How broadly should the review agent report findings by default?",
             "required": false,
             "fallbackToken": "{{pack:review-depth}}",
             "options": [

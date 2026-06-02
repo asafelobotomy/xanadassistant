@@ -1,0 +1,16 @@
+name: "planner-eval"
+description: "Evaluates planner agent routing behaviour and response bounds"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?is)(\\bplanner\\b.*plan|plan.*\\bplanner\\b)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

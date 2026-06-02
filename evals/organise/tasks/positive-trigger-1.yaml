@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify agent triggers on its primary use case"
+prompt: |
+  Which agent should move files into a better folder layout and repair the broken paths afterward?
+expected:
+  - "organise"
+  - "structural"
+tags:
+  - basic
+  - smoke
+  - positive

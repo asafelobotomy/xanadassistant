@@ -6,7 +6,7 @@ model:
   - Claude Sonnet 4.6
   - GPT-5.4
 tools: [agent, codebase, search, runCommands, askQuestions, lifecycle_inspect, lifecycle_check, lifecycle_interview, lifecycle_plan_setup, lifecycle_setup, lifecycle_update, lifecycle_repair, lifecycle_factory_restore, create_issue, memory_dump, memory_get, memory_list, memory_invalidate, memory_set, diary_add, diary_get, diary_search, elapsed]
-agents: [Explore, Debugger, Planner]
+agents: [explore, debugger, planner]
 user-invocable: true
 target: vscode
 ---
@@ -242,9 +242,9 @@ then pass `--allow-mutable-ref` explicitly.
    true in the plan payload.
 3. **Write only after approval.** Once approved, run `setup`, `update`, `repair`,
    or `factory-restore` as appropriate.
-4. **Diagnose unclear failures.** Use `Debugger` when lifecycle commands fail, drift is surprising, or the controlling state is unclear.
-5. **Scope complex remediation.** Use `Planner` when repair, update, or migration work spans multiple managed surfaces or needs phased execution.
-6. **Inventory unfamiliar workspaces.** Use `Explore` when the workspace layout, installed surfaces, or relevant files are unclear before planning a lifecycle operation.
+4. **Diagnose unclear failures.** Use `debugger` when lifecycle commands fail, drift is surprising, or the controlling state is unclear.
+5. **Scope complex remediation.** Use `planner` when repair, update, or migration work spans multiple managed surfaces or needs phased execution.
+6. **Inventory unfamiliar workspaces.** Use `explore` when the workspace layout, installed surfaces, or relevant files are unclear before planning a lifecycle operation.
 
 ## Command reference
 

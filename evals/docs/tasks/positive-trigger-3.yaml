@@ -1,0 +1,13 @@
+id: positive-trigger-3
+description: "Verify docs agent triggers on bulk documentation creation request"
+prompt: |
+  I have a packs/ directory with eight subdirectories: core, lean, secure, tdd, oss, docs, devops, mlops.
+  None of them have README files yet. Which agent should I use to create README files for all of them?
+expected:
+  - "docs"
+  - "README"
+tags:
+  - basic
+  - smoke
+  - positive
+  - creation

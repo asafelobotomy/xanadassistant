@@ -5,7 +5,7 @@ prompt: |
   apparatus, inspect capabilities first, use testing_list_tests only if discovery
   is safely supported, prefer workspaceTesting testing_run_tests for targeted and
   full tests, summarize the result including runnerExitReason, and explain when
-  to hand failures to Debugger.
+  to hand failures to debugger.
 expected:
   - "testing"
   - "testing_show_capabilities"
@@ -15,7 +15,7 @@ expected:
   - "runnerExitReason"
   - "targeted"
   - "full"
-  - "Debugger"
+  - "debugger"
 tags:
   - basic
   - smoke

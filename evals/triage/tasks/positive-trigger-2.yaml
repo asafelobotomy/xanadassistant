@@ -1,0 +1,11 @@
+id: positive-trigger-2
+description: "Verify triage agent triggers on irreversible operation requiring confirmation"
+prompt: |
+  Which agent should classify a request to drop and recreate all database tables,
+  and stop if the user has not confirmed the data loss is intentional?
+expected:
+  - "triage"
+  - "Blocked"
+tags:
+  - smoke
+  - positive

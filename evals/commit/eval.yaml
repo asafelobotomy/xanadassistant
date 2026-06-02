@@ -1,0 +1,16 @@
+name: "commit-eval"
+description: "Evaluates commit agent routing behaviour and response bounds"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?is)(\\bcommit\\b.*git|git.*\\bcommit\\b)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

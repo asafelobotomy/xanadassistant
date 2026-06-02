@@ -1,0 +1,11 @@
+id: positive-trigger-1
+description: "Verify agent triggers on its primary use case"
+prompt: |
+  Which agent should gather current upstream documentation and source-backed constraints before coding?
+expected:
+  - "researcher"
+  - "research"
+tags:
+  - basic
+  - smoke
+  - positive

@@ -95,15 +95,15 @@ See `## Agent Routing` for the authoritative routing table; this section is a qu
 
 ### Agents
 
-- `Cleaner` — prune stale artefacts, caches, archives, and dead files
-- `Commit` — git operations, commit messages, staging, push, pull, PR work
-- `Debugger` — diagnose failures and isolate root causes before implementation
-- `Deps` — scan dependencies, audit packages, check for vulnerabilities, install/update/repair/remove
-- `Docs` — write and update documentation, migration guides, and technical walkthroughs
-- `Explore` — broad read-only codebase exploration and architecture lookup
-- `Organise` — move files, regroup folders, fix broken paths (subagent-only)
-- `Planner` — produce scoped execution plans for multi-step work before implementation
-- `Researcher` — gather source-backed external constraints before implementation or review
-- `Review` — code, architecture, security, correctness, and regression-risk review; handles codebase audits
-- `Triage` — first-pass complexity assessment; classify and route before acting (subagent-only)
+- `cleaner` — prune stale artefacts, caches, archives, and dead files
+- `commit` — git operations, commit messages, staging, push, pull, PR work
+- `debugger` — diagnose failures and isolate root causes before implementation
+- `deps` — scan dependencies, audit packages, check for vulnerabilities, install/update/repair/remove
+- `docs` — write and update documentation, migration guides, and technical walkthroughs
+- `explore` — broad read-only codebase exploration and architecture lookup
+- `organise` — move files, regroup folders, fix broken paths (subagent-only)
+- `planner` — produce scoped execution plans for multi-step work before implementation
+- `researcher` — gather source-backed external constraints before implementation or review
+- `review` — code, architecture, security, correctness, and regression-risk review; handles codebase audits
+- `triage` — first-pass complexity assessment; classify and route before acting (subagent-only)
 - `xanadLifecycle` — handles all `setup`, `inspect`, `interview`, `health-check`, `health-report`, `plan`, `update`, `repair`, `factory-restore`, and **health check** requests

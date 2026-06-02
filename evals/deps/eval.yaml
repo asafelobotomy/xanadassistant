@@ -1,0 +1,16 @@
+name: "deps-eval"
+description: "Evaluates deps agent routing behaviour and response bounds"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?is)(\\bdeps\\b.*dependenc|dependenc.*\\bdeps\\b)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

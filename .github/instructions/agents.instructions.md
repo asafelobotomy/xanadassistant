@@ -9,7 +9,7 @@ description: "Conventions for .agent.md files in this workspace — frontmatter 
 ## Frontmatter
 
 - Every `.agent.md` file must declare all of: `name`, `description`, `argument-hint`, `model`, `tools`, `agents`, `user-invocable`.
-- `name` must match the filename case-insensitively — `Review` → `review.agent.md`.
+- `name` must match the filename case-insensitively — `review` → `review.agent.md`.
 - `description` must reflect the trigger phrases used in the routing tables in `copilot-instructions.md` and `AGENTS.md`; keep it in sync when either table changes.
 - `argument-hint` must describe what a caller should pass — use imperative phrasing ("Describe the task…").
 - `model` is a preference-ordered list; the first entry is the default, subsequent entries are fallbacks ordered by closer task-fit before lighter-but-less-capable models.

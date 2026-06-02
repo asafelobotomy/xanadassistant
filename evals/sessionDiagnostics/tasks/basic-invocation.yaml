@@ -1,0 +1,26 @@
+id: basic-invocation
+description: "Verify that sessionDiagnostics classifies symptom tier, routes to correct evidence source, and formats findings correctly"
+tags:
+  - smoke
+  - sessionDiagnostics
+
+prompt: |
+  You are an expert coding assistant. Use the sessionDiagnostics skill.
+
+  A user reports: "My custom agent defined in agents/my-agent.agent.md is not being applied. The agent file exists but Copilot never uses it."
+
+  Walk through your diagnostic approach: which tier does this symptom belong to, what evidence would you collect first, how would you access the debug log, and how would you format the finding.
+
+expected:
+  - Tier
+  - main.jsonl
+  - run_in_terminal
+  - discovery
+  - applyTo
+  - evidence
+  - remediation
+
+expected_absent:
+  - grep_search
+  - "read the entire log"
+  - "I cannot diagnose"

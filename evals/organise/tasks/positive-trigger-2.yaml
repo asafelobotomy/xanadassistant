@@ -1,0 +1,11 @@
+id: positive-trigger-2
+description: "Verify organise agent triggers on broken import paths after a file move"
+prompt: |
+  Which agent should fix the broken import paths in a Python project after several
+  modules were moved into a new subdirectory?
+expected:
+  - "organise"
+  - "path"
+tags:
+  - smoke
+  - positive

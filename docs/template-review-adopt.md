@@ -12,8 +12,8 @@ skill, workflow, instruction, and contract files.
 | --- | --- | --- | --- |
 | A1 | Attention-budget gate adopted | `scripts/check_attention_budget.py`, `.github/workflows/ci.yml` | Enforced as a repo-local budget check rather than a one-off shell snippet. |
 | A6 | Memory MCP server adopted | `mcp/scripts/memoryMcp.py`, `.github/copilot-instructions.md`, `template/copilot-instructions.md` | Persistent agent memory via SQLite MCP server; replaces the `docs/memory.md` file-based approach. |
-| A10 | `Cleaner` adopted as consumer-delivered agent | `agents/cleaner.agent.md` | Adapted: removed mcp-servers/handoffs/Codex models; Audit → Review; Code dropped; diary refs removed. |
-| A11 | `Organise` adopted as consumer-delivered subagent | `agents/organise.agent.md` | Adapted: same model/key cleanup; user-invocable remains false; Code dropped. |
+| A10 | `cleaner` adopted as consumer-delivered agent | `agents/cleaner.agent.md` | Adapted: removed mcp-servers/handoffs/Codex models; Audit → Review; Code dropped; diary refs removed. |
+| A11 | `organise` adopted as consumer-delivered subagent | `agents/organise.agent.md` | Adapted: same model/key cleanup; user-invocable remains false; Code dropped. |
 
 ## Retired
 
@@ -33,7 +33,7 @@ skill, workflow, instruction, and contract files.
 
 ## Remaining Agent Ranking
 
-`Debugger`, `Planner`, `Researcher`, and `Docs` are already adopted. The highest-value remaining template-agent candidates are:
+`debugger`, `planner`, `researcher`, and `docs` are already adopted. The highest-value remaining template-agent candidates are:
 
 | Rank | Agent | Recommendation | Why |
 | --- | --- | --- | --- |

@@ -1,0 +1,16 @@
+name: "sessionDiagnostics-eval"
+description: "Evaluates sessionDiagnostics skill behavior for symptom triage, log access discipline, and structured finding output"
+
+graders:
+  - type: text
+    name: references_skill
+    config:
+      pattern: "(?i)(sessionDiagnostics|main\\.jsonl|run_in_terminal|tier|discovery|collectDiagnostics|evidence|remediation)"
+
+  - type: behavior
+    name: response_budget
+    config:
+      max_tokens: 1200
+
+tasks:
+  - "tasks/*.yaml"

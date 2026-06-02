@@ -1,0 +1,27 @@
+id: basic-invocation
+description: "Verify that issueResolution fetches the issue, classifies it, searches for duplicates, locates code, and assesses PR readiness"
+tags:
+  - smoke
+  - issueResolution
+
+prompt: |
+  You are an expert coding assistant. Use the issueResolution skill.
+
+  A developer says: "Can you look into GitHub issue #42 in our repo? It's a bug report where the `calculate_total` function returns an incorrect value when a discount code is applied."
+
+  Walk through: how you would fetch and classify the issue, what duplicate search you would run, how you would locate the relevant code, and what your PR readiness checklist would look like for the resulting fix.
+
+expected:
+  - mcp_xanadgithub_get_issue
+  - Bug
+  - duplicate
+  - vscode_listCodeUsages
+  - grep_search
+  - read_file
+  - root cause
+  - PR readiness
+
+expected_absent:
+  - "I cannot fetch the issue"
+  - "write a fix without reading"
+  - "skip the duplicate check"

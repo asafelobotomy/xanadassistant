@@ -1,0 +1,16 @@
+name: "debugger-eval"
+description: "Evaluates debugger agent routing behaviour and response bounds"
+
+graders:
+  - type: text
+    name: references_agent
+    config:
+      pattern: "(?is)(\\bdebugger\\b.*diagnos|diagnos.*\\bdebugger\\b)"
+
+  - type: behavior
+    name: completion_bound
+    config:
+      max_tokens: 2000
+
+tasks:
+  - "tasks/*.yaml"

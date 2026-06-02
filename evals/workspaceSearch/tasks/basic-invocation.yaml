@@ -1,0 +1,24 @@
+id: basic-invocation
+description: "Verify that workspaceSearch routes to the correct search method based on intent and applies refinement discipline"
+tags:
+  - smoke
+  - workspaceSearch
+
+prompt: |
+  You are an expert coding assistant. Use the workspaceSearch skill.
+
+  A developer says: "I need to find all places in this project where the string 'retry_limit' appears, and then find the file that defines the retry configuration by concept rather than exact name."
+
+  Walk through how you would handle this search task, including which tools you would use for each part, how you would scope the search, and what you would do if the results were noisy.
+
+expected:
+  - grep_search
+  - isRegexp
+  - semantic_search
+  - includePattern
+  - refinement
+  - dispatch
+
+expected_absent:
+  - "I cannot search"
+  - "search the entire workspace"
