@@ -91,6 +91,7 @@ def emit_json_lines(payload: dict) -> None:
                 "backup": payload["result"]["backup"],
                 "writes": payload["result"]["writes"],
                 "retired": payload["result"]["retired"],
+                "sanitized": payload["result"].get("sanitized", []),
                 "lockfile": payload["result"]["lockfile"],
                 "summary": payload["result"]["summary"],
                 "validation": payload["result"]["validation"],

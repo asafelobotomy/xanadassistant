@@ -6,6 +6,7 @@ from scripts.lifecycle._xanad._agent_customization import summarize_agent_custom
 from scripts.lifecycle._xanad._conditions import normalize_plan_answers, resolve_token_values
 from scripts.lifecycle._xanad._errors import LifecycleCommandError
 from scripts.lifecycle._xanad._inspect import collect_context
+from scripts.lifecycle._xanad._inspect_helpers import collect_sanitizable_unmanaged_files
 from scripts.lifecycle._xanad._interview import (
     load_answers,
     prepare_questions,
@@ -75,7 +76,7 @@ def _conflict_blocked_plan(
             "approvalRequired": True, "backupRequired": False,
             "backupPlan": build_backup_plan(context["policy"], [], False),
             "plannedLockfile": None,
-            "writes": {"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0, "deleted": 0},
+            "writes": {"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0, "deleted": 0, "archiveUnmanaged": 0},
             "conflicts": [], "conflictSummary": build_conflict_summary([]),
             "conflictDetails": pack_conflicts,
             "actions": [], "skippedActions": [], "tokenSubstitutions": [],
@@ -205,8 +206,9 @@ def _build_plan_action_set(
     token_values: dict,
     resolutions: dict,
     existing_files: list,
-) -> tuple[dict, list, list, list]:
-    """Build writes, actions, skipped_actions, retired_targets from plan inputs."""
+    sanitize: bool = False,
+) -> tuple[dict, list, list, list, list]:
+    """Build writes, actions, skipped_actions, retired_targets, sanitize_targets from plan inputs."""
     writes, actions, skipped_actions, retired_targets = build_setup_plan_actions(
         workspace, package_root, context["manifest"], ownership_by_surface,
         resolved_answers, token_values, force_reinstall=(mode == "factory-restore"),
@@ -228,7 +230,23 @@ def _build_plan_action_set(
             "ownershipMode": None,
             "strategy": "archive-retired",
         })
-    return writes, actions, skipped_actions, retired_targets
+
+    sanitize_targets: list[str] = []
+    if sanitize and mode in {"repair", "factory-restore"}:
+        sanitize_targets = collect_sanitizable_unmanaged_files(workspace, context["policy"], context["manifest"])
+        writes["archiveUnmanaged"] = len(sanitize_targets)
+        for target in sanitize_targets:
+            actions.append({
+                "id": f"sanitize.archive.{target}",
+                "target": target,
+                "action": "archive-unmanaged",
+                "ownershipMode": None,
+                "strategy": "archive-unmanaged",
+            })
+    else:
+        writes["archiveUnmanaged"] = 0
+
+    return writes, actions, skipped_actions, retired_targets, sanitize_targets
 
 
 def build_plan_result(
@@ -238,6 +256,7 @@ def build_plan_result(
     answers_path: str | None,
     non_interactive: bool,
     resolutions_path: str | None = None,
+    sanitize: bool = False,
 ) -> dict:
     if mode not in {"setup", "update", "repair", "factory-restore"}:
         return build_not_implemented_payload("plan", workspace, package_root, mode)
@@ -308,10 +327,10 @@ def build_plan_result(
         metadata=context["metadata"],
     )
 
-    writes, actions, skipped_actions, retired_targets = _build_plan_action_set(
+    writes, actions, skipped_actions, retired_targets, sanitize_targets = _build_plan_action_set(
         context, mode, workspace, package_root,
         ownership_by_surface, resolved_answers, token_values,
-        resolutions, existing_files,
+        resolutions, existing_files, sanitize=sanitize,
     )
     conflicts, warnings = classify_plan_conflicts(workspace, context, actions, retired_targets)
     warnings.extend(_res_warnings)
@@ -325,6 +344,7 @@ def build_plan_result(
     backup_required = (
         writes.get("replace", 0) + writes.get("merge", 0)
         + writes.get("archiveRetired", 0) + writes.get("deleted", 0)
+        + writes.get("archiveUnmanaged", 0)
     ) > 0
     backup_plan = build_backup_plan(context["policy"], actions, backup_required)
     keep_resolutions = {k: v for k, v in resolutions.items() if v == "keep"}
@@ -366,6 +386,7 @@ def build_plan_result(
             "factoryRestore": mode == "factory-restore",
             "repairReasons": repair_reasons,
             "retired": retired_targets,
+            "sanitize": {"enabled": sanitize, "targets": sanitize_targets},
             "questionsResolved": not unresolved,
             "resolvedAnswers": resolved_answers,
             "questions": questions,

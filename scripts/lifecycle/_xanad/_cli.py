@@ -43,12 +43,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Lifecycle mode requiring questions.",
     )
 
-    plan_parser = subparsers.add_parser("plan", help="Generate a lifecycle plan.")
-    plan_subparsers = plan_parser.add_subparsers(dest="mode", required=True, parser_class=parser_class)
-    for mode in ("setup", "update", "repair", "factory-restore"):
-        mode_parser = plan_subparsers.add_parser(mode, help=f"Generate a {mode} plan.")
-        add_common_arguments(mode_parser)
-
     for command in ("setup", "apply", "update", "repair", "factory-restore"):
         help_text = (
             "Retired command tombstone; use setup, update, repair, or factory-restore instead."
@@ -59,6 +53,24 @@ def build_parser() -> argparse.ArgumentParser:
         add_common_arguments(command_parser)
         if command in {"setup", "apply"}:
             command_parser.add_argument("--plan", default=None, help="Path to a serialized lifecycle plan to apply.")
+        if command in {"repair", "factory-restore"}:
+            command_parser.add_argument(
+                "--sanitize",
+                action="store_true",
+                help="Archive unmanaged Copilot-shaped files found in managed directories.",
+            )
+
+    plan_parser = subparsers.add_parser("plan", help="Generate a lifecycle plan.")
+    plan_subparsers = plan_parser.add_subparsers(dest="mode", required=True, parser_class=parser_class)
+    for mode in ("setup", "update", "repair", "factory-restore"):
+        mode_parser = plan_subparsers.add_parser(mode, help=f"Generate a {mode} plan.")
+        add_common_arguments(mode_parser)
+        if mode in {"repair", "factory-restore"}:
+            mode_parser.add_argument(
+                "--sanitize",
+                action="store_true",
+                help="Include sanitize archive actions for unmanaged Copilot-shaped files.",
+            )
 
     health_check_parser = subparsers.add_parser("health-report", help="Collect and format a workspace health report.")
     add_common_arguments(health_check_parser)

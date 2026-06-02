@@ -11,6 +11,7 @@ from scripts.lifecycle._xanad._apply import (
     apply_chmod_rule,
     build_copilot_version_summary,
     generate_apply_timestamps,
+    generate_sanitize_timestamp,
     materialize_apply_timestamp,
     merge_json_object_file,
     merge_markdown_file,
@@ -91,9 +92,21 @@ def _rollback_apply(
     created_paths: set[str],
     archive_paths: set[str],
     snapshots: dict[str, bytes | None],
+    sanitize_archive_paths: set[str] | None = None,
+    sanitized_original_map: dict[str, str] | None = None,
 ) -> None:
     for relative_path in sorted(archive_paths):
         (workspace / relative_path).unlink(missing_ok=True)
+
+    # Restore sanitize-archived files to their original locations
+    if sanitize_archive_paths and sanitized_original_map:
+        for archive_rel in sorted(sanitize_archive_paths):
+            archive_path = workspace / archive_rel
+            original_rel = sanitized_original_map.get(archive_rel)
+            if original_rel and archive_path.exists():
+                restore_path = workspace / original_rel
+                restore_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(archive_path), restore_path)
 
     for relative_path, snapshot in snapshots.items():
         _restore_snapshot(workspace / relative_path, snapshot)
@@ -118,9 +131,13 @@ def _rollback_metadata(
     created_paths: set[str],
     archive_paths: set[str],
     snapshots: dict[str, bytes | None],
+    sanitize_archive_paths: set[str] | None = None,
+    sanitized_original_map: dict[str, str] | None = None,
 ) -> dict:
     try:
-        _rollback_apply(workspace, backup_root, created_paths, archive_paths, snapshots)
+        _rollback_apply(workspace, backup_root, created_paths, archive_paths, snapshots,
+                        sanitize_archive_paths=sanitize_archive_paths,
+                        sanitized_original_map=sanitized_original_map)
     except Exception as rollback_error:  # pragma: no cover - defensive path
         return {
             "backupPath": backup_root,
@@ -143,8 +160,10 @@ def _build_dry_run_result(plan_payload: dict, planned_lockfile: dict) -> dict:
             "deleted": plan_writes.get("deleted", 0),
             "retiredReported": 0,
             "skipped": skipped_count,
+            "unmanagedArchived": plan_writes.get("archiveUnmanaged", 0),
         },
         "retired": [],
+        "sanitized": [],
         "lockfile": {"written": False, "path": planned_lockfile["path"]},
         "summary": {"written": False, "path": ".github/copilot-version.md"},
         "validation": {"status": "skipped"},
@@ -204,6 +223,29 @@ def _action_archive_retired(
     retired_records.append(
         {"target": action["target"], "action": "archived", "archivePath": archive_path_str})
     writes["retiredArchived"] += 1
+
+
+def _action_archive_unmanaged(
+    action: dict,
+    ctx: _ActionCtx,
+    sanitize_timestamp: str,
+    writes: dict,
+    sanitized_records: list[dict],
+    sanitize_archive_paths: set[str],
+) -> None:
+    target = action["target"]
+    target_path = ctx.workspace / target
+    _assert_within_workspace(target_path, ctx.workspace_resolved)
+    if not target_path.exists():
+        return
+    archive_rel = f".xanad-archive/{sanitize_timestamp}/{target}"
+    archive_dest = ctx.workspace / archive_rel
+    _assert_within_workspace(archive_dest, ctx.workspace_resolved)
+    archive_dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(target_path), archive_dest)
+    sanitize_archive_paths.add(archive_rel)
+    sanitized_records.append({"target": target, "action": "archived", "archivePath": archive_rel})
+    writes["unmanagedArchived"] += 1
 
 
 def _action_delete(action: dict, ctx: _ActionCtx, writes: dict) -> None:
@@ -287,11 +329,17 @@ def _run_backup_phase(
 def _run_actions_phase(
     ctx: _ActionCtx, actions: list[dict], writes: dict,
     created_paths: set[str], archive_paths: set[str], retired_records: list[dict],
+    sanitize_timestamp: str | None = None,
+    sanitized_records: list[dict] | None = None,
+    sanitize_archive_paths: set[str] | None = None,
 ) -> None:
     """Apply each plan action by dispatching to the appropriate per-action handler."""
     for action in actions:
         if action["action"] == "archive-retired":
             _action_archive_retired(action, ctx, writes, archive_paths, retired_records)
+        elif action["action"] == "archive-unmanaged":
+            if sanitize_timestamp and sanitized_records is not None and sanitize_archive_paths is not None:
+                _action_archive_unmanaged(action, ctx, sanitize_timestamp, writes, sanitized_records, sanitize_archive_paths)
         elif action["action"] == "delete":
             _action_delete(action, ctx, writes)
         else:
@@ -361,6 +409,9 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
     factory_restore = bool(plan_payload["result"].get("factoryRestore", False))
     apply_timestamp, path_timestamp = generate_apply_timestamps()
 
+    sanitize_info = plan_payload["result"].get("sanitize", {})
+    sanitize_enabled = bool(sanitize_info.get("enabled", False))
+
     if dry_run:
         return _build_dry_run_result(plan_payload, planned_lockfile)
 
@@ -371,6 +422,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
         for entry in backup_plan.get("archiveTargets", [])
     }
     retired_records: list[dict] = []
+    sanitized_records: list[dict] = []
     writes = {
         "added": 0,
         "replaced": 0,
@@ -379,10 +431,16 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
         "retiredReported": 0,
         "deleted": 0,
         "skipped": len(plan_payload["result"].get("skippedActions", [])),
+        "unmanagedArchived": 0,
     }
     created_paths: set[str] = set()
     archive_paths: set[str] = set()
+    sanitize_archive_paths: set[str] = set()
     snapshots: dict[str, bytes | None] = {}
+
+    sanitize_timestamp = generate_sanitize_timestamp() if sanitize_enabled else None
+    # Map archive path → original target for rollback
+    sanitized_original_map: dict[str, str] = {}
 
     def remember_snapshot(relative_path: str) -> None:
         snapshots.setdefault(relative_path, _snapshot_file(workspace / relative_path))
@@ -397,7 +455,15 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
             manifest_entries=manifest_entries,
             archive_targets_map=archive_targets_map,
         )
-        _run_actions_phase(ctx, actions, writes, created_paths, archive_paths, retired_records)
+        _run_actions_phase(
+            ctx, actions, writes, created_paths, archive_paths, retired_records,
+            sanitize_timestamp=sanitize_timestamp,
+            sanitized_records=sanitized_records,
+            sanitize_archive_paths=sanitize_archive_paths,
+        )
+        # Build rollback map after actions so we know all archive → original pairs
+        for record in sanitized_records:
+            sanitized_original_map[record["archivePath"]] = record["target"]
         _run_post_apply_phase(
             workspace, package_root, planned_lockfile, apply_timestamp, path_timestamp,
             plan_payload, manifest, factory_restore, backup_root,
@@ -407,7 +473,11 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
         if isinstance(error.details, dict) and "rolledBack" in error.details:
             raise
         details = dict(error.details or {})
-        details.update(_rollback_metadata(workspace, backup_root, created_paths, archive_paths, snapshots))
+        details.update(_rollback_metadata(
+            workspace, backup_root, created_paths, archive_paths, snapshots,
+            sanitize_archive_paths=sanitize_archive_paths,
+            sanitized_original_map=sanitized_original_map,
+        ))
         raise LifecycleCommandError(
             error.code,
             error.message,
@@ -415,7 +485,11 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
             details,
         ) from error
     except Exception as exc:
-        details = _rollback_metadata(workspace, backup_root, created_paths, archive_paths, snapshots)
+        details = _rollback_metadata(
+            workspace, backup_root, created_paths, archive_paths, snapshots,
+            sanitize_archive_paths=sanitize_archive_paths,
+            sanitized_original_map=sanitized_original_map,
+        )
         raise LifecycleCommandError(
             "apply_failure",
             f"Workspace write failed mid-apply and was rolled back: {exc}",
@@ -427,6 +501,7 @@ def execute_apply_plan(workspace: Path, package_root: Path, plan_payload: dict, 
         "backup": {"created": backup_root is not None, "path": backup_root},
         "writes": writes,
         "retired": retired_records,
+        "sanitized": sanitized_records,
         "lockfile": {"written": True, "path": planned_lockfile["path"]},
         "summary": {"written": True, "path": ".github/copilot-version.md"},
         "validation": {"status": "passed"},

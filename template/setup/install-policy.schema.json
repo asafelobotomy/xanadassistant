@@ -215,6 +215,19 @@
         }
       }
     },
+    "retiredMcpServers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["serverId", "retiredIn"],
+        "properties": {
+          "serverId": { "type": "string" },
+          "retiredIn": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
     "retiredFilePolicy": {
       "type": "object",
       "additionalProperties": false,

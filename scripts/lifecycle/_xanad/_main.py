@@ -88,6 +88,7 @@ def _run_execution_command(
                 args.non_interactive,
                 dry_run=args.dry_run,
                 resolutions_path=getattr(args, "resolutions", None),
+                sanitize=getattr(args, "sanitize", False),
             )
     except LifecycleCommandError as error:
         if command in {"setup", "apply"}:
@@ -260,7 +261,7 @@ def _run_lifecycle(args: argparse.Namespace) -> int:
 
     if args.command == "plan":
         try:
-            payload = build_plan_result(workspace, package_root, args.mode, args.answers, args.non_interactive, resolutions_path=getattr(args, "resolutions", None))
+            payload = build_plan_result(workspace, package_root, args.mode, args.answers, args.non_interactive, resolutions_path=getattr(args, "resolutions", None), sanitize=getattr(args, "sanitize", False))
         except LifecycleCommandError as error:
             payload, exit_code = build_error_payload(
                 "plan", workspace, package_root,

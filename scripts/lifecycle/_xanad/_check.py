@@ -14,6 +14,8 @@ DRIFT_WARNING_CODES = {
     "package_name_mismatch",
     "package_version_changed",
     "successor_cleanup_required",
+    "mcp-extra-server",
+    "mcp-retired-server",
 }
 
 

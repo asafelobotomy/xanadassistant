@@ -106,3 +106,17 @@ Default retired-file behavior should be:
 - Factory-restore purges only managed and retired xanadAssistant content.
 - Factory-restore must preserve unmanaged lookalike files, even when they live under directories that also contain managed targets.
 - Preserved unmanaged lookalikes may still be reported to the caller, but they do not become owned by xanadAssistant as a side effect of factory-restore.
+
+## Sanitize Mode
+
+`--sanitize` is an opt-in flag accepted by `repair` and `factory-restore`. It is not accepted by `setup` or `update`.
+
+When `--sanitize` is specified:
+
+- The planner scans managed directories (`.github/`, `.vscode/`) for unmanaged files that have a Copilot-shaped name or suffix (`.agent.md`, `.prompt.md`, `.instructions.md`, `SKILL.md`, `copilot-instructions.md`, `mcp.json` under `.github` or `.vscode`).
+- Each found file becomes an `archive-unmanaged` action in the plan.
+- During apply, each `archive-unmanaged` file is moved to `.xanad-archive/<YYYYMMDDTHHMMSS>/<relative-path>`.
+- The apply result includes a `sanitized` list with one record per archived file: `{"target": <relative-path>, "action": "archived", "archivePath": <archive-dest>}`.
+- The `writes.unmanagedArchived` counter reflects the number of files archived.
+- If the apply phase fails and a rollback occurs, sanitize-archived files are restored to their original locations.
+- `mcp.json` files are only eligible for sanitize archiving when they reside under `.github/` or `.vscode/`; `mcp.json` files elsewhere are not touched.

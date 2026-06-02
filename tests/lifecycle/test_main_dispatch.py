@@ -313,6 +313,25 @@ class MainDispatchTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             self.assertFalse(workspace.exists())
 
+    def test_sanitize_flag_is_parsed_and_threaded_through_for_repair_and_factory_restore(self) -> None:
+        for command in ("repair", "factory-restore"):
+            with self.subTest(command=command), tempfile.TemporaryDirectory() as tmpdir, mock.patch(
+                "scripts.lifecycle._xanad._main.resolve_effective_package_root",
+                return_value=self._resolved_package_root(tmpdir),
+            ) as _resolved, mock.patch(
+                "scripts.lifecycle._xanad._main._run_execution_command",
+                return_value=0,
+            ) as run_exec:
+                workspace = Path(tmpdir) / "workspace"
+                workspace.mkdir()
+                exit_code = main([command, "--workspace", str(workspace), "--package-root", tmpdir, "--sanitize"])
+
+            self.assertEqual(exit_code, 0)
+            # Verify _run_execution_command was called with args that include sanitize=True
+            call_args = run_exec.call_args
+            args_obj = call_args.args[0]
+            self.assertTrue(getattr(args_obj, "sanitize", False), f"sanitize should be True for {command}")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -12,7 +12,7 @@ from scripts.lifecycle._xanad._inspect_helpers import (
     collect_unmanaged_files,  # noqa: F401 – re-exported for consumers
 )
 from scripts.lifecycle._xanad._loader import load_contract_artifacts, load_discovery_metadata, load_manifest
-from scripts.lifecycle._xanad._memory_check import check_memory_health
+from scripts.lifecycle._xanad._memory_check import check_memory_health, check_mcp_structure_health
 from scripts.lifecycle._xanad._merge import sha256_json
 from scripts.lifecycle._xanad._source import build_source_summary
 from scripts.lifecycle._xanad._state import (
@@ -124,6 +124,10 @@ def collect_context(workspace: Path, package_root: Path) -> dict:
             setup_answers=lockfile_state.get("setupAnswers"),
             mcp_enabled=lockfile_state.get("mcpEnabled"),
         )
+    )
+
+    warnings.extend(
+        check_mcp_structure_health(workspace, package_root, manifest)
     )
 
     return {

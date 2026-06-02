@@ -8,7 +8,6 @@ from pathlib import Path
 
 from scripts.lifecycle._xanad import _memory_check
 
-
 class MemoryCheckTests(unittest.TestCase):
     def test_memory_checks_enabled_respects_answers_flag_and_workspace_markers(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -73,6 +72,87 @@ class MemoryCheckTests(unittest.TestCase):
             warnings = _memory_check.check_memory_health(workspace)
 
         self.assertEqual(warnings, [])
+
+
+class McpStructureAuditTests(unittest.TestCase):
+    def _make_package_root(self, tmpdir: str, server_ids: list[str]) -> Path:
+        package_root = Path(tmpdir) / "pkg"
+        mcp_source = package_root / "template" / "vscode"
+        mcp_source.mkdir(parents=True)
+        servers = {sid: {"command": "node"} for sid in server_ids}
+        (mcp_source / "mcp.json").write_text(json.dumps({"servers": servers}), encoding="utf-8")
+        return package_root
+
+    def _make_manifest(self, package_root: Path) -> dict:
+        mcp_target = ".vscode/mcp.json"
+        return {
+            "managedFiles": [
+                {
+                    "id": mcp_target,
+                    "target": mcp_target,
+                    "source": "template/vscode/mcp.json",
+                    "strategy": "merge-json-object",
+                }
+            ],
+            "retiredMcpServers": [],
+            "retiredFiles": [],
+        }
+
+    def test_no_warnings_when_mcp_servers_match_expected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir) / "ws"
+            workspace.mkdir()
+            expected_ids = ["serverA", "serverB"]
+            package_root = self._make_package_root(tmpdir, expected_ids)
+            manifest = self._make_manifest(package_root)
+            vscode = workspace / ".vscode"
+            vscode.mkdir()
+            (vscode / "mcp.json").write_text(
+                json.dumps({"servers": {"serverA": {}, "serverB": {}}}), encoding="utf-8"
+            )
+
+            warnings = _memory_check.check_mcp_structure_health(workspace, package_root, manifest)
+
+        self.assertEqual(warnings, [])
+
+    def test_mcp_extra_server_warning_for_unexpected_server(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir) / "ws"
+            workspace.mkdir()
+            package_root = self._make_package_root(tmpdir, ["expected"])
+            manifest = self._make_manifest(package_root)
+            vscode = workspace / ".vscode"
+            vscode.mkdir()
+            (vscode / "mcp.json").write_text(
+                json.dumps({"servers": {"expected": {}, "surprise": {}}}), encoding="utf-8"
+            )
+
+            warnings = _memory_check.check_mcp_structure_health(workspace, package_root, manifest)
+
+        codes = {w["code"] for w in warnings}
+        self.assertIn("mcp-extra-server", codes)
+        extra = next(w for w in warnings if w["code"] == "mcp-extra-server")
+        self.assertIn("surprise", extra["details"]["serverIds"])
+
+    def test_mcp_retired_server_warning_for_retired_server_still_present(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir) / "ws"
+            workspace.mkdir()
+            package_root = self._make_package_root(tmpdir, ["current"])
+            manifest = self._make_manifest(package_root)
+            manifest["retiredMcpServers"] = [{"serverId": "legacy", "retiredIn": "0.4.0"}]
+            vscode = workspace / ".vscode"
+            vscode.mkdir()
+            (vscode / "mcp.json").write_text(
+                json.dumps({"servers": {"current": {}, "legacy": {}}}), encoding="utf-8"
+            )
+
+            warnings = _memory_check.check_mcp_structure_health(workspace, package_root, manifest)
+
+        codes = {w["code"] for w in warnings}
+        self.assertIn("mcp-retired-server", codes)
+        retired_w = next(w for w in warnings if w["code"] == "mcp-retired-server")
+        self.assertIn("legacy", retired_w["details"]["retiredServerIds"])
 
 
 if __name__ == "__main__":

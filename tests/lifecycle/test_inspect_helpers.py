@@ -8,8 +8,10 @@ from pathlib import Path
 from scripts.lifecycle._xanad._inspect_helpers import (
     annotate_manifest_entries,
     classify_manifest_entries,
+    collect_sanitizable_unmanaged_files,
     collect_successor_migration_files,
     collect_unmanaged_files,
+    is_copilot_shaped_unmanaged_path,
 )
 
 
@@ -200,3 +202,77 @@ class CollectUnmanagedFilesTests(unittest.TestCase):
             )
 
         self.assertNotIn(".github/skills/legacy.skill.md", cleanup)
+
+
+class CollectSanitizableUnmanagedFilesTests(unittest.TestCase):
+    def _minimal_manifest(self, managed: list[str] | None = None, retired: list[str] | None = None) -> dict:
+        return {
+            "managedFiles": [{"id": t, "target": t} for t in (managed or [])],
+            "retiredFiles": [{"id": t, "target": t} for t in (retired or [])],
+        }
+
+    def _minimal_policy(self) -> dict:
+        return {"targetPathRules": {}}
+
+    def test_collects_only_copilot_shaped_unmanaged_files_under_managed_roots(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            github = workspace / ".github"
+            github.mkdir()
+            (github / "some.agent.md").write_text("# agent\n")
+            (github / "instructions.instructions.md").write_text("# inst\n")
+            (github / "SKILL.md").write_text("# skill\n")
+            (github / "copilot-instructions.md").write_text("# copilot\n")
+            (github / "my.prompt.md").write_text("# prompt\n")
+            vscode = workspace / ".vscode"
+            vscode.mkdir()
+            (vscode / "mcp.json").write_text('{"servers":{}}')
+            (github / "unrelated.py").write_text("# unrelated\n")
+            (github / "README.md").write_text("# readme\n")
+
+            result = collect_sanitizable_unmanaged_files(workspace, self._minimal_policy(), self._minimal_manifest())
+
+        self.assertIn(".github/some.agent.md", result)
+        self.assertIn(".github/instructions.instructions.md", result)
+        self.assertIn(".github/SKILL.md", result)
+        self.assertIn(".github/copilot-instructions.md", result)
+        self.assertIn(".github/my.prompt.md", result)
+        self.assertIn(".vscode/mcp.json", result)
+        self.assertNotIn(".github/unrelated.py", result)
+        self.assertNotIn(".github/README.md", result)
+
+    def test_excludes_manifest_managed_and_retired_targets_and_disallowed_mcp_json_locations(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            github = workspace / ".github"
+            github.mkdir()
+            managed_agent = ".github/managed.agent.md"
+            (workspace / managed_agent).write_text("# managed\n")
+            retired_agent = ".github/retired.agent.md"
+            (workspace / retired_agent).write_text("# retired\n")
+            unmanaged_agent = ".github/unmanaged.agent.md"
+            (workspace / unmanaged_agent).write_text("# unmanaged\n")
+            # mcp.json outside .github/.vscode should not be collected
+            other_dir = workspace / "tools"
+            other_dir.mkdir()
+            (other_dir / "mcp.json").write_text('{"servers":{}}')
+
+            manifest = self._minimal_manifest(managed=[managed_agent], retired=[retired_agent])
+            result = collect_sanitizable_unmanaged_files(workspace, self._minimal_policy(), manifest)
+
+        self.assertIn(unmanaged_agent, result)
+        self.assertNotIn(managed_agent, result)
+        self.assertNotIn(retired_agent, result)
+        self.assertNotIn("tools/mcp.json", result)
+
+    def test_is_copilot_shaped_unmanaged_path_matches_expected_patterns(self) -> None:
+        self.assertTrue(is_copilot_shaped_unmanaged_path(".github/agents/foo.agent.md"))
+        self.assertTrue(is_copilot_shaped_unmanaged_path(".github/prompts/bar.prompt.md"))
+        self.assertTrue(is_copilot_shaped_unmanaged_path(".github/instructions/baz.instructions.md"))
+        self.assertTrue(is_copilot_shaped_unmanaged_path(".github/skills/mySkill/SKILL.md"))
+        self.assertTrue(is_copilot_shaped_unmanaged_path(".github/copilot-instructions.md"))
+        self.assertTrue(is_copilot_shaped_unmanaged_path(".vscode/mcp.json"))
+        self.assertTrue(is_copilot_shaped_unmanaged_path(".github/mcp.json"))
+        self.assertFalse(is_copilot_shaped_unmanaged_path(".github/README.md"))
+        self.assertFalse(is_copilot_shaped_unmanaged_path(".github/hooks/myHook.py"))
+        self.assertFalse(is_copilot_shaped_unmanaged_path("tools/mcp.json"))

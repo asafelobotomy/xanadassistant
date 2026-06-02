@@ -219,6 +219,15 @@ class ExcludeGlobsTests(unittest.TestCase):
             f"xanadEval should be excluded from the install manifest; found: {[t for t in targets if 'xanadEval' in t]}",
         )
 
+    def test_retired_mcp_servers_present_in_real_manifest(self) -> None:
+        """install-manifest.json must contain the retiredMcpServers key (may be empty list)."""
+        repo_root = Path(__file__).resolve().parents[2]
+        manifest = json.loads(
+            (repo_root / "template/setup/install-manifest.json").read_text(encoding="utf-8")
+        )
+        self.assertIn("retiredMcpServers", manifest)
+        self.assertIsInstance(manifest["retiredMcpServers"], list)
+
 
 class _CopiedPackageRoot:
     def __enter__(self) -> Path:

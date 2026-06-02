@@ -181,3 +181,92 @@ def collect_successor_migration_files(
             cleanup_targets.add(relative)
 
     return sorted(cleanup_targets)
+
+
+# ── Sanitize scanner ──────────────────────────────────────────────────────────
+
+_COPILOT_SHAPED_SUFFIXES = frozenset({
+    ".agent.md",
+    ".prompt.md",
+    ".instructions.md",
+})
+_COPILOT_SHAPED_NAMES = frozenset({"SKILL.md", "copilot-instructions.md", "mcp.json"})
+_MCP_JSON_ALLOWED_ROOTS = frozenset({".github", ".vscode"})
+_SANITIZE_SCAN_ROOTS = frozenset({".github", ".vscode"})
+
+
+def is_copilot_shaped_unmanaged_path(relative_path: str) -> bool:
+    """Return True if *relative_path* looks like a Copilot-managed file.
+
+    Rules:
+    - ``*.agent.md``, ``*.prompt.md``, ``*.instructions.md`` under any path.
+    - ``SKILL.md`` and ``copilot-instructions.md`` under any path.
+    - ``mcp.json`` only when its first path component is ``.github`` or ``.vscode``.
+    """
+    p = Path(relative_path)
+    name = p.name
+    if any(name.endswith(suffix) for suffix in _COPILOT_SHAPED_SUFFIXES):
+        return True
+    if name in (_COPILOT_SHAPED_NAMES - {"mcp.json"}):
+        return True
+    if name == "mcp.json":
+        parts = p.parts
+        return len(parts) >= 2 and parts[0] in _MCP_JSON_ALLOWED_ROOTS
+    return False
+
+
+def collect_managed_scan_roots(policy: dict, manifest: dict | None) -> list[str]:
+    """Return the set of directory roots that should be scanned for sanitize candidates.
+
+    Derived from the policy's ``targetPathRules`` (target root names) plus any
+    explicit MCP config directories from the manifest.
+    """
+    roots: set[str] = set(_SANITIZE_SCAN_ROOTS)
+    for rule in policy.get("targetPathRules", {}).values():
+        root = rule.get("targetRoot", "")
+        if root:
+            parts = Path(root).parts
+            if parts:
+                roots.add(parts[0])
+    return sorted(roots)
+
+
+def collect_sanitizable_unmanaged_files(
+    workspace: Path,
+    policy: dict,
+    manifest: dict | None,
+) -> list[str]:
+    """Return paths of unmanaged Copilot-shaped files found under managed scan roots.
+
+    Only files that:
+    - are under a managed scan root (``.github`` or ``.vscode``),
+    - pass ``is_copilot_shaped_unmanaged_path()``,
+    - are not already tracked as managed or retired by the manifest,
+    are returned.
+    """
+    if manifest is None:
+        return []
+
+    managed_targets = {entry.get("target") for entry in manifest.get("managedFiles", [])}
+    retired_targets = {entry.get("target") for entry in manifest.get("retiredFiles", [])}
+    excluded = managed_targets | retired_targets | {
+        ".github/xanadAssistant-lock.json",
+        ".github/xanad-assistant-lock.json",
+        ".github/copilot-version.md",
+    }
+
+    scan_roots = collect_managed_scan_roots(policy, manifest)
+    candidates: set[str] = set()
+
+    for root in scan_roots:
+        root_path = workspace / root
+        if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink():
+            continue
+        for file_path in sorted(path for path in root_path.rglob("*") if path.is_file() and "__pycache__" not in path.parts):
+            relative = file_path.relative_to(workspace).as_posix()
+            if relative in excluded:
+                continue
+            if is_copilot_shaped_unmanaged_path(relative):
+                candidates.add(relative)
+
+    return sorted(candidates)

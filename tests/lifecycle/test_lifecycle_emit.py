@@ -84,6 +84,7 @@ class LifecycleEmitTests(unittest.TestCase):
                     "backup": {"created": False, "path": None},
                     "writes": {"added": 1},
                     "retired": [],
+                    "sanitized": [],
                     "lockfile": {"written": True, "path": ".github/xanadAssistant-lock.json"},
                     "summary": {"written": True, "path": ".github/copilot-version.md"},
                     "validation": {"status": "passed"},
@@ -97,6 +98,7 @@ class LifecycleEmitTests(unittest.TestCase):
                     "backup": {"created": False, "path": None},
                     "writes": {"added": 1},
                     "retired": [],
+                    "sanitized": [],
                     "lockfile": {"written": True, "path": ".github/xanadAssistant-lock.json"},
                     "summary": {"written": True, "path": ".github/copilot-version.md"},
                     "validation": {"status": "passed"},
@@ -133,6 +135,30 @@ class LifecycleEmitTests(unittest.TestCase):
         self.assertEqual([event["type"] for event in events], ["error"])
         self.assertEqual(events[0]["code"], "not_implemented")
         self.assertEqual(events[0]["message"], "unsupported command")
+
+    def test_apply_report_event_includes_sanitized_field(self) -> None:
+        sanitized_record = {"target": ".github/old.agent.md", "action": "archived", "archivePath": ".xanad-archive/20260101T000000/.github/old.agent.md"}
+        payload = {
+            "command": "repair",
+            "status": "ok",
+            "warnings": [],
+            "result": {
+                "backup": {"created": False, "path": None},
+                "writes": {"added": 0, "unmanagedArchived": 1},
+                "retired": [],
+                "sanitized": [sanitized_record],
+                "lockfile": {"written": True, "path": ".github/xanadAssistant-lock.json"},
+                "summary": {"written": True, "path": ".github/copilot-version.md"},
+                "validation": {"status": "passed"},
+            },
+        }
+
+        events, stderr = self._emit_events(payload)
+
+        self.assertEqual(stderr, "")
+        apply_report = next(e for e in events if e["type"] == "apply-report")
+        self.assertIn("sanitized", apply_report)
+        self.assertEqual(apply_report["sanitized"], [sanitized_record])
 
 
 if __name__ == "__main__":

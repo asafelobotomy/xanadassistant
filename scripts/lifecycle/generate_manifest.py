@@ -235,6 +235,7 @@ def generate_manifest(package_root: Path, policy: dict) -> dict:
         "generationSettings": policy.get("generationSettings", {}),
         "managedFiles": managed_files,
         "retiredFiles": retired_files,
+        "retiredMcpServers": policy.get("retiredMcpServers", []),
     }
 
 

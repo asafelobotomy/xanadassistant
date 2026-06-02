@@ -141,3 +141,88 @@ def check_memory_health(
         })
 
     return warnings
+
+
+def _load_mcp_server_map(path: Path) -> dict | None:
+    """Return the parsed servers dict from an mcp.json file, or None on failure."""
+    try:
+        mcp_config = json.loads(path.read_text(encoding="utf-8"))
+        return mcp_config.get("servers", mcp_config.get("mcpServers", {}))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _expected_manifest_mcp_server_ids(package_root: Path, manifest: dict | None) -> dict[str, set[str]]:
+    """Return a mapping of relative MCP config path → set of expected server IDs.
+
+    The expected IDs are derived by reading the managed MCP config source files
+    (strategy ``merge-json-object``) from the package root.
+    """
+    if manifest is None:
+        return {}
+    result: dict[str, set[str]] = {}
+    for entry in manifest.get("managedFiles", []):
+        target = entry.get("target", "")
+        if not (target.endswith("mcp.json") and entry.get("strategy") == "merge-json-object"):
+            continue
+        source = entry.get("source")
+        if source is None:
+            continue
+        source_path = package_root / source
+        server_map = _load_mcp_server_map(source_path)
+        if server_map is not None:
+            result[target] = set(server_map.keys())
+    return result
+
+
+def check_mcp_structure_health(
+    workspace: Path,
+    package_root: Path,
+    manifest: dict | None,
+) -> list[dict]:
+    """Return warning dicts for MCP config files with unexpected or retired server IDs.
+
+    Emits ``mcp-extra-server`` for server IDs present in the workspace but not
+    expected by the manifest source, and ``mcp-retired-server`` for IDs that
+    appear in ``manifest["retiredMcpServers"]``.
+    """
+    warnings: list[dict] = []
+    expected_by_target = _expected_manifest_mcp_server_ids(package_root, manifest)
+    if not expected_by_target:
+        return warnings
+
+    retired_ids = {entry["serverId"] for entry in (manifest or {}).get("retiredMcpServers", [])}
+
+    for relative_target, expected_ids in sorted(expected_by_target.items()):
+        config_path = workspace / relative_target
+        if not config_path.exists():
+            continue
+        actual_map = _load_mcp_server_map(config_path)
+        if actual_map is None:
+            # malformed — already caught by memory registration checks
+            continue
+        actual_ids = set(actual_map.keys())
+        extra_ids = sorted(actual_ids - expected_ids)
+        if not extra_ids:
+            continue
+        retired_extra = [sid for sid in extra_ids if sid in retired_ids]
+        non_retired_extra = [sid for sid in extra_ids if sid not in retired_ids]
+        if retired_extra:
+            warnings.append({
+                "code": "mcp-retired-server",
+                "message": (
+                    f"'{relative_target}' contains retired server IDs that should be removed. "
+                    "Run 'repair' or 'update' to clean up the MCP config."
+                ),
+                "details": {"path": relative_target, "retiredServerIds": retired_extra},
+            })
+        if non_retired_extra:
+            warnings.append({
+                "code": "mcp-extra-server",
+                "message": (
+                    f"'{relative_target}' contains server IDs not managed by this package. "
+                    "Remove unrecognised servers or update the package to include them."
+                ),
+                "details": {"path": relative_target, "serverIds": non_retired_extra, "expectedServerIds": sorted(expected_ids)},
+            })
+    return warnings

@@ -63,7 +63,7 @@ WARN_LIMIT_OVERRIDES = {
 
     # ── Lifecycle tests ────────────────────────────────────────────────────────────
     "tests/lifecycle/test_apply_contracts.py": 460,
-    "tests/lifecycle/test_apply_executor.py": 360,
+    "tests/lifecycle/test_apply_executor.py": 430,
     "tests/lifecycle/test_health_check.py": 260,
     "tests/lifecycle/test_main_dispatch.py": 300,
     "tests/lifecycle/test_plan_action_helpers.py": 380,
@@ -100,8 +100,9 @@ WARN_LIMIT_OVERRIDES = {
 HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # Lifecycle apply executor: grew with _run_backup_phase, _run_actions_phase, _run_post_apply_phase
     # helpers, then _ActionCtx NamedTuple and per-action handler extraction (H3 refactor),
-    # and _apply_memory_gitignore opt-out removal logic.
-    "scripts/lifecycle/_xanad/_apply_executor.py": 440,
+    # and _apply_memory_gitignore opt-out removal logic. Grew again with sanitize-mode
+    # (_action_archive_unmanaged, rollback restore, sanitize tracking in execute_apply_plan).
+    "scripts/lifecycle/_xanad/_apply_executor.py": 520,
     # Web MCP server: grew with robots.txt support, retry logic, and WAF classification.
     "mcp/scripts/webMcp.py": 510,
     # Web MCP test suite: expanded to cover new fetch, retry, and search paths.
@@ -143,6 +144,9 @@ HARD_LIMIT_OVERRIDES: dict[str, int] = {
     # apply_contracts test: grew with S1 backup/archive contract validation tests and
     # S2 delete-surface restriction tests.
     "tests/lifecycle/test_apply_contracts.py": 520,
+    # apply_executor test: grew with sanitize-mode tests (archive-unmanaged action,
+    # rollback restore, dry-run sanitize counts).
+    "tests/lifecycle/test_apply_executor.py": 440,
 }
 
 

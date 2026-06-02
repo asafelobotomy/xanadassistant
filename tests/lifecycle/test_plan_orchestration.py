@@ -218,5 +218,63 @@ class PlanOrchestrationTests(unittest.TestCase):
         self.assertEqual(excinfo.exception.code, "contract_input_failure")
 
 
+class SanitizePlanOrchestrationTests(unittest.TestCase):
+    def _base_context(self) -> dict:
+        return {
+            "policy": {"canonicalSurfaces": [], "tokenRules": [], "retiredFilePolicy": {"archiveRoot": ".xanad/archive"}},
+            "metadata": {"profileRegistry": {"profiles": []}, "agentRegistry": {"agents": []}},
+            "manifest": {"managedFiles": [], "retiredFiles": []},
+            "warnings": [],
+            "installState": "installed",
+            "installPaths": {"lockfile": ".github/xanadAssistant-lock.json"},
+            "artifacts": {},
+            "metadataArtifacts": {},
+            "lockfileState": {"consumerResolutions": {}, "present": True, "malformed": False, "resolvedTokenConflicts": {}},
+            "legacyVersionState": {"malformed": False},
+            "successorMigrationTargets": [],
+            "packageRoot": Path(tempfile.gettempdir()),
+        }
+
+    def test_sanitize_false_produces_zero_archive_unmanaged_and_no_targets(self) -> None:
+        context = self._base_context()
+        with mock.patch("scripts.lifecycle._xanad._plan_b.collect_context", return_value=context), mock.patch(
+            "scripts.lifecycle._xanad._interview.prepare_questions", return_value=([], {}, [], [])
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.classify_plan_conflicts", return_value=([], [])
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.build_token_plan_summary", return_value=[]), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_backup_plan",
+            return_value={"root": None, "targets": [], "archiveTargets": []},
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.build_planned_lockfile", return_value={}):
+            result = build_plan_result(Path("."), Path("."), "factory-restore", None, False, sanitize=False)
+
+        self.assertEqual(result["result"]["writes"].get("archiveUnmanaged", 0), 0)
+        sanitize_info = result["result"].get("sanitize", {})
+        self.assertFalse(sanitize_info.get("enabled", True))
+        self.assertEqual(sanitize_info.get("targets", []), [])
+
+    def test_sanitize_true_includes_archive_unmanaged_actions_for_found_targets(self) -> None:
+        context = self._base_context()
+        fake_targets = [".github/stray.agent.md"]
+        with mock.patch("scripts.lifecycle._xanad._plan_b.collect_context", return_value=context), mock.patch(
+            "scripts.lifecycle._xanad._interview.prepare_questions", return_value=([], {}, [], [])
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.load_answers", return_value={}), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.classify_plan_conflicts", return_value=([], [])
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.build_token_plan_summary", return_value=[]), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.build_backup_plan",
+            return_value={"root": None, "targets": [], "archiveTargets": []},
+        ), mock.patch("scripts.lifecycle._xanad._plan_b.build_planned_lockfile", return_value={}), mock.patch(
+            "scripts.lifecycle._xanad._plan_b.collect_sanitizable_unmanaged_files",
+            return_value=fake_targets,
+        ):
+            result = build_plan_result(Path("."), Path("."), "factory-restore", None, False, sanitize=True)
+
+        sanitize_info = result["result"].get("sanitize", {})
+        self.assertTrue(sanitize_info.get("enabled", False))
+        self.assertEqual(sanitize_info.get("targets", []), fake_targets)
+        self.assertEqual(result["result"]["writes"].get("archiveUnmanaged", 0), len(fake_targets))
+        archive_actions = [a for a in result["result"].get("actions", []) if a.get("action") == "archive-unmanaged"]
+        self.assertEqual(len(archive_actions), len(fake_targets))
+
+
 if __name__ == "__main__":
     unittest.main()

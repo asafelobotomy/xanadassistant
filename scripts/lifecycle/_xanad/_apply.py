@@ -22,6 +22,11 @@ def generate_apply_timestamps() -> tuple[str, str]:
     return current.isoformat().replace("+00:00", "Z"), current.strftime("%Y-%m-%dT%H-%M-%SZ")
 
 
+def generate_sanitize_timestamp() -> str:
+    """Return a compact timestamp string for sanitize archive paths (YYYYMMDDTHHMMSS)."""
+    return datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y%m%dT%H%M%S")
+
+
 def materialize_apply_timestamp(value: str | None, path_timestamp: str) -> str | None:
     if value is None:
         return None
@@ -147,4 +152,3 @@ def apply_chmod_rule(target_path: Path, chmod_rule: str) -> None:
         return
     current_mode = stat.S_IMODE(target_path.stat().st_mode)
     target_path.chmod(current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-

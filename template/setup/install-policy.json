@@ -725,6 +725,7 @@
     "shapeup-hooks": "executable",
     "tools": "executable"
   },
+  "retiredMcpServers": [],
   "retiredFilePolicy": {
     "defaultAction": "report-retired",
     "archiveRoot": ".xanadAssistant/archive",

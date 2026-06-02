@@ -90,8 +90,9 @@ def build_execution_result(
     command: str, mode: str, workspace: Path, package_root: Path,
     answers_path: str | None, non_interactive: bool, dry_run: bool = False,
     resolutions_path: str | None = None,
+    sanitize: bool = False,
 ) -> dict:
-    plan_payload = build_plan_result(workspace, package_root, mode, answers_path, non_interactive, resolutions_path=resolutions_path)
+    plan_payload = build_plan_result(workspace, package_root, mode, answers_path, non_interactive, resolutions_path=resolutions_path, sanitize=sanitize)
     if plan_payload["result"].get("conflictDetails"):
         raise LifecycleCommandError(
             "approval_or_answers_required",

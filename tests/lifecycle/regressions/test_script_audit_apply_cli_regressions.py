@@ -207,6 +207,21 @@ class ScriptAuditApplyCliRegressionsTests(unittest.TestCase):
         self.assertEqual(excinfo.exception.code, "contract_input_failure")
         self.assertEqual(excinfo.exception.exit_code, 4)
 
+    def test_sanitize_flag_only_accepted_by_repair_and_factory_restore(self) -> None:
+        parser = build_parser()
+
+        # --sanitize should be accepted for repair and factory-restore
+        for command in ("repair", "factory-restore"):
+            with self.subTest(command=command):
+                args = parser.parse_args([command, "--workspace", ".", "--package-root", ".", "--sanitize"])
+                self.assertTrue(args.sanitize)
+
+        # --sanitize should NOT be accepted for other write commands
+        for command in ("setup", "update"):
+            with self.subTest(command=command):
+                with self.assertRaises(SystemExit):
+                    parser.parse_args([command, "--workspace", ".", "--package-root", ".", "--sanitize"])
+
 
 if __name__ == "__main__":
     unittest.main()

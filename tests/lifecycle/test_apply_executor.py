@@ -347,6 +347,75 @@ class ApplyExecutorTests(unittest.TestCase):
 
             self.assertFalse((workspace / ".gitignore").exists())
 
+    def test_build_dry_run_result_includes_sanitized_and_unmanagedarchived(self) -> None:
+        payload = {
+            "result": {
+                "writes": {"add": 0, "replace": 0, "merge": 0, "archiveRetired": 0, "deleted": 0, "archiveUnmanaged": 2},
+                "skippedActions": [],
+                "plannedLockfile": {"path": ".github/xanadAssistant-lock.json"},
+            }
+        }
+
+        result = _apply_executor.execute_apply_plan(Path("."), Path("."), payload, dry_run=True)
+
+        self.assertIn("sanitized", result)
+        self.assertEqual(result["sanitized"], [])
+        self.assertEqual(result["writes"]["unmanagedArchived"], 2)
+
+    def test_execute_apply_plan_archives_sanitizable_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            workspace = root / "workspace"
+            package_root = root / "package"
+            workspace.mkdir()
+            package_root.mkdir()
+            write_policy_and_manifest(package_root)
+            # Create an unmanaged Copilot-shaped file
+            github = workspace / ".github"
+            github.mkdir(parents=True)
+            unmanaged_agent = github / "unmanaged.agent.md"
+            unmanaged_agent.write_text("# unmanaged\n", encoding="utf-8")
+
+            plan_payload = {
+                "result": {
+                    "actions": [
+                        {
+                            "id": ".github/unmanaged.agent.md",
+                            "target": ".github/unmanaged.agent.md",
+                            "action": "archive-unmanaged",
+                            "strategy": "move",
+                        }
+                    ],
+                    "backupPlan": {"root": None, "targets": [], "archiveTargets": []},
+                    "plannedLockfile": {
+                        "path": ".github/xanadAssistant-lock.json",
+                        "contents": {
+                            "package": {"name": "xanadAssistant"},
+                            "manifest": {"hash": "sha256:abc"},
+                            "timestamps": {"appliedAt": "<apply-timestamp>", "updatedAt": "<apply-timestamp>"},
+                            "setupAnswers": {"memory.gitignore": False},
+                            "selectedPacks": [],
+                            "files": [],
+                        },
+                    },
+                    "factoryRestore": False,
+                    "sanitize": {"enabled": True, "targets": [".github/unmanaged.agent.md"]},
+                    "skippedActions": [],
+                }
+            }
+
+            with mock.patch("scripts.lifecycle._xanad._apply_executor._check.build_check_result", return_value={"status": "clean", "result": {"summary": {}}}):
+                result = _apply_executor.execute_apply_plan(workspace, package_root, plan_payload, dry_run=False)
+
+            self.assertFalse(unmanaged_agent.exists(), "Unmanaged file should have been archived")
+            self.assertEqual(result["writes"]["unmanagedArchived"], 1)
+            self.assertEqual(len(result["sanitized"]), 1)
+            sanitized = result["sanitized"][0]
+            self.assertEqual(sanitized["target"], ".github/unmanaged.agent.md")
+            self.assertEqual(sanitized["action"], "archived")
+            archive_dest = workspace / sanitized["archivePath"]
+            self.assertTrue(archive_dest.exists(), "Archive destination should exist")
+
 
 if __name__ == "__main__":
     unittest.main()
